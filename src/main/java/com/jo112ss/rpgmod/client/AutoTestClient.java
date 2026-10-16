@@ -165,6 +165,8 @@ public final class AutoTestClient {
         int t = show++;
         if (t == 0) {
             showSkills = new java.util.ArrayList<>(com.jo112ss.rpgmod.job.core.JobDefs.SKILLS.keySet());
+            // a second pass for a few skills as the player sees them (first person)
+            for (String id : new String[] {"power_slash", "whirlwind", "magic_bolt", "flame_burst", "frost_nova", "meteor", "thunder", "judgement"}) showSkills.add("fp:" + id);
             mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK);
             mc.options.particles().set(net.minecraft.server.level.ParticleStatus.ALL);
             AutoTestServer.requestShowcase();
@@ -180,11 +182,16 @@ public final class AutoTestClient {
             }
             return;
         }
-        String id = showSkills.get(i);
-        if (k == 0) AutoTestServer.requestCast(id);
+        String entry = showSkills.get(i);
+        boolean fp = entry.startsWith("fp:");
+        String id = fp ? entry.substring(3) : entry;
+        if (k == 0) {
+            mc.options.setCameraType(fp ? net.minecraft.client.CameraType.FIRST_PERSON : net.minecraft.client.CameraType.THIRD_PERSON_BACK);
+            AutoTestServer.requestCast(id);
+        }
         int[] times = shotTimes(id);
         for (int j = 0; j < times.length; j++) {
-            if (k == times[j] + 1) shot(mc, String.format("s%02d_%s%s", i, id, times.length > 1 ? "_" + (j + 1) : ""));
+            if (k == times[j] + 1) shot(mc, String.format("%s%02d_%s%s", fp ? "f" : "s", i, id, times.length > 1 ? "_" + (j + 1) : ""));
         }
     }
 

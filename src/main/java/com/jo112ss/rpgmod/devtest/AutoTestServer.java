@@ -81,9 +81,10 @@ public final class AutoTestServer {
             var server = level.getServer();
             server.getCommands().performPrefixedCommand(server.createCommandSourceStack(), "time set noon");
             server.getCommands().performPrefixedCommand(server.createCommandSourceStack(), "weather clear");
-            arena = player.position();
+            arena = player.position().add(0, 0, 6); // away from the forge anvil
             for (double[] d : DUMMIES) {
-                var z = net.minecraft.world.entity.EntityTypes.ZOMBIE.create(level, net.minecraft.world.entity.EntitySpawnReason.COMMAND);
+                // husks do not burn in daylight, so the screenshots are not full of fire
+                var z = net.minecraft.world.entity.EntityTypes.HUSK.create(level, net.minecraft.world.entity.EntitySpawnReason.COMMAND);
                 if (z == null) continue;
                 z.setNoAi(true);
                 z.setSilent(true);
@@ -115,6 +116,9 @@ public final class AutoTestServer {
             }
         }
         if (sinceCast >= 0 && ++sinceCast == 40) logLastCast();
+        if (arena != null && player.tickCount % 10 == 0) {
+            for (var m : level.getEntitiesOfClass(net.minecraft.world.entity.monster.cubemob.Slime.class, player.getBoundingBox().inflate(48))) m.discard();
+        }
     }
 
     private static void logLastCast() {
@@ -134,6 +138,9 @@ public final class AutoTestServer {
     /** Puts the player and the dummies back in place, full health, no effects. */
     private static void resetArena() {
         var level = (net.minecraft.server.level.ServerLevel) player.level();
+        // anything that wandered in (slimes on flat worlds) would get in the way of the pictures
+        for (var m : level.getEntitiesOfClass(net.minecraft.world.entity.Mob.class, player.getBoundingBox().inflate(48), m -> !targets.contains(m))) m.discard();
+        for (var it : level.getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class, player.getBoundingBox().inflate(48))) it.discard();
         player.removeAllEffects();
         player.setHealth(player.getMaxHealth());
         player.teleportTo(level, arena.x, arena.y, arena.z, java.util.Set.of(), 0F, 12F, false);

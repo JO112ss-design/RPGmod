@@ -28,7 +28,7 @@ public final class Fx {
     // ------------------------------------------------------------------ sprites
 
     public enum S {
-        GLOW, ORB, SPARK, RING, WAVE, STREAK, SLASH, SHARD, CROSS, PETAL, FEATHER, SMOKE, HEX,
+        GLOW, FLARE, ORB, SPARK, RING, WAVE, STREAK, SLASH, SHARD, CROSS, PETAL, FEATHER, SMOKE, HEX,
         CIRCLE_ARCANE, CIRCLE_HOLY, CIRCLE_HEX, CIRCLE_CLOCK, CIRCLE_NATURE,
         RUNE0, RUNE1, RUNE2, RUNE3, COIN, CARD, DICE, SKULL;
 

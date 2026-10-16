@@ -38,7 +38,9 @@ def smooth(e0, e1, v):
 
 # ---------------------------------------------------------------- soft shapes
 
-save(field(32, lambda x, y: math.exp(-(x * x + y * y) * 4.5) * 1.05), 'glow', 32)
+save(field(64, lambda x, y: math.exp(-(x * x + y * y) * 4.5) * 1.05), 'glow', 64)
+# big soft flash: bright core with a long falloff, high resolution so it stays smooth when huge
+save(field(128, lambda x, y: max(0.0, math.exp(-(x * x + y * y) * 9) * 0.9 + math.exp(-(x * x + y * y) * 3) * 0.35 - 0.02)), 'flare', 128)
 # bright core for magic projectiles
 save(field(32, lambda x, y: max(math.exp(-(x * x + y * y) * 30), 0.6 * math.exp(-(x * x + y * y) * 5))), 'orb', 32)
 
@@ -57,7 +59,7 @@ def ring(r0, w):
     return lambda x, y: math.exp(-((math.hypot(x, y) - r0) / w) ** 2)
 
 
-save(field(64, ring(0.86, 0.06)), 'ring', 64)
+save(field(128, ring(0.86, 0.045)), 'ring', 128)
 
 
 def wave(x, y):
@@ -69,7 +71,7 @@ def wave(x, y):
     return max(edge, inner) * smooth(0.97, 0.93, r) if r > 0.93 else max(edge, inner)
 
 
-save(field(64, wave), 'wave', 64)
+save(field(128, wave), 'wave', 128)
 
 
 def streak(x, y):

@@ -615,13 +615,29 @@ public final class SkillExecutor {
 
     // ================================================================== wizard
 
-    private static boolean blink(Ctx c) {
+    /**
+     * Where to put the player's feet for a teleport along the look direction: the furthest point
+     * up to {@code distance} where the player fits (standing on the ground if the ray hit it).
+     */
+    private static Vec3 safeTeleport(Ctx c, Vec3 dir, double distance) {
         Vec3 eye = c.p.getEyePosition();
-        Vec3 look = c.look();
-        BlockHitResult hit = c.level.clip(new ClipContext(eye, eye.add(look.scale(c.def.radius())), ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, c.p));
-        Vec3 target = hit.getType() == HitResult.Type.MISS ? eye.add(look.scale(c.def.radius())) : hit.getLocation().subtract(look.scale(0.6));
+        BlockHitResult hit = c.level.clip(new ClipContext(eye, eye.add(dir.scale(distance)), ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, c.p));
+        double reach = hit.getType() == HitResult.Type.MISS ? distance : Math.max(0, eye.distanceTo(hit.getLocation()) - 0.5);
         Vec3 from = c.p.position();
-        Vec3 to = new Vec3(target.x, Math.max(target.y - c.p.getEyeHeight(), c.level.getMinY()), target.z);
+        for (double d = reach; d >= 0.5; d -= 0.5) {
+            Vec3 at = eye.add(dir.scale(d));
+            // keep the eyes where the player looked, else stand on whatever is there
+            for (double up : new double[] {-c.p.getEyeHeight(), -c.p.getEyeHeight() + 0.5, -c.p.getEyeHeight() + 1.0, 0}) {
+                Vec3 feet = new Vec3(at.x, at.y + up, at.z);
+                if (c.level.noCollision(c.p, c.p.getBoundingBox().move(feet.subtract(from)))) return feet;
+            }
+        }
+        return from;
+    }
+
+    private static boolean blink(Ctx c) {
+        Vec3 from = c.p.position();
+        Vec3 to = safeTeleport(c, c.look(), c.def.radius());
         c.p.teleportTo(to.x, to.y, to.z);
         c.p.resetFallDistance();
         ServerFx.of("blink", from).vec(to).send(c.level);
@@ -635,7 +651,7 @@ public final class SkillExecutor {
         Vec3 at = aimPoint(c, 36);
         double r = c.def.radius();
         int fall = 28;
-        Vec3 sky = c.flat().scale(-10).add(0, 26, 0); // comes in at an angle from behind the caster
+        Vec3 sky = c.flat().scale(9).add(0, 20, 0); // falls in at an angle from beyond the target, where the caster is looking
         ServerFx.of("meteor", at).vec(sky).a(r).b(fall).send(c.level);
         sound(c, SoundEvents.BLAZE_SHOOT, 0.6F);
         sound(c, at.add(sky.scale(0.5)), SoundEvents.FIREWORK_ROCKET_LAUNCH, 2.0F, 0.4F);
@@ -811,11 +827,7 @@ public final class SkillExecutor {
             Vec3 face = target.position().subtract(to);
             yaw = (float) (Mth.atan2(face.z, face.x) * Mth.RAD_TO_DEG) - 90F;
         } else {
-            Vec3 eye = c.p.getEyePosition();
-            Vec3 dir = c.flat();
-            BlockHitResult hit = c.level.clip(new ClipContext(eye, eye.add(dir.scale(7)), ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, c.p));
-            Vec3 t = hit.getType() == HitResult.Type.MISS ? eye.add(dir.scale(7)) : hit.getLocation().subtract(dir.scale(0.6));
-            to = new Vec3(t.x, t.y - c.p.getEyeHeight(), t.z);
+            to = safeTeleport(c, c.flat(), 7);
         }
         c.p.teleportTo(c.level, to.x, to.y, to.z, Set.of(), yaw, c.p.getXRot(), false);
         c.p.resetFallDistance();

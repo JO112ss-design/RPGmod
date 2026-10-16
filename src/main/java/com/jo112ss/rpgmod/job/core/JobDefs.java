@@ -75,7 +75,7 @@ public final class JobDefs {
         job("paladin", 0xF0C040, "聖", List.of(JobStat.MAX_HEALTH, JobStat.ARMOR, JobStat.SKILL_POWER),
                 stats(JobStat.MAX_HEALTH, 6, JobStat.ARMOR, 2), stats(JobStat.MAX_HEALTH, 0.4, JobStat.ARMOR, 0.05),
                 List.of(
-                        skill("shield_bash", SkillKind.ACTIVE, SkillEffect.SWEEP, 7, 15, 4, 3.5, 3, List.of("minecraft:slowness"), 1, "打"),
+                        skill("shield_bash", SkillKind.ACTIVE, SkillEffect.SWEEP, 7, 15, 4, 4, 3, List.of("minecraft:slowness"), 1, "打"),
                         skill("holy_guard", SkillKind.ACTIVE, SkillEffect.BUFF, 20, 25, 0, 7, 8, List.of("minecraft:resistance"), 0, "護"),
                         skill("smite", SkillKind.ACTIVE, SkillEffect.SWEEP, 8, 20, 7, 8, 0, List.of(), 0, "裁"),
                         skill("lay_on_hands", SkillKind.ACTIVE, SkillEffect.HEAL, 15, 25, 6, 5, 0, List.of(), 0, "手")),

@@ -224,7 +224,7 @@ final class FxArcane {
         FxAnims.run(fall, age -> {
             for (int s = 0; s < 3; s++) {
                 double t = (age + s / 3.0) / fall;
-                double k = 1 - t * t;
+                double k = 1 - Math.pow(t, 1.3);
                 Vec3 pos = at.add(sky.scale(k));
                 if (s == 2) {
                     Fx.p(S.ORB, pos).color(0xFFFFFF, FIRE_L).size(1.4F).alpha(1, 1).life(1).spawn();
@@ -261,9 +261,9 @@ final class FxArcane {
             double a = Fx.r(0, Math.PI * 2);
             Fx.vanilla(ParticleTypes.FLAME, at.x, at.y + 0.3, at.z, Math.cos(a) * Fx.r(0.2, 0.5), Fx.r(0.02, 0.12), Math.sin(a) * Fx.r(0.2, 0.5));
         }
-        for (int i = 0, n = Fx.n(18); i < n; i++) {
-            smoke(at.add(Fx.r(-1, 1), Fx.r(0.5, 2), Fx.r(-1, 1)), Fx.mix(0x1E1A18, 0x4A4038, Fx.RND.nextDouble()), 1.2F, 3.4F, 60 + Fx.RND.nextInt(30))
-                    .vel(Fx.r(-0.05, 0.05), Fx.r(0.06, 0.15), Fx.r(-0.05, 0.05)).friction(0.95F).spawn();
+        for (int i = 0, n = Fx.n(14); i < n; i++) {
+            smoke(at.add(Fx.r(-1, 1), Fx.r(0.5, 2), Fx.r(-1, 1)), Fx.mix(0x2A2420, 0x5A5048, Fx.RND.nextDouble()), 1.0F, 2.8F, 40 + Fx.RND.nextInt(25))
+                    .alpha(0.6F, 0).vel(Fx.r(-0.05, 0.05), Fx.r(0.06, 0.15), Fx.r(-0.05, 0.05)).friction(0.95F).spawn();
         }
         for (int i = 0, n = Fx.n(10); i < n; i++) {
             double a = Fx.r(0, Math.PI * 2), d = Fx.r(0.5, r);

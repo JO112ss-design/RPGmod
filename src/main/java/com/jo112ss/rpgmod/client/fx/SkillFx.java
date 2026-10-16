@@ -123,10 +123,16 @@ public final class SkillFx {
         }
     }
 
-    /** A bright flash. */
+    /**
+     * A bright flash. It is dimmed when the camera is inside it, so a big flash next to you does not
+     * wash out the whole screen.
+     */
     static void flash(Vec3 at, int color, float size, int life) {
-        Fx.p(S.GLOW, at).color(0xFFFFFF, color).size(size, size * 0.4F).alpha(1, 0).life(life).spawn();
-        Fx.p(S.GLOW, at).color(color).size(size * 1.8F, size * 2.2F).alpha(0.45F, 0).life(life + 2).spawn();
+        double cam = Minecraft.getInstance().gameRenderer.mainCamera().position().distanceTo(at);
+        float near = (float) Math.min(1, cam / Math.max(0.5, size * 1.3));
+        float a = 0.35F + 0.6F * near;
+        Fx.p(S.FLARE, at).color(0xFFFFFF, color).size(size, size * 0.5F).alpha(a, 0).life(life).spawn();
+        Fx.p(S.FLARE, at).color(color).size(size * 1.5F, size * 1.8F).alpha(0.3F * a, 0).life(life + 2).spawn();
     }
 
     /** Impact sparks on each point (enemies that were hit). */
@@ -161,8 +167,8 @@ public final class SkillFx {
                     .color(0xFFFFFF, color).size(0.22F, 0.12F).alpha(1, 0).fadeIn(0.2F).life(24).follow(follow).delay(delay + i * 3).spawn();
         }
         for (int i = 0; i < 5; i++) {
-            Fx.p(S.GLOW, feet.x + Fx.r(-0.3, 0.3), feet.y + 3.0, feet.z + Fx.r(-0.3, 0.3)).vel(0, -0.22, 0)
-                    .color(0xFFFFFF).size(0.25F, 0.1F).alpha(0.9F, 0.3F).life(12).follow(follow).delay(delay + i).spawn();
+            Fx.p(S.STREAK, feet.x + Fx.r(-0.4, 0.4), feet.y + 3.2, feet.z + Fx.r(-0.4, 0.4)).upright().vel(0, -0.24, 0)
+                    .color(0xFFFFFF, color).size(0.45F, 0.3F).alpha(0.8F, 0.2F).life(11).follow(follow).delay(delay + i).spawn();
         }
     }
 

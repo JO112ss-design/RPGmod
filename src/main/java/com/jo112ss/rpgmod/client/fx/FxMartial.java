@@ -4,7 +4,6 @@ import static com.jo112ss.rpgmod.client.fx.SkillFx.*;
 
 import com.jo112ss.rpgmod.client.fx.Fx.S;
 import com.jo112ss.rpgmod.client.fx.SkillFx.P;
-import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Quaternionf;
@@ -81,11 +80,11 @@ final class FxMartial {
         Vec3 o = p.pos();
         Vec3 dir = flatDir(p.vec());
         float r = Math.max(2, p.a());
-        double tilt = 0.32;
+        double tilt = 0.6;
         Quaternionf q = swing(dir, tilt);
-        Fx.p(S.SLASH, o).fixed(q).size(r * 0.95F).color(0xFFFFFF, EMBER).alpha(1, 0).angle(-0.9F).spin(0.3F).life(7).spawn();
-        Fx.p(S.SLASH, o.add(0, 0.06, 0)).fixed(q).size(r * 1.1F).color(EMBER, BLOOD).alpha(0.6F, 0).angle(-1.05F).spin(0.28F).life(9).spawn();
-        Fx.p(S.SLASH, o.add(0, -0.06, 0)).fixed(q).size(r * 0.72F).color(HOT).alpha(0.8F, 0).angle(-0.8F).spin(0.33F).life(5).spawn();
+        Fx.p(S.SLASH, o).fixed(q).size(r * 0.95F).color(HOT, EMBER).alpha(0.95F, 0).angle(-0.9F).spin(0.3F).life(7).spawn();
+        Fx.p(S.SLASH, o.add(0, 0.06, 0)).fixed(q).size(r * 1.1F).color(EMBER, BLOOD).alpha(0.55F, 0).angle(-1.05F).spin(0.28F).life(9).spawn();
+        Fx.p(S.SLASH, o.add(0, -0.06, 0)).fixed(q).size(r * 0.72F).color(0xFFF4E0, HOT).alpha(0.7F, 0).angle(-0.8F).spin(0.33F).life(5).spawn();
         FxAnims.run(6, age -> {
             double rot = -0.9 + age * 0.3;
             for (int i = 0, n = Fx.n(5); i < n; i++) {
@@ -164,7 +163,7 @@ final class FxMartial {
             for (int k = 0; k < 2; k++) {
                 double tilt = (k == 0 ? 0.12 : -0.12) + Math.sin(age * 0.5) * 0.05;
                 Quaternionf q = swing(new Vec3(0, 0, 1), tilt);
-                Fx.p(S.SLASH, o).fixed(q).angle(rot + k * (float) Math.PI).size(r * 0.85F).color(0xFFFFFF, EMBER).alpha(0.85F, 0).spin(0.45F).life(3).spawn();
+                Fx.p(S.SLASH, o).fixed(q).angle(rot + k * (float) Math.PI).size(r * 0.85F).color(HOT, EMBER).alpha(0.75F, 0).spin(0.45F).life(3).spawn();
             }
             Fx.p(S.SLASH, o.add(0, 0.1, 0)).fixed(swing(new Vec3(0, 0, 1), 0)).angle(rot + 1.6F).size(r * 1.0F).color(EMBER, BLOOD).alpha(0.4F, 0).spin(0.45F).life(4).spawn();
             for (int i = 0, n = Fx.n(4); i < n; i++) {
@@ -217,7 +216,6 @@ final class FxMartial {
         flash(o.add(0, 0.5, 0), 0xFFB060, 2.8F, 7);
         ground(S.WAVE, o, 1, 0xFFB060, 12).size(1, r).color(0xFFE0A0, 0xAA5522).alpha(0.95F, 0).spawn();
         ground(S.RING, o, 1, 0xFFB060, 14).size(1, r * 1.1F).alpha(0.7F, 0).delay(2).spawn();
-        Fx.vanilla(ParticleTypes.EXPLOSION, o.x, o.y + 0.5, o.z, 0, 0, 0);
         debris(o, 30, 1.2, 0.55);
         int cracks = 10;
         double[] angles = new double[cracks];
