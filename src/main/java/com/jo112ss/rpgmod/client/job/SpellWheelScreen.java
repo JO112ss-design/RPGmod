@@ -20,6 +20,8 @@ import net.minecraft.world.item.ItemStack;
  */
 public class SpellWheelScreen extends Screen {
     private static final int RING = 64;
+    /** Dev test only: keep the wheel open without the key held. */
+    public static boolean testHold;
     private int hovered = -1;
     private final long openedAt = System.currentTimeMillis();
 
@@ -75,7 +77,7 @@ public class SpellWheelScreen extends Screen {
     @Override
     public void tick() {
         // also close if the key is no longer held (release can be missed while the screen opens)
-        if (!InputConstants.isKeyDown(JobKeys.SPELL_WHEEL.getKey().getValue()) && System.currentTimeMillis() - openedAt > 150) choose();
+        if (!testHold && !InputConstants.isKeyDown(JobKeys.SPELL_WHEEL.getKey().getValue()) && System.currentTimeMillis() - openedAt > 150) choose();
         if (!JobClient.holdingStaff()) onClose();
     }
 

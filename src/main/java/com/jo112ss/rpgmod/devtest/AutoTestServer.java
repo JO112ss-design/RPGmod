@@ -40,6 +40,19 @@ public final class AutoTestServer {
         ticks = 0;
     }
 
+    private static volatile boolean jobSetup;
+    private static volatile boolean forgeRequested;
+
+    /** Client test: level the player up, unlock some panel cells, hand over a staff with spells. */
+    public static void requestJobSetup() {
+        jobSetup = true;
+    }
+
+    /** Client test: place an anvil and open the forge GUI. */
+    public static void requestForge() {
+        forgeRequested = true;
+    }
+
     /** Called by the client test once the result screen was captured. */
     public static void requestEquipCheck() {
         checkTicks = 0;
@@ -48,7 +61,21 @@ public final class AutoTestServer {
     @SubscribeEvent
     public static void onTick(ServerTickEvent.Post event) {
         if (!ENABLED || player == null) return;
-        if (ticks >= 0 && ++ticks == 40) {
+        if (jobSetup) {
+            jobSetup = false;
+            com.jo112ss.rpgmod.job.JobManager.grantExp(player, 3000);
+            com.jo112ss.rpgmod.job.JobData jd = com.jo112ss.rpgmod.job.JobManager.data(player);
+            // unlock a path towards the outer ring so the panel shows every state
+            for (int id : new int[] {1, 2, 7, 8, 9, 19, 20}) com.jo112ss.rpgmod.job.JobManager.unlockNode(player, id);
+            ItemStack staff = new ItemStack(com.jo112ss.rpgmod.item.ModItems.get(com.jo112ss.rpgmod.item.WeaponType.STAFF, com.jo112ss.rpgmod.item.WeaponMaterial.IRON));
+            player.getInventory().setItem(0, staff);
+            player.getInventory().setSelectedSlot(0);
+            java.util.List<String> spells = com.jo112ss.rpgmod.job.JobManager.knownSpells(jd);
+            for (int i = 0; i < spells.size() && i < 4; i++) com.jo112ss.rpgmod.job.JobManager.setSpell(player, i, spells.get(i));
+            RpgMod.LOGGER.info("[AUTOTEST] job setup: job={} level={} points={} unlocked={} spells={}", jd.jobId(), jd.level(), jd.freePoints(), jd.unlocked(), spells);
+        }
+        if (ticks >= 0 && forgeRequested) {
+            forgeRequested = false;
             BlockPos pos = player.blockPosition().north(2);
             player.level().setBlockAndUpdate(pos, ModRegistries.FORGING_ANVIL.get().defaultBlockState());
             player.getInventory().add(new ItemStack(Items.IRON_INGOT, 6));

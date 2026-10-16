@@ -23,12 +23,64 @@ public final class AutoTestClient {
 
     private static int t = -1;
     private static int after = -1;
+    private static int jobT = 0;
+
+    /** Job UI walkthrough before the forge test. */
+    private static void jobStep(Minecraft mc, Screen screen) {
+        if (jobT == 0 && !(screen instanceof com.jo112ss.rpgmod.client.job.JobSelectScreen)) {
+            if (mc.player.tickCount > 400) jobT = 1; // selection never showed: carry on anyway
+            else return;
+        }
+        jobT++;
+        switch (jobT) {
+            case 20 -> shot(mc, "10_jobselect");
+            case 22 -> { if (screen instanceof com.jo112ss.rpgmod.client.job.JobSelectScreen js) js.testSelect(3); }
+            case 30 -> shot(mc, "11_jobselect_wizard");
+            case 32 -> {
+                com.jo112ss.rpgmod.client.job.JobClient.send(com.jo112ss.rpgmod.network.JobActionPayload.CHOOSE_JOB, 0, "wizard");
+                mc.gui.setScreen(null);
+            }
+            case 45 -> AutoTestServer.requestJobSetup();
+            case 70 -> mc.gui.setScreen(new com.jo112ss.rpgmod.client.job.JobScreen(com.jo112ss.rpgmod.client.job.JobScreen.Tab.STATUS));
+            case 80 -> shot(mc, "12_status");
+            case 82 -> mc.gui.setScreen(new com.jo112ss.rpgmod.client.job.JobScreen(com.jo112ss.rpgmod.client.job.JobScreen.Tab.PANEL));
+            case 92 -> shot(mc, "13_panel");
+            case 94 -> mc.gui.setScreen(new com.jo112ss.rpgmod.client.job.JobScreen(com.jo112ss.rpgmod.client.job.JobScreen.Tab.SKILLS));
+            case 104 -> shot(mc, "14_skills");
+            case 106 -> mc.gui.setScreen(new com.jo112ss.rpgmod.client.job.JobScreen(com.jo112ss.rpgmod.client.job.JobScreen.Tab.SPELLS));
+            case 116 -> shot(mc, "15_spells");
+            case 118 -> mc.gui.setScreen(null);
+            case 124 -> com.jo112ss.rpgmod.client.job.JobClient.send(com.jo112ss.rpgmod.network.JobActionPayload.USE_SKILL, 0, "");
+            case 132 -> shot(mc, "16_hud");
+            case 134 -> {
+                com.jo112ss.rpgmod.client.job.SpellWheelScreen.testHold = true;
+                mc.gui.setScreen(new com.jo112ss.rpgmod.client.job.SpellWheelScreen());
+            }
+            case 146 -> shot(mc, "17_wheel");
+            case 150 -> {
+                com.jo112ss.rpgmod.client.job.SpellWheelScreen.testHold = false;
+                mc.gui.setScreen(null);
+                com.jo112ss.rpgmod.job.JobData d = com.jo112ss.rpgmod.client.job.JobClient.data();
+                RpgMod.LOGGER.info("[AUTOTEST] job client: job={} level={} points={} slots={},{},{} mana={}", d.jobId(), d.level(), d.freePoints(),
+                        d.slot(0), d.slot(1), d.slot(2), d.mana());
+            }
+            case 160 -> {
+                jobT = -1;
+                AutoTestServer.requestForge();
+            }
+            default -> { }
+        }
+    }
 
     @SubscribeEvent
     public static void onTick(ClientTickEvent.Post event) {
         if (!AutoTestServer.ENABLED) return;
         Minecraft mc = Minecraft.getInstance();
         Screen screen = mc.gui.screen();
+        if (jobT >= 0 && mc.player != null) {
+            jobStep(mc, screen);
+            return;
+        }
         if (t < 0 && screen instanceof ForgeScreen) t = 0;
         if (t >= 0) {
             t++;

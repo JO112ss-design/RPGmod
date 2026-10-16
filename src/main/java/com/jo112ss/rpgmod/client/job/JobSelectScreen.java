@@ -46,6 +46,12 @@ public class JobSelectScreen extends Screen {
         confirm.active = selected >= 0;
     }
 
+    /** Dev test hook: select a card as if clicked. */
+    public void testSelect(int i) {
+        selected = i;
+        confirm.active = true;
+    }
+
     private void onConfirm() {
         if (selected < 0) return;
         if (!confirming) {
