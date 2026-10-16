@@ -112,6 +112,25 @@ public final class AutoTestServer {
     }
 
     private static int critT = -1;
+
+    @SubscribeEvent
+    public static void onDamagePost(net.neoforged.neoforge.event.entity.living.LivingDamageEvent.Post e) {
+        if (!ENABLED || dummy == null || e.getEntity() != dummy) return;
+        var R = net.neoforged.neoforge.common.damagesource.DamageContainer.Reduction.class;
+        StringBuilder sb = new StringBuilder();
+        for (var r : R.getEnumConstants()) {
+            float v = e.getReduction(r);
+            if (v != 0) sb.append(r).append('=').append(v).append(' ');
+        }
+        RpgMod.LOGGER.info("[AUTOTEST] damage post: original={} new={} health={} reductions={} invulTime={} lastHurt?", e.getOriginalDamage(),
+                e.getNewDamage(), e.getHealthDamage(), sb, dummy.invulnerableTime);
+    }
+
+    @SubscribeEvent(priority = net.neoforged.bus.api.EventPriority.LOWEST)
+    public static void onIncomingLast(net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent e) {
+        if (!ENABLED || dummy == null || e.getEntity() != dummy) return;
+        RpgMod.LOGGER.info("[AUTOTEST] incoming (lowest): amount={} original={} invulTime={}", e.getAmount(), e.getOriginalAmount(), dummy.invulnerableTime);
+    }
     private static net.minecraft.world.entity.monster.zombie.Zombie dummy;
 
     /** Hits a dummy zombie with and without forced RPG crits and vanilla jump crits, logging the damage. */
