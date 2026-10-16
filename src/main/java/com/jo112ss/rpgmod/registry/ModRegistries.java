@@ -50,6 +50,7 @@ public final class ModRegistries {
             .displayItems((params, output) -> {
                 output.accept(FORGING_ANVIL_ITEM.get());
                 for (com.jo112ss.rpgmod.item.WeaponType t : com.jo112ss.rpgmod.item.WeaponType.values()) {
+                    if (t.isVanilla()) continue;
                     for (com.jo112ss.rpgmod.item.WeaponMaterial m : com.jo112ss.rpgmod.item.WeaponMaterial.values()) {
                         output.accept(com.jo112ss.rpgmod.item.ModItems.get(t, m));
                     }

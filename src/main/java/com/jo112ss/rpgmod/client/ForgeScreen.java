@@ -52,9 +52,18 @@ public class ForgeScreen extends AbstractContainerScreen<ForgeMenu> {
     private static final int BAR_X = 40, BAR_Y = 148, BAR_W = 176, BAR_H = 12;
     private static final int BTN_Y = 170;
     // select stage
-    private static final int TYPE_X = 10, TYPE_Y = 34, TYPE_W = 38, TYPE_H = 24, TYPE_STEP = 40;
-    private static final int MAT_X = 10, MAT_Y = 72, MAT_W = 56, MAT_H = 20, MAT_STEP = 60;
-    private static final int PREVIEW_Y = 100;
+    private static final int TYPE_X = 10, TYPE_Y = 24, TYPE_W = 38, TYPE_H = 22, TYPE_STEP = 40, TYPES_PER_ROW = 6;
+    private static final int MAT_X = 10, MAT_Y = 78, MAT_W = 56, MAT_H = 18, MAT_STEP = 60;
+    private static final int PREVIEW_Y = 102;
+
+    /** Weapons on the first row, armor on the second. */
+    private static int tabX(int i) {
+        return TYPE_X + (i % TYPES_PER_ROW) * TYPE_STEP;
+    }
+
+    private static int tabY(int i) {
+        return TYPE_Y + (i / TYPES_PER_ROW) * (TYPE_H + 4);
+    }
 
     private int chosenType = 0;
     private int chosenMat = 1; // iron
@@ -131,8 +140,8 @@ public class ForgeScreen extends AbstractContainerScreen<ForgeMenu> {
             switch (v.stage()) {
                 case ForgeSyncPayload.STAGE_SELECT -> {
                     for (int i = 0; i < ForgeableWeapons.TYPES.size(); i++) {
-                        int tx = TYPE_X + i * TYPE_STEP;
-                        if (mx >= tx && mx < tx + TYPE_W && my >= TYPE_Y && my < TYPE_Y + TYPE_H) {
+                        int tx = tabX(i), ty = tabY(i);
+                        if (mx >= tx && mx < tx + TYPE_W && my >= ty && my < ty + TYPE_H) {
                             chosenType = i;
                             updateChoice();
                             return true;
@@ -288,18 +297,17 @@ public class ForgeScreen extends AbstractContainerScreen<ForgeMenu> {
 
     private void drawSelect(GuiGraphicsExtractor g, int x, int y, int mouseX, int mouseY) {
         int rx = mouseX - x, ry = mouseY - y;
-        g.text(font, Component.translatable("rpgmod.gui.type"), x + 10, y + TYPE_Y - 10, C_DIM, false);
         for (int i = 0; i < ForgeableWeapons.TYPES.size(); i++) {
-            int tx = TYPE_X + i * TYPE_STEP;
+            int tx = tabX(i), ty = tabY(i);
             boolean chosen = i == chosenType;
-            boolean hover = rx >= tx && rx < tx + TYPE_W && ry >= TYPE_Y && ry < TYPE_Y + TYPE_H;
-            inset(g, x + tx, y + TYPE_Y, x + tx + TYPE_W, y + TYPE_Y + TYPE_H, chosen ? 0xFF3D2E22 : hover ? 0xFF2F2621 : C_BG_INNER);
-            if (chosen) g.outline(x + tx, y + TYPE_Y, TYPE_W, TYPE_H, C_EMBER);
+            boolean hover = rx >= tx && rx < tx + TYPE_W && ry >= ty && ry < ty + TYPE_H;
+            inset(g, x + tx, y + ty, x + tx + TYPE_W, y + ty + TYPE_H, chosen ? 0xFF3D2E22 : hover ? 0xFF2F2621 : C_BG_INNER);
+            if (chosen) g.outline(x + tx, y + ty, TYPE_W, TYPE_H, C_EMBER);
             com.jo112ss.rpgmod.item.WeaponType t = ForgeableWeapons.TYPES.get(i);
-            g.item(new ItemStack(com.jo112ss.rpgmod.item.ModItems.get(t, ForgeableWeapons.MATERIALS.get(chosenMat))), x + tx + 11, y + TYPE_Y + 4);
+            g.item(new ItemStack(com.jo112ss.rpgmod.item.ModItems.get(t, ForgeableWeapons.MATERIALS.get(chosenMat))), x + tx + 11, y + ty + 3);
             if (hover) g.setTooltipForNextFrame(font, Component.translatable("rpgmod.type." + t.id), mouseX, mouseY);
         }
-        g.text(font, Component.translatable("rpgmod.gui.material"), x + 10, y + MAT_Y - 10, C_DIM, false);
+        g.text(font, Component.translatable("rpgmod.gui.armor_row"), x + tabX(9) + TYPE_W + 8, y + tabY(9) + 7, C_DIM, false);
         for (int i = 0; i < ForgeableWeapons.MATERIALS.size(); i++) {
             int tx = MAT_X + i * MAT_STEP;
             boolean chosen = i == chosenMat;
@@ -307,8 +315,8 @@ public class ForgeScreen extends AbstractContainerScreen<ForgeMenu> {
             inset(g, x + tx, y + MAT_Y, x + tx + MAT_W, y + MAT_Y + MAT_H, chosen ? 0xFF3D2E22 : hover ? 0xFF2F2621 : C_BG_INNER);
             if (chosen) g.outline(x + tx, y + MAT_Y, MAT_W, MAT_H, C_EMBER);
             com.jo112ss.rpgmod.item.WeaponMaterial m = ForgeableWeapons.MATERIALS.get(i);
-            g.item(new ItemStack(m.ingot.get()), x + tx + 3, y + MAT_Y + 2);
-            g.text(font, Component.translatable("rpgmod.material." + m.id), x + tx + 21, y + MAT_Y + 6, chosen ? C_TEXT : C_DIM, false);
+            g.item(new ItemStack(m.ingot.get()), x + tx + 3, y + MAT_Y + 1);
+            g.text(font, Component.translatable("rpgmod.material." + m.id), x + tx + 21, y + MAT_Y + 5, chosen ? C_TEXT : C_DIM, false);
         }
         ForgeableWeapon w = ForgeableWeapons.byIndex(chosenWeapon);
         if (w == null) return;
@@ -325,6 +333,15 @@ public class ForgeScreen extends AbstractContainerScreen<ForgeMenu> {
             g.text(font, "x" + m.count(), mx + 17, ly + 4, enough ? C_OK : C_OVER, false);
             mx += 36;
         }
+        double diff = w.material().defaultDifficulty;
+        try {
+            var v = com.jo112ss.rpgmod.config.SmithingConfig.DIFFICULTY.get(w.material());
+            if (v != null) diff = v.get();
+        } catch (IllegalStateException ignored) {
+            // synced config not received yet
+        }
+        int dcol = diff <= 0.9 ? C_OK : diff <= 1.05 ? C_TEXT : diff <= 1.15 ? C_UNDER : C_OVER;
+        g.text(font, Component.translatable("rpgmod.gui.difficulty", String.format("%.2f", diff)), x + 12, ly + 14, dcol, false);
         if (!hasMaterials(w)) {
             g.centeredText(font, Component.translatable("rpgmod.gui.missing"), x + W / 2, y + BTN_Y + 23, C_OVER);
         }

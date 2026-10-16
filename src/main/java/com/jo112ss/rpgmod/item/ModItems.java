@@ -15,7 +15,7 @@ public final class ModItems {
 
     public static void init() {
         for (WeaponType type : WeaponType.values()) {
-            if (type == WeaponType.SWORD) continue;
+            if (type.isVanilla()) continue;
             Map<WeaponMaterial, DeferredItem<? extends Item>> byMat = new EnumMap<>(WeaponMaterial.class);
             for (WeaponMaterial mat : WeaponMaterial.values()) {
                 String name = mat.id + "_" + type.id;
@@ -37,17 +37,25 @@ public final class ModItems {
         }
     }
 
-    /** The item for a type and material (vanilla items for swords). */
+    /** The item for a type and material (vanilla items for swords and armor). */
     public static Item get(WeaponType type, WeaponMaterial mat) {
-        if (type == WeaponType.SWORD) {
-            return switch (mat) {
-                case COPPER -> Items.COPPER_SWORD;
-                case IRON -> Items.IRON_SWORD;
-                case GOLD -> Items.GOLDEN_SWORD;
-                case DIAMOND -> Items.DIAMOND_SWORD;
-                case NETHERITE -> Items.NETHERITE_SWORD;
-            };
-        }
-        return ITEMS.get(type).get(mat).get();
+        return switch (type) {
+            case SWORD -> pick(mat, Items.COPPER_SWORD, Items.IRON_SWORD, Items.GOLDEN_SWORD, Items.DIAMOND_SWORD, Items.NETHERITE_SWORD);
+            case HELMET -> pick(mat, Items.COPPER_HELMET, Items.IRON_HELMET, Items.GOLDEN_HELMET, Items.DIAMOND_HELMET, Items.NETHERITE_HELMET);
+            case CHESTPLATE -> pick(mat, Items.COPPER_CHESTPLATE, Items.IRON_CHESTPLATE, Items.GOLDEN_CHESTPLATE, Items.DIAMOND_CHESTPLATE, Items.NETHERITE_CHESTPLATE);
+            case LEGGINGS -> pick(mat, Items.COPPER_LEGGINGS, Items.IRON_LEGGINGS, Items.GOLDEN_LEGGINGS, Items.DIAMOND_LEGGINGS, Items.NETHERITE_LEGGINGS);
+            case BOOTS -> pick(mat, Items.COPPER_BOOTS, Items.IRON_BOOTS, Items.GOLDEN_BOOTS, Items.DIAMOND_BOOTS, Items.NETHERITE_BOOTS);
+            default -> ITEMS.get(type).get(mat).get();
+        };
+    }
+
+    private static Item pick(WeaponMaterial mat, Item copper, Item iron, Item gold, Item diamond, Item netherite) {
+        return switch (mat) {
+            case COPPER -> copper;
+            case IRON -> iron;
+            case GOLD -> gold;
+            case DIAMOND -> diamond;
+            case NETHERITE -> netherite;
+        };
     }
 }

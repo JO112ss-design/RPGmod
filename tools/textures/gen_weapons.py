@@ -190,3 +190,51 @@ for m in ('copper', 'iron', 'gold', 'diamond'):
     g_dagger(m).save(f'{GUI}/dagger_{m}.png'); g_mace(m).save(f'{GUI}/mace_{m}.png')
     g_hammer(m).save(f'{GUI}/hammer_{m}.png'); g_staff(m).save(f'{GUI}/staff_{m}.png'); g_bow(m).save(f'{GUI}/bow_{m}.png')
 print('ok')
+
+# ---------------- armor (front views, hammered span x 10..150) ----------------
+def shade_rect(d, box, L, M, D):
+    x0, y0, x1, y1 = box
+    d.rectangle(box, fill=rgba(M)); d.line([(x0, y0), (x1, y0)], fill=rgba(L)); d.line([(x0, y0), (x0, y1)], fill=rgba(L))
+    d.line([(x0, y1), (x1, y1)], fill=rgba(D)); d.line([(x1, y0), (x1, y1)], fill=rgba(D))
+
+def g_helmet(m):
+    L, M, D = MATS[m]; im = Image.new('RGBA', (160, 40)); d = ImageDraw.Draw(im)
+    d.pieslice([24, 4, 136, 76], 180, 360, fill=rgba(M))
+    d.arc([24, 4, 136, 76], 200, 300, fill=rgba(L), width=3); d.arc([24, 4, 136, 76], 300, 360, fill=rgba(D), width=3)
+    d.rectangle([10, 26, 40, 38], fill=rgba(M)); d.rectangle([120, 26, 150, 38], fill=rgba(M))
+    d.line([(10, 26), (40, 26)], fill=rgba(L)); d.line([(10, 38), (40, 38)], fill=rgba(D)); d.line([(120, 38), (150, 38)], fill=rgba(D))
+    d.rectangle([50, 30, 110, 34], fill=rgba(D)); d.line([(80, 6), (80, 30)], fill=rgba(L))
+    return im
+
+def g_chestplate(m):
+    L, M, D = MATS[m]; im = Image.new('RGBA', (160, 40)); d = ImageDraw.Draw(im)
+    d.polygon([(10, 6), (38, 2), (52, 10), (108, 10), (122, 2), (150, 6), (150, 20), (124, 22), (120, 39), (40, 39), (36, 22), (10, 20)], fill=rgba(M))
+    d.line([(10, 6), (38, 2), (52, 10)], fill=rgba(L)); d.line([(108, 10), (122, 2), (150, 6)], fill=rgba(L))
+    d.line([(40, 39), (120, 39)], fill=rgba(D)); d.line([(80, 12), (80, 38)], fill=rgba(D))
+    d.arc([46, 8, 78, 34], 200, 340, fill=rgba(L), width=2); d.arc([82, 8, 114, 34], 200, 340, fill=rgba(L), width=2)
+    return im
+
+def g_leggings(m):
+    L, M, D = MATS[m]; im = Image.new('RGBA', (160, 40)); d = ImageDraw.Draw(im)
+    shade_rect(d, [50, 2, 110, 12], L, M, D)
+    d.polygon([(50, 12), (78, 12), (40, 38), (10, 38)], fill=rgba(M)); d.polygon([(82, 12), (110, 12), (150, 38), (120, 38)], fill=rgba(M))
+    d.line([(50, 12), (10, 38)], fill=rgba(L)); d.line([(110, 12), (150, 38)], fill=rgba(D))
+    d.rectangle([10, 34, 40, 38], fill=rgba(D)); d.rectangle([120, 34, 150, 38], fill=rgba(D))
+    d.rectangle([76, 4, 84, 10], fill=rgba(L))
+    return im
+
+def g_boots(m):
+    L, M, D = MATS[m]; im = Image.new('RGBA', (160, 40)); d = ImageDraw.Draw(im)
+    # left boot: toe at the far left, heel towards the middle
+    d.polygon([(10, 38), (10, 28), (30, 24), (46, 6), (76, 6), (76, 38)], fill=rgba(M))
+    d.polygon([(150, 38), (150, 28), (130, 24), (114, 6), (84, 6), (84, 38)], fill=rgba(M))
+    for poly in (((10, 28), (30, 24), (46, 6), (76, 6)), ((150, 28), (130, 24), (114, 6), (84, 6))):
+        d.line(poly, fill=rgba(L))
+    d.rectangle([10, 35, 76, 38], fill=rgba(D)); d.rectangle([84, 35, 150, 38], fill=rgba(D))
+    d.rectangle([46, 6, 76, 10], fill=rgba(L)); d.rectangle([84, 6, 114, 10], fill=rgba(L))
+    return im
+
+for m in ('copper', 'iron', 'gold', 'diamond'):
+    g_helmet(m).save(f'{GUI}/helmet_{m}.png'); g_chestplate(m).save(f'{GUI}/chestplate_{m}.png')
+    g_leggings(m).save(f'{GUI}/leggings_{m}.png'); g_boots(m).save(f'{GUI}/boots_{m}.png')
+print('armor ok')

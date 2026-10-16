@@ -24,7 +24,7 @@ public final class ForgeTooltips {
         if (t == null) return Component.literal(o.id() + " " + o.value());
         String value = t.percent
                 ? (t.step >= 1 ? String.format("+%.0f%%", o.value()) : String.format("+%.1f%%", o.value()))
-                : String.format("+%.0f", o.value());
+                : (t.step >= 1 ? String.format("+%.0f", o.value()) : String.format("+%.1f", o.value()));
         return Component.literal(" ◆ ").withStyle(ChatFormatting.DARK_AQUA)
                 .append(Component.translatable("rpgmod.option." + t.id).withStyle(ChatFormatting.AQUA))
                 .append(Component.literal(" " + value).withStyle(ChatFormatting.WHITE));

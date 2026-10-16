@@ -194,6 +194,7 @@ public final class ForgeSessionManager {
         s.delivered = false;
         s.result = ItemStack.EMPTY;
         s.quality = null;
+        rules = com.jo112ss.rpgmod.config.SmithingConfig.rulesFor(weapon.material());
         Random rnd = new Random(player.getRandom().nextLong());
         double[] targets = TargetGenerator.generate(rules, weapon.profile(), rnd);
         s.state = new ForgeState(rules, targets, now);
@@ -245,7 +246,7 @@ public final class ForgeSessionManager {
 
         Quality quality = s.state.quality();
         Random rnd = new Random(player.getRandom().nextLong());
-        List<RolledOption> options = OptionRoller.roll(quality.optionCount, rnd);
+        List<RolledOption> options = OptionRoller.roll(quality.optionCount, s.weapon.type().isArmor(), rnd);
         ItemStack stack = new ItemStack(s.weapon.result().get());
         ForgedData data = ForgedData.of(quality, options, player.getGameProfile().name());
         stack.set(ModRegistries.FORGED_DATA.get(), data);

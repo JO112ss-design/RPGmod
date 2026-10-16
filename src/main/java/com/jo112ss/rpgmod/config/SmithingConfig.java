@@ -46,6 +46,13 @@ public final class SmithingConfig {
     public static final ModConfigSpec.DoubleValue PLAN_TEMP_MAX = B.defineInRange("planTempMax", D.targetPlanTempMax, 0, 100);
     public static final ModConfigSpec.IntValue PLAN_MIN_STRIKES = B.defineInRange("planMinStrikes", D.targetPlanMinStrikes, 1, 50);
     public static final ModConfigSpec.IntValue MIN_PER_PART = B.defineInRange("minTargetPerPart", D.targetMinPerPart, 0, 1000);
+    static { B.pop().comment("Difficulty per material: >1 = faster strike bar, narrower power zones and stricter quality").push("difficulty"); }
+    public static final java.util.Map<com.jo112ss.rpgmod.item.WeaponMaterial, ModConfigSpec.DoubleValue> DIFFICULTY = new java.util.EnumMap<>(com.jo112ss.rpgmod.item.WeaponMaterial.class);
+    static {
+        for (com.jo112ss.rpgmod.item.WeaponMaterial m : com.jo112ss.rpgmod.item.WeaponMaterial.values()) {
+            if (m.forgeable) DIFFICULTY.put(m, B.defineInRange(m.id, m.defaultDifficulty, 0.3, 3.0));
+        }
+    }
     static { B.pop().comment("Anti-cheat timing").push("timing"); }
     public static final ModConfigSpec.LongValue MIN_STOP_MILLIS = B.comment("Fastest accepted bar stop in ms").defineInRange("minStopMillis", D.minStopMillis, 0L, 5000L);
     public static final ModConfigSpec.LongValue TOLERANCE_MILLIS = B.comment("Max accepted difference between client and server bar time in ms").defineInRange("toleranceMillis", D.timingToleranceMillis, 0L, 10000L);
@@ -78,6 +85,18 @@ public final class SmithingConfig {
             // e.g. a read-only synced copy on a client; the server's values are used there anyway
             com.jo112ss.rpgmod.RpgMod.LOGGER.debug("Could not migrate smithing config", e);
         }
+    }
+
+    /** Smithing rules for a material: the base rules scaled by that material's difficulty. */
+    public static SmithingRules rulesFor(com.jo112ss.rpgmod.item.WeaponMaterial material) {
+        ModConfigSpec.DoubleValue v = DIFFICULTY.get(material);
+        double d = material.defaultDifficulty;
+        try {
+            if (v != null) d = v.get();
+        } catch (IllegalStateException notLoaded) {
+            // config not loaded yet: use the default
+        }
+        return SmithingRules.current().withDifficulty(d);
     }
 
     /** Copies the config into the live rules. Called on load and reload. */

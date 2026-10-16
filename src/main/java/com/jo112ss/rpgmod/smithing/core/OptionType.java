@@ -1,35 +1,45 @@
 package com.jo112ss.rpgmod.smithing.core;
 
 /**
- * Random options a forged weapon can receive. Values are rolled uniformly inside [min,max] and
- * stored already rounded to {@link #step}. Percent options store the percentage (5.0 = +5%).
+ * Random options. Weapons and armor draw from separate pools (an option may be in both with
+ * different ranges). Values are rolled uniformly in the pool's range and rounded to {@link #step}.
+ * Percent options store the percentage (5.0 = +5%).
  */
 public enum OptionType {
-    ATTACK_DAMAGE("attack_damage", 3, 8, 0.1, true),
-    ATTACK_SPEED("attack_speed", 3, 8, 0.1, true),
-    CRIT_CHANCE("crit_chance", 2, 5, 0.1, true),
-    CRIT_DAMAGE("crit_damage", 5, 15, 0.1, true),
-    ARMOR_PENETRATION("armor_penetration", 3, 8, 0.1, true),
-    BOSS_DAMAGE("boss_damage", 4, 10, 0.1, true),
-    MAX_HEALTH("max_health", 1, 2, 1, false),
-    ARMOR("armor", 1, 2, 1, false),
-    MOVEMENT_SPEED("movement_speed", 2, 5, 0.1, true),
-    DURABILITY("durability", 10, 25, 1, true),
-    EXPERIENCE("experience", 5, 12, 0.1, true),
-    KNOCKBACK_RESISTANCE("knockback_resistance", 5, 15, 0.1, true);
+    //                        id                     step  percent  weapon range   armor range
+    ATTACK_DAMAGE("attack_damage", 0.1, true, 3, 8, NaN(), NaN()),
+    ATTACK_SPEED("attack_speed", 0.1, true, 3, 8, NaN(), NaN()),
+    CRIT_CHANCE("crit_chance", 0.1, true, 2, 5, NaN(), NaN()),
+    CRIT_DAMAGE("crit_damage", 0.1, true, 5, 15, NaN(), NaN()),
+    ARMOR_PENETRATION("armor_penetration", 0.1, true, 3, 8, NaN(), NaN()),
+    BOSS_DAMAGE("boss_damage", 0.1, true, 4, 10, NaN(), NaN()),
+    MAX_HEALTH("max_health", 1, false, 1, 2, 1, 2),
+    ARMOR("armor", 1, false, 1, 2, 1, 2),
+    MOVEMENT_SPEED("movement_speed", 0.1, true, 2, 5, 1, 3),
+    DURABILITY("durability", 1, true, 10, 25, 10, 25),
+    EXPERIENCE("experience", 0.1, true, 5, 12, 3, 8),
+    KNOCKBACK_RESISTANCE("knockback_resistance", 0.1, true, 5, 15, 3, 8),
+    ARMOR_TOUGHNESS("armor_toughness", 0.1, false, NaN(), NaN(), 0.5, 1.5),
+    DAMAGE_REDUCTION("damage_reduction", 0.1, true, NaN(), NaN(), 2, 4),
+    BOSS_RESISTANCE("boss_resistance", 0.1, true, NaN(), NaN(), 3, 8);
 
     public final String id;
-    public final double min;
-    public final double max;
     public final double step;
     public final boolean percent;
+    public final double weaponMin, weaponMax, armorMin, armorMax;
 
-    OptionType(String id, double min, double max, double step, boolean percent) {
+    OptionType(String id, double step, boolean percent, double weaponMin, double weaponMax, double armorMin, double armorMax) {
         this.id = id;
-        this.min = min;
-        this.max = max;
         this.step = step;
         this.percent = percent;
+        this.weaponMin = weaponMin;
+        this.weaponMax = weaponMax;
+        this.armorMin = armorMin;
+        this.armorMax = armorMax;
+    }
+
+    private static double NaN() {
+        return Double.NaN;
     }
 
     public static OptionType byId(String id) {
@@ -37,8 +47,16 @@ public enum OptionType {
         return null;
     }
 
-    public double clamp(double v) {
-        return Math.max(min, Math.min(max, v));
+    public boolean inPool(boolean armor) {
+        return !Double.isNaN(armor ? armorMin : weaponMin);
+    }
+
+    public double min(boolean armor) {
+        return armor ? armorMin : weaponMin;
+    }
+
+    public double max(boolean armor) {
+        return armor ? armorMax : weaponMax;
     }
 
     public double round(double v) {

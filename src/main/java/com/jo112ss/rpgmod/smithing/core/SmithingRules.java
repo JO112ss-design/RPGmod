@@ -78,6 +78,26 @@ public final class SmithingRules {
     /** Allowed difference between client-reported elapsed time and server-measured elapsed time. */
     public long timingToleranceMillis = 600;
 
+    /**
+     * Rules for a harder (difficulty &gt; 1) or easier (&lt; 1) material: the strike bar gets faster,
+     * the power zones narrower and the quality thresholds stricter.
+     */
+    public SmithingRules withDifficulty(double difficulty) {
+        SmithingRules r = copy();
+        if (difficulty <= 0 || difficulty == 1) return r;
+        double root = Math.sqrt(difficulty);
+        r.strikeBarSpeedHot *= difficulty;
+        r.strikeBarSpeedCold *= difficulty;
+        r.heatBarSpeed *= root;
+        r.perfectZone /= root;
+        r.goodZone /= root;
+        r.badZone = Math.min(1, r.badZone / root);
+        r.legendaryMaxError /= difficulty;
+        r.rareMaxError /= difficulty;
+        r.fineMaxError /= difficulty;
+        return r;
+    }
+
     public double clampTemp(double t) {
         return Math.max(0, Math.min(100, t));
     }

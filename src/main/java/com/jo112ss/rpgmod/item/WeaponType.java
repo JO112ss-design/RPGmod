@@ -17,7 +17,11 @@ public enum WeaponType {
     MACE("mace", 4.0F, -2.9F, 4, List.of(new Extra(() -> Items.STICK, 1)), TargetProfile.MACE, 2, 123),
     HAMMER("hammer", 6.0F, -3.3F, 5, List.of(new Extra(() -> Items.STICK, 2)), TargetProfile.HAMMER, 2, 123),
     STAFF("staff", 1.5F, -2.6F, 1, List.of(new Extra(() -> Items.STICK, 1), new Extra(() -> Items.AMETHYST_SHARD, 1)), TargetProfile.STAFF, 2, 123),
-    BOW("bow", 0, 0, 2, List.of(new Extra(() -> Items.BOW, 1)), TargetProfile.BOW, 2, 155);
+    BOW("bow", 0, 0, 2, List.of(new Extra(() -> Items.BOW, 1)), TargetProfile.BOW, 2, 155),
+    HELMET("helmet", 0, 0, 5, List.of(), TargetProfile.HELMET, 10, 140),
+    CHESTPLATE("chestplate", 0, 0, 8, List.of(), TargetProfile.CHESTPLATE, 10, 140),
+    LEGGINGS("leggings", 0, 0, 7, List.of(), TargetProfile.LEGGINGS, 10, 140),
+    BOOTS("boots", 0, 0, 4, List.of(), TargetProfile.BOOTS, 10, 140);
 
     public record Extra(Supplier<Item> item, int count) {}
 
@@ -43,5 +47,15 @@ public enum WeaponType {
 
     public boolean isBow() {
         return this == BOW;
+    }
+
+    /** Armor uses the vanilla items and the armor option pool. */
+    public boolean isArmor() {
+        return this == HELMET || this == CHESTPLATE || this == LEGGINGS || this == BOOTS;
+    }
+
+    /** Vanilla items (swords and armor) are not registered by this mod. */
+    public boolean isVanilla() {
+        return this == SWORD || isArmor();
     }
 }

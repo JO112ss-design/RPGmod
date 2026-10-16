@@ -35,4 +35,12 @@ public record TargetProfile(double[] partWeights) {
     public static final TargetProfile STAFF = new TargetProfile(new double[] {1.3, 1.1, 0.7, 0.6, 0.5});
     /** Bow: upper tip / upper limb / grip / lower limb / lower tip. Both limbs need the most work. */
     public static final TargetProfile BOW = new TargetProfile(new double[] {0.5, 1.4, 0.9, 1.4, 0.5});
+    /** Helmet: left cheek / left side / crown / right side / right cheek. */
+    public static final TargetProfile HELMET = new TargetProfile(new double[] {0.6, 1.1, 1.6, 1.1, 0.6});
+    /** Chestplate: left shoulder / left chest / centre / right chest / right shoulder. */
+    public static final TargetProfile CHESTPLATE = new TargetProfile(new double[] {0.7, 1.3, 1.7, 1.3, 0.7});
+    /** Leggings: left hem / left thigh / waist / right thigh / right hem. */
+    public static final TargetProfile LEGGINGS = new TargetProfile(new double[] {0.6, 1.2, 1.5, 1.2, 0.6});
+    /** Boots: left toe / left heel / right heel / right toe. */
+    public static final TargetProfile BOOTS = new TargetProfile(new double[] {0.9, 1.4, 1.4, 0.9});
 }
