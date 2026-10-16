@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/orientable",
+  "textures": {
+    "top": "rpgmod:block/forging_anvil_top",
+    "front": "rpgmod:block/forging_anvil_front",
+    "side": "rpgmod:block/forging_anvil_side"
+  }
+}

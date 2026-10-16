@@ -1,0 +1,8 @@
+{
+  "variants": {
+    "facing=north": { "model": "rpgmod:block/forging_anvil" },
+    "facing=east": { "model": "rpgmod:block/forging_anvil", "y": 90 },
+    "facing=south": { "model": "rpgmod:block/forging_anvil", "y": 180 },
+    "facing=west": { "model": "rpgmod:block/forging_anvil", "y": 270 }
+  }
+}
