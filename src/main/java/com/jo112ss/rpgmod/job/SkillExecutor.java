@@ -325,6 +325,10 @@ public final class SkillExecutor {
         sound(c, c.p.position(), s, 1.0F, pitch);
     }
 
+    private static void sound(Ctx c, Holder<SoundEvent> s, float pitch) {
+        sound(c, c.p.position(), s, 1.0F, pitch);
+    }
+
     private static boolean isUndead(LivingEntity e) {
         return e.is(EntityTypeTags.UNDEAD);
     }
