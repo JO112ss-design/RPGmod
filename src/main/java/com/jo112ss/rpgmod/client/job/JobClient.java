@@ -27,11 +27,11 @@ public final class JobClient {
         ClientPacketDistributor.sendToServer(new JobActionPayload(action, arg, text == null ? "" : text));
     }
 
+    /** Set when the server says we have no job; the screen opens once no other screen (e.g. world loading) is up. */
+    private static boolean pendingSelect;
+
     public static void openJobSelect() {
-        Minecraft mc = Minecraft.getInstance();
-        if (mc.player != null && !data().hasJob() && !(mc.gui.screen() instanceof JobSelectScreen)) {
-            mc.gui.setScreen(new JobSelectScreen());
-        }
+        pendingSelect = true;
     }
 
     public static boolean holdingStaff() {
@@ -42,6 +42,11 @@ public final class JobClient {
     @SubscribeEvent
     public static void onTick(ClientTickEvent.Post event) {
         Minecraft mc = Minecraft.getInstance();
+        if (pendingSelect && mc.player != null && mc.gui.screen() == null && mc.player.tickCount > 20) {
+            pendingSelect = false;
+            if (!data().hasJob()) mc.gui.setScreen(new JobSelectScreen());
+            return;
+        }
         if (mc.player == null || mc.gui.screen() != null) {
             // drain clicks made while a screen was open
             for (var k : JobKeys.SKILLS) while (k.consumeClick()) { }
