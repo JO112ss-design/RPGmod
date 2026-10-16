@@ -12,7 +12,7 @@ public enum JobStat {
     ATTACK_SPEED("attack_speed", "敏", true),
     LUCK("luck", "運", false),
     CRIT_CHANCE("crit_chance", "会", true),
-    MAX_MANA("max_mana", "魔", false),
+    MAX_MANA("max_mana", "MP", false),
     MANA_REGEN("mana_regen", "回", false),
     SKILL_POWER("skill_power", "技", true),
     COOLDOWN_REDUCTION("cooldown_reduction", "短", true);

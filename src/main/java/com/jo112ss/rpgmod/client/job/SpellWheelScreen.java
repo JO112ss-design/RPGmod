@@ -117,7 +117,7 @@ public class SpellWheelScreen extends Screen {
             Ui.skillIcon(g, font, x - size / 2, y - size / 2, size, def, def != null && !d.knows(def.id()));
             if (l.selected() == i) Ui.circle(g, x, y, size / 2 + 8, 0xFFE8B33A, 1);
             Component label = def == null ? Component.translatable("rpgmod.wheel.empty") : Ui.skillName(def.id());
-            int ly = i == 0 ? y - size / 2 - 18 : y + size / 2 + 10;
+            int ly = y + size / 2 + 9;
             g.centeredText(font, label, x, ly, hov ? 0xFFFFFFFF : 0xFFB8B0D8);
             if (hov && def != null) {
                 long ready = d.cooldownEnd(def.id()) - minecraft.level.getGameTime();

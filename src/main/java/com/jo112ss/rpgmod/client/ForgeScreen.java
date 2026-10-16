@@ -445,9 +445,10 @@ public class ForgeScreen extends AbstractContainerScreen<ForgeMenu> {
         }
         int ty = gy1 - Math.round(tgt / max * GAUGE_H);
         g.fill(gx0 - 2, ty, gx1 + 2, ty + 1, 0xFFFFFFFF);
-        String label = String.format("%.0f/%.0f", val, tgt);
-        int lw = font.width(label);
-        g.text(font, label, l + (pw - lw) / 2, gy1 + 3, isSel ? 0xFFFFC070 : C_DIM, false);
+        String v1 = String.format("%.0f", val), v2 = String.format("/%.0f", tgt);
+        int lc = isSel ? 0xFFFFC070 : C_DIM;
+        g.text(font, v1, l + (pw - font.width(v1)) / 2, gy1 + 3, val < tgt - tol ? C_UNDER : val <= tgt + tol ? C_OK : C_OVER, false);
+        g.text(font, v2, l + (pw - font.width(v2)) / 2, gy1 + 12, lc, false);
     }
 
     private void drawTemperature(GuiGraphicsExtractor g, int x, int y, ForgeSyncPayload v) {

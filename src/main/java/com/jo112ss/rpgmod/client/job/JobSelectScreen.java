@@ -153,7 +153,9 @@ public class JobSelectScreen extends Screen {
         // bonuses
         int by = y + 35;
         for (Map.Entry<JobStat, Double> e : def.base().entrySet()) {
-            String v = e.getKey().percent ? String.format("+%.0f%%", e.getValue()) : String.format("+%.0f", e.getValue());
+            double val = e.getValue();
+            String num = Math.abs(val - Math.round(val)) < 0.01 ? String.valueOf(Math.round(val)) : String.format("%.1f", val);
+            String v = "+" + num + (e.getKey().percent ? "%" : "");
             g.text(font, Component.translatable("rpgmod.stat." + e.getKey().id).append(" " + v), wx, by, Ui.EXP, false);
             by += 10;
         }

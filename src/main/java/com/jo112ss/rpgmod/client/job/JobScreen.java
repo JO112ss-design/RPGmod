@@ -241,13 +241,16 @@ public class JobScreen extends Screen {
         int qy = sy + 124;
         Ui.inset(g, sx, qy, sw, H - (qy - top) - 8);
         g.text(font, Component.translatable("rpgmod.jobscreen.equipped"), sx + 6, qy + 5, Ui.GOLD, false);
+        int colW = (sw - 8) / 3;
         for (int s = 0; s < 3; s++) {
-            int ix = sx + 10 + s * 62, iy = qy + 18;
+            int colX = sx + 4 + s * colW, iy = qy + 16;
             SkillDef def = JobDefs.skill(d.slot(s));
+            int ix = colX + 4;
             Ui.skillIcon(g, font, ix, iy, 22, def, false);
-            g.text(font, JobKeys.SKILLS[s].getTranslatedKeyMessage(), ix + 26, iy + 2, Ui.DIM, false);
+            g.text(font, Component.translatable("rpgmod.jobscreen.slot." + s), ix + 26, iy + 2, Ui.DIM, false);
+            g.text(font, Component.literal("[").append(JobKeys.SKILLS[s].getTranslatedKeyMessage()).append("]"), ix + 26, iy + 12, Ui.DIM, false);
             Component nm = def == null ? Component.literal("-") : Ui.skillName(def.id());
-            g.text(font, font.substrByWidth(nm, 34).getString(), ix + 26, iy + 12, Ui.TEXT, false);
+            g.text(font, font.substrByWidth(nm, colW - 6).getString(), colX + 4, iy + 26, Ui.TEXT, false);
             if (in(mouseX, mouseY, ix, iy, 22, 22) && def != null) hoveredSkill = def.id();
         }
         drawSkillTooltip(g, mouseX, mouseY);
