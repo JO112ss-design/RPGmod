@@ -127,7 +127,9 @@ public final class MobAi {
         if (speed < 0.5) return;
         Vec3 from = arrow.position();
         Vec3 aim = t.position().add(0, t.getBbHeight() * 0.45, 0);
-        Vec3 vel = new Vec3(t.getX() - t.xo, t.onGround() ? 0 : t.getY() - t.yo, t.getZ() - t.zo);
+        // players move on their own client: their last reported movement is the reliable velocity
+        Vec3 known = t.getKnownMovement();
+        Vec3 vel = new Vec3(known.x, t.onGround() ? 0 : known.y, known.z);
         double lead = Math.min(1.0, 0.35 + lv * 0.012);
         double flight = from.distanceTo(aim) / speed;
         Vec3 predicted = aim;

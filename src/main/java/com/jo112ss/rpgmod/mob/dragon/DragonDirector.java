@@ -186,7 +186,7 @@ public final class DragonDirector {
         for (int i = 0; i < count; i++) {
             ServerPlayer p = players.get(r.nextInt(players.size()));
             // the first spot leads the player's movement, the rest scatter around them
-            Vec3 move = new Vec3(p.getX() - p.xo, 0, p.getZ() - p.zo).scale(20);
+            Vec3 move = p.getKnownMovement().multiply(1, 0, 1).scale(20);
             double ox = i == 0 ? move.x : (r.nextDouble() - 0.5) * 10, oz = i == 0 ? move.z : (r.nextDouble() - 0.5) * 10;
             spots.add(ground(sl, p.getX() + ox, p.getZ() + oz, p.getY()));
         }

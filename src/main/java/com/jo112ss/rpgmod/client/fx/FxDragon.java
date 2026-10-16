@@ -78,7 +78,7 @@ final class FxDragon {
         Entity e = p.e();
         Vec3 c = e != null ? e.position().add(0, 2, 0) : p.pos();
         int color = p.colorOr(0xB040FF);
-        flash(c, color, 10F, 14);
+        flash(c, color, 6F, 12);
         for (int k = 0; k < 3; k++) {
             Fx.p(S.RING, c).size(2F, 30F + k * 8).easeOut().color(0xFFFFFF, color).alpha(0.9F, 0).life(18).delay(k * 4).spawn();
         }
