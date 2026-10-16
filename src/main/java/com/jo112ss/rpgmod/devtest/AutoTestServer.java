@@ -122,14 +122,14 @@ public final class AutoTestServer {
             float v = e.getReduction(r);
             if (v != 0) sb.append(r).append('=').append(v).append(' ');
         }
-        RpgMod.LOGGER.info("[AUTOTEST] damage post: original={} new={} health={} reductions={} invulTime={} lastHurt?", e.getOriginalDamage(),
-                e.getNewDamage(), e.getHealthDamage(), sb, dummy.invulnerableTime);
+        RpgMod.LOGGER.info("[AUTOTEST] damage post: original={} new={} health={} reductions={}", e.getOriginalDamage(),
+                e.getNewDamage(), e.getHealthDamage(), sb);
     }
 
     @SubscribeEvent(priority = net.neoforged.bus.api.EventPriority.LOWEST)
     public static void onIncomingLast(net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent e) {
         if (!ENABLED || dummy == null || e.getEntity() != dummy) return;
-        RpgMod.LOGGER.info("[AUTOTEST] incoming (lowest): amount={} original={} invulTime={}", e.getAmount(), e.getOriginalAmount(), dummy.invulnerableTime);
+        RpgMod.LOGGER.info("[AUTOTEST] incoming (lowest): amount={} original={}", e.getAmount(), e.getOriginalAmount());
     }
     private static net.minecraft.world.entity.monster.zombie.Zombie dummy;
 
