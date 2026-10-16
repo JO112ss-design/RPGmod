@@ -36,7 +36,13 @@ public class JobScreen extends Screen {
     public enum Tab { STATUS, PANEL, SKILLS, SPELLS }
 
     private static final int W = 384, H = 258;
-    private static final int HEX_R = 11;
+    /** Hex cell radius in pixels: the panel zooms with the mouse wheel (and pans by dragging). */
+    private static int hexR = 9;
+    private static double panX, panY;
+    private static final int HEX_MIN = 7, HEX_MAX = 16;
+    private boolean pressInPanel, panning;
+    private double pressX, pressY;
+    private int panelX0, panelY0, panelX1, panelY1;
 
     private Tab tab;
     private int left, top;
@@ -93,6 +99,75 @@ public class JobScreen extends Screen {
     }
 
     @Override
+    public boolean mouseDragged(MouseButtonEvent event, double dx, double dy) {
+        if (tab == Tab.PANEL && pressInPanel) {
+            if (!panning && Math.hypot(event.x() - pressX, event.y() - pressY) > 3) panning = true;
+            if (panning) {
+                panX += dx;
+                panY += dy;
+                clampPan();
+            }
+            return true;
+        }
+        return super.mouseDragged(event, dx, dy);
+    }
+
+    @Override
+    public boolean mouseReleased(MouseButtonEvent event) {
+        if (tab == Tab.PANEL && pressInPanel && event.button() == InputConstants.MOUSE_BUTTON_LEFT) {
+            pressInPanel = false;
+            if (!panning) {
+                JobData d = JobClient.data();
+                SkillPanel.Node n = nodeAt(event.x(), event.y());
+                if (d.hasJob() && n != null && d.panel().isReachable(n, d.unlocked()) && d.freePoints() >= n.cost()) {
+                    JobClient.send(JobActionPayload.UNLOCK_NODE, n.id(), "");
+                }
+            }
+            panning = false;
+            return true;
+        }
+        return super.mouseReleased(event);
+    }
+
+    @Override
+    public boolean mouseScrolled(double x, double y, double scrollX, double scrollY) {
+        if (tab == Tab.PANEL && in(x, y, panelX0, panelY0, panelX1 - panelX0, panelY1 - panelY0) && scrollY != 0) {
+            int old = hexR;
+            hexR = Math.max(HEX_MIN, Math.min(HEX_MAX, hexR + (scrollY > 0 ? 1 : -1)));
+            if (hexR != old) {
+                // zoom around the mouse
+                double cx = (panelX0 + panelX1) / 2.0 + panX, cy = (panelY0 + panelY1) / 2.0 + panY;
+                double k = hexR / (double) old;
+                panX += (x - cx) * (1 - k);
+                panY += (y - cy) * (1 - k);
+                clampPan();
+            }
+            return true;
+        }
+        return super.mouseScrolled(x, y, scrollX, scrollY);
+    }
+
+    /** Keeps the honeycomb from being dragged entirely out of view. */
+    private void clampPan() {
+        double limX = hexR * Math.sqrt(3) * SkillPanel.RADIUS, limY = hexR * 1.5 * SkillPanel.RADIUS;
+        panX = Math.max(-limX, Math.min(limX, panX));
+        panY = Math.max(-limY, Math.min(limY, panY));
+    }
+
+    /** The panel cell under a screen point, using the current zoom and pan. */
+    private SkillPanel.Node nodeAt(double mx, double my) {
+        JobData d = JobClient.data();
+        if (!d.hasJob() || !in(mx, my, panelX0, panelY0, panelX1 - panelX0, panelY1 - panelY0)) return null;
+        int ox = (panelX0 + panelX1) / 2 + (int) panX, oy = (panelY0 + panelY1) / 2 + (int) panY;
+        for (SkillPanel.Node n : d.panel().nodes()) {
+            int px = ox + (int) Math.round(hexR * Math.sqrt(3) * (n.q() + n.r() / 2.0));
+            int py = oy + (int) Math.round(hexR * 1.5 * n.r());
+            if (Math.hypot(mx - px, my - py) < hexR * 0.85) return n;
+        }
+        return null;
+    }
+
+    @Override
     public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
         if (event.button() != InputConstants.MOUSE_BUTTON_LEFT) return super.mouseClicked(event, doubleClick);
         double mx = event.x(), my = event.y();
@@ -117,8 +192,11 @@ public class JobScreen extends Screen {
                     return true;
                 }
                 resetArmed = false;
-                if (hoveredNode != null && d.panel().isReachable(hoveredNode, d.unlocked()) && d.freePoints() >= hoveredNode.cost()) {
-                    JobClient.send(JobActionPayload.UNLOCK_NODE, hoveredNode.id(), "");
+                if (in(mx, my, panelX0, panelY0, panelX1 - panelX0, panelY1 - panelY0)) {
+                    pressInPanel = true;
+                    panning = false;
+                    pressX = mx;
+                    pressY = my;
                     return true;
                 }
             }
@@ -292,24 +370,30 @@ public class JobScreen extends Screen {
 
         int ax = left + 8, ay = top + 40, aw = 252, ah = H - 48;
         Ui.inset(g, ax, ay, aw, ah);
-        int ox = ax + aw / 2, oy = ay + ah / 2;
+        int ox = ax + aw / 2 + (int) panX, oy = ay + ah / 2 + (int) panY;
+        panelX0 = ax;
+        panelY0 = ay;
+        panelX1 = ax + aw;
+        panelY1 = ay + ah;
+        g.enableScissor(ax + 1, ay + 1, ax + aw - 1, ay + ah - 1);
         // subtle radial backdrop
-        Ui.disc(g, ox, oy, 104, 0x0CFFFFFF);
-        Ui.disc(g, ox, oy, 76, 0x0CFFFFFF);
-        Ui.disc(g, ox, oy, 46, 0x0CFFFFFF);
+        int rad = (int) (hexR * 1.6 * (SkillPanel.RADIUS + 0.6));
+        Ui.disc(g, ox, oy, rad, 0x0CFFFFFF);
+        Ui.disc(g, ox, oy, rad * 2 / 3, 0x0CFFFFFF);
+        Ui.disc(g, ox, oy, rad / 3, 0x0CFFFFFF);
         int c = job.color();
         float pulse = (float) (0.5 + 0.5 * Math.sin(now / 220.0));
         // pass 1: soft glow behind owned cells so the unlocked area reads as one shape
         for (SkillPanel.Node n : panel.nodes()) {
             if (!d.unlocked().contains(n.id())) continue;
-            int px = ox + (int) Math.round(HEX_R * Math.sqrt(3) * (n.q() + n.r() / 2.0));
-            int py = oy + (int) Math.round(HEX_R * 1.5 * n.r());
-            Ui.hex(g, px, py, HEX_R + 3, Ui.alpha(c, 0x55));
+            int px = ox + (int) Math.round(hexR * Math.sqrt(3) * (n.q() + n.r() / 2.0));
+            int py = oy + (int) Math.round(hexR * 1.5 * n.r());
+            Ui.hex(g, px, py, hexR + 3, Ui.alpha(c, 0x55));
         }
         // pass 2: cells
         for (SkillPanel.Node n : panel.nodes()) {
-            int px = ox + (int) Math.round(HEX_R * Math.sqrt(3) * (n.q() + n.r() / 2.0));
-            int py = oy + (int) Math.round(HEX_R * 1.5 * n.r());
+            int px = ox + (int) Math.round(hexR * Math.sqrt(3) * (n.q() + n.r() / 2.0));
+            int py = oy + (int) Math.round(hexR * 1.5 * n.r());
             boolean owned = d.unlocked().contains(n.id());
             boolean reachable = panel.isReachable(n, d.unlocked());
             boolean affordable = reachable && d.freePoints() >= n.cost();
@@ -337,16 +421,16 @@ public class JobScreen extends Screen {
                 edge = typeTint != 0 ? Ui.mix(typeTint, 0xFF0D0F14, 0.65f) : 0xFF252933;
                 tc = 0xFF3C424E;
             }
-            boolean hover = Math.hypot(mouseX - px, mouseY - py) < HEX_R * 0.85;
+            boolean hover = !panning && in(mouseX, mouseY, ax, ay, aw, ah) && Math.hypot(mouseX - px, mouseY - py) < hexR * 0.85;
             if (hover) hoveredNode = n;
-            Ui.hexFramed(g, px, py, HEX_R, hover ? 0xFFFFFFFF : edge, body);
-            if (owned) Ui.hex(g, px, py - HEX_R / 2, Math.max(2, HEX_R / 3), 0x30FFFFFF); // small highlight
+            Ui.hexFramed(g, px, py, hexR, hover ? 0xFFFFFFFF : edge, body);
+            if (owned) Ui.hex(g, px, py - hexR / 2, Math.max(2, hexR / 3), 0x30FFFFFF); // small highlight
             Long t = unlockAnim.get(n.id());
             if (t != null) {
                 float k = (now - t) / 700f;
                 if (k < 1) {
-                    Ui.circle(g, px, py, (int) (HEX_R * (1 + k * 1.2f)), Ui.alpha(0xFFFFFF, (int) (255 * (1 - k))), 1);
-                    Ui.circle(g, px, py, (int) (HEX_R * (1 + k * 0.6f)), Ui.alpha(c, (int) (255 * (1 - k))), 1);
+                    Ui.circle(g, px, py, (int) (hexR * (1 + k * 1.2f)), Ui.alpha(0xFFFFFF, (int) (255 * (1 - k))), 1);
+                    Ui.circle(g, px, py, (int) (hexR * (1 + k * 0.6f)), Ui.alpha(c, (int) (255 * (1 - k))), 1);
                 } else unlockAnim.remove(n.id());
             }
             String glyph = switch (n.type()) {
@@ -354,8 +438,12 @@ public class JobScreen extends Screen {
                 case STAT -> n.stat().glyph;
                 default -> JobDefs.skill(n.skill()).glyph();
             };
-            Ui.glyph(g, font, glyph, px + 1, py + 1, n.type() == SkillPanel.NodeType.STAT ? 1f : 1.15f, tc);
+            float gs = hexR / 11f * (n.type() == SkillPanel.NodeType.STAT ? 1f : 1.15f);
+            if (font.width(glyph) > 8) gs *= 0.8f;
+            Ui.glyph(g, font, glyph, px + 1, py + 1, gs, tc);
         }
+        g.disableScissor();
+        g.text(font, Component.translatable("rpgmod.jobscreen.zoom_hint"), ax + 5, ay + ah - 11, 0xFF5A6070, false);
         // legend (top-left corner, clear of the honeycomb)
         int lx = ax + 5, ly = ay + 5;
         Ui.hexFramed(g, lx + 4, ly + 3, 5, Ui.mix(Ui.argb(c), 0xFFFFFFFF, 0.6f), Ui.argb(c));
@@ -377,7 +465,7 @@ public class JobScreen extends Screen {
             Component name;
             Component sub;
             if (n.type() == SkillPanel.NodeType.STAT) {
-                String v = n.stat().percent ? String.format("+%.0f%%", n.amount()) : (n.amount() < 1 ? String.format("+%.1f", n.amount()) : String.format("+%.0f", n.amount()));
+                String v = "+" + fmt(n.amount()) + (n.stat().percent ? "%" : "");
                 name = Component.translatable("rpgmod.stat." + n.stat().id).append(" " + v);
                 sub = Component.translatable("rpgmod.node.stat");
             } else if (n.type() == SkillPanel.NodeType.START) {

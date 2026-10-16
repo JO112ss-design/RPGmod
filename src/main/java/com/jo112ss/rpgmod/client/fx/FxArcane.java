@@ -314,32 +314,17 @@ final class FxArcane {
         Vec3 muzzle = start.add(vel.normalize().scale(0.5));
         Fx.p(S.RING, muzzle).fixed(Fx.across(vel)).size(0.1F, 0.6F).easeOut().color(0xFFFFFF, ARC).alpha(0.9F, 0).life(6).spawn();
         flash(muzzle, ARC, 0.5F, 4);
-        final Vec3[] pos = {start};
-        final Vec3[] dir = {vel.normalize()};
-        final double[] travelled = {0};
-        final Entity self = Minecraft.getInstance().player;
-        FxAnims.run((int) (range / speed) + 3, age -> {
-            if (target != null && target.isAlive()) {
-                Vec3 want = target.position().add(0, target.getBbHeight() * 0.55, 0).subtract(pos[0]).normalize();
-                dir[0] = com.jo112ss.rpgmod.job.SkillExecutor.turn(dir[0], want, 0.22);
+        simProjectile(start, vel, range, target, 0.22, new ProjDraw() {
+            @Override
+            public void step(Vec3 at, Vec3 dir, int n) {
+                trail(at, dir, n);
             }
-            for (int s = 0; s < 3; s++) {
-                Vec3 from = pos[0];
-                Vec3 to = from.add(dir[0].scale(speed / 3));
-                BlockHitResult block = level.clip(new ClipContext(from, to, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, self));
-                Vec3 end = block.getType() == HitResult.Type.MISS ? to : block.getLocation();
-                trail(end, dir[0], age * 3 + s);
-                if (block.getType() != HitResult.Type.MISS) return true;
-                for (Entity x : level.getEntities((Entity) null, new AABB(from, end).inflate(0.6), FxArcane::boltBlocker)) {
-                    if (x.getBoundingBox().inflate(0.3).clip(from, end).isPresent() || x.getBoundingBox().inflate(0.3).contains(end)) return true;
-                }
-                pos[0] = end;
-                travelled[0] += speed / 3;
-                if (travelled[0] >= range) return true;
+
+            @Override
+            public void head(Vec3 at, Vec3 dir, int age) {
+                Fx.p(S.ORB, at).color(0xFFFFFF, ARC_L).size(0.45F).alpha(1, 1).life(1).spawn();
+                Fx.p(S.GLOW, at).color(ARC).size(1.1F).alpha(0.55F, 0.5F).life(1).spawn();
             }
-            Fx.p(S.ORB, pos[0]).color(0xFFFFFF, ARC_L).size(0.45F).alpha(1, 1).life(1).spawn();
-            Fx.p(S.GLOW, pos[0]).color(ARC).size(1.1F).alpha(0.55F, 0.5F).life(1).spawn();
-            return false;
         });
     }
 

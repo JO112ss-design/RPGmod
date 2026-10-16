@@ -34,6 +34,8 @@ public final class JobData {
     private final Map<String, Long> cooldowns = new HashMap<>();
     /** Skill panel layout version the unlocked ids belong to. */
     private int panelVersion = SkillPanel.VERSION;
+    /** Assassin weapon coating: 0 = attack down, 1 = armour break, 2 = poison. */
+    private int coatMode;
 
     public static final MapCodec<JobData> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
             Codec.STRING.optionalFieldOf("job", "").forGetter(d -> d.job),
@@ -43,7 +45,8 @@ public final class JobData {
             Codec.STRING.listOf().optionalFieldOf("slots", List.of("", "", "")).forGetter(d -> List.of(d.slots)),
             Codec.DOUBLE.optionalFieldOf("mana", JobDefs.BASE_MANA).forGetter(d -> d.mana),
             Codec.unboundedMap(Codec.STRING, Codec.LONG).optionalFieldOf("cooldowns", Map.of()).forGetter(d -> Map.copyOf(d.cooldowns)),
-            Codec.INT.optionalFieldOf("panel_version", 1).forGetter(d -> d.panelVersion)
+            Codec.INT.optionalFieldOf("panel_version", 1).forGetter(d -> d.panelVersion),
+            Codec.INT.optionalFieldOf("coat_mode", 0).forGetter(d -> d.coatMode)
     ).apply(i, JobData::new));
 
     public static final StreamCodec<RegistryFriendlyByteBuf, JobData> STREAM_CODEC = StreamCodec.of(
@@ -60,6 +63,7 @@ public final class JobData {
                     buf.writeUtf(k);
                     buf.writeVarLong(v);
                 });
+                buf.writeVarInt(d.coatMode);
             },
             buf -> {
                 JobData d = new JobData();
@@ -72,13 +76,15 @@ public final class JobData {
                 d.mana = buf.readDouble();
                 int c = Math.min(buf.readVarInt(), 256);
                 for (int k = 0; k < c; k++) d.cooldowns.put(buf.readUtf(), buf.readVarLong());
+                d.coatMode = buf.readVarInt();
                 return d;
             });
 
     public JobData() {}
 
-    private JobData(String job, int level, long exp, List<Integer> unlocked, List<String> slots, double mana, Map<String, Long> cooldowns, int panelVersion) {
+    private JobData(String job, int level, long exp, List<Integer> unlocked, List<String> slots, double mana, Map<String, Long> cooldowns, int panelVersion, int coatMode) {
         this.panelVersion = panelVersion;
+        this.coatMode = coatMode;
         this.job = job;
         this.level = Math.max(1, level);
         this.exp = Math.max(0, exp);
@@ -214,6 +220,30 @@ public final class JobData {
         }
         if (level >= maxLevel) exp = 0;
         return gained;
+    }
+
+    public int coatMode() {
+        return coatMode;
+    }
+
+    public void setCoatMode(int mode) {
+        coatMode = Math.floorMod(mode, 3);
+    }
+
+    /** Remaining cooldowns of every skill except {@code except} are multiplied by {@code factor}. */
+    public void scaleCooldowns(long now, double factor, String except) {
+        cooldowns.replaceAll((k, v) -> k.equals(except) || v <= now ? v : now + Math.round((v - now) * factor));
+    }
+
+    /**
+     * Saves from before panel version 5 used a level cap of 50; levels are doubled so a character
+     * keeps its place on the road to the (now 100) cap.
+     */
+    public boolean migrateLevelCap(int maxLevel) {
+        if (!hasJob() || panelVersion >= 5) return false;
+        level = Math.min(maxLevel, Math.max(1, level * 2 - 1));
+        exp = 0;
+        return true;
     }
 
     /** True if the saved unlocked cells belong to an older panel layout. */

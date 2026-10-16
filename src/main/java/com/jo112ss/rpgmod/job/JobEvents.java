@@ -99,6 +99,26 @@ public final class JobEvents {
         if (p.tickCount % 10 < Math.round(JobConfig.AFFINITY_ATTACK_SPEED.get() * 10)) event.setDuration(event.getDuration() - 1);
     }
 
+    /**
+     * Weapon buffs from skills, on melee hits: the assassin's coating (attack down / armour break /
+     * poison, chosen with sneak + the skill key) and the enchanter's fire weapon.
+     */
+    @SubscribeEvent
+    public static void onWeaponBuffHit(net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent event) {
+        if (!(event.getSource().getEntity() instanceof ServerPlayer sp) || event.getSource().getDirectEntity() != sp) return;
+        if (event.getEntity() == sp || event.getAmount() <= 0) return;
+        var target = event.getEntity();
+        var coat = sp.getEffect(com.jo112ss.rpgmod.registry.ModEffects.POISON_COAT);
+        if (coat != null) SkillExecutor.applyCoat(target, coat.getAmplifier(), sp);
+        var fire = sp.getEffect(com.jo112ss.rpgmod.registry.ModEffects.FIRE_WEAPON);
+        if (fire != null) {
+            target.igniteForSeconds(3);
+            event.setAmount(event.getAmount() + fire.getAmplifier() + 1);
+            com.jo112ss.rpgmod.job.fx.ServerFx.of("fire_weapon_hit", target.position().add(0, target.getBbHeight() * 0.5, 0))
+                    .send((net.minecraft.server.level.ServerLevel) sp.level());
+        }
+    }
+
     @SubscribeEvent
     public static void onCommands(RegisterCommandsEvent event) {
         JobCommands.register(event.getDispatcher());

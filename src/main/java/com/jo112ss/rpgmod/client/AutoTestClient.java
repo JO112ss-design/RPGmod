@@ -156,6 +156,15 @@ public final class AutoTestClient {
             case "jackpot" -> new int[] {16, 28};
             case "roulette" -> new int[] {18, 37};
             case "sanctuary" -> new int[] {20};
+            case "guardian_dome" -> new int[] {16};
+            case "blizzard" -> new int[] {20};
+            case "gravity" -> new int[] {12, 26};
+            case "arcane_missiles" -> new int[] {8};
+            case "holy_wave", "card_throw" -> new int[] {5};
+            case "piercing_shot", "intimidate", "russian_roulette", "throwing_knives" -> new int[] {3};
+            case "explosive_arrow" -> new int[] {6, 14};
+            case "shadow_bind", "chrono", "quick_cast", "nourish", "fire_weapon", "poison_coat" -> new int[] {8};
+            case "binding_field" -> new int[] {10};
             default -> new int[] {6};
         };
     }
@@ -164,9 +173,13 @@ public final class AutoTestClient {
     private static void showcase(Minecraft mc) {
         int t = show++;
         if (t == 0) {
-            showSkills = new java.util.ArrayList<>(com.jo112ss.rpgmod.job.core.JobDefs.SKILLS.keySet());
-            // a second pass for a few skills as the player sees them (first person)
-            for (String id : new String[] {"power_slash", "whirlwind", "magic_bolt", "flame_burst", "frost_nova", "meteor", "thunder", "judgement"}) showSkills.add("fp:" + id);
+            // the newest skills (the older ones were checked in earlier runs; set rpgmod.showcase=all for every skill)
+            showSkills = new java.util.ArrayList<>();
+            if ("all".equals(System.getProperty("rpgmod.showcase"))) showSkills.addAll(com.jo112ss.rpgmod.job.core.JobDefs.SKILLS.keySet());
+            else showSkills.addAll(java.util.List.of("intimidate", "taunt", "piercing_shot", "explosive_arrow", "guardian_dome", "holy_wave",
+                    "quick_cast", "chrono", "arcane_missiles", "blizzard", "gravity", "nourish", "purify", "poison_coat", "throwing_knives",
+                    "shadow_bind", "fire_weapon", "binding_field", "russian_roulette", "card_throw", "power_slash", "meteor"));
+            for (String id : new String[] {"guardian_dome", "arcane_missiles", "blizzard"}) showSkills.add("fp:" + id);
             showSkills.add("charge");
             mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK);
             mc.options.particles().set(net.minecraft.server.level.ParticleStatus.ALL);

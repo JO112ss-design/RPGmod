@@ -47,6 +47,7 @@ public final class JobManager {
     public static void onLogin(ServerPlayer player) {
         JobData d = data(player);
         if (d.panelOutdated()) {
+            d.migrateLevelCap(JobConfig.maxLevel());
             d.resetPanel();
             player.sendSystemMessage(Component.translatable("rpgmod.job.panel_migrated").withStyle(ChatFormatting.GOLD));
         }
@@ -255,6 +256,15 @@ public final class JobManager {
             tell(player, "rpgmod.job.no_skill");
             return;
         }
+        if (def.id().equals("poison_coat") && player.isShiftKeyDown()) {
+            // sneak + key: switch the coating instead of using the skill (free)
+            d.setCoatMode(d.coatMode() + 1);
+            sync(player);
+            player.sendSystemMessage(Component.translatable("rpgmod.coat.switched",
+                    Component.translatable("rpgmod.coat." + d.coatMode())).withStyle(ChatFormatting.GREEN), true);
+            player.level().playSound(null, player.blockPosition(), SoundEvents.BREWING_STAND_BREW, SoundSource.PLAYERS, 0.6F, 1.6F);
+            return;
+        }
         if (!holdsJobWeapon(player, d)) {
             tell(player, "rpgmod.job.need_weapon");
             return;
@@ -321,8 +331,9 @@ public final class JobManager {
 
     /** Charge time in ticks after cast speed (skill panel + forged options, capped at -60%). */
     public static int castTicks(Player player, SkillDef def) {
-        double speed = Math.min(60, castSpeedPercent(player)) / 100.0;
-        return (int) Math.round(def.castTime() * 20 * (1 - speed));
+        double speed = Math.min(60, castSpeedPercent(player));
+        if (player.hasEffect(com.jo112ss.rpgmod.registry.ModEffects.QUICK_CAST)) speed += 40; // quick cast goes past the cap
+        return (int) Math.round(def.castTime() * 20 * (1 - Math.min(85, speed) / 100.0));
     }
 
     private static final net.minecraft.world.entity.EquipmentSlot[] GEAR = {

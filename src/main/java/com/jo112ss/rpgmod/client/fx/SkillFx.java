@@ -38,7 +38,7 @@ public final class SkillFx {
         Entity e = payload.entity() >= 0 ? level.getEntity(payload.entity()) : null;
         P p = new P(payload.fx(), payload.pos(), payload.vec(), payload.a(), payload.b(), payload.color(), e, payload.points());
         try {
-            if (!FxMartial.play(p) && !FxArcane.play(p)) FxMisc.play(p);
+            if (!FxMartial.play(p) && !FxArcane.play(p) && !FxExtra.play(p)) FxMisc.play(p);
         } catch (RuntimeException ex) {
             com.jo112ss.rpgmod.RpgMod.LOGGER.error("Skill effect {} failed", p.fx(), ex);
         }
@@ -240,5 +240,59 @@ public final class SkillFx {
 
     static boolean isLiving(Entity e) {
         return e instanceof LivingEntity le && le.isAlive();
+    }
+
+    // ================================================================== projectiles
+
+    /** Callbacks for drawing a simulated projectile. */
+    interface ProjDraw {
+        /** Every sub-step (three per tick): trail. */
+        void step(Vec3 at, Vec3 dir, int n);
+
+        /** Once per tick at the current position: the projectile itself. */
+        void head(Vec3 at, Vec3 dir, int age);
+    }
+
+    /**
+     * Flies a projectile with the same rules as the server ({@code SkillExecutor.projectile}): three
+     * steps per tick, optional homing, stops at blocks and at the first non-player living thing.
+     */
+    static void simProjectile(Vec3 start, Vec3 vel, double range, Entity target, double turnRate, ProjDraw draw) {
+        net.minecraft.client.multiplayer.ClientLevel level = Minecraft.getInstance().level;
+        if (level == null) return;
+        double speed = Math.max(0.1, vel.length());
+        final Vec3[] pos = {start};
+        final Vec3[] dir = {vel.normalize()};
+        final double[] travelled = {0};
+        final Entity self = Minecraft.getInstance().player;
+        FxAnims.run((int) (range / speed) + 3, age -> {
+            if (target != null && target.isAlive() && turnRate > 0) {
+                Vec3 want = target.position().add(0, target.getBbHeight() * 0.55, 0).subtract(pos[0]).normalize();
+                dir[0] = com.jo112ss.rpgmod.job.SkillExecutor.turn(dir[0], want, turnRate);
+            }
+            for (int s = 0; s < 3; s++) {
+                Vec3 from = pos[0];
+                Vec3 to = from.add(dir[0].scale(speed / 3));
+                var block = level.clip(new net.minecraft.world.level.ClipContext(from, to, net.minecraft.world.level.ClipContext.Block.COLLIDER,
+                        net.minecraft.world.level.ClipContext.Fluid.NONE, self));
+                boolean wall = block.getType() != net.minecraft.world.phys.HitResult.Type.MISS;
+                Vec3 end = wall ? block.getLocation() : to;
+                draw.step(end, dir[0], age * 3 + s);
+                if (wall) return true;
+                for (Entity x : level.getEntities((Entity) null, new net.minecraft.world.phys.AABB(from, end).inflate(0.6), SkillFx::blocksProjectile)) {
+                    if (x.getBoundingBox().inflate(0.3).clip(from, end).isPresent() || x.getBoundingBox().inflate(0.3).contains(end)) return true;
+                }
+                pos[0] = end;
+                travelled[0] += speed / 3;
+                if (travelled[0] >= range) return true;
+            }
+            draw.head(pos[0], dir[0], age);
+            return false;
+        });
+    }
+
+    private static boolean blocksProjectile(Entity x) {
+        return x instanceof LivingEntity le && le.isAlive() && !(x instanceof net.minecraft.world.entity.player.Player)
+                && !(x instanceof net.minecraft.world.entity.decoration.ArmorStand);
     }
 }

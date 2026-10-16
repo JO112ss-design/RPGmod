@@ -64,6 +64,8 @@ public final class SkillExecutor {
             case "charge" -> charge(c);
             case "war_cry" -> warCry(c);
             case "whirlwind" -> whirlwind(c);
+            case "intimidate" -> intimidate(c);
+            case "taunt" -> taunt(c);
             case "berserk" -> selfBuff(c, "berserk", SoundEvents.RAVAGER_ROAR, 0.8F);
             case "earthshatter" -> earthshatter(c);
             // ranger
@@ -71,6 +73,8 @@ public final class SkillExecutor {
             case "backstep" -> backstep(c);
             case "hunters_mark" -> huntersMark(c);
             case "snare" -> snare(c);
+            case "piercing_shot" -> piercingShot(c);
+            case "explosive_arrow" -> explosiveArrow(c);
             case "arrow_rain" -> arrowRain(c);
             case "eagle_eye" -> selfBuff(c, "eagle_eye", SoundEvents.PHANTOM_FLAP, 1.3F);
             // paladin
@@ -78,6 +82,8 @@ public final class SkillExecutor {
             case "holy_guard" -> partyBuff(c, "holy_guard", SoundEvents.BEACON_POWER_SELECT, 1.2F);
             case "smite" -> smite(c);
             case "lay_on_hands" -> heal(c, "lay_on_hands", true);
+            case "guardian_dome" -> guardianDome(c);
+            case "holy_wave" -> holyWave(c);
             case "divine_aegis" -> partyBuff(c, "divine_aegis", SoundEvents.BEACON_ACTIVATE, 1.3F);
             case "judgement" -> judgement(c);
             // wizard
@@ -85,6 +91,11 @@ public final class SkillExecutor {
             case "blink" -> blink(c);
             case "mana_barrier" -> selfBuff(c, "mana_barrier", SoundEvents.AMETHYST_BLOCK_RESONATE, 1.2F);
             case "arcane_focus" -> mana(c, "arcane_focus");
+            case "quick_cast" -> selfBuff(c, "quick_cast", SoundEvents.BEACON_POWER_SELECT, 1.8F);
+            case "chrono" -> chrono(c);
+            case "arcane_missiles" -> arcaneMissiles(c);
+            case "blizzard" -> blizzard(c);
+            case "gravity" -> gravity(c);
             case "meteor" -> meteor(c);
             case "time_warp" -> timeWarp(c);
             case "magic_bolt" -> magicBolt(c);
@@ -97,13 +108,17 @@ public final class SkillExecutor {
             case "group_heal" -> heal(c, "group_heal", false);
             case "blessing" -> partyBuff(c, "blessing", SoundEvents.AMETHYST_BLOCK_CHIME, 1.0F);
             case "mana_gift" -> mana(c, "mana_gift");
+            case "nourish" -> nourish(c);
+            case "purify" -> purify(c);
             case "sanctuary" -> sanctuary(c);
             case "guardian_light" -> partyBuff(c, "guardian_light", SoundEvents.BEACON_ACTIVATE, 1.5F);
             // assassin
             case "shadow_step" -> shadowStep(c);
             case "backstab" -> backstab(c);
             case "smoke_bomb" -> smokeBomb(c);
-            case "venom" -> venom(c);
+            case "poison_coat" -> poisonCoat(c);
+            case "throwing_knives" -> throwingKnives(c);
+            case "shadow_bind" -> shadowBind(c);
             case "assassinate" -> assassinate(c);
             case "shadow_dance" -> selfBuff(c, "shadow_dance", SoundEvents.ILLUSIONER_MIRROR_MOVE, 0.8F);
             // enchanter
@@ -111,10 +126,14 @@ public final class SkillExecutor {
             case "haste" -> partyBuff(c, "haste", SoundEvents.BREEZE_JUMP, 1.4F);
             case "weaken" -> curse(c, "weaken");
             case "mana_link" -> mana(c, "mana_link");
+            case "fire_weapon" -> fireWeapon(c);
+            case "binding_field" -> bindingField(c);
             case "grand_enchant" -> partyBuff(c, "grand_enchant", SoundEvents.BEACON_ACTIVATE, 1.1F);
             case "hex" -> curse(c, "hex");
             // gambler
             case "lucky_shot" -> luckyShot(c);
+            case "russian_roulette" -> russianRoulette(c);
+            case "card_throw" -> cardThrow(c);
             case "coin_toss", "dice_roll", "all_in", "jackpot", "roulette" -> gamble(c);
             default -> generic(c);
         };
@@ -247,12 +266,27 @@ public final class SkillExecutor {
 
     // ------------------------------------------------------------------ damage / movement helpers
 
+    /**
+     * Skill damage types (data/rpgmod/damage_type): they ignore the target's hit cooldown, so a skill
+     * landing right after a sword swing, or several hits of one skill, all count. Magic also ignores
+     * armour.
+     */
+    private static final net.minecraft.resources.ResourceKey<net.minecraft.world.damagesource.DamageType> SKILL_DAMAGE =
+            net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.DAMAGE_TYPE, Identifier.fromNamespaceAndPath("rpgmod", "skill"));
+    private static final net.minecraft.resources.ResourceKey<net.minecraft.world.damagesource.DamageType> SKILL_MAGIC_DAMAGE =
+            net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.DAMAGE_TYPE, Identifier.fromNamespaceAndPath("rpgmod", "skill_magic"));
+
     private static DamageSource melee(Ctx c) {
-        return c.p.damageSources().playerAttack(c.p);
+        return c.p.damageSources().source(SKILL_DAMAGE, c.p, c.p);
     }
 
     private static DamageSource magic(Ctx c) {
-        return c.p.damageSources().indirectMagic(c.p, c.p);
+        return c.p.damageSources().source(SKILL_MAGIC_DAMAGE, c.p, c.p);
+    }
+
+    /** Magic for the caster jobs and spells, physical for the rest. */
+    private static DamageSource skillSource(Ctx c) {
+        return com.jo112ss.rpgmod.job.core.JobDefs.isMagic(c.def) ? magic(c) : melee(c);
     }
 
     private static void hurt(Ctx c, LivingEntity e, float amount, DamageSource source) {
@@ -415,7 +449,7 @@ public final class SkillExecutor {
      * A skill arrow that hits for about {@code damage} (arrow damage is base x speed, ~3 at launch).
      * It is not tied to the bow, so the bow's own bonuses are not added a second time.
      */
-    private static void arrow(Ctx c, float yawOffset, double damage, boolean crit, String trail, int color) {
+    private static Arrow arrow(Ctx c, float yawOffset, double damage, boolean crit, String trail, int color) {
         Arrow arrow = new Arrow(c.level, c.p, new ItemStack(Items.ARROW), null);
         arrow.pickup = AbstractArrow.Pickup.CREATIVE_ONLY;
         arrow.setBaseDamage(damage / 3.0);
@@ -423,6 +457,7 @@ public final class SkillExecutor {
         arrow.shootFromRotation(c.p, c.p.getXRot(), c.p.getYRot() + yawOffset, 0, 3.2F, 0.5F);
         c.level.addFreshEntity(arrow);
         ServerFx.of(trail, arrow.position()).follow(arrow).color(color).send(c.level);
+        return arrow;
     }
 
     private static boolean multishot(Ctx c) {
@@ -701,43 +736,68 @@ public final class SkillExecutor {
         ServerFx.of("magic_bolt", start).vec(dir0.scale(BOLT_SPEED)).a(range).follow(target).send(c.level);
         sound(c, SoundEvents.ILLUSIONER_CAST_SPELL, 1.7F);
         sound(c, c.p.position(), SoundEvents.AMETHYST_BLOCK_RESONATE, 0.6F, 2.0F);
+        projectile(c, start, dir0, BOLT_SPEED, range, target, 0.22, (e, at, dir) -> {
+            hurt(c, e, c.dmg(1), magic(c));
+            push(e, dir, 0.25, 0.1);
+            ServerFx.of("magic_bolt_hit", at).vec(dir).b(1).send(c.level);
+            sound(c, at, SoundEvents.AMETHYST_CLUSTER_BREAK, 1.0F, 1.3F);
+        }, (at, dir, wall) -> {
+            ServerFx.of("magic_bolt_hit", at).vec(dir).b(wall ? 0 : -1).send(c.level);
+            if (wall) sound(c, at, SoundEvents.AMETHYST_BLOCK_BREAK, 0.8F, 1.5F);
+        });
+        return true;
+    }
+
+    @FunctionalInterface
+    interface ProjectileHit {
+        void hit(LivingEntity e, Vec3 at, Vec3 dir);
+    }
+
+    @FunctionalInterface
+    interface ProjectileEnd {
+        /** {@code wall}: stopped by a block (false = ran out of range). */
+        void end(Vec3 at, Vec3 dir, boolean wall);
+    }
+
+    /**
+     * A projectile simulated on the server (no entity): moves {@code speed} blocks per tick in three
+     * steps, optionally homing on {@code target}, and stops at the first enemy or block. The client
+     * draws it from a matching effect message with the same rules ({@code SkillFx.simProjectile}).
+     */
+    static void projectile(Ctx c, Vec3 start, Vec3 dir0, double speed, double range, LivingEntity target, double turnRate,
+                           ProjectileHit onHit, ProjectileEnd onEnd) {
         final Vec3[] pos = {start};
-        final Vec3[] dir = {dir0};
+        final Vec3[] dir = {dir0.normalize()};
         final double[] travelled = {0};
         SkillTasks.run(age -> {
-            if (target != null && target.isAlive()) {
+            if (target != null && target.isAlive() && turnRate > 0) {
                 Vec3 want = target.position().add(0, target.getBbHeight() * 0.55, 0).subtract(pos[0]).normalize();
-                dir[0] = turn(dir[0], want, 0.22);
+                dir[0] = turn(dir[0], want, turnRate);
             }
             for (int s = 0; s < 3; s++) {
                 Vec3 from = pos[0];
-                Vec3 to = from.add(dir[0].scale(BOLT_SPEED / 3));
+                Vec3 to = from.add(dir[0].scale(speed / 3));
                 BlockHitResult block = c.level.clip(new ClipContext(from, to, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, c.p));
                 Vec3 end = block.getType() == HitResult.Type.MISS ? to : block.getLocation();
                 for (LivingEntity e : c.level.getEntitiesOfClass(LivingEntity.class, new AABB(from, end).inflate(0.6), e -> isEnemy(c.p, e))) {
                     if (e.getBoundingBox().inflate(0.3).clip(from, end).isPresent() || e.getBoundingBox().inflate(0.3).contains(end)) {
-                        hurt(c, e, c.dmg(1), magic(c));
-                        push(e, dir[0], 0.25, 0.1);
-                        ServerFx.of("magic_bolt_hit", end).vec(dir[0]).b(1).send(c.level);
-                        sound(c, end, SoundEvents.AMETHYST_CLUSTER_BREAK, 1.0F, 1.3F);
+                        onHit.hit(e, end, dir[0]);
                         return true;
                     }
                 }
                 if (block.getType() != HitResult.Type.MISS) {
-                    ServerFx.of("magic_bolt_hit", end).vec(dir[0]).send(c.level);
-                    sound(c, end, SoundEvents.AMETHYST_BLOCK_BREAK, 0.8F, 1.5F);
+                    onEnd.end(end, dir[0], true);
                     return true;
                 }
                 pos[0] = end;
-                travelled[0] += BOLT_SPEED / 3;
+                travelled[0] += speed / 3;
                 if (travelled[0] >= range) {
-                    ServerFx.of("magic_bolt_hit", end).vec(dir[0]).b(-1).send(c.level);
+                    onEnd.end(end, dir[0], false);
                     return true;
                 }
             }
             return false;
         });
-        return true;
     }
 
     /** Rotates {@code from} towards {@code to} by at most {@code maxAngle} radians. */
@@ -891,19 +951,6 @@ public final class SkillExecutor {
         return true;
     }
 
-    private static boolean venom(Ctx c) {
-        List<LivingEntity> hit = cone(c, c.def.radius(), 50);
-        for (LivingEntity e : hit) {
-            hurt(c, e, c.dmg(1), melee(c));
-            apply(e, c.def, c.p);
-            ServerFx.of("venom_drip", e.position()).follow(e).a(c.def.duration()).send(c.level);
-        }
-        ServerFx.of("venom", c.hand()).vec(c.flat()).a(c.def.radius()).points(hit).send(c.level);
-        sound(c, SoundEvents.PLAYER_ATTACK_SWEEP, 1.5F);
-        sound(c, c.p.position(), SoundEvents.SLIME_SQUISH, 1.0F, 0.7F);
-        return true;
-    }
-
     /** Appears behind the targeted enemy with a flurry; executes enemies on low health. */
     private static boolean assassinate(Ctx c) {
         LivingEntity target = lookTarget(c, c.def.radius(), 10);
@@ -1045,6 +1092,454 @@ public final class SkillExecutor {
         else if (!allies.isEmpty()) fx.points(others(c.p, allies));
         fx.send(c.level);
         c.p.sendSystemMessage(Component.translatable("rpgmod.gamble." + OUTCOMES[roll]).withStyle(roll == 5 ? ChatFormatting.GRAY : ChatFormatting.AQUA), true);
+    }
+
+    // ================================================================== added skills
+
+    /** Fighter: a heavy-handed slash that saps the enemies' strength (little damage). */
+    private static boolean intimidate(Ctx c) {
+        List<LivingEntity> hit = cone(c, c.def.radius(), 70);
+        for (LivingEntity e : hit) {
+            hurt(c, e, c.dmg(1), melee(c));
+            apply(e, c.def, c.p);
+            pushAway(e, c.p.position(), 0.3, 0.1);
+        }
+        ServerFx.of("intimidate", c.chest()).vec(c.flat()).a(c.def.radius()).points(hit).send(c.level);
+        sound(c, SoundEvents.PLAYER_ATTACK_SWEEP, 0.6F);
+        sound(c, c.p.position(), SoundEvents.RAVAGER_ROAR, 0.5F, 1.6F);
+        return true;
+    }
+
+    /** Fighter: every monster around turns on you; you brace yourself. */
+    private static boolean taunt(Ctx c) {
+        List<LivingEntity> foes = enemies(c.p, c.p.position(), c.def.radius());
+        for (LivingEntity e : foes) {
+            if (e instanceof Mob m) m.setTarget(c.p);
+        }
+        apply(c.p, c.def, c.p);
+        ServerFx.of("taunt", c.p.position()).follow(c.p).a(c.def.radius()).points(foes).send(c.level);
+        sound(c, SoundEvents.RAVAGER_ROAR, 1.0F);
+        sound(c, c.p.position(), SoundEvents.SHIELD_BLOCK, 1.0F, 0.6F);
+        return true;
+    }
+
+    /** Ranger: a shot that goes straight through every enemy in a line. */
+    private static boolean piercingShot(Ctx c) {
+        Vec3 eye = c.p.getEyePosition();
+        Vec3 look = c.look();
+        BlockHitResult block = c.level.clip(new ClipContext(eye, eye.add(look.scale(c.def.radius())), ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, c.p));
+        Vec3 end = block.getType() == HitResult.Type.MISS ? eye.add(look.scale(c.def.radius())) : block.getLocation();
+        List<LivingEntity> hit = new ArrayList<>();
+        for (LivingEntity e : c.level.getEntitiesOfClass(LivingEntity.class, new AABB(eye, end).inflate(1), e -> isEnemy(c.p, e))) {
+            if (e.getBoundingBox().inflate(0.4).clip(eye, end).isPresent()) hit.add(e);
+        }
+        hit.sort(java.util.Comparator.comparingDouble(e -> e.distanceToSqr(c.p)));
+        for (int i = 0; i < hit.size(); i++) {
+            LivingEntity e = hit.get(i);
+            int delay = 1 + (int) (e.distanceTo(c.p) / 4);
+            SkillTasks.later(delay, () -> {
+                if (!e.isAlive()) return;
+                hurt(c, e, c.dmg(1), melee(c));
+                push(e, look, 0.4, 0.1);
+            });
+        }
+        ServerFx.of("piercing_shot", c.hand()).vec(end).points(hit).send(c.level);
+        sound(c, SoundEvents.CROSSBOW_SHOOT, 0.7F);
+        sound(c, c.p.position(), SoundEvents.TRIDENT_THROW, 1.0F, 1.6F);
+        return true;
+    }
+
+    /** Ranger: an arrow that blows up where it lands (no block damage). */
+    private static boolean explosiveArrow(Ctx c) {
+        Arrow arrow = arrow(c, 0, c.dmg(0.3), false, "arrow_trail", 0xFF8A3D);
+        sound(c, SoundEvents.ARROW_SHOOT, 0.8F);
+        sound(c, c.p.position(), SoundEvents.FIRECHARGE_USE, 0.6F, 1.5F);
+        final Vec3[] last = {arrow.position()};
+        SkillTasks.run(age -> {
+            boolean stopped = age > 1 && arrow.position().distanceToSqr(last[0]) < 1e-4;
+            if (!arrow.isRemoved()) last[0] = arrow.position();
+            if (arrow.isRemoved() || stopped || age > 80) {
+                Vec3 at = last[0];
+                arrow.discard();
+                double r = c.def.radius();
+                List<LivingEntity> hit = enemies(c.p, at, r);
+                for (LivingEntity e : hit) {
+                    hurt(c, e, c.dmg(1), melee(c));
+                    pushAway(e, at, 0.7, 0.4);
+                }
+                ServerFx.of("explosive_arrow_boom", at).a(r).points(hit).send(c.level);
+                sound(c, at, SoundEvents.GENERIC_EXPLODE, 1.2F, 1.3F);
+                return true;
+            }
+            return false;
+        });
+        return true;
+    }
+
+    /**
+     * Paladin: a dome of light around the caster. Monsters cannot get in (they are pushed out) and
+     * enemy projectiles that reach it are stopped. Allies move in and out freely.
+     */
+    private static boolean guardianDome(Ctx c) {
+        Vec3 o = c.p.position();
+        double r = c.def.radius();
+        int life = ticks(c.def.duration());
+        ServerFx.of("guardian_dome", o).a(r).b(life).send(c.level);
+        sound(c, SoundEvents.BEACON_ACTIVATE, 1.4F);
+        sound(c, o, SoundEvents.AMETHYST_BLOCK_RESONATE, 1.0F, 0.8F);
+        Vec3 centre = o.add(0, 0.2, 0);
+        SkillTasks.run(age -> {
+            for (LivingEntity e : c.level.getEntitiesOfClass(LivingEntity.class, new AABB(o, o).inflate(r + 1), e -> isEnemy(c.p, e))) {
+                Vec3 mid = e.position().add(0, e.getBbHeight() * 0.5, 0);
+                double d = mid.distanceTo(centre);
+                double edge = r + e.getBbWidth() * 0.5;
+                if (d >= edge) continue;
+                Vec3 out = mid.subtract(centre).multiply(1, 0, 1);
+                if (out.lengthSqr() < 1e-4) out = new Vec3(1, 0, 0);
+                out = out.normalize();
+                if (d < edge - 0.8) { // got inside somehow: put it outside
+                    Vec3 to = o.add(out.scale(edge + 0.2));
+                    e.teleportTo(to.x, e.getY(), to.z);
+                }
+                e.setDeltaMovement(out.x * 0.5, Math.max(0.15, e.getDeltaMovement().y), out.z * 0.5);
+                e.needsSync = true;
+                if (age % 4 == 0) ServerFx.of("dome_block", centre.add(out.scale(r)).add(0, e.getBbHeight() * 0.5, 0)).vec(out).send(c.level);
+            }
+            for (var proj : c.level.getEntitiesOfClass(net.minecraft.world.entity.projectile.Projectile.class, new AABB(o, o).inflate(r + 2),
+                    pr -> !(pr.getOwner() instanceof Player))) {
+                if (proj.position().distanceTo(centre) < r + 0.5) {
+                    ServerFx.of("dome_block", proj.position()).vec(proj.position().subtract(centre).normalize()).send(c.level);
+                    sound(c, proj.position(), SoundEvents.SHIELD_BLOCK, 0.8F, 1.4F);
+                    proj.discard();
+                }
+            }
+            if (age == life - 20) sound(c, o, SoundEvents.BEACON_DEACTIVATE, 0.8F, 1.3F);
+            return age >= life - 1;
+        });
+        return true;
+    }
+
+    /** Paladin: a wave of light rolls forward, hurting enemies and healing allies it passes. */
+    private static boolean holyWave(Ctx c) {
+        Vec3 o = c.p.position();
+        Vec3 dir = c.flat();
+        double len = c.def.radius();
+        ServerFx.of("holy_wave", o).vec(dir).a(len).send(c.level);
+        sound(c, SoundEvents.BELL_BLOCK, 1.6F);
+        sound(c, o, SoundEvents.BREEZE_WIND_CHARGE_BURST, 0.6F, 1.6F);
+        Set<Integer> done = new HashSet<>();
+        SkillTasks.run(age -> {
+            double front = 1 + age * 1.2;
+            for (LivingEntity e : c.level.getEntitiesOfClass(LivingEntity.class, new AABB(o, o).inflate(len + 2), e -> e != c.p && e.isAlive())) {
+                Vec3 to = e.position().subtract(o);
+                double along = to.dot(dir);
+                double side = to.subtract(dir.scale(along)).multiply(1, 0, 1).length();
+                if (along < 0 || along > front || side > 1.8 || Math.abs(to.y) > 3 || !done.add(e.getId())) continue;
+                if (e instanceof Player ally) {
+                    ally.heal(c.dmg(0.5));
+                    ServerFx.of("heal_burst", ally.position()).follow(ally).color(0xFFD95A).send(c.level);
+                } else if (isEnemy(c.p, e)) {
+                    hurt(c, e, c.dmg(1), magic(c));
+                    push(e, dir, 0.5, 0.2);
+                }
+            }
+            return front >= len;
+        });
+        return true;
+    }
+
+    /** Wizard: winds time forward - every other skill's remaining cooldown is cut. */
+    private static boolean chrono(Ctx c) {
+        JobData d = JobManager.data(c.p);
+        d.scaleCooldowns(c.level.getGameTime(), 1 - c.def.power(), c.def.id());
+        ServerFx.of("chrono", c.p.position()).follow(c.p).send(c.level);
+        sound(c, SoundEvents.BELL_RESONATE, 1.6F);
+        sound(c, c.p.position(), SoundEvents.AMETHYST_BLOCK_CHIME, 1.0F, 0.6F);
+        return true;
+    }
+
+    /** Wizard spell: five homing missiles spread over the enemies in front. */
+    private static boolean arcaneMissiles(Ctx c) {
+        double range = c.def.radius();
+        Vec3 look = c.look();
+        List<LivingEntity> targets = new ArrayList<>();
+        for (LivingEntity e : enemies(c.p, c.p.position(), range)) {
+            Vec3 to = e.position().add(0, e.getBbHeight() * 0.5, 0).subtract(c.p.getEyePosition());
+            if (to.normalize().dot(look) > 0.5 && canSee(c.level, c.p.getEyePosition(), e.position().add(0, e.getBbHeight() * 0.5, 0), c.p)) targets.add(e);
+        }
+        targets.sort(java.util.Comparator.comparingDouble(e -> -e.position().subtract(c.p.position()).normalize().dot(look)));
+        sound(c, SoundEvents.ILLUSIONER_CAST_SPELL, 1.9F);
+        for (int i = 0; i < 5; i++) {
+            LivingEntity target = targets.isEmpty() ? null : targets.get(i % targets.size());
+            double side = (i - 2) * 0.35;
+            Vec3 start = c.hand().add(Fx3.right(look).scale(side * 0.6)).add(0, Math.abs(side) * 0.3, 0);
+            Vec3 dir = look.add(Fx3.right(look).scale(side)).add(0, 0.25, 0).normalize();
+            int delay = i * 2;
+            SkillTasks.later(delay + 1, () -> {
+                ServerFx.of("arcane_missile", start).vec(dir.scale(1.2)).a(range).follow(target).send(c.level);
+                sound(c, start, SoundEvents.AMETHYST_CLUSTER_BREAK, 0.4F, 2.0F);
+                projectile(c, start, dir, 1.2, range, target, 0.3, (e, at, d) -> {
+                    hurt(c, e, c.dmg(1), magic(c));
+                    ServerFx.of("magic_bolt_hit", at).vec(d).b(1).send(c.level);
+                }, (at, d, wall) -> ServerFx.of("magic_bolt_hit", at).vec(d).b(-1).send(c.level));
+            });
+        }
+        return true;
+    }
+
+    /** Wizard spell: a snowstorm over the aimed spot, hurting and slowing for four seconds. */
+    private static boolean blizzard(Ctx c) {
+        Vec3 at = aimPoint(c, 24);
+        double r = c.def.radius();
+        int life = 80;
+        ServerFx.of("blizzard", at).a(r).b(life).send(c.level);
+        sound(c, SoundEvents.POWDER_SNOW_BREAK, 0.6F);
+        SkillTasks.run(age -> {
+            if (age % 10 == 5) {
+                for (LivingEntity e : enemies(c.p, at, r)) {
+                    hurt(c, e, c.dmg(1), magic(c));
+                    apply(e, c.def, c.p);
+                    e.setTicksFrozen(Math.min(e.getTicksRequiredToFreeze() + 40, e.getTicksFrozen() + 30));
+                }
+                sound(c, at, SoundEvents.PLAYER_HURT_FREEZE, 0.5F, 0.6F + c.p.getRandom().nextFloat() * 0.4F);
+            }
+            return age >= life;
+        });
+        return true;
+    }
+
+    /** Wizard spell: a gravity well pulls enemies together, then collapses on them. */
+    private static boolean gravity(Ctx c) {
+        Vec3 at = aimPoint(c, 24).add(0, 0.8, 0);
+        double r = c.def.radius();
+        int pull = 24;
+        ServerFx.of("gravity", at).a(r).b(pull).send(c.level);
+        sound(c, SoundEvents.PORTAL_TRIGGER, 1.6F);
+        SkillTasks.run(age -> {
+            List<LivingEntity> in = enemies(c.p, at, r + 1);
+            if (age < pull) {
+                for (LivingEntity e : in) {
+                    Vec3 to = at.subtract(e.position().add(0, e.getBbHeight() * 0.5, 0));
+                    double d = Math.max(0.5, to.length());
+                    double resist = 1 - e.getAttributeValue(Attributes.KNOCKBACK_RESISTANCE) * 0.5;
+                    e.setDeltaMovement(to.normalize().scale(Math.min(0.45, 0.15 + d * 0.05) * resist).add(0, 0.04, 0));
+                    e.needsSync = true;
+                    e.resetFallDistance();
+                }
+                return false;
+            }
+            for (LivingEntity e : in) {
+                hurt(c, e, c.dmg(1), magic(c));
+                pushAway(e, at, 0.5, 0.45);
+            }
+            ServerFx.of("gravity_burst", at).a(r).points(in).send(c.level);
+            sound(c, at, SoundEvents.WARDEN_SONIC_BOOM, 0.6F, 1.6F);
+            return true;
+        });
+        return true;
+    }
+
+    /** Healer: fills the party's hunger and saturation. */
+    private static boolean nourish(Ctx c) {
+        List<ServerPlayer> allies = allies(c.p, c.def.radius());
+        int food = (int) Math.round(c.def.power());
+        for (ServerPlayer a : allies) a.getFoodData().eat(food, 0.8F);
+        ServerFx.of("nourish", c.p.position()).follow(c.p).a(c.def.radius()).points(others(c.p, allies)).send(c.level);
+        sound(c, SoundEvents.PLAYER_BURP, 1.2F);
+        sound(c, c.p.position(), SoundEvents.AMETHYST_BLOCK_CHIME, 0.8F, 1.3F);
+        return true;
+    }
+
+    /** Healer: removes every harmful effect and fire from the party, with a little healing. */
+    private static boolean purify(Ctx c) {
+        List<ServerPlayer> allies = allies(c.p, c.def.radius());
+        for (ServerPlayer a : allies) {
+            for (MobEffectInstance inst : new ArrayList<>(a.getActiveEffects())) {
+                if (inst.getEffect().value().getCategory() == net.minecraft.world.effect.MobEffectCategory.HARMFUL) a.removeEffect(inst.getEffect());
+            }
+            a.clearFire();
+            a.setTicksFrozen(0);
+            a.heal(c.dmg(1));
+        }
+        ServerFx.of("purify", c.p.position()).follow(c.p).a(c.def.radius()).points(others(c.p, allies)).send(c.level);
+        sound(c, SoundEvents.ZOMBIE_VILLAGER_CURE, 1.8F);
+        return true;
+    }
+
+    /** Assassin coating on a target: 0 = attack down, 1 = armour break, 2 = poison. */
+    public static void applyCoat(LivingEntity target, int mode, ServerPlayer source) {
+        switch (mode) {
+            case 0 -> target.addEffect(new MobEffectInstance(com.jo112ss.rpgmod.registry.ModEffects.ATTACK_DOWN, 100, 0), source);
+            case 1 -> target.addEffect(new MobEffectInstance(com.jo112ss.rpgmod.registry.ModEffects.ARMOR_BREAK, 100, 0), source);
+            default -> target.addEffect(new MobEffectInstance(MobEffects.POISON, 100, 1), source);
+        }
+        if (target.level() instanceof ServerLevel sl) {
+            ServerFx.of("coat_hit", target.position().add(0, target.getBbHeight() * 0.5, 0)).b(mode).send(sl);
+        }
+    }
+
+    /** Assassin: coats the weapon; hits apply the chosen coating. Sneak + key switches the coating. */
+    private static boolean poisonCoat(Ctx c) {
+        int mode = JobManager.data(c.p).coatMode();
+        c.p.addEffect(new MobEffectInstance(com.jo112ss.rpgmod.registry.ModEffects.POISON_COAT, ticks(c.def.duration()), mode), c.p);
+        ServerFx.of("poison_coat", c.p.position()).follow(c.p).b(mode).a(c.def.duration()).send(c.level);
+        sound(c, SoundEvents.BREWING_STAND_BREW, 1.2F);
+        sound(c, c.p.position(), SoundEvents.BOTTLE_EMPTY, 1.0F, 1.0F);
+        c.p.sendSystemMessage(Component.translatable("rpgmod.coat.applied", Component.translatable("rpgmod.coat." + mode))
+                .withStyle(ChatFormatting.GREEN), true);
+        return true;
+    }
+
+    /** Assassin: a fan of five knives; coated knives carry the coating. */
+    private static boolean throwingKnives(Ctx c) {
+        Vec3 look = c.look();
+        var coat = c.p.getEffect(com.jo112ss.rpgmod.registry.ModEffects.POISON_COAT);
+        for (int i = 0; i < 5; i++) {
+            Vec3 dir = Fx3.rotY(look, Math.toRadians((i - 2) * 9));
+            Vec3 start = c.hand();
+            ServerFx.of("knife", start).vec(dir.scale(1.6)).a(c.def.radius()).b(coat == null ? -1 : coat.getAmplifier()).send(c.level);
+            projectile(c, start, dir, 1.6, c.def.radius(), null, 0, (e, at, d) -> {
+                hurt(c, e, c.dmg(1), melee(c));
+                if (coat != null) applyCoat(e, coat.getAmplifier(), c.p);
+                ServerFx.of("hit", at).color(0xD0D8E0).a(0.6).point(at).send(c.level);
+            }, (at, d, wall) -> { });
+        }
+        sound(c, SoundEvents.TRIDENT_THROW, 0.9F);
+        sound(c, c.p.position(), SoundEvents.PLAYER_ATTACK_SWEEP, 0.6F, 1.8F);
+        return true;
+    }
+
+    /** Assassin: shadows pin the targeted enemy in place. */
+    private static boolean shadowBind(Ctx c) {
+        LivingEntity target = lookTarget(c, c.def.radius(), 12);
+        if (target == null) {
+            fail(c.p, "rpgmod.job.no_target");
+            return false;
+        }
+        int t = ticks(c.def.duration());
+        hurt(c, target, c.dmg(1), melee(c));
+        target.addEffect(new MobEffectInstance(MobEffects.SLOWNESS, t, 9), c.p);
+        target.addEffect(new MobEffectInstance(com.jo112ss.rpgmod.registry.ModEffects.ATTACK_DOWN, t, 0), c.p);
+        target.setDeltaMovement(0, Math.min(0, target.getDeltaMovement().y), 0);
+        target.needsSync = true;
+        ServerFx.of("shadow_bind", target.position()).follow(target).a(target.getBbWidth()).b(t).send(c.level);
+        sound(c, target.position(), SoundEvents.CHAIN_BREAK, 1.0F, 0.6F);
+        sound(c, SoundEvents.ILLUSIONER_MIRROR_MOVE, 0.6F);
+        return true;
+    }
+
+    /** Enchanter: allies' weapons burn - hits set enemies on fire and deal extra damage. */
+    private static boolean fireWeapon(Ctx c) {
+        List<ServerPlayer> allies = allies(c.p, c.def.radius());
+        int bonus = Math.max(1, (int) Math.round(c.dmg(1)));
+        for (ServerPlayer a : allies) {
+            a.addEffect(new MobEffectInstance(com.jo112ss.rpgmod.registry.ModEffects.FIRE_WEAPON, ticks(c.def.duration()), bonus - 1), c.p);
+        }
+        ServerFx.of("fire_weapon", c.p.position()).follow(c.p).a(c.def.radius()).points(others(c.p, allies)).send(c.level);
+        sound(c, SoundEvents.FIRECHARGE_USE, 1.2F);
+        sound(c, c.p.position(), SoundEvents.ENCHANTMENT_TABLE_USE, 1.0F, 1.2F);
+        return true;
+    }
+
+    /** Enchanter: a binding circle on the aimed spot; enemies inside are slowed and weakened. */
+    private static boolean bindingField(Ctx c) {
+        Vec3 at = aimPoint(c, 20);
+        double r = c.def.radius();
+        int life = ticks(c.def.duration());
+        ServerFx.of("binding_field", at).a(r).b(life).send(c.level);
+        sound(c, SoundEvents.EVOKER_PREPARE_SUMMON, 1.3F);
+        SkillTasks.run(age -> {
+            if (age % 5 == 0) {
+                for (LivingEntity e : enemies(c.p, at, r)) {
+                    e.addEffect(new MobEffectInstance(MobEffects.SLOWNESS, 20, 3), c.p);
+                    e.addEffect(new MobEffectInstance(com.jo112ss.rpgmod.registry.ModEffects.ATTACK_DOWN, 40, 0), c.p);
+                }
+            }
+            return age >= life;
+        });
+        return true;
+    }
+
+    /** Russian roulette chambers fired so far, per player (6 chambers, one live round). */
+    private static final java.util.Map<java.util.UUID, Integer> CHAMBER = new java.util.HashMap<>();
+
+    /**
+     * Gambler: six chambers, one live round. Each pull that clicks makes the next one likelier; the
+     * bang hits the targeted enemy for five times your attack.
+     */
+    private static boolean russianRoulette(Ctx c) {
+        int fired = CHAMBER.getOrDefault(c.p.getUUID(), 0);
+        boolean bang = c.p.getRandom().nextInt(6 - fired) == 0;
+        LivingEntity target = lookTarget(c, c.def.radius(), 10);
+        if (!bang) {
+            CHAMBER.put(c.p.getUUID(), fired + 1);
+            ServerFx.of("roulette_click", c.hand()).b(5 - fired).send(c.level);
+            sound(c, SoundEvents.DISPENSER_FAIL, 1.6F);
+            c.p.sendSystemMessage(Component.translatable("rpgmod.roulette.click", 5 - fired).withStyle(ChatFormatting.GRAY), true);
+            return true;
+        }
+        CHAMBER.remove(c.p.getUUID());
+        Vec3 end = target != null ? target.position().add(0, target.getBbHeight() * 0.6, 0) : c.p.getEyePosition().add(c.look().scale(c.def.radius()));
+        if (target != null) {
+            hurt(c, target, c.dmg(1), melee(c));
+            push(target, c.look(), 0.9, 0.3);
+        }
+        ServerFx.of("roulette_bang", c.hand()).vec(end).b(target != null ? 1 : 0).send(c.level);
+        sound(c, SoundEvents.GENERIC_EXPLODE, 1.8F);
+        sound(c, c.p.position(), SoundEvents.FIREWORK_ROCKET_BLAST, 1.2F, 0.6F);
+        c.p.sendSystemMessage(Component.translatable("rpgmod.roulette.bang").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD), true);
+        return true;
+    }
+
+    /**
+     * Gambler: throws three cards; each suit does something different on a hit: spade = big damage,
+     * heart = damage and heals you, diamond = damage and absorption for you, club = poison and slow.
+     */
+    private static boolean cardThrow(Ctx c) {
+        Vec3 look = c.look();
+        for (int i = 0; i < 3; i++) {
+            int suit = c.p.getRandom().nextInt(4);
+            Vec3 dir = Fx3.rotY(look, Math.toRadians((i - 1) * 10));
+            Vec3 start = c.hand();
+            ServerFx.of("card", start).vec(dir.scale(1.4)).a(c.def.radius()).b(suit).send(c.level);
+            projectile(c, start, dir, 1.4, c.def.radius(), null, 0, (e, at, d) -> {
+                switch (suit) {
+                    case 0 -> hurt(c, e, c.dmg(1.8), melee(c));
+                    case 1 -> {
+                        hurt(c, e, c.dmg(0.6), melee(c));
+                        c.p.heal(c.dmg(0.5));
+                    }
+                    case 2 -> {
+                        hurt(c, e, c.dmg(0.8), melee(c));
+                        c.p.addEffect(new MobEffectInstance(MobEffects.ABSORPTION, ticks(10), 0), c.p);
+                    }
+                    default -> {
+                        hurt(c, e, c.dmg(0.6), melee(c));
+                        e.addEffect(new MobEffectInstance(MobEffects.POISON, ticks(4), 0), c.p);
+                        e.addEffect(new MobEffectInstance(MobEffects.SLOWNESS, ticks(4), 1), c.p);
+                    }
+                }
+                ServerFx.of("card_hit", at).b(suit).send(c.level);
+            }, (at, d, wall) -> { });
+        }
+        sound(c, SoundEvents.BOOK_PAGE_TURN, 1.4F);
+        sound(c, c.p.position(), SoundEvents.PLAYER_ATTACK_SWEEP, 0.5F, 2.0F);
+        return true;
+    }
+
+    /** Small vector helpers shared with the client maths. */
+    private static final class Fx3 {
+        static Vec3 right(Vec3 dir) {
+            Vec3 f = new Vec3(dir.x, 0, dir.z);
+            if (f.lengthSqr() < 1e-6) return new Vec3(1, 0, 0);
+            f = f.normalize();
+            return new Vec3(-f.z, 0, f.x);
+        }
+
+        static Vec3 rotY(Vec3 v, double a) {
+            double cs = Math.cos(a), sn = Math.sin(a);
+            return new Vec3(v.x * cs - v.z * sn, v.y, v.x * sn + v.z * cs);
+        }
     }
 
     // ================================================================== fallback for skills without their own effect

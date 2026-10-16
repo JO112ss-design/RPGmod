@@ -12,12 +12,12 @@ import java.util.Set;
  * A job's honeycomb skill panel. Nodes sit on a hex grid (axial coordinates q,r); the centre is
  * unlocked from the start and any node next to an unlocked node can be bought with skill points.
  *
- * <p>Layout (radius 5, 91 cells, far more than the points available at max level):
+ * <p>Layout (radius 7, 169 cells, far more than the points available at max level):
  * <ul>
  *   <li>centre: start (grants the job's first active skill, and first spell for spell users)</li>
- *   <li>rings 1-2: stat cells (1 point); ring 2 also holds three skills (2 points) and spells</li>
- *   <li>rings 3-4: stronger stat cells (2 points); ring 4 holds the last spell</li>
- *   <li>ring 5: the strongest stat cells (3 points) and two ultimates (4 points) on opposite sides</li>
+ *   <li>rings 1-3: stat cells (1 point), rings 4-5: x1.5 (2 points), rings 6-7: x2 (3 points)</li>
+ *   <li>skills spread over rings 2-6 at different angles (2-4 points by ring), spells between them</li>
+ *   <li>ultimates on opposite sides of the outer ring (5 points)</li>
  * </ul>
  */
 public final class SkillPanel {
@@ -107,53 +107,104 @@ public final class SkillPanel {
     }
 
     /** Panel layout version; bump when node ids change so saved progress is refunded. */
-    public static final int VERSION = 4;
-    public static final int RADIUS = 5;
+    public static final int VERSION = 5;
+    public static final int RADIUS = 7;
+
+    /** Stat strength by ring: inner rings x1, middle x1.5, outer x2. */
+    static double ringMultiplier(int k) {
+        return k <= 3 ? 1.0 : k <= 5 ? 1.5 : 2.0;
+    }
+
+    static int statCost(int k) {
+        return k <= 3 ? 1 : k <= 5 ? 2 : 3;
+    }
+
+    static int skillCost(int k) {
+        return k <= 3 ? 2 : k <= 5 ? 3 : 4;
+    }
+
+    /** Screen-style angle (degrees, 0 = right, counter-clockwise) of a hex cell. */
+    private static double angleOf(int q, int r) {
+        double x = Math.sqrt(3) * (q + r / 2.0), y = -1.5 * r;
+        double a = Math.toDegrees(Math.atan2(y, x));
+        return a < 0 ? a + 360 : a;
+    }
+
+    /** The free cell of ring k closest to the given angle. */
+    private static int[] pick(int k, double angle, Map<Long, String> taken) {
+        int[] best = null;
+        double bestD = Double.MAX_VALUE;
+        for (int[] c : ring(k)) {
+            if (taken.containsKey(key(c[0], c[1]))) continue;
+            double d = Math.abs(((angleOf(c[0], c[1]) - angle) % 360 + 540) % 360 - 180);
+            if (d < bestD) {
+                bestD = d;
+                best = c;
+            }
+        }
+        return best;
+    }
+
+    /**
+     * Places the skill cells: actives spiral outwards (one per ring from 2 to 6, at different angles),
+     * spells fill the gaps between them on alternating rings, and the ultimates sit on opposite sides
+     * of the outer ring. Everything else is stat cells.
+     */
+    private static Map<Long, String[]> skillCells(JobDefs.Job job) {
+        Map<Long, String> taken = new HashMap<>();
+        Map<Long, String[]> out = new HashMap<>();
+        List<String> actives = job.actives().subList(1, job.actives().size()); // the first comes with the job
+        for (int j = 0; j < actives.size(); j++) {
+            int k = 2 + j % 5;
+            double angle = 30 + j * (360.0 / Math.max(1, actives.size())) * 1.0 + (j / 5) * 37;
+            int[] c = pick(k, angle, taken);
+            taken.put(key(c[0], c[1]), actives.get(j));
+            out.put(key(c[0], c[1]), new String[] {"skill", actives.get(j)});
+        }
+        if (job.usesSpells()) {
+            List<String> spells = job.spells().subList(1, job.spells().size());
+            for (int j = 0; j < spells.size(); j++) {
+                int k = 2 + (j * 2 + 1) % 5;
+                double angle = 75 + j * (360.0 / spells.size());
+                int[] c = pick(k, angle, taken);
+                taken.put(key(c[0], c[1]), spells.get(j));
+                out.put(key(c[0], c[1]), new String[] {"spell", spells.get(j)});
+            }
+        }
+        for (int u = 0; u < job.ultimates().size() && u < 2; u++) {
+            int[] c = pick(RADIUS, 120 + u * 180, taken);
+            taken.put(key(c[0], c[1]), job.ultimates().get(u));
+            out.put(key(c[0], c[1]), new String[] {"ultimate", job.ultimates().get(u)});
+        }
+        return out;
+    }
 
     private static SkillPanel build(JobDefs.Job job) {
         List<Node> nodes = new ArrayList<>();
         List<JobStat> stats = job.panelStats();
+        Map<Long, String[]> skills = skillCells(job);
         nodes.add(new Node(0, 0, 0, NodeType.START, null, 0, null, 0));
         for (int k = 1; k <= RADIUS; k++) {
             List<int[]> cells = ring(k);
-            int n = cells.size();
-            for (int i = 0; i < n; i++) {
+            for (int i = 0; i < cells.size(); i++) {
                 int[] p = cells.get(i);
-                Node node = special(job, k, i, n, nodes.size(), p);
-                if (node == null) {
+                String[] sk = skills.get(key(p[0], p[1]));
+                Node node;
+                if (sk != null) {
+                    NodeType type = switch (sk[0]) {
+                        case "spell" -> NodeType.SPELL;
+                        case "ultimate" -> NodeType.ULTIMATE;
+                        default -> NodeType.SKILL;
+                    };
+                    int cost = type == NodeType.ULTIMATE ? 5 : skillCost(k);
+                    node = new Node(nodes.size(), p[0], p[1], type, null, 0, sk[1], cost);
+                } else {
                     JobStat st = stats.get((i + k) % stats.size());
-                    double mult = k <= 2 ? 1.0 : k == 3 ? 1.25 : k == 4 ? 1.5 : 2.0;
-                    int cost = k <= 2 ? 1 : k <= 4 ? 2 : 3;
-                    node = new Node(nodes.size(), p[0], p[1], NodeType.STAT, st, st.nodeAmount() * mult, null, cost);
+                    node = new Node(nodes.size(), p[0], p[1], NodeType.STAT, st, st.nodeAmount() * ringMultiplier(k), null, statCost(k));
                 }
                 nodes.add(node);
             }
         }
         return new SkillPanel(nodes);
-    }
-
-    /**
-     * Skill / spell / ultimate cells: actives spread around ring 2, spells between them (ring 2) and
-     * on ring 4, ultimates at opposite points of the outer ring.
-     */
-    private static Node special(JobDefs.Job job, int ring, int i, int n, int id, int[] p) {
-        if (ring == 2) {
-            if (i % 4 == 0 && i / 4 + 1 < job.actives().size()) {
-                return new Node(id, p[0], p[1], NodeType.SKILL, null, 0, job.actives().get(i / 4 + 1), 2);
-            }
-            if (job.usesSpells() && i % 4 == 2 && i / 4 + 1 < job.spells().size()) {
-                return new Node(id, p[0], p[1], NodeType.SPELL, null, 0, job.spells().get(i / 4 + 1), 2);
-            }
-        }
-        if (ring == 4 && job.usesSpells() && i == n / 2 && 4 < job.spells().size()) {
-            return new Node(id, p[0], p[1], NodeType.SPELL, null, 0, job.spells().get(4), 3);
-        }
-        if (ring == RADIUS) {
-            int u = i == 2 ? 0 : i == 2 + n / 2 ? 1 : -1;
-            if (u >= 0 && u < job.ultimates().size()) {
-                return new Node(id, p[0], p[1], NodeType.ULTIMATE, null, 0, job.ultimates().get(u), 4);
-            }
-        }
-        return null;
     }
 }

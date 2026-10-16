@@ -79,5 +79,6 @@ public final class ModRegistries {
         MENUS.register(modBus);
         CREATIVE_TABS.register(modBus);
         DATA_COMPONENTS.register(modBus);
+        ModEffects.EFFECTS.register(modBus);
     }
 }

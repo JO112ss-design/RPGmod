@@ -33,22 +33,26 @@ public enum JobStat {
         this.percent = percent;
     }
 
-    /** Amount a normal (inner) panel node gives; outer nodes give 1.5x. */
+    /**
+     * Amount a normal (inner) panel node gives; middle rings give 1.5x, outer rings 2x. Half of what
+     * it was on the old 91-cell panel with a level 50 cap: there are now about twice the cells and
+     * twice the points, so the most a fully built character reaches stays the same.
+     */
     public double nodeAmount() {
         return switch (this) {
-            case MAX_HEALTH -> 2;
-            case ATTACK_DAMAGE -> 0.4;
-            case ARMOR -> 1;
-            case MOVEMENT_SPEED -> 2;
-            case ATTACK_SPEED -> 3;
-            case LUCK -> 1;
-            case CRIT_CHANCE -> 2;
-            case MAX_MANA -> 10;
-            case MANA_REGEN -> 0.2;
-            case SKILL_POWER -> 4;
-            case COOLDOWN_REDUCTION -> 3;
-            case CAST_SPEED -> 4;
-            case MAGIC_ATTACK -> 0.4;
+            case MAX_HEALTH -> 1;
+            case ATTACK_DAMAGE -> 0.2;
+            case ARMOR -> 0.5;
+            case MOVEMENT_SPEED -> 1;
+            case ATTACK_SPEED -> 1.5;
+            case LUCK -> 0.5;
+            case CRIT_CHANCE -> 1;
+            case MAX_MANA -> 5;
+            case MANA_REGEN -> 0.1;
+            case SKILL_POWER -> 2;
+            case COOLDOWN_REDUCTION -> 1.5;
+            case CAST_SPEED -> 2;
+            case MAGIC_ATTACK -> 0.2;
         };
     }
 
