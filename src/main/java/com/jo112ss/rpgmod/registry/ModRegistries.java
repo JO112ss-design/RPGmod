@@ -43,6 +43,21 @@ public final class ModRegistries {
     public static final DeferredHolder<DataComponentType<?>, DataComponentType<ForgedData>> FORGED_DATA =
             DATA_COMPONENTS.registerComponentType("forged", b -> b.persistent(ForgedData.CODEC).networkSynchronized(ForgedData.STREAM_CODEC));
 
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<com.jo112ss.rpgmod.job.SpellLoadout>> SPELL_LOADOUT =
+            DATA_COMPONENTS.registerComponentType("spells", b -> b.persistent(com.jo112ss.rpgmod.job.SpellLoadout.CODEC)
+                    .networkSynchronized(com.jo112ss.rpgmod.job.SpellLoadout.STREAM_CODEC));
+
+    public static final DeferredRegister<net.neoforged.neoforge.attachment.AttachmentType<?>> ATTACHMENTS =
+            DeferredRegister.create(net.neoforged.neoforge.registries.NeoForgeRegistries.Keys.ATTACHMENT_TYPES, RpgMod.MODID);
+
+    /** Job progress on each player: saved, copied on death, synced to the owner. */
+    public static final java.util.function.Supplier<net.neoforged.neoforge.attachment.AttachmentType<com.jo112ss.rpgmod.job.JobData>> JOB_DATA =
+            ATTACHMENTS.register("job", () -> net.neoforged.neoforge.attachment.AttachmentType.builder(com.jo112ss.rpgmod.job.JobData::new)
+                    .serialize(com.jo112ss.rpgmod.job.JobData.CODEC)
+                    .copyOnDeath()
+                    .sync((holder, to) -> holder == to, com.jo112ss.rpgmod.job.JobData.STREAM_CODEC)
+                    .build());
+
     public static final DeferredHolder<CreativeModeTab, CreativeModeTab> TAB = CREATIVE_TABS.register("main", () -> CreativeModeTab.builder()
             .title(Component.translatable("itemGroup.rpgmod"))
             .withTabsBefore(CreativeModeTabs.COMBAT)
@@ -60,6 +75,7 @@ public final class ModRegistries {
     public static void register(IEventBus modBus) {
         BLOCKS.register(modBus);
         ITEMS.register(modBus);
+        ATTACHMENTS.register(modBus);
         MENUS.register(modBus);
         CREATIVE_TABS.register(modBus);
         DATA_COMPONENTS.register(modBus);

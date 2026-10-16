@@ -9,4 +9,8 @@ public final class ClientHandlerProxy {
     public static void handleSync(ForgeSyncPayload payload, IPayloadContext context) {
         com.jo112ss.rpgmod.client.ClientForgeView.receive(payload);
     }
+
+    public static void openJobSelect(OpenJobSelectPayload payload, IPayloadContext context) {
+        com.jo112ss.rpgmod.client.job.JobClient.openJobSelect();
+    }
 }

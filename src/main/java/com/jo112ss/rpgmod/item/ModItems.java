@@ -26,7 +26,7 @@ public final class ModItems {
                         return mat == WeaponMaterial.NETHERITE ? p.fireResistant() : p;
                     });
                 } else {
-                    item = ModRegistries.ITEMS.registerItem(name, Item::new, p -> {
+                    item = ModRegistries.ITEMS.registerItem(name, type == WeaponType.STAFF ? RpgStaffItem::new : Item::new, p -> {
                         p = p.sword(mat.tool, type.attackDamage, type.attackSpeed);
                         return mat == WeaponMaterial.NETHERITE ? p.fireResistant() : p;
                     });
@@ -57,5 +57,20 @@ public final class ModItems {
             case DIAMOND -> diamond;
             case NETHERITE -> netherite;
         };
+    }
+
+    private static Map<Item, WeaponType> reverse;
+
+    /** Weapon type of an item (any material), or null if it is not one of the RPG weapon types. */
+    public static WeaponType typeOf(Item item) {
+        if (reverse == null) {
+            Map<Item, WeaponType> m = new java.util.HashMap<>();
+            for (WeaponType t : WeaponType.values()) {
+                if (t.isArmor()) continue;
+                for (WeaponMaterial mat : WeaponMaterial.values()) m.put(get(t, mat), t);
+            }
+            reverse = m;
+        }
+        return reverse.get(item);
     }
 }

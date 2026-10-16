@@ -1,0 +1,35 @@
+package com.jo112ss.rpgmod.network;
+
+import com.jo112ss.rpgmod.job.JobManager;
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+import net.minecraft.server.level.ServerPlayer;
+
+/** Routes job requests to JobManager with a small per-player rate limit against spam. */
+public final class JobActionHandler {
+    private JobActionHandler() {}
+
+    private static final long MIN_GAP_MILLIS = 50;
+    private static final Map<UUID, Long> LAST = new ConcurrentHashMap<>();
+
+    public static void handle(ServerPlayer player, JobActionPayload p) {
+        long now = System.currentTimeMillis();
+        Long last = LAST.get(player.getUUID());
+        if (last != null && now - last < MIN_GAP_MILLIS) return;
+        LAST.put(player.getUUID(), now);
+        switch (p.action()) {
+            case JobActionPayload.CHOOSE_JOB -> JobManager.chooseJob(player, p.text());
+            case JobActionPayload.USE_SKILL -> JobManager.useSkill(player, p.arg());
+            case JobActionPayload.UNLOCK_NODE -> JobManager.unlockNode(player, p.arg());
+            case JobActionPayload.EQUIP_SKILL -> JobManager.equipSkill(player, p.arg(), p.text());
+            case JobActionPayload.SET_SPELL -> JobManager.setSpell(player, p.arg(), p.text());
+            case JobActionPayload.SELECT_SPELL -> JobManager.selectSpell(player, p.arg());
+            default -> { }
+        }
+    }
+
+    public static void forget(UUID id) {
+        LAST.remove(id);
+    }
+}

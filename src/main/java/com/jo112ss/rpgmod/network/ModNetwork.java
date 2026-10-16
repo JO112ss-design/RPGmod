@@ -17,5 +17,9 @@ public final class ModNetwork {
             }
         });
         registrar.playToClient(ForgeSyncPayload.TYPE, ForgeSyncPayload.STREAM_CODEC, ClientHandlerProxy::handleSync);
+        registrar.playToServer(JobActionPayload.TYPE, JobActionPayload.STREAM_CODEC, (payload, context) -> {
+            if (context.player() instanceof ServerPlayer sp) JobActionHandler.handle(sp, payload);
+        });
+        registrar.playToClient(OpenJobSelectPayload.TYPE, OpenJobSelectPayload.STREAM_CODEC, ClientHandlerProxy::openJobSelect);
     }
 }

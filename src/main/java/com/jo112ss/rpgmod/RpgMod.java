@@ -22,6 +22,7 @@ public class RpgMod {
         com.jo112ss.rpgmod.item.ModItems.init();
         ModRegistries.register(modBus);
         container.registerConfig(ModConfig.Type.SYNCED, SmithingConfig.SPEC);
+        container.registerConfig(ModConfig.Type.SYNCED, com.jo112ss.rpgmod.job.JobConfig.SPEC, "rpgmod-jobs.toml");
         modBus.addListener(ModNetwork::register);
         modBus.addListener(RpgMod::onConfig);
         modBus.addListener(RpgMod::onConfigReload);
