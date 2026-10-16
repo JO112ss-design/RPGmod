@@ -166,7 +166,22 @@ public final class AutoTestClient {
             case "shadow_bind", "chrono", "quick_cast", "nourish", "fire_weapon", "poison_coat" -> new int[] {8};
             case "binding_field" -> new int[] {10};
             case "mob:levels" -> new int[] {5, 11, 18};
+            case "mob:pillar" -> new int[] {50, 110, 200};
+            case "mob:dig" -> new int[] {70, 140, 210};
+            case "mob:creeper" -> new int[] {12, 26, 60};
+            case "mob:archer" -> new int[] {40, 100, 160};
+            case "mob:items" -> new int[] {30, 60, 120, 190};
+            case "mob:spider" -> new int[] {40, 80};
             default -> new int[] {6};
+        };
+    }
+
+    private static int length(String entry) {
+        String id = entry.startsWith("fp:") ? entry.substring(3) : entry;
+        return switch (id) {
+            case "mob:pillar", "mob:dig", "mob:archer", "mob:items" -> 220;
+            case "mob:creeper", "mob:spider" -> 120;
+            default -> SLOT;
         };
     }
 
@@ -178,7 +193,8 @@ public final class AutoTestClient {
             showSkills = new java.util.ArrayList<>();
             if ("all".equals(System.getProperty("rpgmod.showcase"))) showSkills.addAll(com.jo112ss.rpgmod.job.core.JobDefs.SKILLS.keySet());
             // enemy work: levels, plates and damage numbers (skills were checked in earlier runs)
-            showSkills.addAll(java.util.List.of("mob:levels", "fp:mob:levels", "power_slash", "meteor"));
+            showSkills.addAll(java.util.List.of("mob:levels", "fp:mob:levels", "mob:pillar", "mob:dig", "mob:creeper", "mob:archer",
+                    "mob:items", "mob:spider"));
             mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK);
             mc.options.particles().set(net.minecraft.server.level.ParticleStatus.ALL);
             AutoTestServer.requestShowcase();
@@ -186,7 +202,12 @@ public final class AutoTestClient {
         }
         int base = 30;
         if (t < base) return;
-        int i = (t - base) / SLOT, k = (t - base) % SLOT;
+        // entries have different lengths (monster scenes need time to play out)
+        int i = 0, k = t - base;
+        while (i < showSkills.size() && k >= length(showSkills.get(i))) {
+            k -= length(showSkills.get(i));
+            i++;
+        }
         if (i >= showSkills.size()) {
             if (k == 10) {
                 RpgMod.LOGGER.info("[AUTOTEST] finished");

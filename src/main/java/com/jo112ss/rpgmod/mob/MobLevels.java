@@ -60,6 +60,7 @@ public final class MobLevels {
         ServerLevel sl = (ServerLevel) event.getLevel();
         int lv = mob instanceof EnderDragon ? DRAGON_LEVEL : rollLevel(sl, mob.blockPosition(), mob.getRandom().nextDouble());
         apply(mob, lv);
+        com.jo112ss.rpgmod.mob.ai.MobAi.onFirstLevel(mob, lv);
     }
 
     /** Level for a monster appearing at {@code pos}. */

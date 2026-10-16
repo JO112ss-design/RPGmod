@@ -100,15 +100,37 @@ public final class MobOverlay {
             if (s == null) continue;
             plates.add(new Object[] {le, s, dist, focus, lv});
         }
-        plates.sort((a, b) -> Double.compare((double) b[2], (double) a[2]));
+        // priority: the monster under the crosshair, then recently hit ones, then the nearest. A plate
+        // that would overlap a more important one is dimmed so the important one stays readable.
+        plates.sort((a, b) -> {
+            int pa = a[0] == crosshair ? 0 : (boolean) a[3] ? 1 : 2, pb = b[0] == crosshair ? 0 : (boolean) b[3] ? 1 : 2;
+            return pa != pb ? Integer.compare(pa, pb) : Double.compare((double) a[2], (double) b[2]);
+        });
+        List<float[]> placed = new ArrayList<>();
+        List<Object[]> draw = new ArrayList<>();
         for (Object[] p : plates) {
-            LivingEntity le = (LivingEntity) p[0];
             float[] s = (float[]) p[1];
             double dist = (double) p[2];
             boolean focus = (boolean) p[3];
-            float fade = focus ? 1f : (float) Math.min(1, (PLATE_RANGE - dist) / 4);
             float scale = (float) Math.max(0.55, Math.min(1.0, 1.15 - dist / 30));
-            plate(g, mc.font, le, (int) p[4], s[0], s[1], scale, fade, focus, dt);
+            float hw = (focus ? 48 : 30) * scale, top = (focus ? 26 : 16) * scale;
+            float[] rect = {s[0] - hw, s[1] - top, s[0] + hw, s[1] + 2 * scale};
+            boolean covered = false;
+            for (float[] r : placed) {
+                if (rect[0] < r[2] && rect[2] > r[0] && rect[1] < r[3] && rect[3] > r[1]) {
+                    covered = true;
+                    break;
+                }
+            }
+            placed.add(rect);
+            float fade = focus ? 1f : (float) Math.min(1, (PLATE_RANGE - dist) / 4);
+            if (covered) fade *= 0.22f;
+            draw.add(new Object[] {p[0], s, scale, fade, focus, p[4]});
+        }
+        for (int i = draw.size() - 1; i >= 0; i--) { // least important first, so the important ones end on top
+            Object[] d = draw.get(i);
+            float[] s = (float[]) d[1];
+            plate(g, mc.font, (LivingEntity) d[0], (int) d[5], s[0], s[1], (float) d[2], (float) d[3], (boolean) d[4], dt);
         }
 
         // ---- damage numbers
@@ -122,15 +144,15 @@ public final class MobOverlay {
                 continue;
             }
             float rise = 1 - (1 - t) * (1 - t);
-            Vec3 at = n.at.add(0, rise * 0.9, 0);
+            Vec3 at = n.at.add(0, rise * 0.7, 0);
             float[] s = project(proj, at.subtract(eye), sw, sh);
             if (s == null) continue;
             double dist = at.distanceTo(eye);
-            float pop = t < 0.12f ? 1 + (1 - t / 0.12f) * 0.7f : 1;
-            float base = (float) Math.max(0.7, Math.min(1.6, 9 / Math.max(1, dist)));
-            if (n.kind == DamageNumbers.CRIT) base *= 1.35f;
+            float pop = t < 0.1f ? 1 + (1 - t / 0.1f) * 0.5f : 1;
+            float base = (float) Math.max(0.6, Math.min(1.15, 6 / Math.max(1, dist)));
+            if (n.kind == DamageNumbers.CRIT) base *= 1.3f;
             float alpha = t > 0.7f ? (1 - t) / 0.3f : 1;
-            number(g, mc.font, n, s[0] + n.dx * 10 * rise, s[1], base * pop, alpha);
+            number(g, mc.font, n, s[0] + n.dx * 24 * rise, s[1], base * pop, alpha);
         }
 
         // forget entities that are gone
@@ -231,12 +253,7 @@ public final class MobOverlay {
         g.pose().translate(x, y);
         g.pose().scale(scale, scale);
         int ox = -w / 2, oy = -4;
-        int outline = a(n.kind == DamageNumbers.CRIT ? 0xFF4A2A00 : 0xFF000000, alpha * 0.85f);
-        g.text(font, text, ox - 1, oy, outline, false);
-        g.text(font, text, ox + 1, oy, outline, false);
-        g.text(font, text, ox, oy - 1, outline, false);
-        g.text(font, text, ox, oy + 1, outline, false);
-        g.text(font, text, ox, oy, a(color, alpha), false);
+        g.text(font, text, ox, oy, a(color, alpha), true);
         g.pose().popMatrix();
     }
 }

@@ -72,7 +72,8 @@ public final class DamageNumbers {
     }
 
     private static void send(ServerLevel sl, LivingEntity e, float amount, int kind) {
-        Vec3 at = e.position().add(0, e.getBbHeight() + 0.25, 0);
+        // from the upper body, below the health plate; the client lets it rise and drift sideways
+        Vec3 at = e.position().add(0, e.getBbHeight() * 0.7, 0);
         ServerFx.of("dmg", at).follow(e).a(amount).b(kind).send(sl, RANGE);
     }
 }

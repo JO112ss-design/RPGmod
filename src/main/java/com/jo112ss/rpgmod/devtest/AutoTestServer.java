@@ -108,6 +108,7 @@ public final class AutoTestServer {
                 player.getInventory().setSelectedSlot(0);
                 return;
             }
+            MobScenes.end(level, player);
             if (id.startsWith("mob:")) {
                 mobScene(level, id.substring(4));
                 return;
@@ -138,6 +139,7 @@ public final class AutoTestServer {
         }
         if (sinceCast >= 0 && ++sinceCast == 40) logLastCast();
         sceneStep(level);
+        MobScenes.tick(level, player);
         if (arena != null && player.tickCount % 10 == 0) {
             for (var m : level.getEntitiesOfClass(net.minecraft.world.entity.monster.cubemob.Slime.class, player.getBoundingBox().inflate(48))) m.discard();
         }
@@ -175,8 +177,15 @@ public final class AutoTestServer {
                             com.jo112ss.rpgmod.mob.core.MobLevelMath.Realm.OVERWORLD, d, 64));
                 }
             }
-            default -> { }
+            default -> MobScenes.start(level, player, arena, name);
         }
+    }
+
+    /** Scene bookkeeping: health the test player loses during monster scenes. */
+    @SubscribeEvent
+    public static void onPlayerHurt(net.neoforged.neoforge.event.entity.living.LivingDamageEvent.Post event) {
+        if (!ENABLED || event.getEntity() != player) return;
+        MobScenes.onPlayerHurt(event.getInflictedDamage(), event.getSource().getDirectEntity() instanceof net.minecraft.world.entity.projectile.arrow.AbstractArrow);
     }
 
     /** Runs every tick while a scene is active: hits for the damage numbers. */
