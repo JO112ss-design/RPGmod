@@ -35,13 +35,6 @@ jobs:
           set -o pipefail
           ./gradlew build --stacktrace 2>&1 | tee build.log
 
-      - name: Run balance simulation
-        if: steps.build.outcome == 'success'
-        continue-on-error: true
-        run: |
-          set -o pipefail
-          ./gradlew runBalanceSim 2>&1 | tee sim.log || true
-
       - name: Upload jar
         if: steps.build.outcome == 'success'
         uses: actions/upload-artifact@v4
@@ -55,14 +48,20 @@ jobs:
         run: |
           mkdir -p /tmp/out
           cp build.log /tmp/out/ 2>/dev/null || echo "no log" > /tmp/out/build.log
-          cp sim.log /tmp/out/ 2>/dev/null || true
           echo "${{ steps.build.outcome }}" > /tmp/out/status.txt
           echo "${{ github.sha }}" > /tmp/out/sha.txt
           cp build/libs/*.jar /tmp/out/ 2>/dev/null || true
           if [ -f .ci/dump-sources ]; then
             ./gradlew createMinecraftArtifacts > /dev/null 2>&1 || true
-            find build/moddev -name '*sources*.jar' -exec cp {} /tmp/out/ \; || true
-            find ~/.gradle -path '*neoforge*' -name '*sources*.jar' -size +1M -exec cp {} /tmp/out/ \; 2>/dev/null || true
+            find build/moddev -name '*.jar' -exec ls -la {} \; > /tmp/out/artifacts.txt 2>&1 || true
+            MCJAR=$(find build/moddev -name '*.jar' -not -name '*sources*' -size +10M -printf '%s %p\n' | sort -n | tail -1 | cut -d' ' -f2)
+            echo "decompiling $MCJAR" >> /tmp/out/artifacts.txt
+            if [ -n "$MCJAR" ]; then
+              curl -sSL -o /tmp/vf.jar https://repo1.maven.org/maven2/org/vineflower/vineflower/1.11.1/vineflower-1.11.1.jar
+              mkdir -p /tmp/dec
+              java -Xmx4G -jar /tmp/vf.jar -din=1 -rbr=1 -dgs=1 -asc=1 -rsy=1 -log=WARN "$MCJAR" /tmp/dec > /tmp/out/decompile.log 2>&1 || true
+              (cd /tmp/dec && find . -name '*.jar' -exec unzip -qo {} \; ; rm -f *.jar; zip -qr /tmp/out/mc-sources.zip net com 2>/dev/null) || true
+            fi
             ls -la /tmp/out
           fi
           cd /tmp/out
