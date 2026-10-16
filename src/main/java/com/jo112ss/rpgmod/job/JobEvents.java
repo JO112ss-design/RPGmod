@@ -73,19 +73,14 @@ public final class JobEvents {
     }
 
     /**
-     * RPG crit feedback, deliberately unlike the vanilla crit (white stars + crit sound): a gold flash,
-     * a ring of gold dust and gold sparks, a bright chime, and the damage on the attacker's action bar.
+     * RPG crit feedback, deliberately unlike the vanilla crit (white stars + crit sound): a gold star
+     * burst with a ring and a slash glint (client effect "rpg_crit"), a bright chime, and the damage on
+     * the attacker's action bar.
      */
     private static void showRpgCrit(ServerPlayer sp, net.minecraft.world.entity.LivingEntity target, float damage, double mult) {
         var level = (net.minecraft.server.level.ServerLevel) sp.level();
         double x = target.getX(), y = target.getY() + target.getBbHeight() * 0.6, z = target.getZ();
-        level.sendParticles(net.minecraft.core.particles.ColorParticleOption.create(net.minecraft.core.particles.ParticleTypes.FLASH, 0xFFFFC832), x, y, z, 1, 0, 0, 0, 0);
-        var gold = new net.minecraft.core.particles.DustParticleOptions(0xFFC832, 1.4F);
-        for (int i = 0; i < 16; i++) {
-            double a = Math.PI * 2 * i / 16;
-            level.sendParticles(gold, x + Math.cos(a) * 0.9, y, z + Math.sin(a) * 0.9, 1, 0, 0, 0, 0);
-        }
-        level.sendParticles(net.minecraft.core.particles.ParticleTypes.WAX_ON, x, y, z, 12, 0.35, 0.35, 0.35, 0.6);
+        com.jo112ss.rpgmod.job.fx.ServerFx.of("rpg_crit", new net.minecraft.world.phys.Vec3(x, y, z)).vec(target.position().subtract(sp.position())).a(target.getBbWidth()).send(level);
         level.playSound(null, target.blockPosition(), net.minecraft.sounds.SoundEvents.AMETHYST_CLUSTER_BREAK, net.minecraft.sounds.SoundSource.PLAYERS, 1.0F, 1.7F);
         level.playSound(null, target.blockPosition(), net.minecraft.sounds.SoundEvents.PLAYER_ATTACK_STRONG, net.minecraft.sounds.SoundSource.PLAYERS, 0.8F, 0.8F);
         sp.sendSystemMessage(net.minecraft.network.chat.Component.translatable("rpgmod.crit.hit", String.format("%.1f", damage), String.format("%.2f", mult))

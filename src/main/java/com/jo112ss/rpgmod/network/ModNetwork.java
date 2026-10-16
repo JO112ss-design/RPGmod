@@ -21,5 +21,6 @@ public final class ModNetwork {
             if (context.player() instanceof ServerPlayer sp) JobActionHandler.handle(sp, payload);
         });
         registrar.playToClient(OpenJobSelectPayload.TYPE, OpenJobSelectPayload.STREAM_CODEC, ClientHandlerProxy::openJobSelect);
+        registrar.playToClient(FxPayload.TYPE, FxPayload.STREAM_CODEC, ClientHandlerProxy::playFx);
     }
 }

@@ -13,4 +13,8 @@ public final class ClientHandlerProxy {
     public static void openJobSelect(OpenJobSelectPayload payload, IPayloadContext context) {
         com.jo112ss.rpgmod.client.job.JobClient.openJobSelect();
     }
+
+    public static void playFx(FxPayload payload, IPayloadContext context) {
+        com.jo112ss.rpgmod.client.fx.SkillFx.play(payload);
+    }
 }

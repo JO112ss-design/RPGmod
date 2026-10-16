@@ -14,6 +14,7 @@ public class RpgModClient {
         modBus.addListener(RpgModClient::registerScreens);
         modBus.addListener(com.jo112ss.rpgmod.client.job.JobKeys::register);
         modBus.addListener(RpgModClient::registerLayers);
+        modBus.addListener(com.jo112ss.rpgmod.client.fx.FxRender::onRegisterPipelines);
     }
 
     private static void registerScreens(RegisterMenuScreensEvent event) {

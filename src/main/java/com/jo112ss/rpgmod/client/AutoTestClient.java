@@ -124,9 +124,67 @@ public final class AutoTestClient {
             if (after == 10) AutoTestServer.requestEquipCheck();
             if (after == 30) shot(mc, "07_world");
             if (after == 200) {
+                show = 0;
+                after = -1;
+            }
+        }
+        if (show >= 0) showcase(mc);
+    }
+
+    // ------------------------------------------------------------------ skill showcase
+
+    private static int show = -1;
+    private static final int SLOT = 44;
+    private static java.util.List<String> showSkills;
+
+    /** Ticks after the cast at which to take screenshots (mid-effect). */
+    private static int[] shotTimes(String id) {
+        return switch (id) {
+            case "power_slash", "shield_bash" -> new int[] {2};
+            case "multishot", "backstep", "magic_bolt", "backstab", "lucky_shot" -> new int[] {3};
+            case "earthshatter", "frost_nova", "flame_burst", "berserk", "holy_guard", "lay_on_hands", "heal", "arcane_shield", "shadow_dance" -> new int[] {6};
+            case "snare", "time_warp", "weaken", "mana_link", "grand_enchant", "mana_surge", "blessing", "guardian_light" -> new int[] {10};
+            case "arrow_rain" -> new int[] {16};
+            case "smite" -> new int[] {4, 9};
+            case "judgement" -> new int[] {12, 18};
+            case "meteor" -> new int[] {18, 30};
+            case "thunder" -> new int[] {6, 12};
+            case "assassinate" -> new int[] {5, 9};
+            case "coin_toss" -> new int[] {9, 18};
+            case "dice_roll" -> new int[] {10, 20};
+            case "all_in" -> new int[] {8, 16};
+            case "jackpot" -> new int[] {16, 28};
+            case "roulette" -> new int[] {18, 37};
+            case "sanctuary" -> new int[] {20};
+            default -> new int[] {6};
+        };
+    }
+
+    /** Casts every skill in front of training dummies and photographs each mid-effect. */
+    private static void showcase(Minecraft mc) {
+        int t = show++;
+        if (t == 0) {
+            showSkills = new java.util.ArrayList<>(com.jo112ss.rpgmod.job.core.JobDefs.SKILLS.keySet());
+            mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK);
+            mc.options.particles().set(net.minecraft.server.level.ParticleStatus.ALL);
+            AutoTestServer.requestShowcase();
+            return;
+        }
+        int base = 30;
+        if (t < base) return;
+        int i = (t - base) / SLOT, k = (t - base) % SLOT;
+        if (i >= showSkills.size()) {
+            if (k == 10) {
                 RpgMod.LOGGER.info("[AUTOTEST] finished");
                 mc.stop();
             }
+            return;
+        }
+        String id = showSkills.get(i);
+        if (k == 0) AutoTestServer.requestCast(id);
+        int[] times = shotTimes(id);
+        for (int j = 0; j < times.length; j++) {
+            if (k == times[j] + 1) shot(mc, String.format("s%02d_%s%s", i, id, times.length > 1 ? "_" + (j + 1) : ""));
         }
     }
 

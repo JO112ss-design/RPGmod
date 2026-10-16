@@ -12,7 +12,6 @@ import com.jo112ss.rpgmod.registry.ModRegistries;
 import java.util.List;
 import java.util.Map;
 import net.minecraft.ChatFormatting;
-import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -114,7 +113,7 @@ public final class JobManager {
             player.sendSystemMessage(Component.translatable("rpgmod.job.level_up", d.level(), d.freePoints())
                     .withStyle(ChatFormatting.GOLD));
             player.level().playSound(null, player.blockPosition(), SoundEvents.PLAYER_LEVELUP, SoundSource.PLAYERS, 0.7F, 1.0F);
-            ((ServerLevel) player.level()).sendParticles(ParticleTypes.TOTEM_OF_UNDYING, player.getX(), player.getY() + 1, player.getZ(), 40, 0.4, 0.8, 0.4, 0.3);
+            com.jo112ss.rpgmod.job.fx.ServerFx.of("level_up", player.position()).follow(player).color(d.jobDef().color()).send((ServerLevel) player.level());
         }
         sync(player);
     }
@@ -365,21 +364,27 @@ public final class JobManager {
         return (1 + (skillPower + magicPower) / 100.0) * (1 + staffBonus(player));
     }
 
-    /** Charging particles; a chime when the cast becomes ready. */
+    /** Colour of each spell's charging circle and casting light. */
+    public static int spellColor(String id) {
+        return switch (id) {
+            case "flame_burst" -> 0xFF7A2A;
+            case "frost_nova" -> 0x8FE6FF;
+            case "thunder" -> 0xFFF07A;
+            case "arcane_shield" -> 0x7FD8FF;
+            default -> 0xA98BFF;
+        };
+    }
+
+    /** Charging: a magic circle drawn by the clients while the staff is held; a chime when the cast is ready. */
     public static void chargeTick(ServerPlayer player, ItemStack staff, int held, ServerLevel level) {
         SkillDef def = selectedSpell(player, staff);
         if (def == null) return;
         int need = castTicks(player, def);
-        if (held < need) {
-            if (held % 2 == 0) {
-                double a = held * 0.6;
-                level.sendParticles(ParticleTypes.ENCHANT, player.getX() + Math.cos(a) * 0.8, player.getY() + 1.2, player.getZ() + Math.sin(a) * 0.8, 2, 0.05, 0.2, 0.05, 0.4);
-            }
-        } else if (held == need) {
+        if (held == 1) {
+            com.jo112ss.rpgmod.job.fx.ServerFx.of("spell_charge", player.position()).follow(player).b(need).color(spellColor(def.id())).send(level);
+        }
+        if (held == need) {
             level.playSound(null, player.blockPosition(), SoundEvents.AMETHYST_BLOCK_RESONATE, SoundSource.PLAYERS, 1.0F, 1.6F);
-            level.sendParticles(ParticleTypes.END_ROD, player.getX(), player.getY() + 1.4, player.getZ(), 12, 0.3, 0.3, 0.3, 0.05);
-        } else if (held % 6 == 0) {
-            level.sendParticles(ParticleTypes.END_ROD, player.getX(), player.getY() + 2.1, player.getZ(), 1, 0.15, 0.05, 0.15, 0.01);
         }
     }
 

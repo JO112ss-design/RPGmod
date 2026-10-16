@@ -51,13 +51,13 @@ public final class JobDefs {
         job("fighter", 0xD9534F, "闘", List.of(JobStat.MAX_HEALTH, JobStat.ATTACK_DAMAGE, JobStat.ARMOR),
                 stats(JobStat.MAX_HEALTH, 4, JobStat.ATTACK_DAMAGE, 5), stats(JobStat.MAX_HEALTH, 0.3, JobStat.ATTACK_DAMAGE, 0.2),
                 List.of(
-                        skill("power_slash", SkillKind.ACTIVE, SkillEffect.SWEEP, 6, 15, 7, 3.5, 0, List.of(), 0, "斬"),
-                        skill("charge", SkillKind.ACTIVE, SkillEffect.DASH, 8, 10, 1.6, 0, 0, List.of(), 0, "突"),
+                        skill("power_slash", SkillKind.ACTIVE, SkillEffect.SWEEP, 6, 15, 7, 4.5, 0, List.of(), 0, "斬"),
+                        skill("charge", SkillKind.ACTIVE, SkillEffect.DASH, 8, 10, 1.8, 0, 0, List.of(), 0, "突"),
                         skill("war_cry", SkillKind.ACTIVE, SkillEffect.BUFF, 20, 25, 0, 8, 10, List.of("minecraft:strength"), 0, "鬨"),
-                        skill("whirlwind", SkillKind.ACTIVE, SkillEffect.WHIRL, 10, 20, 5, 4, 0, List.of(), 0, "旋")),
+                        skill("whirlwind", SkillKind.ACTIVE, SkillEffect.WHIRL, 10, 20, 5, 4.5, 0, List.of(), 0, "旋")),
                 List.of(
                         skill("berserk", SkillKind.ULTIMATE, SkillEffect.BUFF, 90, 50, 0, 0, 15, List.of("minecraft:strength", "minecraft:speed"), 1, "狂"),
-                        skill("earthshatter", SkillKind.ULTIMATE, SkillEffect.WHIRL, 90, 60, 14, 6, 4, List.of("minecraft:slowness"), 1, "砕")),
+                        skill("earthshatter", SkillKind.ULTIMATE, SkillEffect.WHIRL, 90, 60, 14, 7, 4, List.of("minecraft:slowness"), 1, "砕")),
                 List.of());
         // ---- Ranger: bows
         job("ranger", 0x5CB85C, "弓", List.of(JobStat.ATTACK_DAMAGE, JobStat.MOVEMENT_SPEED, JobStat.CRIT_CHANCE),
@@ -65,63 +65,63 @@ public final class JobDefs {
                 List.of(
                         skill("multishot", SkillKind.ACTIVE, SkillEffect.SHOT, 6, 15, 3, 0, 0, List.of(), 0, "連"),
                         skill("backstep", SkillKind.ACTIVE, SkillEffect.BACKSTEP, 7, 10, 1.4, 0, 0, List.of(), 0, "退"),
-                        skill("hunters_mark", SkillKind.ACTIVE, SkillEffect.DEBUFF, 15, 20, 0, 12, 10, List.of("minecraft:glowing", "minecraft:weakness"), 0, "印"),
-                        skill("snare", SkillKind.ACTIVE, SkillEffect.DEBUFF, 12, 20, 2, 5, 5, List.of("minecraft:slowness"), 2, "罠")),
+                        skill("hunters_mark", SkillKind.ACTIVE, SkillEffect.DEBUFF, 15, 20, 0, 16, 10, List.of("minecraft:glowing", "minecraft:weakness"), 0, "印"),
+                        skill("snare", SkillKind.ACTIVE, SkillEffect.DEBUFF, 12, 20, 3, 3.5, 4, List.of("minecraft:slowness"), 2, "罠")),
                 List.of(
-                        skill("arrow_rain", SkillKind.ULTIMATE, SkillEffect.SHOT, 90, 50, 12, 0, 0, List.of(), 0, "雨"),
+                        skill("arrow_rain", SkillKind.ULTIMATE, SkillEffect.SHOT, 90, 50, 12, 5, 0, List.of(), 0, "雨"),
                         skill("eagle_eye", SkillKind.ULTIMATE, SkillEffect.BUFF, 90, 40, 0, 0, 15, List.of("minecraft:strength", "minecraft:speed", "minecraft:night_vision"), 1, "鷹")),
                 List.of());
         // ---- Paladin: front line, protects allies
         job("paladin", 0xF0C040, "聖", List.of(JobStat.MAX_HEALTH, JobStat.ARMOR, JobStat.SKILL_POWER),
                 stats(JobStat.MAX_HEALTH, 6, JobStat.ARMOR, 2), stats(JobStat.MAX_HEALTH, 0.4, JobStat.ARMOR, 0.05),
                 List.of(
-                        skill("shield_bash", SkillKind.ACTIVE, SkillEffect.SWEEP, 7, 15, 4, 3, 3, List.of("minecraft:slowness"), 1, "打"),
-                        skill("holy_guard", SkillKind.ACTIVE, SkillEffect.BUFF, 20, 25, 0, 6, 8, List.of("minecraft:resistance"), 0, "護"),
-                        skill("smite", SkillKind.ACTIVE, SkillEffect.SWEEP, 8, 20, 7, 3.5, 0, List.of(), 0, "裁"),
+                        skill("shield_bash", SkillKind.ACTIVE, SkillEffect.SWEEP, 7, 15, 4, 3.5, 3, List.of("minecraft:slowness"), 1, "打"),
+                        skill("holy_guard", SkillKind.ACTIVE, SkillEffect.BUFF, 20, 25, 0, 7, 8, List.of("minecraft:resistance"), 0, "護"),
+                        skill("smite", SkillKind.ACTIVE, SkillEffect.SWEEP, 8, 20, 7, 8, 0, List.of(), 0, "裁"),
                         skill("lay_on_hands", SkillKind.ACTIVE, SkillEffect.HEAL, 15, 25, 6, 5, 0, List.of(), 0, "手")),
                 List.of(
                         skill("divine_aegis", SkillKind.ULTIMATE, SkillEffect.BUFF, 100, 60, 0, 8, 12, List.of("minecraft:resistance", "minecraft:absorption"), 1, "盾"),
-                        skill("judgement", SkillKind.ULTIMATE, SkillEffect.WHIRL, 90, 60, 16, 6, 0, List.of(), 0, "審")),
+                        skill("judgement", SkillKind.ULTIMATE, SkillEffect.WHIRL, 90, 60, 16, 6.5, 0, List.of(), 0, "審")),
                 List.of());
         // ---- Wizard: spells on the staff, skills 1/2 for mana and mobility
         job("wizard", 0x7B68EE, "魔", List.of(JobStat.MAX_MANA, JobStat.SKILL_POWER, JobStat.MANA_REGEN, JobStat.CAST_SPEED),
                 stats(JobStat.MAX_MANA, 50, JobStat.MANA_REGEN, 0.5), stats(JobStat.MAX_MANA, 2, JobStat.SKILL_POWER, 0.3),
                 List.of(
                         skill("mana_surge", SkillKind.ACTIVE, SkillEffect.MANA, 20, 0, 40, 0, 0, List.of(), 0, "充"),
-                        skill("blink", SkillKind.ACTIVE, SkillEffect.BLINK, 8, 15, 0, 8, 0, List.of(), 0, "瞬"),
+                        skill("blink", SkillKind.ACTIVE, SkillEffect.BLINK, 8, 15, 0, 10, 0, List.of(), 0, "瞬"),
                         skill("mana_barrier", SkillKind.ACTIVE, SkillEffect.BUFF, 25, 30, 0, 0, 10, List.of("minecraft:absorption"), 1, "障"),
                         skill("arcane_focus", SkillKind.ACTIVE, SkillEffect.MANA, 30, 0, 25, 6, 0, List.of(), 0, "集")),
                 List.of(
-                        skill("meteor", SkillKind.ULTIMATE, SkillEffect.WHIRL, 100, 80, 20, 6, 5, List.of(), 0, "隕"),
+                        skill("meteor", SkillKind.ULTIMATE, SkillEffect.WHIRL, 100, 80, 20, 5.5, 5, List.of(), 0, "隕"),
                         skill("time_warp", SkillKind.ULTIMATE, SkillEffect.DEBUFF, 90, 60, 0, 10, 8, List.of("minecraft:slowness", "minecraft:weakness"), 2, "遅")),
                 List.of(
                         skill("magic_bolt", SkillKind.SPELL, SkillEffect.BOLT, 1.2, 8, 10, 28, 0, List.of(), 0, "弾"),
-                        skill("flame_burst", SkillKind.SPELL, SkillEffect.WHIRL, 6, 20, 10, 4.5, 4, List.of(), 0, "炎"),
-                        skill("frost_nova", SkillKind.SPELL, SkillEffect.DEBUFF, 8, 20, 7, 5.5, 6, List.of("minecraft:slowness"), 2, "氷"),
+                        skill("flame_burst", SkillKind.SPELL, SkillEffect.WHIRL, 6, 20, 10, 7, 4, List.of(), 0, "炎"),
+                        skill("frost_nova", SkillKind.SPELL, SkillEffect.DEBUFF, 8, 20, 7, 6, 6, List.of("minecraft:slowness"), 2, "氷"),
                         skill("thunder", SkillKind.SPELL, SkillEffect.LIGHTNING, 10, 30, 16, 28, 0, List.of(), 0, "雷"),
                         skill("arcane_shield", SkillKind.SPELL, SkillEffect.BUFF, 20, 25, 0, 0, 15, List.of("minecraft:absorption", "minecraft:resistance"), 1, "護")));
         // ---- Healer: heals and buffs
         job("healer", 0x5BC0DE, "癒", List.of(JobStat.MAX_MANA, JobStat.SKILL_POWER, JobStat.MAX_HEALTH),
                 stats(JobStat.MAX_MANA, 40, JobStat.SKILL_POWER, 10), stats(JobStat.SKILL_POWER, 0.4, JobStat.MAX_MANA, 1.5),
                 List.of(
-                        skill("heal", SkillKind.ACTIVE, SkillEffect.HEAL, 6, 15, 6, 2, 0, List.of(), 0, "癒"),
-                        skill("group_heal", SkillKind.ACTIVE, SkillEffect.HEAL, 12, 30, 4, 8, 0, List.of(), 0, "群"),
+                        skill("heal", SkillKind.ACTIVE, SkillEffect.HEAL, 6, 15, 6, 4, 0, List.of(), 0, "癒"),
+                        skill("group_heal", SkillKind.ACTIVE, SkillEffect.HEAL, 12, 30, 4, 10, 0, List.of(), 0, "群"),
                         skill("blessing", SkillKind.ACTIVE, SkillEffect.BUFF, 20, 25, 0, 8, 8, List.of("minecraft:regeneration"), 0, "祝"),
                         skill("mana_gift", SkillKind.ACTIVE, SkillEffect.MANA, 25, 0, 30, 8, 0, List.of(), 0, "恵")),
                 List.of(
-                        skill("sanctuary", SkillKind.ULTIMATE, SkillEffect.HEAL, 100, 60, 20, 10, 0, List.of(), 0, "域"),
+                        skill("sanctuary", SkillKind.ULTIMATE, SkillEffect.HEAL, 100, 60, 20, 6, 0, List.of(), 0, "域"),
                         skill("guardian_light", SkillKind.ULTIMATE, SkillEffect.BUFF, 100, 60, 0, 10, 15, List.of("minecraft:absorption", "minecraft:resistance", "minecraft:regeneration"), 1, "光")),
                 List.of());
         // ---- Assassin: daggers, burst and stealth
         job("assassin", 0x8E44AD, "影", List.of(JobStat.CRIT_CHANCE, JobStat.ATTACK_SPEED, JobStat.MOVEMENT_SPEED),
                 stats(JobStat.CRIT_CHANCE, 5, JobStat.MOVEMENT_SPEED, 5), stats(JobStat.CRIT_CHANCE, 0.15, JobStat.ATTACK_SPEED, 0.2),
                 List.of(
-                        skill("shadow_step", SkillKind.ACTIVE, SkillEffect.BLINK, 7, 15, 0, 6, 0, List.of(), 0, "影"),
-                        skill("backstab", SkillKind.ACTIVE, SkillEffect.SWEEP, 6, 15, 9, 2.5, 0, List.of(), 0, "急"),
+                        skill("shadow_step", SkillKind.ACTIVE, SkillEffect.BLINK, 7, 15, 0, 12, 0, List.of(), 0, "影"),
+                        skill("backstab", SkillKind.ACTIVE, SkillEffect.SWEEP, 6, 15, 9, 3.5, 0, List.of(), 0, "急"),
                         skill("smoke_bomb", SkillKind.ACTIVE, SkillEffect.STEALTH, 18, 20, 0, 0, 5, List.of("minecraft:speed"), 1, "煙"),
-                        skill("venom", SkillKind.ACTIVE, SkillEffect.DEBUFF, 10, 15, 2, 3, 6, List.of("minecraft:poison"), 1, "毒")),
+                        skill("venom", SkillKind.ACTIVE, SkillEffect.DEBUFF, 10, 15, 2, 4, 6, List.of("minecraft:poison"), 1, "毒")),
                 List.of(
-                        skill("assassinate", SkillKind.ULTIMATE, SkillEffect.SWEEP, 90, 50, 25, 3, 0, List.of(), 0, "殺"),
+                        skill("assassinate", SkillKind.ULTIMATE, SkillEffect.SWEEP, 90, 50, 25, 12, 0, List.of(), 0, "殺"),
                         skill("shadow_dance", SkillKind.ULTIMATE, SkillEffect.STEALTH, 90, 50, 0, 0, 10, List.of("minecraft:strength", "minecraft:speed"), 1, "舞")),
                 List.of());
         // ---- Enchanter: buffs allies, weakens enemies

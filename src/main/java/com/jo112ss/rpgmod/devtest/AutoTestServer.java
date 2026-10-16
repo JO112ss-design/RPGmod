@@ -53,6 +53,107 @@ public final class AutoTestServer {
         forgeRequested = true;
     }
 
+    // ------------------------------------------------------------------ skill showcase
+
+    private static volatile boolean showcaseSetup;
+    private static volatile String castRequest;
+    private static final java.util.List<net.minecraft.world.entity.monster.zombie.Zombie> targets = new java.util.ArrayList<>();
+    private static net.minecraft.world.phys.Vec3 arena;
+    private static String lastCast;
+    private static int sinceCast = -1;
+
+    /** Client test: build the arena (dummies in front of the player) for casting every skill. */
+    public static void requestShowcase() {
+        showcaseSetup = true;
+    }
+
+    /** Client test: cast this skill now (bypasses job, weapon, mana and cooldown checks). */
+    public static void requestCast(String id) {
+        castRequest = id;
+    }
+
+    private static final double[][] DUMMIES = {{0, 4}, {-2.2, 4.5}, {2.2, 4.5}, {0, 7}, {2.5, 1.5}};
+
+    private static void showcaseTick() {
+        var level = (net.minecraft.server.level.ServerLevel) player.level();
+        if (showcaseSetup) {
+            showcaseSetup = false;
+            var server = level.getServer();
+            server.getCommands().performPrefixedCommand(server.createCommandSourceStack(), "time set noon");
+            server.getCommands().performPrefixedCommand(server.createCommandSourceStack(), "weather clear");
+            arena = player.position();
+            for (double[] d : DUMMIES) {
+                var z = net.minecraft.world.entity.EntityTypes.ZOMBIE.create(level, net.minecraft.world.entity.EntitySpawnReason.COMMAND);
+                if (z == null) continue;
+                z.setNoAi(true);
+                z.setSilent(true);
+                z.addEffect(new net.minecraft.world.effect.MobEffectInstance(net.minecraft.world.effect.MobEffects.FIRE_RESISTANCE, 100000, 0));
+                z.getAttribute(Attributes.MAX_HEALTH).setBaseValue(1000);
+                z.setHealth(1000);
+                level.addFreshEntity(z);
+                targets.add(z);
+            }
+            resetArena();
+            RpgMod.LOGGER.info("[AUTOTEST] showcase arena at {} with {} dummies", arena, targets.size());
+        }
+        String id = castRequest;
+        if (id != null && arena != null) {
+            castRequest = null;
+            logLastCast();
+            resetArena();
+            com.jo112ss.rpgmod.job.core.SkillDef def = com.jo112ss.rpgmod.job.core.JobDefs.skill(id);
+            if (def != null) {
+                var job = com.jo112ss.rpgmod.job.JobType.byId(def.job());
+                var weapon = def.kind() == com.jo112ss.rpgmod.job.core.SkillKind.SPELL || job == null ? com.jo112ss.rpgmod.item.WeaponType.STAFF : job.weapons.get(0);
+                if (id.equals("lucky_shot")) weapon = com.jo112ss.rpgmod.item.WeaponType.BOW;
+                player.getInventory().setItem(6, new ItemStack(com.jo112ss.rpgmod.item.ModItems.get(weapon, com.jo112ss.rpgmod.item.WeaponMaterial.IRON)));
+                player.getInventory().setSelectedSlot(6);
+                boolean ok = com.jo112ss.rpgmod.job.SkillExecutor.execute(player, def, 1.0);
+                RpgMod.LOGGER.info("[AUTOTEST] cast {} ok={}", id, ok);
+                lastCast = id;
+                sinceCast = 0;
+            }
+        }
+        if (sinceCast >= 0 && ++sinceCast == 40) logLastCast();
+    }
+
+    private static void logLastCast() {
+        if (lastCast == null) return;
+        int hit = 0;
+        float total = 0;
+        for (var z : targets) {
+            float lost = z.getMaxHealth() - z.getHealth();
+            if (lost > 0) hit++;
+            total += lost;
+        }
+        RpgMod.LOGGER.info("[AUTOTEST] skill {} hit {} dummies for {} total damage", lastCast, hit, String.format("%.1f", total));
+        lastCast = null;
+        sinceCast = -1;
+    }
+
+    /** Puts the player and the dummies back in place, full health, no effects. */
+    private static void resetArena() {
+        var level = (net.minecraft.server.level.ServerLevel) player.level();
+        player.removeAllEffects();
+        player.setHealth(player.getMaxHealth());
+        player.teleportTo(level, arena.x, arena.y, arena.z, java.util.Set.of(), 0F, 12F, false);
+        player.setDeltaMovement(net.minecraft.world.phys.Vec3.ZERO);
+        for (int i = 0; i < targets.size(); i++) {
+            var z = targets.get(i);
+            if (!z.isAlive()) continue;
+            double[] d = DUMMIES[i];
+            // yaw 0 faces +z, so "forward" is +z and the player's right is -x
+            z.snapTo(arena.x - d[0], arena.y, arena.z + d[1], 180F, 0F);
+            z.setYHeadRot(180F);
+            z.setDeltaMovement(net.minecraft.world.phys.Vec3.ZERO);
+            z.removeAllEffects();
+            z.addEffect(new net.minecraft.world.effect.MobEffectInstance(net.minecraft.world.effect.MobEffects.FIRE_RESISTANCE, 100000, 0));
+            z.clearFire();
+            z.setTicksFrozen(0);
+            z.setHealth(z.getMaxHealth());
+        }
+    }
+
     /** Called by the client test once the result screen was captured. */
     public static void requestEquipCheck() {
         checkTicks = 0;
@@ -109,6 +210,7 @@ public final class AutoTestServer {
             }
         }
         if (critT >= 0) critTest();
+        showcaseTick();
     }
 
     private static int critT = -1;
