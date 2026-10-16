@@ -4,7 +4,7 @@ import com.jo112ss.rpgmod.smithing.core.SmithingRules;
 import net.neoforged.neoforge.common.ModConfigSpec;
 
 /**
- * Server config (saved per world in serverconfig/rpgmod-server.toml). Every number of the
+ * World config (saved per world in serverconfig/, synced to clients). Every number of the
  * smithing minigame can be tuned here without rebuilding the mod.
  */
 public final class SmithingConfig {

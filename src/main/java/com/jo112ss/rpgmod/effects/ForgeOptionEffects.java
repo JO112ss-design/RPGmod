@@ -127,7 +127,7 @@ public final class ForgeOptionEffects {
             event.addReductionModifier(DamageContainer.Reduction.ARMOR, (container, reduction) -> reduction * keep);
         }
         double boss = d.get(OptionType.BOSS_DAMAGE) / 100.0;
-        if (boss > 0 && event.getEntity().getType().is(Tags.EntityTypes.BOSSES)) {
+        if (boss > 0 && event.getEntity().is(Tags.EntityTypes.BOSSES)) {
             event.setAmount((float) (event.getAmount() * (1 + boss)));
         }
     }

@@ -20,7 +20,7 @@ public class RpgMod {
 
     public RpgMod(IEventBus modBus, ModContainer container) {
         ModRegistries.register(modBus);
-        container.registerConfig(ModConfig.Type.SERVER, SmithingConfig.SPEC);
+        container.registerConfig(ModConfig.Type.SYNCED, SmithingConfig.SPEC);
         modBus.addListener(ModNetwork::register);
         modBus.addListener(RpgMod::onConfig);
         modBus.addListener(RpgMod::onConfigReload);
