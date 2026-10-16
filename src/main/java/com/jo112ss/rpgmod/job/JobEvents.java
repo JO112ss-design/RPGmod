@@ -67,6 +67,18 @@ public final class JobEvents {
         }
     }
 
+    /**
+     * Attack speed does not affect bows, so for bow jobs the job-weapon bonus speeds up drawing
+     * instead: 3 extra ticks of draw every 10 ticks (x1.3). Runs on both sides with the synced data.
+     */
+    @SubscribeEvent
+    public static void onUseTick(net.neoforged.neoforge.event.entity.living.LivingEntityUseItemEvent.Tick event) {
+        if (!(event.getEntity() instanceof net.minecraft.world.entity.player.Player p)) return;
+        if (com.jo112ss.rpgmod.item.ModItems.typeOf(event.getItem().getItem()) != com.jo112ss.rpgmod.item.WeaponType.BOW) return;
+        if (!JobManager.canUseBow(p) || JobConfig.AFFINITY_ATTACK_SPEED.get() <= 0) return;
+        if (p.tickCount % 10 < Math.round(JobConfig.AFFINITY_ATTACK_SPEED.get() * 10)) event.setDuration(event.getDuration() - 1);
+    }
+
     @SubscribeEvent
     public static void onCommands(RegisterCommandsEvent event) {
         JobCommands.register(event.getDispatcher());
