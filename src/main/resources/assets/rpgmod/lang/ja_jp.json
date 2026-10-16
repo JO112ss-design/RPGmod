@@ -435,5 +435,5 @@
   "death.attack.rpgmod.skill_magic.item": "%1$sは%2$sの%3$sの魔法で倒された",
   "death.attack.rpgmod.skill_magic.player": "%1$sは%2$sの魔法で倒された",
   "rpgmod.coat.switched_now": "毒を切り替えた: %s（残り%s秒）",
-  "rpgmod.node.legend_skill": "スキル（金の輪＝今覚えられる）"
+  "rpgmod.node.legend_skill": "スキル（習得可）"
 }

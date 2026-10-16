@@ -435,5 +435,5 @@
   "death.attack.rpgmod.skill_magic.item": "%1$s was blasted by %2$s using %3$s",
   "death.attack.rpgmod.skill_magic.player": "%1$s was blasted by the magic of %2$s",
   "rpgmod.coat.switched_now": "Coating switched: %s (%ss left)",
-  "rpgmod.node.legend_skill": "Skill (gold ring = learnable)"
+  "rpgmod.node.legend_skill": "Skill (learnable)"
 }

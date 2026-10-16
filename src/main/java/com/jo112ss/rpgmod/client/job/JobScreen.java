@@ -410,7 +410,8 @@ public class JobScreen extends Screen {
                 // frame, so they never look like a stat cell; reachable ones also get a gold ring (pass 3)
                 float k = affordable ? 0.5f - pulse * 0.15f : reachable ? 0.62f : 0.8f;
                 body = Ui.mix(typeTint, 0xFF0B0D12, k);
-                edge = affordable ? Ui.mix(typeTint, 0xFFFFFFFF, pulse * 0.5f) : reachable ? typeTint : Ui.mix(typeTint, 0xFF0D0F14, 0.45f);
+                // gold frame = can be learned now, same rule as stat cells
+                edge = affordable ? Ui.mix(Ui.GOLD, 0xFFFFFFFF, pulse * 0.6f) : reachable ? typeTint : Ui.mix(typeTint, 0xFF0D0F14, 0.45f);
                 tc = reachable ? 0xFFFFFFFF : Ui.mix(typeTint, 0xFF0D0F14, 0.3f);
             } else if (owned) {
                 body = n.type() == SkillPanel.NodeType.STAT ? Ui.argb(c) : Ui.mix(Ui.argb(c), 0xFFFFFFFF, 0.2f);
@@ -488,7 +489,7 @@ public class JobScreen extends Screen {
         Ui.hexFramed(g, lx + 4, ly + 25, 5, 0xFF252933, 0xFF0D0F14);
         g.text(font, Component.translatable("rpgmod.node.legend_locked"), lx + 12, ly + 22, Ui.DIM, false);
         int skTint = Ui.mix(Ui.argb(c), 0xFFFFFFFF, 0.4f);
-        Ui.hex(g, lx + 4, ly + 36, 5, skTint);
+        Ui.hex(g, lx + 4, ly + 36, 5, Ui.GOLD);
         Ui.hex(g, lx + 4, ly + 36, 3, Ui.mix(skTint, 0xFF0B0D12, 0.55f));
         Ui.circle(g, lx + 4, ly + 36, 6, Ui.alpha(Ui.GOLD, (int) (140 + 115 * pulse)), 1);
         g.text(font, Component.translatable("rpgmod.node.legend_skill"), lx + 12, ly + 33, Ui.DIM, false);
