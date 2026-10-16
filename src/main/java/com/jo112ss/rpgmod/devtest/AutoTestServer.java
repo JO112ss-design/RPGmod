@@ -122,8 +122,8 @@ public final class AutoTestServer {
             float v = e.getReduction(r);
             if (v != 0) sb.append(r).append('=').append(v).append(' ');
         }
-        RpgMod.LOGGER.info("[AUTOTEST] damage post: original={} new={} health={} reductions={}", e.getOriginalDamage(),
-                e.getNewDamage(), e.getHealthDamage(), sb);
+        RpgMod.LOGGER.info("[AUTOTEST] damage post: original={} inflicted={} health={} reductions={}", e.getOriginalDamage(),
+                e.getInflictedDamage(), e.getHealthDamage(), sb);
     }
 
     @SubscribeEvent(priority = net.neoforged.bus.api.EventPriority.LOWEST)
