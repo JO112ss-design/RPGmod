@@ -9,6 +9,7 @@ import com.jo112ss.rpgmod.smithing.ForgeableWeapons;
 import com.jo112ss.rpgmod.smithing.ForgedData;
 import com.jo112ss.rpgmod.smithing.core.Judgement;
 import com.jo112ss.rpgmod.smithing.core.Quality;
+import com.mojang.blaze3d.platform.InputConstants;
 import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -118,7 +119,7 @@ public class ForgeScreen extends AbstractContainerScreen<ForgeMenu> {
 
     @Override
     public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
-        if (event.button() == 0) {
+        if (event.button() == InputConstants.MOUSE_BUTTON_LEFT) {
             double mx = event.x() - leftPos, my = event.y() - topPos;
             ForgeSyncPayload v = ClientForgeView.get();
             switch (v.stage()) {
@@ -158,14 +159,14 @@ public class ForgeScreen extends AbstractContainerScreen<ForgeMenu> {
     public boolean keyPressed(KeyEvent event) {
         int key = event.key();
         ForgeSyncPayload v = ClientForgeView.get();
-        if (key == 32) { // space
+        if (key == InputConstants.KEY_SPACE) {
             if (v.stage() == ForgeSyncPayload.STAGE_HEATING || v.stage() == ForgeSyncPayload.STAGE_WORKING) {
                 stopBar();
                 return true;
             }
         }
-        if (v.stage() == ForgeSyncPayload.STAGE_WORKING && key >= 49 && key <= 57) { // 1..9 select part
-            int part = key - 49;
+        if (v.stage() == ForgeSyncPayload.STAGE_WORKING && key >= InputConstants.KEY_1 && key <= InputConstants.KEY_9) { // 1..9 select part
+            int part = key - InputConstants.KEY_1;
             if (part < v.targets().length) {
                 selectPart(part);
                 return true;
