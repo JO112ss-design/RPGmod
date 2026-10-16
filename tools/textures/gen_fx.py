@@ -83,6 +83,14 @@ def streak(x, y):
 save(field(32, streak), 'streak', 32)
 
 
+def beam(x, y):
+    # straight line of even brightness with soft ends: one segment of a lightning bolt or a link
+    return math.exp(-(x / 0.16) ** 2) * smooth(1.0, 0.82, abs(y))
+
+
+save(field(32, beam), 'beam', 32)
+
+
 def slash(x, y):
     # arc of a swing around the quad centre (radius ~0.88, spanning ~150 degrees, opening downwards):
     # bright outer edge with a body fading inwards like a motion-blurred blade, tapered ends

@@ -189,16 +189,26 @@ public final class SkillFx {
         boltSplit(out, mid, b, jitter * 0.55, depth - 1);
     }
 
-    /** Draws a lightning path: a hot core and a coloured halo. */
+    /** A line from {@code a} to {@code b} drawn as one stretched sprite turned towards the camera. */
+    static Fx.B segment(Vec3 a, Vec3 b, float width) {
+        Vec3 mid = a.add(b).scale(0.5);
+        Vec3 d = b.subtract(a);
+        double len = Math.max(0.05, d.length());
+        // the beam sprite's line is ~0.3 of the quad wide, so long segments are split to keep it thin
+        return Fx.p(S.BEAM, mid).fixed(Fx.axial(mid, d)).size((float) Math.max(len / 2 * 1.08, width));
+    }
+
+    /** Draws a lightning path: a hot core and a coloured halo, as connected line segments. */
     static void drawBolt(List<Vec3> pts, int color, float width, int life, int delay) {
         for (int i = 0; i + 1 < pts.size(); i++) {
-            int d = delay;
-            line(pts.get(i), pts.get(i + 1), 0.22, (v, t) -> {
-                Fx.p(S.GLOW, v).color(0xFFFFFF, color).size(width, width * 0.5F).alpha(1, 0).life(life).delay(d).spawn();
-            });
-            line(pts.get(i), pts.get(i + 1), 0.5, (v, t) -> {
-                Fx.p(S.GLOW, v).color(color).size(width * 3, width * 2).alpha(0.35F, 0).life(life + 1).delay(d).spawn();
-            });
+            Vec3 a = pts.get(i), b = pts.get(i + 1);
+            int n = Math.max(1, (int) Math.ceil(a.distanceTo(b) / (width * 6)));
+            for (int k = 0; k < n; k++) {
+                Vec3 s0 = a.add(b.subtract(a).scale(k / (double) n));
+                Vec3 s1 = a.add(b.subtract(a).scale((k + 1) / (double) n));
+                segment(s0, s1, width).color(0xFFFFFF, color).alpha(1, 0).life(life).delay(delay).spawn();
+            }
+            Fx.p(S.GLOW, a).color(color).size(width * 3.5F, width * 2).alpha(0.3F, 0).life(life + 1).delay(delay).spawn();
         }
     }
 

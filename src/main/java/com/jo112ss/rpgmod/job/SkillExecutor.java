@@ -651,7 +651,7 @@ public final class SkillExecutor {
         Vec3 at = aimPoint(c, 36);
         double r = c.def.radius();
         int fall = 28;
-        Vec3 sky = c.flat().scale(9).add(0, 20, 0); // falls in at an angle from beyond the target, where the caster is looking
+        Vec3 sky = c.flat().scale(13).add(0, 11, 0); // streaks in at an angle from beyond the target, where the caster is looking
         ServerFx.of("meteor", at).vec(sky).a(r).b(fall).send(c.level);
         sound(c, SoundEvents.BLAZE_SHOOT, 0.6F);
         sound(c, at.add(sky.scale(0.5)), SoundEvents.FIREWORK_ROCKET_LAUNCH, 2.0F, 0.4F);

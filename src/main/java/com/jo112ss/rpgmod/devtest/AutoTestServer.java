@@ -72,7 +72,7 @@ public final class AutoTestServer {
         castRequest = id;
     }
 
-    private static final double[][] DUMMIES = {{0, 4}, {-2.2, 4.5}, {2.2, 4.5}, {0, 7}, {2.5, 1.5}};
+    private static final double[][] DUMMIES = {{0, 4}, {-2.2, 4.5}, {2.2, 4.5}, {0, 7}, {1.6, 2.2}};
 
     private static void showcaseTick() {
         var level = (net.minecraft.server.level.ServerLevel) player.level();

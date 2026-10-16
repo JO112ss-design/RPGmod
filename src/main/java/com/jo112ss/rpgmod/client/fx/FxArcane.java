@@ -311,8 +311,9 @@ final class FxArcane {
         Entity target = p.e();
         ClientLevel level = Minecraft.getInstance().level;
         if (level == null) return;
-        Fx.p(S.RING, start).fixed(Fx.across(vel)).size(0.2F, 1.0F).easeOut().color(0xFFFFFF, ARC).alpha(0.9F, 0).life(6).spawn();
-        flash(start, ARC, 0.7F, 4);
+        Vec3 muzzle = start.add(vel.normalize().scale(0.5));
+        Fx.p(S.RING, muzzle).fixed(Fx.across(vel)).size(0.1F, 0.6F).easeOut().color(0xFFFFFF, ARC).alpha(0.9F, 0).life(6).spawn();
+        flash(muzzle, ARC, 0.5F, 4);
         final Vec3[] pos = {start};
         final Vec3[] dir = {vel.normalize()};
         final double[] travelled = {0};
@@ -375,14 +376,15 @@ final class FxArcane {
         Vec3 dir = p.vec().normalize();
         float range = Math.max(2, p.a());
         double half = Math.toRadians(Math.max(5, p.b()));
-        Fx.p(S.RING, o.add(dir.scale(0.3))).fixed(Fx.across(dir)).size(0.2F, 1.4F).easeOut().color(FIRE_L, FIRE).alpha(0.9F, 0).life(6).spawn();
-        flash(o, FIRE, 1.0F, 4);
+        Fx.p(S.RING, o.add(dir.scale(0.6))).fixed(Fx.across(dir)).size(0.15F, 0.9F).easeOut().color(FIRE_L, FIRE).alpha(0.9F, 0).life(6).spawn();
+        flash(o.add(dir.scale(0.6)), FIRE, 0.7F, 4);
         FxAnims.run(9, age -> {
             for (int i = 0, n = Fx.n(16); i < n; i++) {
                 Vec3 d = cone(dir, half * 0.85);
                 double speed = range / 11.0 * Fx.r(0.8, 1.15);
-                Fx.p(S.GLOW, o.add(d.scale(0.2))).vel(d.scale(speed)).friction(0.97F).color(FIRE_L, FIRE_D)
-                        .size(0.25F, Fx.rf(0.9F, 1.3F)).alpha(0.85F, 0).life(13 + Fx.RND.nextInt(4)).spawn();
+                int c0 = Fx.mix(0xFFC060, 0xFF8A30, Fx.RND.nextDouble());
+                Fx.p(S.GLOW, o.add(d.scale(0.7))).vel(d.scale(speed)).friction(0.97F).color(c0, FIRE_D)
+                        .size(0.2F, Fx.rf(0.9F, 1.3F)).alpha(0.6F, 0).life(13 + Fx.RND.nextInt(4)).spawn();
             }
             for (int i = 0, n = Fx.n(4); i < n; i++) {
                 Vec3 d = cone(dir, half * 0.7);

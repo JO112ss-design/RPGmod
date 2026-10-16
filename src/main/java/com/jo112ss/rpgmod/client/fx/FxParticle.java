@@ -175,7 +175,43 @@ public final class FxParticle extends SingleQuadParticle {
             case COIN -> q = upright(camera).rotateY(rot);
             default -> q = new Quaternionf(camera.rotation()).rotateZ(rot);
         }
+        float near = nearCamera(camera, q, partial);
+        if (near < 1) {
+            setAlpha(alpha * near);
+            if (alpha < 0.01F) return;
+        }
         extractRotatedQuad(state, camera, q, partial);
+    }
+
+    /**
+     * 0..1: fades particles that would cover the screen because the camera is inside or right in
+     * front of them (a flash on yourself, a ring at your own hand, a beam you stand in). Flat effects
+     * on the ground are left alone - they are below the eyes.
+     */
+    private float nearCamera(Camera camera, Quaternionf q, float partial) {
+        double px = Mth.lerp(partial, xo, x), py = Mth.lerp(partial, yo, y), pz = Mth.lerp(partial, zo, z);
+        net.minecraft.world.phys.Vec3 cam = camera.position();
+        double vx = cam.x - px, vy = cam.y - py, vz = cam.z - pz;
+        float size = getQuadSize(partial);
+        double d;
+        switch (face) {
+            case UPRIGHT -> {
+                // tall beams: only the horizontal distance matters, against the beam's width
+                d = Math.sqrt(vx * vx + vz * vz) / Math.max(0.3, size * 0.25);
+                if (Math.abs(vy) > size * 1.05) return 1;
+            }
+            case FIXED -> {
+                org.joml.Vector3f n = new org.joml.Vector3f(0, 0, 1).rotate(q);
+                if (Math.abs(n.y()) > 0.7F) return 1;
+                double dn = vx * n.x() + vy * n.y() + vz * n.z();
+                double lx = vx - n.x() * dn, ly = vy - n.y() * dn, lz = vz - n.z() * dn;
+                if (lx * lx + ly * ly + lz * lz > size * size * 1.2) return 1;
+                d = Math.abs(dn) / Math.max(0.2, size * 0.6);
+            }
+            default -> d = Math.sqrt(vx * vx + vy * vy + vz * vz) / Math.max(0.2, size * 1.25);
+        }
+        if (d >= 1) return 1;
+        return (float) Math.max(0, d * d);
     }
 
     private static Quaternionf upright(Camera camera) {

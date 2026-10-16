@@ -77,14 +77,20 @@ final class FxMartial {
     // ================================================================== fighter
 
     private static void powerSlash(P p) {
-        Vec3 o = p.pos();
+        Vec3 chest = p.pos();
         Vec3 dir = flatDir(p.vec());
         float r = Math.max(2, p.a());
-        double tilt = 0.6;
+        // 1) big crescents in front that always face the viewer, so the swing reads in first person too
+        Vec3 front = chest.add(dir.scale(1.6)).add(0, -0.5, 0);
+        Fx.p(S.SLASH, front).size(r * 0.5F).color(HOT, EMBER).alpha(0.95F, 0).angle(-1.4F).spin(0.38F).life(6).spawn();
+        Fx.p(S.SLASH, front).size(r * 0.58F).color(EMBER, BLOOD).alpha(0.5F, 0).angle(-1.55F).spin(0.36F).life(8).spawn();
+        Fx.p(S.SLASH, front).size(r * 0.42F).color(0xFFF4E0, HOT).alpha(0.7F, 0).angle(-1.25F).spin(0.4F).life(4).spawn();
+        // 2) the swing's path through the world: a wide arc at waist height
+        Vec3 o = chest.add(0, -0.45, 0);
+        double tilt = 0.25;
         Quaternionf q = swing(dir, tilt);
-        Fx.p(S.SLASH, o).fixed(q).size(r * 0.95F).color(HOT, EMBER).alpha(0.95F, 0).angle(-0.9F).spin(0.3F).life(7).spawn();
-        Fx.p(S.SLASH, o.add(0, 0.06, 0)).fixed(q).size(r * 1.1F).color(EMBER, BLOOD).alpha(0.55F, 0).angle(-1.05F).spin(0.28F).life(9).spawn();
-        Fx.p(S.SLASH, o.add(0, -0.06, 0)).fixed(q).size(r * 0.72F).color(0xFFF4E0, HOT).alpha(0.7F, 0).angle(-0.8F).spin(0.33F).life(5).spawn();
+        Fx.p(S.SLASH, o).fixed(q).size(r * 0.95F).color(HOT, EMBER).alpha(0.7F, 0).angle(-0.9F).spin(0.3F).life(7).spawn();
+        Fx.p(S.SLASH, o.add(0, 0.05, 0)).fixed(q).size(r * 1.08F).color(EMBER, BLOOD).alpha(0.4F, 0).angle(-1.05F).spin(0.28F).life(9).spawn();
         FxAnims.run(6, age -> {
             double rot = -0.9 + age * 0.3;
             for (int i = 0, n = Fx.n(5); i < n; i++) {
@@ -129,13 +135,13 @@ final class FxMartial {
         Vec3 o = feet(e, p.pos());
         float r = Math.max(2, p.a());
         for (int k = 0; k < 3; k++) {
-            ground(S.WAVE, o, 0.5F, 0xFF5533, 16).size(0.5F, r).color(0xFFB060, 0xFF3020).alpha(0.85F, 0).easeOut().delay(k * 4).spawn();
+            ground(S.WAVE, o, 0.5F, 0xFF5533, 16).size(0.5F, r).color(0xFF5030, 0xB01008).alpha(0.9F, 0).easeOut().delay(k * 4).spawn();
         }
         Vec3 h = head(e, o).add(0, -0.3, 0);
         for (int k = 0; k < 4; k++) {
-            Fx.p(S.RING, h).flat().size(0.3F, 2.6F).color(0xFFE0B0, EMBER).alpha(0.9F, 0).easeOut().life(10).delay(k * 3).spawn();
+            Fx.p(S.RING, h).flat().size(0.3F, 2.6F).color(0xFF7040, 0xC01010).alpha(0.9F, 0).easeOut().life(10).delay(k * 3).spawn();
         }
-        flash(h, EMBER, 1.2F, 6);
+        flash(h, BLOOD, 1.2F, 6);
         for (int i = 0, n = Fx.n(36); i < n; i++) {
             double a = Fx.r(0, Math.PI * 2), d = Fx.r(0.4, r * 0.6);
             Fx.p(S.GLOW, o.x + Math.cos(a) * d, o.y + Fx.r(0, 0.4), o.z + Math.sin(a) * d).vel(0, Fx.r(0.06, 0.16), 0)
@@ -158,7 +164,7 @@ final class FxMartial {
         ground(S.WAVE, o0, 1, EMBER, 9).size(1, r).easeOut().alpha(0.7F, 0).spawn();
         ground(S.WAVE, o0, 1, EMBER, 9).size(1, r * 1.05F).easeOut().alpha(0.7F, 0).delay(10).follow(e).spawn();
         FxAnims.follow(e, 18, age -> {
-            Vec3 o = chest(e, o0).add(0, -0.3, 0);
+            Vec3 o = feet(e, o0).add(0, 0.55, 0);
             float rot = age * 0.95F;
             for (int k = 0; k < 2; k++) {
                 double tilt = (k == 0 ? 0.12 : -0.12) + Math.sin(age * 0.5) * 0.05;
@@ -544,7 +550,7 @@ final class FxMartial {
         float r = Math.max(2, p.a());
         beam(o, 18, 1.2F, HOLY, 12, 0);
         circle(o, r * 0.8, 8, 0.3, v -> beam(v, 10, 0.5F, HOLY, 10, Fx.RND.nextInt(3)));
-        flash(o.add(0, 1, 0), HOLY, 4.5F, 8);
+        flash(o.add(0, 1, 0), HOLY, 3.2F, 8);
         ground(S.WAVE, o, 1, HOLY, 14).size(1, r * 1.4F).easeOut().color(0xFFFFFF, HOLY).alpha(1, 0).spawn();
         ground(S.RING, o, 1, HOLY, 12).size(1, r * 1.2F).easeOut().alpha(0.8F, 0).delay(2).spawn();
         burst(o.add(0, 0.8, 0), 44, 0.8, S.GLOW, 0xFFFFFF, HOLY, 0.2F, 14, 0.1F);
