@@ -112,6 +112,7 @@ public final class AutoTestServer {
     }
 
     private static int critT = -1;
+    private static net.minecraft.world.entity.monster.zombie.Zombie dummy;
 
     private static void critTest() {
         critT++;
