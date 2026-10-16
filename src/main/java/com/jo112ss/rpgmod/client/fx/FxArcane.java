@@ -388,7 +388,7 @@ final class FxArcane {
             }
             for (int i = 0, n = Fx.n(4); i < n; i++) {
                 Vec3 d = cone(dir, half * 0.7);
-                Fx.vanilla(ParticleTypes.FLAME, o, d.scale(range / 14.0 * Fx.r(0.8, 1.2)));
+                Fx.vanilla(ParticleTypes.FLAME, o.add(d.scale(1.4)), d.scale(range / 14.0 * Fx.r(0.8, 1.2)));
             }
             if (age % 2 == 0) {
                 Vec3 d = cone(dir, half * 0.6);
@@ -757,8 +757,8 @@ final class FxArcane {
         Vec3 o = p.pos();
         float r = Math.max(2, p.a());
         ground(S.CIRCLE_ARCANE, o, r, ENCH, 50).size(r * 0.3F, r).easeOut().color(ENCH_G, ENCH).alpha(0.95F, 0).spin(0.03F).spawn();
-        Fx.p(S.CIRCLE_ARCANE, o.add(0, 2.6, 0)).flat().size(r * 0.25F, r * 0.55F).easeOut().color(0xFFFFFF, ENCH).alpha(0.8F, 0).spin(-0.06F).life(44).fadeIn(0.1F).spawn();
-        Fx.p(S.CIRCLE_ARCANE, o.add(0, 5.0, 0)).flat().size(r * 0.15F, r * 0.3F).easeOut().color(ENCH_G).alpha(0.7F, 0).spin(0.09F).life(40).fadeIn(0.15F).spawn();
+        Fx.p(S.CIRCLE_ARCANE, o.add(0, 3.2, 0)).flat().size(r * 0.15F, r * 0.35F).easeOut().color(0xFFD0F0, ENCH).alpha(0.45F, 0).spin(-0.06F).life(44).fadeIn(0.1F).spawn();
+        Fx.p(S.CIRCLE_ARCANE, o.add(0, 5.5, 0)).flat().size(r * 0.1F, r * 0.2F).easeOut().color(ENCH_G).alpha(0.4F, 0).spin(0.09F).life(40).fadeIn(0.15F).spawn();
         flash(o.add(0, 1.2, 0), ENCH, 2.5F, 8);
         circle(o, r * 0.85, Fx.n(14), 0, v -> {
             Fx.p(Fx.rune(Fx.RND.nextInt(4)), v.add(0, 0.2, 0)).vel(0, Fx.r(0.06, 0.12), 0).color(0xFFFFFF, Fx.RND.nextBoolean() ? ENCH : ENCH_G)

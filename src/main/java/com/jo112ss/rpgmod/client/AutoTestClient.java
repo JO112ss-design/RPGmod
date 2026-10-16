@@ -167,6 +167,7 @@ public final class AutoTestClient {
             showSkills = new java.util.ArrayList<>(com.jo112ss.rpgmod.job.core.JobDefs.SKILLS.keySet());
             // a second pass for a few skills as the player sees them (first person)
             for (String id : new String[] {"power_slash", "whirlwind", "magic_bolt", "flame_burst", "frost_nova", "meteor", "thunder", "judgement"}) showSkills.add("fp:" + id);
+            showSkills.add("charge");
             mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK);
             mc.options.particles().set(net.minecraft.server.level.ParticleStatus.ALL);
             AutoTestServer.requestShowcase();
@@ -183,6 +184,25 @@ public final class AutoTestClient {
             return;
         }
         String entry = showSkills.get(i);
+        if (entry.equals("charge")) { // hold right click with the staff: charging circle, ready glow, release
+            switch (k) {
+                case 0 -> {
+                    mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK);
+                    AutoTestServer.requestCast("!reset");
+                }
+                case 4 -> {
+                    mc.player.getInventory().setSelectedSlot(0);
+                    mc.options.keyUse.setDown(true);
+                    mc.gameMode.useItem(mc.player, net.minecraft.world.InteractionHand.MAIN_HAND);
+                }
+                case 11 -> shot(mc, String.format("c%02d_charging", i));
+                case 24 -> shot(mc, String.format("c%02d_charged", i));
+                case 26 -> mc.options.keyUse.setDown(false);
+                case 29 -> shot(mc, String.format("c%02d_released", i));
+                default -> { }
+            }
+            return;
+        }
         boolean fp = entry.startsWith("fp:");
         String id = fp ? entry.substring(3) : entry;
         if (k == 0) {

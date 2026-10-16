@@ -617,10 +617,10 @@ final class FxMartial {
         float r = Math.max(2, p.a());
         flash(o.add(0, 0.6, 0), 0xFFFFFF, 1.2F, 4);
         ground(S.WAVE, o, 0.5F, 0x8A7A9A, 12).size(0.5F, r).easeOut().alpha(0.6F, 0).spawn();
-        for (int i = 0, n = Fx.n(46); i < n; i++) {
+        for (int i = 0, n = Fx.n(36); i < n; i++) {
             Vec3 v = Fx.randomUnit().multiply(1, 0.4, 1).normalize().scale(Fx.r(0.08, 0.32)).add(0, 0.03, 0);
-            smoke(o.add(0, Fx.r(0.2, 1.4), 0), Fx.mix(0x1E1A24, 0x3E3448, Fx.RND.nextDouble()), Fx.rf(0.8F, 1.2F), Fx.rf(2.0F, 2.8F), 60 + Fx.RND.nextInt(30))
-                    .vel(v).friction(0.86F).alpha(0.9F, 0).spawn();
+            smoke(o.add(0, Fx.r(0.2, 1.4), 0), Fx.mix(0x1E1A24, 0x3E3448, Fx.RND.nextDouble()), Fx.rf(0.7F, 1.0F), Fx.rf(1.6F, 2.3F), 40 + Fx.RND.nextInt(25))
+                    .vel(v).friction(0.86F).alpha(0.85F, 0).spawn();
         }
         for (int i = 0, n = Fx.n(14); i < n; i++) {
             Vec3 at = o.add(Fx.randomUnit().multiply(r * 0.6, 0.5, r * 0.6)).add(0, 1, 0);

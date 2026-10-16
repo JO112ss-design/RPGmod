@@ -102,6 +102,10 @@ public final class AutoTestServer {
             castRequest = null;
             logLastCast();
             resetArena();
+            if (id.equals("!reset")) { // the client test drives this one itself (staff charging)
+                player.getInventory().setSelectedSlot(0);
+                return;
+            }
             com.jo112ss.rpgmod.job.core.SkillDef def = com.jo112ss.rpgmod.job.core.JobDefs.skill(id);
             if (def != null) {
                 var job = com.jo112ss.rpgmod.job.JobType.byId(def.job());
