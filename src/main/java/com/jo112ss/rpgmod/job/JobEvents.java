@@ -8,7 +8,6 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
 import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
-import net.neoforged.neoforge.event.entity.player.CriticalHitEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.tick.PlayerTickEvent;
 
@@ -54,17 +53,22 @@ public final class JobEvents {
         if (sp.tickCount % 2 == 0) JobManager.updateAffinity(sp);
     }
 
-    /** Job critical chance (on top of forged weapon options). */
-    @SubscribeEvent
-    public static void onCrit(CriticalHitEvent event) {
-        if (!(event.getEntity() instanceof ServerPlayer sp) || event.isCriticalHit()) return;
-        JobData d = JobManager.data(sp);
-        if (!d.hasJob()) return;
-        double chance = JobStats.compute(d).get(JobStat.CRIT_CHANCE) / 100.0;
-        if (chance > 0 && sp.getRandom().nextDouble() < chance) {
-            event.setCriticalHit(true);
-            event.setDamageMultiplier(Math.max(event.getDamageMultiplier(), 1.5F));
-        }
+    /**
+     * RPG critical hit, separate from the vanilla jump crit: one roll with chance = job crit rate +
+     * forged weapon crit rate, multiplier 1.5 + forged crit damage. Applies to every hit a player
+     * deals (melee, arrows, skills, spells) and stacks with a vanilla crit.
+     */
+    @SubscribeEvent(priority = net.neoforged.bus.api.EventPriority.LOW)
+    public static void onRpgCrit(net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent event) {
+        if (!(event.getSource().getEntity() instanceof ServerPlayer sp) || event.getEntity() == sp || event.getAmount() <= 0) return;
+        double chance = JobManager.critChance(sp, event.getSource()) / 100.0;
+        if (chance <= 0 || sp.getRandom().nextDouble() >= chance) return;
+        event.setAmount((float) (event.getAmount() * JobManager.critMultiplier(sp, event.getSource())));
+        var target = event.getEntity();
+        var level = (net.minecraft.server.level.ServerLevel) sp.level();
+        level.sendParticles(net.minecraft.core.particles.ParticleTypes.ENCHANTED_HIT, target.getX(), target.getY() + target.getBbHeight() * 0.6, target.getZ(), 14, 0.3, 0.3, 0.3, 0.3);
+        level.sendParticles(net.minecraft.core.particles.ParticleTypes.CRIT, target.getX(), target.getY() + target.getBbHeight() * 0.6, target.getZ(), 10, 0.3, 0.3, 0.3, 0.4);
+        level.playSound(null, target.blockPosition(), net.minecraft.sounds.SoundEvents.PLAYER_ATTACK_CRIT, net.minecraft.sounds.SoundSource.PLAYERS, 0.9F, 1.4F);
     }
 
     /**

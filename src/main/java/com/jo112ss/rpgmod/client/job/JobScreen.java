@@ -239,7 +239,7 @@ public class JobScreen extends Screen {
         rows.add(row("armor_toughness", fmt(p.getAttributeValue(Attributes.ARMOR_TOUGHNESS))));
         rows.add(row("movement_speed", String.format("%.0f%%", p.getAttributeValue(Attributes.MOVEMENT_SPEED) / 0.1 * 100)));
         rows.add(row("attack_speed", String.format("%.2f", p.getAttributeValue(Attributes.ATTACK_SPEED))));
-        rows.add(row("crit_chance", String.format("%.1f%%", st.get(JobStat.CRIT_CHANCE))));
+        rows.add(row("crit_chance", String.format("%.1f%% ×%.2f", com.jo112ss.rpgmod.job.JobManager.critChance(p, null), com.jo112ss.rpgmod.job.JobManager.critMultiplier(p, null))));
         rows.add(row("max_mana", fmt(maxMana)));
         rows.add(row("mana_regen", String.format("%.1f/s", st.get(JobStat.MANA_REGEN))));
         rows.add(row("skill_power", String.format("+%.0f%%", st.get(JobStat.SKILL_POWER))));

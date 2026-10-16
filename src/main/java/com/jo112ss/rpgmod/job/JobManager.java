@@ -294,6 +294,28 @@ public final class JobManager {
         return true;
     }
 
+    /** Forged data of the weapon behind a hit: the bow for arrows, otherwise the main hand. */
+    private static com.jo112ss.rpgmod.smithing.ForgedData weaponData(Player player, net.minecraft.world.damagesource.DamageSource source) {
+        if (source != null && source.getDirectEntity() instanceof net.minecraft.world.entity.projectile.arrow.AbstractArrow arrow && arrow.getWeaponItem() != null) {
+            return com.jo112ss.rpgmod.effects.ForgeOptionEffects.data(arrow.getWeaponItem());
+        }
+        return com.jo112ss.rpgmod.effects.ForgeOptionEffects.data(player.getMainHandItem());
+    }
+
+    /** RPG crit rate in percent: job stat + forged weapon option. */
+    public static double critChance(Player player, net.minecraft.world.damagesource.DamageSource source) {
+        double rate = JobStats.compute(data(player)).get(JobStat.CRIT_CHANCE);
+        var fd = weaponData(player, source);
+        if (fd != null) rate += fd.get(com.jo112ss.rpgmod.smithing.core.OptionType.CRIT_CHANCE);
+        return Math.min(100, rate);
+    }
+
+    /** RPG crit multiplier: 1.5 + forged crit damage. */
+    public static double critMultiplier(Player player, net.minecraft.world.damagesource.DamageSource source) {
+        var fd = weaponData(player, source);
+        return 1.5 + (fd == null ? 0 : fd.get(com.jo112ss.rpgmod.smithing.core.OptionType.CRIT_DAMAGE) / 100.0);
+    }
+
     /** Charge time in ticks after cast speed (skill panel + forged options, capped at -60%). */
     public static int castTicks(Player player, SkillDef def) {
         double speed = Math.min(60, castSpeedPercent(player)) / 100.0;

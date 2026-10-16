@@ -30,7 +30,6 @@ import net.neoforged.neoforge.common.damagesource.DamageContainer;
 import net.neoforged.neoforge.event.GatherSkippedAttributeTooltipsEvent;
 import net.neoforged.neoforge.event.ItemAttributeModifierEvent;
 import net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent;
-import net.neoforged.neoforge.event.entity.player.CriticalHitEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerXpEvent;
 import net.neoforged.neoforge.event.server.ServerStoppingEvent;
@@ -50,8 +49,6 @@ import net.neoforged.neoforge.event.server.ServerStoppingEvent;
 public final class ForgeOptionEffects {
     private ForgeOptionEffects() {}
 
-    /** Default vanilla critical multiplier used when a forged crit happens without a jump crit. */
-    private static final float BASE_CRIT_MULTIPLIER = 1.5F;
 
     private record AttrBonus(Holder<Attribute> attribute, AttributeModifier.Operation op, double scale) {}
 
@@ -136,23 +133,6 @@ public final class ForgeOptionEffects {
     // ------------------------------------------------------------------ custom combat options
 
     @SubscribeEvent
-    public static void onCriticalHit(CriticalHitEvent event) {
-        Player player = event.getEntity();
-        if (player.level().isClientSide()) return; // roll on the server only
-        ForgedData d = mainHandData(player);
-        if (d == null) return;
-        double chance = d.get(OptionType.CRIT_CHANCE) / 100.0;
-        if (!event.isCriticalHit() && chance > 0 && player.getRandom().nextDouble() < chance) {
-            event.setCriticalHit(true);
-            event.setDamageMultiplier(Math.max(event.getDamageMultiplier(), BASE_CRIT_MULTIPLIER));
-        }
-        double critDamage = d.get(OptionType.CRIT_DAMAGE) / 100.0;
-        if (event.isCriticalHit() && critDamage > 0) {
-            event.setDamageMultiplier((float) (event.getDamageMultiplier() + critDamage));
-        }
-    }
-
-    @SubscribeEvent
     public static void onIncomingDamage(LivingIncomingDamageEvent event) {
         if (!(event.getSource().getEntity() instanceof Player player)) return;
         ForgedData d;
@@ -190,10 +170,6 @@ public final class ForgeOptionEffects {
     private static void applyRangedOptions(LivingIncomingDamageEvent event, ForgedData d, Player player) {
         double atk = d.get(OptionType.ATTACK_DAMAGE) / 100.0;
         if (atk > 0) event.setAmount((float) (event.getAmount() * (1 + atk)));
-        double chance = d.get(OptionType.CRIT_CHANCE) / 100.0;
-        if (chance > 0 && player.getRandom().nextDouble() < chance) {
-            event.setAmount((float) (event.getAmount() * (BASE_CRIT_MULTIPLIER + d.get(OptionType.CRIT_DAMAGE) / 100.0)));
-        }
     }
 
     @SubscribeEvent
