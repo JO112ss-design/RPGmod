@@ -370,8 +370,11 @@
   "rpgmod.node.legend_owned": "解放済",
   "rpgmod.node.legend_open": "解放可",
   "rpgmod.node.legend_locked": "未解放",
-  "rpgmod.tooltip.staff_bonus": "魔法威力 +%s%%（杖の素材）",
+  "rpgmod.tooltip.staff_bonus": "魔法攻撃力 %s",
   "rpgmod.crit.hit": "会心！ %sダメージ（×%s）",
   "rpgmod.job.no_target": "届く範囲に敵がいません",
-  "rpgmod.gamble.lucky": "ラッキー！"
+  "rpgmod.gamble.lucky": "ラッキー！",
+  "rpgmod.stat.magic_attack": "魔法攻撃力",
+  "rpgmod.jobscreen.power.damage": "威力 %1$s×%2$s%%（今 %3$s）",
+  "rpgmod.jobscreen.power.heal": "回復 %1$s×%2$s%%（今 %3$s）"
 }

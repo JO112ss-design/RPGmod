@@ -23,7 +23,8 @@ JOBS = {  # id: (ja name, ja role, ja desc, en name, en role, en desc)
 STATS = {'max_health': ('最大HP', 'Max Health'), 'attack_damage': ('攻撃力', 'Attack'), 'armor': ('防御力', 'Armor'),
          'armor_toughness': ('防具強度', 'Toughness'), 'movement_speed': ('移動速度', 'Speed'), 'attack_speed': ('攻撃速度', 'Attack Speed'),
          'luck': ('幸運', 'Luck'), 'crit_chance': ('会心率', 'Crit Chance'), 'max_mana': ('最大MP', 'Max MP'),
-         'mana_regen': ('MP回復', 'MP Regen'), 'skill_power': ('スキル威力', 'Skill Power'), 'cooldown_reduction': ('CT短縮', 'Cooldown Red.')}
+         'mana_regen': ('MP回復', 'MP Regen'), 'skill_power': ('スキル威力', 'Skill Power'), 'cooldown_reduction': ('CT短縮', 'Cooldown Red.'),
+         'magic_attack': ('魔法攻撃力', 'Magic Attack')}
 SKILLS = {  # id: (ja, ja desc, en, en desc)
  'power_slash': ('強撃', '前方の広い扇形（半径4.5）を斬り払う。', 'Power Slash', 'Cleave a wide arc in front of you (4.5 blocks).'),
  'charge': ('突進', '前方へ突っ込み、ぶつかった敵を弾き飛ばす。', 'Charge', 'Dash forward, knocking aside enemies in your way.'),
@@ -138,6 +139,9 @@ UI = {  # key: (ja, en)
  'rpgmod.job.no_mana': ('MPが足りません', 'Not enough mana'),
  'rpgmod.job.spell_selected': ('呪文: %s', 'Spell: %s'),
  'rpgmod.job.no_target': ('届く範囲に敵がいません', 'No enemy in reach'),
+ 'rpgmod.jobscreen.power.damage': ('威力 %1$s×%2$s%%（今 %3$s）', 'Damage %1$s x%2$s%% (now %3$s)'),
+ 'rpgmod.jobscreen.power.heal': ('回復 %1$s×%2$s%%（今 %3$s）', 'Heal %1$s x%2$s%% (now %3$s)'),
+ 'rpgmod.tooltip.staff_bonus': ('魔法攻撃力 %s', 'Magic Attack %s'),
  'rpgmod.gamble.lucky': ('ラッキー！', 'Lucky!'),
  'rpgmod.gamble.jackpot': ('大当たり！周囲に大ダメージ', 'Jackpot! Big damage around you'),
  'rpgmod.gamble.heal': ('当たり！仲間を回復', 'Win! Party healed'),

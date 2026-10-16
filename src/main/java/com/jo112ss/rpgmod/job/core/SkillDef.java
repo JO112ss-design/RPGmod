@@ -11,7 +11,8 @@ import java.util.List;
  * @param effect    what it does
  * @param cooldown  seconds
  * @param mana      mana cost
- * @param power     damage / heal / arrow count / mana amount, depending on the effect
+ * @param power     damage or healing as a ratio of attack / magic attack (1.5 = 150%), mana amount
+ *                  for mana skills, the bet for gambles
  * @param radius    area or distance in blocks
  * @param duration  seconds for mob effects
  * @param effects   mob effect ids (namespace:path) applied by BUFF / DEBUFF / STEALTH

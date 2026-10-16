@@ -151,13 +151,16 @@ public class JobSelectScreen extends Screen {
             ix += 18;
         }
         // bonuses
-        int by = y + 35;
+        // two rows; a third bonus goes in a second column
+        int colW = Math.max(60, (x + w - 6 - 3 * 18 - wx - 6) / 2);
+        int bi = 0;
         for (Map.Entry<JobStat, Double> e : def.base().entrySet()) {
             double val = e.getValue();
             String num = Math.abs(val - Math.round(val)) < 0.01 ? String.valueOf(Math.round(val)) : String.format("%.1f", val);
             String v = "+" + num + (e.getKey().percent ? "%" : "");
-            g.text(font, Component.translatable("rpgmod.stat." + e.getKey().id).append(" " + v), wx, by, Ui.EXP, false);
-            by += 10;
+            Component line = Component.translatable("rpgmod.stat." + e.getKey().id).append(" " + v);
+            g.text(font, font.substrByWidth(line, colW - 4).getString(), wx + (bi / 2) * colW, y + 35 + (bi % 2) * 10, Ui.EXP, false);
+            bi++;
         }
         // signature skills: first skill and ultimates
         int sx = x + w - 6 - 3 * 18;

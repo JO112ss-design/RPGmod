@@ -57,7 +57,7 @@ public final class SkillExecutor {
 
     public static boolean execute(ServerPlayer p, SkillDef def, double power) {
         ServerLevel level = (ServerLevel) p.level();
-        Ctx c = new Ctx(p, level, def, power);
+        Ctx c = new Ctx(p, level, def, power, JobManager.skillBoost(p));
         return switch (def.id()) {
             // fighter
             case "power_slash" -> powerSlash(c);
@@ -120,8 +120,13 @@ public final class SkillExecutor {
         };
     }
 
-    /** Everything a skill needs, so the helpers stay short. */
-    private record Ctx(ServerPlayer p, ServerLevel level, SkillDef def, double power) {
+    /**
+     * Everything a skill needs, so the helpers stay short. {@code power} is the attack the skill scales
+     * with times the skill power stat (see {@link JobManager#powerMultiplier}); {@code boost} is the
+     * skill power stat alone, for amounts that do not depend on attack (mana).
+     */
+    private record Ctx(ServerPlayer p, ServerLevel level, SkillDef def, double power, double boost) {
+        /** The skill's ratio x attack x skill power, times {@code scale}. */
         float dmg(double scale) {
             return (float) (def.power() * power * scale);
         }
@@ -310,12 +315,12 @@ public final class SkillExecutor {
         return true;
     }
 
-    private static final double CHARGE_DAMAGE = 6;
+    private static final double CHARGE_SPEED = 1.8;
 
     /** Dash forward; enemies in the way are hit and thrown aside. */
     private static boolean charge(Ctx c) {
         Vec3 dir = c.flat();
-        launch(c.p, dir.scale(c.def.power()).add(0, 0.2, 0));
+        launch(c.p, dir.scale(CHARGE_SPEED).add(0, 0.2, 0));
         ServerFx.of("charge", c.p.position()).vec(dir).follow(c.p).send(c.level);
         sound(c, SoundEvents.BREEZE_JUMP, 0.8F);
         sound(c, c.p.position(), SoundEvents.TRIDENT_RIPTIDE_1, 0.8F, 1.2F);
@@ -326,7 +331,7 @@ public final class SkillExecutor {
             List<LivingEntity> hit = new ArrayList<>();
             for (LivingEntity e : enemies(c.p, front, 1.7)) {
                 if (!done.add(e.getId())) continue;
-                hurt(c, e, (float) (CHARGE_DAMAGE * c.power), melee(c));
+                hurt(c, e, c.dmg(1), melee(c));
                 push(e, dir, 1.1, 0.35);
                 hit.add(e);
             }
@@ -359,7 +364,7 @@ public final class SkillExecutor {
             if (age == 0 || age == 10) {
                 List<LivingEntity> hit = enemies(c.p, c.p.position(), r);
                 for (LivingEntity e : hit) {
-                    hurt(c, e, c.dmg(0.65), melee(c));
+                    hurt(c, e, c.dmg(1), melee(c));
                     if (age == 10) pushAway(e, c.p.position(), 0.6, 0.2);
                 }
                 if (!hit.isEmpty()) ServerFx.of("hit", c.p.position()).color(0xFFC080).a(1).points(hit).send(c.level);
@@ -406,10 +411,14 @@ public final class SkillExecutor {
 
     // ================================================================== ranger
 
+    /**
+     * A skill arrow that hits for about {@code damage} (arrow damage is base x speed, ~3 at launch).
+     * It is not tied to the bow, so the bow's own bonuses are not added a second time.
+     */
     private static void arrow(Ctx c, float yawOffset, double damage, boolean crit, String trail, int color) {
-        Arrow arrow = new Arrow(c.level, c.p, new ItemStack(Items.ARROW), c.p.getMainHandItem());
+        Arrow arrow = new Arrow(c.level, c.p, new ItemStack(Items.ARROW), null);
         arrow.pickup = AbstractArrow.Pickup.CREATIVE_ONLY;
-        arrow.setBaseDamage(damage);
+        arrow.setBaseDamage(damage / 3.0);
         arrow.setCritArrow(crit);
         arrow.shootFromRotation(c.p, c.p.getXRot(), c.p.getYRot() + yawOffset, 0, 3.2F, 0.5F);
         c.level.addFreshEntity(arrow);
@@ -417,9 +426,9 @@ public final class SkillExecutor {
     }
 
     private static boolean multishot(Ctx c) {
-        int n = Math.max(1, (int) Math.round(c.def.power()));
+        int n = 3;
         float spread = 9;
-        for (int i = 0; i < n; i++) arrow(c, -spread * (n - 1) / 2f + spread * i, 2.0 * c.power, false, "arrow_trail", 0x8CFF6A);
+        for (int i = 0; i < n; i++) arrow(c, -spread * (n - 1) / 2f + spread * i, c.dmg(1), false, "arrow_trail", 0x8CFF6A);
         ServerFx.of("multishot", c.hand()).vec(c.look()).send(c.level);
         sound(c, SoundEvents.ARROW_SHOOT, 1.2F);
         sound(c, c.p.position(), SoundEvents.CROSSBOW_SHOOT, 0.7F, 1.4F);
@@ -492,7 +501,7 @@ public final class SkillExecutor {
         SkillTasks.run(age -> {
             if (age % 3 == 0) sound(c, at, SoundEvents.ARROW_HIT, 0.6F, 0.8F + c.p.getRandom().nextFloat() * 0.5F);
             if (age >= 8 && (age - 8) % 10 == 0) {
-                for (LivingEntity e : enemies(c.p, at, r)) hurt(c, e, c.dmg(0.35), melee(c));
+                for (LivingEntity e : enemies(c.p, at, r)) hurt(c, e, c.dmg(1), melee(c));
             }
             return age >= life;
         });
@@ -585,7 +594,7 @@ public final class SkillExecutor {
 
     private static boolean mana(Ctx c, String fx) {
         List<ServerPlayer> allies = allies(c.p, c.def.radius());
-        for (ServerPlayer a : allies) JobManager.restoreMana(a, c.def.power() * c.power);
+        for (ServerPlayer a : allies) JobManager.restoreMana(a, c.def.power() * c.boost);
         ServerFx.of(fx, c.p.position()).follow(c.p).a(Math.max(1, c.def.radius())).points(others(c.p, allies)).send(c.level);
         sound(c, SoundEvents.AMETHYST_BLOCK_RESONATE, 0.8F);
         sound(c, c.p.position(), SoundEvents.EXPERIENCE_ORB_PICKUP, 0.5F, 0.6F);
@@ -945,7 +954,7 @@ public final class SkillExecutor {
 
     private static boolean luckyShot(Ctx c) {
         boolean lucky = c.p.getRandom().nextDouble() < 0.35;
-        arrow(c, 0, 2.0 * c.power * (lucky ? 2.5 : 1), lucky, "arrow_trail", lucky ? 0xFFD54A : 0x5FE8C8);
+        arrow(c, 0, c.dmg(lucky ? 2.5 : 1), lucky, "arrow_trail", lucky ? 0xFFD54A : 0x5FE8C8);
         ServerFx.of("lucky_shot", c.hand()).vec(c.look()).b(lucky ? 1 : 0).send(c.level);
         sound(c, SoundEvents.ARROW_SHOOT, 1.1F);
         if (lucky) {
@@ -994,7 +1003,7 @@ public final class SkillExecutor {
             case 0 -> { // jackpot: a burst of damage all around
                 foes = enemies(c.p, o, r);
                 for (LivingEntity e : foes) {
-                    hurt(c, e, (float) (8 * bet * c.power), magic(c));
+                    hurt(c, e, (float) (1.2 * bet * c.power), magic(c));
                     pushAway(e, o, 0.6, 0.4);
                 }
                 sound(c, o, SoundEvents.FIREWORK_ROCKET_LARGE_BLAST, 1.5F, 1.0F);
@@ -1002,7 +1011,7 @@ public final class SkillExecutor {
             }
             case 1 -> { // heal the party
                 allies = allies(c.p, r);
-                for (ServerPlayer a : allies) a.heal((float) (4 * bet * c.power));
+                for (ServerPlayer a : allies) a.heal((float) (0.5 * bet * c.power));
                 sound(c, o, SoundEvents.AMETHYST_BLOCK_CHIME, 1.0F, 1.5F);
             }
             case 2 -> { // buff the party
@@ -1016,14 +1025,14 @@ public final class SkillExecutor {
             case 3 -> { // curse enemies
                 foes = enemies(c.p, o, r);
                 for (LivingEntity e : foes) {
-                    hurt(c, e, (float) (2 * bet * c.power), magic(c));
+                    hurt(c, e, (float) (0.3 * bet * c.power), magic(c));
                     e.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, ticks(def.duration()), 0), c.p);
                     e.addEffect(new MobEffectInstance(MobEffects.SLOWNESS, ticks(def.duration()), 0), c.p);
                 }
                 sound(c, o, SoundEvents.EVOKER_CAST_SPELL, 1.0F, 0.9F);
             }
             case 4 -> { // mana
-                JobManager.restoreMana(c.p, 15 * bet * c.power);
+                JobManager.restoreMana(c.p, 15 * bet * c.boost);
                 sound(c, o, SoundEvents.AMETHYST_BLOCK_RESONATE, 1.0F, 1.2F);
             }
             default -> { // bust: hurts yourself a little

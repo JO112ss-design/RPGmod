@@ -344,24 +344,55 @@ public final class JobManager {
         return JobStats.compute(data(player)).get(JobStat.CAST_SPEED) + gearOption(player, com.jo112ss.rpgmod.smithing.core.OptionType.CAST_SPEED);
     }
 
-    /** Staff material bonus (0 when not holding a staff). */
-    public static double staffBonus(Player player) {
+    /** Magic attack of the held staff's material (0 when not holding a staff). */
+    public static double staffMagic(Player player) {
         var item = player.getMainHandItem().getItem();
         if (ModItems.typeOf(item) != WeaponType.STAFF) return 0;
         var mat = ModItems.materialOf(item);
-        return mat == null ? 0 : mat.staffMagicBonus();
+        return mat == null ? 0 : mat.staffMagic();
     }
 
     /**
-     * Power multiplier of a skill: skill power stat, plus for spells and anything cast while holding a
-     * staff the forged magic power and the staff material bonus.
+     * Attack used by weapon skills: the player's attack attribute, which already adds up the base 1,
+     * the held weapon, the job's own attack (level + panel), forged attack % and strength. Bows have
+     * no melee attack, so a full-draw arrow (6, plus the bow material bonus) counts as theirs.
+     */
+    public static double physicalAttack(Player player) {
+        double atk = player.getAttributeValue(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE);
+        ItemStack held = player.getMainHandItem();
+        if (ModItems.typeOf(held.getItem()) == WeaponType.BOW) {
+            double bow = 5 + (held.getItem() instanceof com.jo112ss.rpgmod.item.RpgBowItem rb ? rb.damageBonus() : 0);
+            var fd = com.jo112ss.rpgmod.effects.ForgeOptionEffects.data(held);
+            atk += bow * (1 + (fd == null ? 0 : fd.get(com.jo112ss.rpgmod.smithing.core.OptionType.ATTACK_DAMAGE) / 100.0));
+        } else if (held.is(net.minecraft.world.item.Items.BOW) || held.is(net.minecraft.world.item.Items.CROSSBOW)) {
+            atk += 5;
+        }
+        return atk;
+    }
+
+    /** Magic attack used by spells and caster skills: (1 + staff + own magic attack) x (1 + forged magic power %). */
+    public static double magicAttack(Player player) {
+        double own = JobStats.compute(data(player)).get(JobStat.MAGIC_ATTACK);
+        double gear = gearOption(player, com.jo112ss.rpgmod.smithing.core.OptionType.MAGIC_POWER);
+        return (1 + staffMagic(player) + own) * (1 + gear / 100.0);
+    }
+
+    /** The attack a skill scales with. */
+    public static double skillAttack(Player player, SkillDef def) {
+        return JobDefs.isMagic(def) ? magicAttack(player) : physicalAttack(player);
+    }
+
+    /** Skill power stat as a multiplier (1.2 = +20%). */
+    public static double skillBoost(Player player) {
+        return 1 + JobStats.compute(data(player)).get(JobStat.SKILL_POWER) / 100.0;
+    }
+
+    /**
+     * What a skill's power ratio is multiplied by: its attack (weapon + own, or staff + own magic)
+     * times the skill power stat. Damage = ratio x this; crits, armour etc. apply after.
      */
     public static double powerMultiplier(Player player, SkillDef def) {
-        double skillPower = JobStats.compute(data(player)).get(JobStat.SKILL_POWER);
-        boolean magic = def.kind() == SkillKind.SPELL || ModItems.typeOf(player.getMainHandItem().getItem()) == WeaponType.STAFF;
-        if (!magic) return 1 + skillPower / 100.0;
-        double magicPower = gearOption(player, com.jo112ss.rpgmod.smithing.core.OptionType.MAGIC_POWER);
-        return (1 + (skillPower + magicPower) / 100.0) * (1 + staffBonus(player));
+        return skillAttack(player, def) * skillBoost(player);
     }
 
     /** Colour of each spell's charging circle and casting light. */

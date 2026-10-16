@@ -234,7 +234,7 @@ public class JobScreen extends Screen {
         g.text(font, Component.translatable("rpgmod.jobscreen.stats"), sx + 6, sy + 5, Ui.GOLD, false);
         List<Component[]> rows = new ArrayList<>();
         rows.add(row("max_health", fmt(p.getMaxHealth())));
-        rows.add(row("attack_damage", fmt(p.getAttributeValue(Attributes.ATTACK_DAMAGE))));
+        rows.add(row("attack_damage", fmt(com.jo112ss.rpgmod.job.JobManager.physicalAttack(p))));
         rows.add(row("armor", fmt(p.getAttributeValue(Attributes.ARMOR))));
         rows.add(row("armor_toughness", fmt(p.getAttributeValue(Attributes.ARMOR_TOUGHNESS))));
         rows.add(row("movement_speed", String.format("%.0f%%", p.getAttributeValue(Attributes.MOVEMENT_SPEED) / 0.1 * 100)));
@@ -245,9 +245,7 @@ public class JobScreen extends Screen {
         rows.add(row("skill_power", String.format("+%.0f%%", st.get(JobStat.SKILL_POWER))));
         rows.add(row("cooldown_reduction", String.format("%.0f%%", st.get(JobStat.COOLDOWN_REDUCTION))));
         rows.add(row("luck", fmt(p.getAttributeValue(Attributes.LUCK))));
-        double magic = com.jo112ss.rpgmod.job.JobManager.gearOption(p, com.jo112ss.rpgmod.smithing.core.OptionType.MAGIC_POWER);
-        double staff = com.jo112ss.rpgmod.job.JobManager.staffBonus(p) * 100;
-        rows.add(row("magic_power", String.format("+%.0f%%", magic + staff)));
+        rows.add(row("magic_attack", fmt(com.jo112ss.rpgmod.job.JobManager.magicAttack(p))));
         rows.add(row("cast_speed", String.format("-%.0f%%", Math.min(60, com.jo112ss.rpgmod.job.JobManager.castSpeedPercent(p)))));
         for (int i = 0; i < rows.size(); i++) {
             int col = i / 7, r = i % 7;
@@ -431,6 +429,11 @@ public class JobScreen extends Screen {
             g.text(font, Component.translatable("rpgmod.jobscreen.cast", fmt(def.castTime())), x, y, 0xFFB09CFF, false);
             y += 12;
         }
+        Component power = powerLine(def);
+        if (power != null) {
+            g.text(font, power, x, y, 0xFFFFC870, false);
+            y += 12;
+        }
         int lines = font.split(Ui.skillDesc(id), w).size();
         g.textWithWordWrap(font, Ui.skillDesc(id), x, y, w, Ui.TEXT, false);
         return y + lines * 9 + 4;
@@ -549,12 +552,28 @@ public class JobScreen extends Screen {
         drawDetailColumn(g, d);
     }
 
+    /**
+     * "Damage: attack x150% (now 10.5)" - what the skill scales with and what it would do right now
+     * with the held weapon (before crits and the target's armour).
+     */
+    private Component powerLine(SkillDef def) {
+        String kind = JobDefs.powerKind(def);
+        if (kind == null || minecraft.player == null) return null;
+        boolean magic = JobDefs.isMagic(def);
+        double now = def.power() * com.jo112ss.rpgmod.job.JobManager.powerMultiplier(minecraft.player, def);
+        return Component.translatable("rpgmod.jobscreen.power." + kind,
+                Component.translatable(magic ? "rpgmod.stat.magic_attack" : "rpgmod.stat.attack_damage"),
+                String.format("%.0f", def.power() * 100), String.format("%.1f", now));
+    }
+
     private void drawSkillTooltip(GuiGraphicsExtractor g, int mouseX, int mouseY) {
         if (hoveredSkill == null) return;
         List<Component> lines = new ArrayList<>();
         lines.add(Ui.skillName(hoveredSkill));
         SkillDef def = JobDefs.skill(hoveredSkill);
         lines.add(Component.translatable("rpgmod.jobscreen.cd", fmt(def.cooldown())).append("  ").append(Component.translatable("rpgmod.jobscreen.mp", fmt(def.mana()))));
+        Component power = powerLine(def);
+        if (power != null) lines.add(power.copy().withColor(0xFFFFC870));
         lines.add(Ui.skillDesc(hoveredSkill));
         g.setComponentTooltipForNextFrame(font, lines, mouseX, mouseY);
     }

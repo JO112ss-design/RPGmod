@@ -107,7 +107,7 @@ public final class SkillPanel {
     }
 
     /** Panel layout version; bump when node ids change so saved progress is refunded. */
-    public static final int VERSION = 3;
+    public static final int VERSION = 4;
     public static final int RADIUS = 5;
 
     private static SkillPanel build(JobDefs.Job job) {

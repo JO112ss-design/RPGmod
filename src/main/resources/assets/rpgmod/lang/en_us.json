@@ -370,8 +370,11 @@
   "rpgmod.node.legend_owned": "Owned",
   "rpgmod.node.legend_open": "Open",
   "rpgmod.node.legend_locked": "Locked",
-  "rpgmod.tooltip.staff_bonus": "Magic power +%s%% (staff material)",
+  "rpgmod.tooltip.staff_bonus": "Magic Attack %s",
   "rpgmod.crit.hit": "Critical! %s damage (x%s)",
   "rpgmod.job.no_target": "No enemy in reach",
-  "rpgmod.gamble.lucky": "Lucky!"
+  "rpgmod.gamble.lucky": "Lucky!",
+  "rpgmod.stat.magic_attack": "Magic Attack",
+  "rpgmod.jobscreen.power.damage": "Damage %1$s x%2$s%% (now %3$s)",
+  "rpgmod.jobscreen.power.heal": "Heal %1$s x%2$s%% (now %3$s)"
 }

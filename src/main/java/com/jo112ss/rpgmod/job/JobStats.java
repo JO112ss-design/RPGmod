@@ -40,7 +40,7 @@ public final class JobStats {
 
     private static final Mapping[] VANILLA = {
             new Mapping(JobStat.MAX_HEALTH, Attributes.MAX_HEALTH, AttributeModifier.Operation.ADD_VALUE, 1),
-            new Mapping(JobStat.ATTACK_DAMAGE, Attributes.ATTACK_DAMAGE, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL, 0.01),
+            new Mapping(JobStat.ATTACK_DAMAGE, Attributes.ATTACK_DAMAGE, AttributeModifier.Operation.ADD_VALUE, 1),
             new Mapping(JobStat.ARMOR, Attributes.ARMOR, AttributeModifier.Operation.ADD_VALUE, 1),
             new Mapping(JobStat.MOVEMENT_SPEED, Attributes.MOVEMENT_SPEED, AttributeModifier.Operation.ADD_MULTIPLIED_BASE, 0.01),
             new Mapping(JobStat.ATTACK_SPEED, Attributes.ATTACK_SPEED, AttributeModifier.Operation.ADD_MULTIPLIED_BASE, 0.01),
