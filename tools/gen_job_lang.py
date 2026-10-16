@@ -144,6 +144,8 @@ UI = {  # key: (ja, en)
  'rpgmod.gamble.mana': ('当たり！MP回復', 'Win! Mana restored'),
  'rpgmod.gamble.bust': ('ハズレ…', 'Bust...'),
  'rpgmod.command.reset': ('%sの職業をリセットしました', "Reset %s's job"),
+ 'rpgmod.jobscreen.reset': ('リセット Lv%s', 'Reset (%s lv)'),
+ 'rpgmod.jobscreen.reset_confirm': ('もう一度押す', 'Click again'),
  'key.category.rpgmod.main': ('RPG Mod', 'RPG Mod'),
  'key.rpgmod.skill_1': ('スキル1', 'Skill 1'),
  'key.rpgmod.skill_2': ('スキル2', 'Skill 2'),
