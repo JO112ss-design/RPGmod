@@ -207,11 +207,32 @@ def g_helmet(m):
     return im
 
 def g_chestplate(m):
+    """Flat plate cuirass seen from the front: pauldrons at both ends, a straight torso made of
+    horizontal lames with a centre ridge and rivets. No rounded chest shapes."""
     L, M, D = MATS[m]; im = Image.new('RGBA', (160, 40)); d = ImageDraw.Draw(im)
-    d.polygon([(10, 6), (38, 2), (52, 10), (108, 10), (122, 2), (150, 6), (150, 20), (124, 22), (120, 39), (40, 39), (36, 22), (10, 20)], fill=rgba(M))
-    d.line([(10, 6), (38, 2), (52, 10)], fill=rgba(L)); d.line([(108, 10), (122, 2), (150, 6)], fill=rgba(L))
-    d.line([(40, 39), (120, 39)], fill=rgba(D)); d.line([(80, 12), (80, 38)], fill=rgba(D))
-    d.arc([46, 8, 78, 34], 200, 340, fill=rgba(L), width=2); d.arc([82, 8, 114, 34], 200, 340, fill=rgba(L), width=2)
+    # torso: straight sides, neck opening at the top centre
+    d.polygon([(38, 8), (68, 8), (72, 13), (88, 13), (92, 8), (122, 8), (122, 38), (38, 38)], fill=rgba(M))
+    d.line([(38, 8), (68, 8), (72, 13), (88, 13), (92, 8), (122, 8)], fill=rgba(L))
+    d.line([(38, 8), (38, 38)], fill=rgba(L)); d.line([(122, 8), (122, 38)], fill=rgba(D))
+    # horizontal lames
+    for y in (20, 27, 33):
+        d.line([(39, y), (121, y)], fill=rgba(D)); d.line([(39, y + 1), (121, y + 1)], fill=rgba(L))
+    # centre ridge
+    d.line([(80, 14), (80, 38)], fill=rgba(L)); d.line([(81, 14), (81, 38)], fill=rgba(D))
+    # rivets along the sides
+    for y in (12, 17, 24, 31, 36):
+        put(im, 42, y, L); put(im, 118, y, L)
+    # pauldrons: three overlapping plates on each side
+    for i, (x0, x1) in enumerate(((10, 22), (18, 30), (26, 38))):
+        y0 = 4 + i * 2
+        d.rectangle([x0, y0, x1, y0 + 14], fill=rgba(M if i % 2 == 0 else D))
+        d.line([(x0, y0), (x1, y0)], fill=rgba(L))
+        mx0, mx1 = 160 - x1, 160 - x0
+        d.rectangle([mx0, y0, mx1, y0 + 14], fill=rgba(M if i % 2 == 0 else D))
+        d.line([(mx0, y0), (mx1, y0)], fill=rgba(L))
+    d.line([(10, 18), (38, 22)], fill=rgba(D)); d.line([(122, 22), (150, 18)], fill=rgba(D))
+    # bottom trim
+    d.rectangle([38, 36, 122, 38], fill=rgba(D))
     return im
 
 def g_leggings(m):
