@@ -78,6 +78,7 @@ jobs:
           sudo apt-get update -qq && sudo apt-get install -y -qq xvfb libgl1-mesa-dri libglx-mesa0 libegl-mesa0 mesa-utils mesa-vulkan-drivers > /dev/null
           mkdir -p run/saves
           rm -rf run/saves/autotest && cp -r run/world run/saves/autotest
+          printf 'onboardAccessibility:false\nmenuBackgroundBlurriness:0\nrenderDistance:2\nsimulationDistance:5\ngraphicsPreset:"fast"\ngraphicsMode:0\nmaxFps:20\nrenderClouds:"false"\nparticles:2\nentityShadows:false\nskipMultiplayerWarning:true\ntutorialStep:none\njoinedFirstServer:true\nguiScale:2\nlang:ja_jp\nnarrator:0\nsoundDevice:""\n' > run/options.txt
           export LIBGL_ALWAYS_SOFTWARE=1
           export SDL_VIDEO_FORCE_EGL=1
           export SDL_VIDEO_X11_FORCE_EGL=1
