@@ -39,6 +39,13 @@ public final class FxParticle extends SingleQuadParticle {
     int delay;
     int fadeAge = -1, fadeLen;
     float fadeFrom;
+    /** Alpha multiplier (the colour twin of a glowing sprite draws at a fraction of its alpha). */
+    float alphaScale = 1;
+    /**
+     * A normally blended copy drawn with the same shape: additive light alone washes out to white on
+     * bright daytime backgrounds, the copy keeps the colour readable. Live changes are passed on.
+     */
+    FxParticle twin;
 
     FxParticle(ClientLevel level, double x, double y, double z, TextureAtlasSprite sprite) {
         super(level, x, y, z, sprite);
@@ -100,7 +107,7 @@ public final class FxParticle extends SingleQuadParticle {
         return Mth.lerp(t, size0, s1);
     }
 
-    private float alphaAt(float partial) {
+    private float baseAlpha(float partial) {
         float t = t(partial);
         float a = Mth.lerp(t, alpha0, alpha1);
         if (fadeIn > 0 && t < fadeIn) a *= t / fadeIn;
@@ -108,47 +115,59 @@ public final class FxParticle extends SingleQuadParticle {
         return a;
     }
 
+    private float alphaAt(float partial) {
+        return baseAlpha(partial) * alphaScale;
+    }
+
     // ---------------------------------------------------------------- live control (for particles an animation drives)
 
     /** Fades out over {@code ticks} from whatever it looks like now, then disappears. */
     public void fadeOut(int ticks) {
+        if (twin != null) twin.fadeOut(ticks);
         if (fadeAge >= 0 || removed) return;
-        fadeFrom = alphaAt(0);
+        fadeFrom = baseAlpha(0);
         fadeAge = age;
         fadeLen = Math.max(1, ticks);
         lifetime = age + fadeLen;
     }
 
     public void moveTo(double x, double y, double z) {
+        if (twin != null) twin.moveTo(x, y, z);
         setPos(x, y, z);
     }
 
     public void sizeNow(float s) {
+        if (twin != null) twin.sizeNow(s);
         size0 = s;
         size1 = s;
     }
 
     public void colorNow(int c) {
+        if (twin != null) twin.colorNow(c);
         color0 = c;
         color1 = -1;
     }
 
     public void alphaNow(float a) {
+        if (twin != null) twin.alphaNow(a);
         if (fadeAge >= 0) return;
         alpha0 = a;
         alpha1 = a;
     }
 
     public void spriteNow(Fx.S s) {
+        if (twin != null) twin.spriteNow(s);
         setSprite(Fx.sprite(s));
     }
 
     public void orientNow(Quaternionf q) {
+        if (twin != null) twin.orientNow(q);
         face = Face.FIXED;
         fixed = q;
     }
 
     public void spinNow(float s) {
+        if (twin != null) twin.spinNow(s);
         spin = s;
     }
 

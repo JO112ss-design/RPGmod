@@ -384,7 +384,7 @@ final class FxArcane {
                 double speed = range / 11.0 * Fx.r(0.8, 1.15);
                 int c0 = Fx.mix(0xFFC060, 0xFF8A30, Fx.RND.nextDouble());
                 Fx.p(S.GLOW, o.add(d.scale(0.7))).vel(d.scale(speed)).friction(0.97F).color(c0, FIRE_D)
-                        .size(0.2F, Fx.rf(0.9F, 1.3F)).alpha(0.6F, 0).life(13 + Fx.RND.nextInt(4)).spawn();
+                        .size(0.2F, Fx.rf(0.9F, 1.3F)).alpha(0.5F, 0).tinted().life(13 + Fx.RND.nextInt(4)).spawn();
             }
             for (int i = 0, n = Fx.n(4); i < n; i++) {
                 Vec3 d = cone(dir, half * 0.7);

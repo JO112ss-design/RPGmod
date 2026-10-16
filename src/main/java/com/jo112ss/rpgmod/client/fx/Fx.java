@@ -34,6 +34,14 @@ public final class Fx {
 
         final Identifier id = Identifier.fromNamespaceAndPath(RpgMod.MODID, "fx_" + name().toLowerCase());
 
+        /** Shapes that get a colour copy by default (big line art that would otherwise wash out). */
+        boolean autoTint() {
+            return switch (this) {
+                case SLASH, RING, WAVE, HEX, CIRCLE_ARCANE, CIRCLE_HOLY, CIRCLE_HEX, CIRCLE_CLOCK, CIRCLE_NATURE -> true;
+                default -> false;
+            };
+        }
+
         /** Pixel-art sprites keep their own colours and use normal blending. */
         boolean pixelArt() {
             return this == COIN || this == CARD || this == DICE || this == SKULL;
@@ -96,6 +104,7 @@ public final class Fx {
         private Quaternionf fixed;
         private Entity follow;
         private Boolean additive;
+        private Boolean tint;
         private boolean lit;
 
         private B(S sprite, double x, double y, double z) {
@@ -227,6 +236,17 @@ public final class Fx {
             return this;
         }
 
+        /** Also draw a normally blended copy so the colour survives on bright backgrounds (see {@link FxParticle#twin}). */
+        public B tinted() {
+            tint = true;
+            return this;
+        }
+
+        public B untinted() {
+            tint = false;
+            return this;
+        }
+
         /** Lit by the world instead of glowing (smoke, debris). */
         public B lit() {
             lit = true;
@@ -236,6 +256,21 @@ public final class Fx {
         public FxParticle spawn() {
             ClientLevel level = Minecraft.getInstance().level;
             if (level == null) return null;
+            boolean add = additive != null ? additive : !sprite.pixelArt();
+            boolean twin = add && (tint != null ? tint : sprite.autoTint());
+            FxParticle p = make(level, add);
+            if (twin) {
+                // the colour copy goes in first so the glow is drawn on top of it
+                FxParticle t = make(level, false);
+                t.alphaScale = 0.5F;
+                Minecraft.getInstance().particleEngine.add(t);
+                p.twin = t;
+            }
+            Minecraft.getInstance().particleEngine.add(p);
+            return p;
+        }
+
+        private FxParticle make(ClientLevel level, boolean add) {
             FxParticle p = new FxParticle(level, x, y, z, sprite(sprite));
             p.setParticleSpeed(vx, vy, vz);
             p.color0 = c0;
@@ -254,10 +289,9 @@ public final class Fx {
             p.face = face;
             p.fixed = fixed;
             p.delay = delay;
-            p.additive = additive != null ? additive : !sprite.pixelArt();
+            p.additive = add;
             p.fullBright = !lit;
             if (follow != null) p.startFollowing(follow);
-            Minecraft.getInstance().particleEngine.add(p);
             return p;
         }
     }
