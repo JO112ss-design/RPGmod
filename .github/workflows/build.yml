@@ -75,11 +75,12 @@ jobs:
         continue-on-error: true
         timeout-minutes: 20
         run: |
-          sudo apt-get update -qq && sudo apt-get install -y -qq xvfb libgl1-mesa-dri libglx-mesa0 mesa-utils > /dev/null
+          sudo apt-get update -qq && sudo apt-get install -y -qq xvfb libgl1-mesa-dri libglx-mesa0 libegl-mesa0 mesa-utils mesa-vulkan-drivers > /dev/null
           mkdir -p run/saves
           rm -rf run/saves/autotest && cp -r run/world run/saves/autotest
           export LIBGL_ALWAYS_SOFTWARE=1
-          timeout 600 xvfb-run -a -s "-screen 0 1280x720x24" ./gradlew runClient -Pautotest --console=plain > client.log 2>&1 || true
+          xvfb-run -a -s "-screen 0 1280x720x24 +extension GLX +render -noreset" glxinfo -B > glxinfo.txt 2>&1 || true
+          timeout 600 xvfb-run -a -s "-screen 0 1280x720x24 +extension GLX +render -noreset" ./gradlew runClient -Pautotest --console=plain > client.log 2>&1 || true
           ls -la run/screenshots || true
 
       - name: Upload jar
@@ -98,7 +99,7 @@ jobs:
           echo "${{ steps.build.outcome }}" > /tmp/out/status.txt
           echo "${{ github.sha }}" > /tmp/out/sha.txt
           cp build/libs/*.jar /tmp/out/ 2>/dev/null || true
-          cp server.log client.log /tmp/out/ 2>/dev/null || true
+          cp server.log client.log glxinfo.txt /tmp/out/ 2>/dev/null || true
           mkdir -p /tmp/out/screenshots && cp run/screenshots/*.png /tmp/out/screenshots/ 2>/dev/null || true
           (grep -h 'AUTOTEST\|ERROR\|Exception\|rpgmod' server.log client.log 2>/dev/null | head -400) > /tmp/out/summary.log || true
           if [ -f .ci/dump-sources ]; then
