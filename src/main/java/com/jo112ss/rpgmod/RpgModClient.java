@@ -22,6 +22,9 @@ public class RpgModClient {
     }
 
     private static void registerLayers(net.neoforged.neoforge.client.event.RegisterGuiLayersEvent event) {
+        // under the vanilla HUD, so the hotbar and chat stay on top of monster plates
+        event.registerBelowAll(net.minecraft.resources.Identifier.fromNamespaceAndPath(RpgMod.MODID, "mob_overlay"),
+                com.jo112ss.rpgmod.client.mob.MobOverlay::render);
         event.registerAboveAll(net.minecraft.resources.Identifier.fromNamespaceAndPath(RpgMod.MODID, "job_hud"),
                 com.jo112ss.rpgmod.client.job.JobHud::render);
     }

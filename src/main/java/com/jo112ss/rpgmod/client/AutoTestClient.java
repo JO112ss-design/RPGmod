@@ -165,6 +165,7 @@ public final class AutoTestClient {
             case "explosive_arrow" -> new int[] {6, 14};
             case "shadow_bind", "chrono", "quick_cast", "nourish", "fire_weapon", "poison_coat" -> new int[] {8};
             case "binding_field" -> new int[] {10};
+            case "mob:levels" -> new int[] {5, 11, 18};
             default -> new int[] {6};
         };
     }
@@ -176,11 +177,8 @@ public final class AutoTestClient {
             // the newest skills (the older ones were checked in earlier runs; set rpgmod.showcase=all for every skill)
             showSkills = new java.util.ArrayList<>();
             if ("all".equals(System.getProperty("rpgmod.showcase"))) showSkills.addAll(com.jo112ss.rpgmod.job.core.JobDefs.SKILLS.keySet());
-            else showSkills.addAll(java.util.List.of("intimidate", "taunt", "piercing_shot", "explosive_arrow", "guardian_dome", "holy_wave",
-                    "quick_cast", "chrono", "arcane_missiles", "blizzard", "gravity", "nourish", "purify", "poison_coat", "throwing_knives",
-                    "shadow_bind", "fire_weapon", "binding_field", "russian_roulette", "card_throw", "power_slash", "meteor"));
-            for (String id : new String[] {"guardian_dome", "arcane_missiles", "blizzard"}) showSkills.add("fp:" + id);
-            showSkills.add("charge");
+            // enemy work: levels, plates and damage numbers (skills were checked in earlier runs)
+            showSkills.addAll(java.util.List.of("mob:levels", "fp:mob:levels", "power_slash", "meteor"));
             mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK);
             mc.options.particles().set(net.minecraft.server.level.ParticleStatus.ALL);
             AutoTestServer.requestShowcase();

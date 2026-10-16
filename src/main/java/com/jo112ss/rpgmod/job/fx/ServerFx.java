@@ -66,7 +66,11 @@ public final class ServerFx {
     }
 
     public void send(ServerLevel level) {
-        PacketDistributor.sendToPlayersNear(level, null, pos.x, pos.y, pos.z, RANGE,
+        send(level, RANGE);
+    }
+
+    public void send(ServerLevel level, double range) {
+        PacketDistributor.sendToPlayersNear(level, null, pos.x, pos.y, pos.z, range,
                 new FxPayload(fx, pos, vec, a, b, color, entity, List.copyOf(points)));
     }
 }

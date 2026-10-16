@@ -108,6 +108,10 @@ public final class AutoTestServer {
                 player.getInventory().setSelectedSlot(0);
                 return;
             }
+            if (id.startsWith("mob:")) {
+                mobScene(level, id.substring(4));
+                return;
+            }
             com.jo112ss.rpgmod.job.core.SkillDef def = com.jo112ss.rpgmod.job.core.JobDefs.skill(id);
             if (def != null) {
                 var job = com.jo112ss.rpgmod.job.JobType.byId(def.job());
@@ -133,8 +137,70 @@ public final class AutoTestServer {
             sinceCast = 0;
         }
         if (sinceCast >= 0 && ++sinceCast == 40) logLastCast();
+        sceneStep(level);
         if (arena != null && player.tickCount % 10 == 0) {
             for (var m : level.getEntitiesOfClass(net.minecraft.world.entity.monster.cubemob.Slime.class, player.getBoundingBox().inflate(48))) m.discard();
+        }
+    }
+
+    // ------------------------------------------------------------------ enemy scenes
+
+    private static int sceneTick = -1;
+    private static String scene;
+
+    /** Enemy test scenes: levelled dummies with health bars, damage numbers of every kind. */
+    private static void mobScene(net.minecraft.server.level.ServerLevel level, String name) {
+        scene = name;
+        sceneTick = 0;
+        switch (name) {
+            case "levels" -> {
+                int[] lv = {3, 18, 33, 52, 78};
+                float[] hp = {1f, 0.7f, 0.4f, 0.85f, 0.15f};
+                for (int i = 0; i < targets.size(); i++) {
+                    var z = targets.get(i);
+                    com.jo112ss.rpgmod.mob.MobLevels.apply(z, lv[i % lv.length]);
+                    z.getAttribute(Attributes.MAX_HEALTH).setBaseValue(20);
+                    z.setHealth(z.getMaxHealth() * hp[i % hp.length]);
+                }
+                var r = com.jo112ss.rpgmod.mob.MobConfig.rules();
+                for (int l : new int[] {1, 10, 20, 30, 40, 50, 60, 70, 80, 85}) {
+                    RpgMod.LOGGER.info("[AUTOTEST] level {}: hp x{} dmg x{} explosion x{} speed +{}", l,
+                            String.format("%.2f", com.jo112ss.rpgmod.mob.core.MobLevelMath.healthMultiplier(r, l)),
+                            String.format("%.2f", com.jo112ss.rpgmod.mob.core.MobLevelMath.damageMultiplier(r, l)),
+                            String.format("%.2f", com.jo112ss.rpgmod.mob.core.MobLevelMath.explosionMultiplier(r, l)),
+                            String.format("%.2f", com.jo112ss.rpgmod.mob.core.MobLevelMath.speedBonus(r, l)));
+                }
+                for (int d : new int[] {0, 500, 1500, 3000, 5000}) {
+                    RpgMod.LOGGER.info("[AUTOTEST] overworld level at {} blocks: {}", d, com.jo112ss.rpgmod.mob.core.MobLevelMath.baseLevel(r,
+                            com.jo112ss.rpgmod.mob.core.MobLevelMath.Realm.OVERWORLD, d, 64));
+                }
+            }
+            default -> { }
+        }
+    }
+
+    /** Runs every tick while a scene is active: hits for the damage numbers. */
+    private static void sceneStep(net.minecraft.server.level.ServerLevel level) {
+        if (scene == null) return;
+        int t = sceneTick++;
+        if (scene.equals("levels") && targets.size() >= 4) {
+            var src = level.damageSources().playerAttack(player);
+            switch (t) {
+                case 2 -> targets.get(0).hurtServer(level, src, 6.5F);
+                case 4 -> {
+                    com.jo112ss.rpgmod.mob.DamageNumbers.markCrit(targets.get(3));
+                    targets.get(3).hurtServer(level, src, 23F);
+                }
+                case 6 -> targets.get(1).hurtServer(level, level.damageSources().source(net.minecraft.resources.ResourceKey.create(
+                        net.minecraft.core.registries.Registries.DAMAGE_TYPE, net.minecraft.resources.Identifier.fromNamespaceAndPath(RpgMod.MODID, "skill_magic")), player, player), 14F);
+                case 8 -> targets.get(2).hurtServer(level, level.damageSources().onFire(), 2F);
+                case 10 -> targets.get(2).heal(5F);
+                case 12 -> {
+                    targets.get(0).hurtServer(level, src, 3.2F);
+                    scene = null;
+                }
+                default -> { }
+            }
         }
     }
 

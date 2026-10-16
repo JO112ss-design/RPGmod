@@ -58,6 +58,13 @@ public final class ModRegistries {
                     .sync((holder, to) -> holder == to, com.jo112ss.rpgmod.job.JobData.STREAM_CODEC)
                     .build());
 
+    /** Monster level (0 = not levelled yet): saved with the entity, synced to everyone tracking it. */
+    public static final java.util.function.Supplier<net.neoforged.neoforge.attachment.AttachmentType<Integer>> MOB_LEVEL =
+            ATTACHMENTS.register("mob_level", () -> net.neoforged.neoforge.attachment.AttachmentType.builder(() -> 0)
+                    .serialize(com.mojang.serialization.Codec.INT.fieldOf("level"), v -> v > 0)
+                    .sync(net.minecraft.network.codec.ByteBufCodecs.VAR_INT)
+                    .build());
+
     public static final DeferredHolder<CreativeModeTab, CreativeModeTab> TAB = CREATIVE_TABS.register("main", () -> CreativeModeTab.builder()
             .title(Component.translatable("itemGroup.rpgmod"))
             .withTabsBefore(CreativeModeTabs.COMBAT)

@@ -23,6 +23,7 @@ public class RpgMod {
         ModRegistries.register(modBus);
         container.registerConfig(ModConfig.Type.SYNCED, SmithingConfig.SPEC);
         container.registerConfig(ModConfig.Type.SYNCED, com.jo112ss.rpgmod.job.JobConfig.SPEC, "rpgmod-jobs.toml");
+        container.registerConfig(ModConfig.Type.SYNCED, com.jo112ss.rpgmod.mob.MobConfig.SPEC, "rpgmod-mobs.toml");
         modBus.addListener(ModNetwork::register);
         modBus.addListener(RpgMod::onConfig);
         modBus.addListener(RpgMod::onConfigReload);
@@ -31,10 +32,12 @@ public class RpgMod {
 
     private static void onConfig(ModConfigEvent.Loading event) {
         if (event.getConfig().getSpec() == SmithingConfig.SPEC) SmithingConfig.apply();
+        com.jo112ss.rpgmod.mob.MobConfig.invalidate();
     }
 
     private static void onConfigReload(ModConfigEvent.Reloading event) {
         if (event.getConfig().getSpec() == SmithingConfig.SPEC) SmithingConfig.apply();
+        com.jo112ss.rpgmod.mob.MobConfig.invalidate();
     }
 
     private static void addCreative(BuildCreativeModeTabContentsEvent event) {

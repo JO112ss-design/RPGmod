@@ -35,6 +35,11 @@ public final class SkillFx {
     public static void play(FxPayload payload) {
         ClientLevel level = Minecraft.getInstance().level;
         if (level == null) return;
+        if (payload.fx().equals("dmg")) {
+            // damage numbers are HUD, not particles: they ignore the particle setting
+            com.jo112ss.rpgmod.client.mob.MobOverlay.addNumber(payload.pos(), payload.a(), (int) payload.b(), payload.entity());
+            return;
+        }
         Entity e = payload.entity() >= 0 ? level.getEntity(payload.entity()) : null;
         P p = new P(payload.fx(), payload.pos(), payload.vec(), payload.a(), payload.b(), payload.color(), e, payload.points());
         try {

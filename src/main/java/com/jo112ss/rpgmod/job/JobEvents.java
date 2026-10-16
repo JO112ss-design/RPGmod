@@ -83,8 +83,8 @@ public final class JobEvents {
         com.jo112ss.rpgmod.job.fx.ServerFx.of("rpg_crit", new net.minecraft.world.phys.Vec3(x, y, z)).vec(target.position().subtract(sp.position())).a(target.getBbWidth()).send(level);
         level.playSound(null, target.blockPosition(), net.minecraft.sounds.SoundEvents.AMETHYST_CLUSTER_BREAK, net.minecraft.sounds.SoundSource.PLAYERS, 1.0F, 1.7F);
         level.playSound(null, target.blockPosition(), net.minecraft.sounds.SoundEvents.PLAYER_ATTACK_STRONG, net.minecraft.sounds.SoundSource.PLAYERS, 0.8F, 0.8F);
-        sp.sendSystemMessage(net.minecraft.network.chat.Component.translatable("rpgmod.crit.hit", String.format("%.1f", damage), String.format("%.2f", mult))
-                .withStyle(net.minecraft.ChatFormatting.GOLD, net.minecraft.ChatFormatting.BOLD), true);
+        // the number itself floats up in gold over the target (damage numbers)
+        com.jo112ss.rpgmod.mob.DamageNumbers.markCrit(target);
     }
 
     /**
