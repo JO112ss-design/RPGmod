@@ -49,6 +49,11 @@ neoForge {
     runs {
         client {
             client()
+            // CI end-to-end test: ./gradlew runClient -Pautotest
+            if (project.hasProperty('autotest')) {
+                systemProperty 'rpgmod.autotest', 'true'
+                programArguments.addAll '--quickPlaySingleplayer', 'autotest', '--width', '1280', '--height', '720'
+            }
             // Comma-separated list of namespaces to load gametests from. Empty = all namespaces.
             systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
         }
