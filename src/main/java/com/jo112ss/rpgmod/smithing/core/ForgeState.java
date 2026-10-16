@@ -29,10 +29,19 @@ public final class ForgeState {
     private double lastDamage;
 
     public ForgeState(SmithingRules rules, double[] targets, long nowMillis) {
+        this(rules, targets, nowMillis, 0);
+    }
+
+    /**
+     * @param tokenBase first bar token of this session. Giving every session a different base keeps
+     *                  tokens unique across sessions, so input meant for an old session never matches.
+     */
+    public ForgeState(SmithingRules rules, double[] targets, long nowMillis, int tokenBase) {
         this.rules = rules;
         this.targets = targets.clone();
         this.values = new double[targets.length];
         this.temperature = rules.initialTempMax;
+        this.barToken = tokenBase;
         startBar(nowMillis);
     }
 

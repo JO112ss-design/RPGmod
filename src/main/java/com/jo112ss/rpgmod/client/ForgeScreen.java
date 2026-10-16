@@ -77,6 +77,7 @@ public class ForgeScreen extends AbstractContainerScreen<ForgeMenu> {
     @Override
     protected void init() {
         super.init();
+        ClientForgeView.resetInput();
         int x = leftPos, y = topPos;
         startBtn = addRenderableWidget(Button.builder(Component.translatable("rpgmod.gui.start"),
                 b -> send(ForgeActionPayload.START, chosenWeapon, 0, 0)).bounds(x + 68, y + BTN_Y, 120, 20).build());

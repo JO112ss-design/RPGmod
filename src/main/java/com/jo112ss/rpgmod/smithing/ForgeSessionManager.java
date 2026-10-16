@@ -51,6 +51,8 @@ public final class ForgeSessionManager {
     private static final int MAX_ACTIONS_PER_SECOND = 20;
 
     private static final Map<UUID, Session> SESSIONS = new HashMap<>();
+    /** Bar tokens of each new session start from here, so they never repeat between sessions. */
+    private static int nextTokenBase = new Random().nextInt(1 << 20);
 
     private static final class Session {
         final ForgeMenu menu;
@@ -197,7 +199,8 @@ public final class ForgeSessionManager {
         rules = com.jo112ss.rpgmod.config.SmithingConfig.rulesFor(weapon.material());
         Random rnd = new Random(player.getRandom().nextLong());
         double[] targets = TargetGenerator.generate(rules, weapon.profile(), rnd);
-        s.state = new ForgeState(rules, targets, now);
+        nextTokenBase += 10_000;
+        s.state = new ForgeState(rules, targets, now, nextTokenBase);
         player.level().playSound(null, player.blockPosition(), SoundEvents.SMITHING_TABLE_USE, SoundSource.BLOCKS, 0.7F, 1.0F);
         return true;
     }

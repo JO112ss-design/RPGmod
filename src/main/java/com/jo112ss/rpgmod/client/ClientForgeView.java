@@ -16,6 +16,7 @@ public final class ClientForgeView {
     private static long judgementShownAt;
 
     public static void receive(ForgeSyncPayload payload) {
+        if (payload.stage() == ForgeSyncPayload.STAGE_SELECT) resetInput();
         previous = current;
         if (payload.strikes() != (previous == null ? 0 : previous.strikes()) && payload.lastJudgement() >= 0) {
             judgementShownAt = System.currentTimeMillis();
@@ -25,6 +26,12 @@ public final class ClientForgeView {
         if (payload.barToken() != stoppedToken) {
             frozenPos = -1;
         }
+    }
+
+    /** Forgets the stopped bar (new screen or new session). */
+    public static void resetInput() {
+        stoppedToken = Integer.MIN_VALUE;
+        frozenPos = -1;
     }
 
     public static ForgeSyncPayload get() {
