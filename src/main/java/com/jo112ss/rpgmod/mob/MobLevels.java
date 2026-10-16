@@ -90,7 +90,7 @@ public final class MobLevels {
         MobLevelMath.Rules r = MobConfig.rules();
         boolean full = mob.getHealth() >= mob.getMaxHealth() - 0.01F;
         double hp = MobLevelMath.healthMultiplier(r, lv) - 1;
-        if (mob instanceof EnderDragon) hp = MobConfig.dragon() ? 2.0 : hp; // 600 health: tuned for the three-phase fight
+        if (mob instanceof EnderDragon) hp = MobConfig.dragonHealth() - 1; // 600 health by default: tuned for the three-stage fight
         modifier(mob, Attributes.MAX_HEALTH, HP, hp, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);
         if (!(mob instanceof EnderDragon)) {
             modifier(mob, Attributes.MOVEMENT_SPEED, SPEED, MobLevelMath.speedBonus(r, lv), AttributeModifier.Operation.ADD_MULTIPLIED_BASE);
@@ -123,7 +123,9 @@ public final class MobLevels {
         int lv = level(attacker);
         if (lv <= 1) return;
         MobLevelMath.Rules r = MobConfig.rules();
-        double mult = event.getSource().is(DamageTypeTags.IS_EXPLOSION) ? MobLevelMath.explosionMultiplier(r, lv) : MobLevelMath.damageMultiplier(r, lv);
+        double mult;
+        if (attacker instanceof EnderDragon) mult = MobConfig.dragonDamage(); // its breath ignores armour, so it gets its own, gentler factor
+        else mult = event.getSource().is(DamageTypeTags.IS_EXPLOSION) ? MobLevelMath.explosionMultiplier(r, lv) : MobLevelMath.damageMultiplier(r, lv);
         event.setAmount((float) (event.getAmount() * mult));
     }
 

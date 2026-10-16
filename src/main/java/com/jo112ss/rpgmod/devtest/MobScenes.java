@@ -33,6 +33,7 @@ final class MobScenes {
     private static BlockPos c;
     private static final List<Mob> mobs = new ArrayList<>();
     private static double startY;
+    private static net.minecraft.world.entity.boss.enderdragon.EnderDragon dragon;
     private static Vec3 startPos;
     private static int arrowsHit;
     private static float lostHealth;
@@ -55,6 +56,7 @@ final class MobScenes {
             case "creeper" -> 2;
             case "archer" -> 3;
             case "items" -> 4;
+            case "dragon" -> 6;
             default -> 5;
         };
         c = BlockPos.containing(arena).offset(40, 0, idx * 24 - 60);
@@ -105,9 +107,18 @@ final class MobScenes {
                 Mob tnt = spawn(level, EntityTypes.HUSK, c.offset(11, 0, 6), 20);
                 tnt.setItemSlot(EquipmentSlot.OFFHAND, new ItemStack(Items.TNT, 1));
             }
+            case "dragon" -> {
+                tp(player, Vec3.atBottomCenterOf(c), -90, -12);
+                var d = EntityTypes.ENDER_DRAGON.create(level, EntitySpawnReason.COMMAND);
+                d.snapTo(c.getX() + 22, c.getY() + 9, c.getZ() + 0.5, 90F, 0F);
+                d.setFightOrigin(c);
+                level.addFreshEntity(d);
+                d.getPhaseManager().setPhase(net.minecraft.world.entity.boss.enderdragon.phases.EnderDragonPhase.HOVERING);
+                dragon = d;
+            }
             default -> {
                 tp(player, Vec3.atBottomCenterOf(c), -90, 15);
-                spawn(level, EntityTypes.SPIDER, c.offset(7, 0, 0), 40);
+                spawn(level, EntityTypes.SPIDER, c.offset(10, 0, 0), 40);
             }
         }
         for (Mob m : mobs) m.setTarget(player);
@@ -145,6 +156,33 @@ final class MobScenes {
         t++;
         for (Mob m : mobs) if (m.isAlive() && m.getTarget() == null) m.setTarget(player);
         switch (scene) {
+            case "dragon" -> {
+                var d = dragon;
+                if (d == null || !d.isAlive()) break;
+                // keep it in front of the camera between the scripted attacks
+                if (d.getPhaseManager().getCurrentPhase().getPhase() != net.minecraft.world.entity.boss.enderdragon.phases.EnderDragonPhase.CHARGING_PLAYER
+                        && d.getPhaseManager().getCurrentPhase().getPhase() != net.minecraft.world.entity.boss.enderdragon.phases.EnderDragonPhase.HOVERING) {
+                    d.getPhaseManager().setPhase(net.minecraft.world.entity.boss.enderdragon.phases.EnderDragonPhase.HOVERING);
+                }
+                switch (t) {
+                    case 5 -> d.setHealth(d.getMaxHealth() * 0.55F);
+                    case 30 -> com.jo112ss.rpgmod.mob.dragon.DragonDirector.testAttack(d, "volley");
+                    case 90 -> com.jo112ss.rpgmod.mob.dragon.DragonDirector.testAttack(d, "gust");
+                    case 140 -> {
+                        com.jo112ss.rpgmod.mob.dragon.DragonDirector.testAttack(d, "orbs");
+                        com.jo112ss.rpgmod.mob.dragon.DragonDirector.testAttack(d, "summon");
+                    }
+                    case 190 -> d.setHealth(d.getMaxHealth() * 0.2F);
+                    case 230 -> com.jo112ss.rpgmod.mob.dragon.DragonDirector.testAttack(d, "rain");
+                    case 290 -> com.jo112ss.rpgmod.mob.dragon.DragonDirector.testAttack(d, "charge");
+                    default -> { }
+                }
+                if (t % 30 == 0) {
+                    RpgMod.LOGGER.info("[AUTOTEST] dragon t={} level={} health={}/{} stage={} phase={} health lost={}", t, MobLevels.level(d),
+                            String.format("%.0f", d.getHealth()), String.format("%.0f", d.getMaxHealth()),
+                            com.jo112ss.rpgmod.mob.dragon.DragonDirector.stage(d), d.getPhaseManager().getCurrentPhase().getPhase(), String.format("%.1f", lostHealth));
+                }
+            }
             case "archer" -> {
                 // strafe sideways so the skeleton has to lead its shots
                 double z = Math.sin(t * 0.06) * 4;
@@ -201,6 +239,8 @@ final class MobScenes {
     }
 
     static void end(ServerLevel level, ServerPlayer player) {
+        if (dragon != null) dragon.discard();
+        dragon = null;
         for (Mob m : mobs) m.discard();
         mobs.clear();
         scene = null;

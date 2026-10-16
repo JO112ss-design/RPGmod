@@ -435,5 +435,12 @@
   "death.attack.rpgmod.skill_magic.item": "%1$s was blasted by %2$s using %3$s",
   "death.attack.rpgmod.skill_magic.player": "%1$s was blasted by the magic of %2$s",
   "rpgmod.coat.switched_now": "Coating switched: %s (%ss left)",
-  "rpgmod.node.legend_skill": "Skill (learnable)"
+  "rpgmod.node.legend_skill": "Skill (learnable)",
+  "rpgmod.dragon.bar": "Ender Dragon Lv%s · %s",
+  "rpgmod.dragon.stage1": "Stage I",
+  "rpgmod.dragon.stage1.sub": "",
+  "rpgmod.dragon.stage2": "Stage II",
+  "rpgmod.dragon.stage2.sub": "The dragon gets serious - wing gusts, void orbs and its brood",
+  "rpgmod.dragon.stage3": "Final Stage",
+  "rpgmod.dragon.stage3.sub": "Frenzy - dives and a rain of dragon breath"
 }

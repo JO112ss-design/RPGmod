@@ -190,7 +190,7 @@ public final class MobAi {
             mob.setDeltaMovement(away.x * 0.6, 0.38, away.z * 0.6);
             sl.playSound(null, mob.getX(), mob.getY(), mob.getZ(), SoundEvents.SKELETON_STEP, SoundSource.HOSTILE, 1.0F, 1.4F);
             NEXT.put(mob, now + 60 + sl.getRandom().nextInt(40));
-        } else if (mob instanceof Spider && lv >= 20 && d >= 3 && d <= 12 && mob.getSensing().hasLineOfSight(t) && sl.getRandom().nextDouble() < 0.12) {
+        } else if (mob instanceof Spider && lv >= 20 && d >= 2 && d <= 14 && mob.getSensing().hasLineOfSight(t) && sl.getRandom().nextDouble() < 0.3) {
             spitWeb(sl, mob, p);
             NEXT.put(mob, now + 200 + sl.getRandom().nextInt(100));
         }

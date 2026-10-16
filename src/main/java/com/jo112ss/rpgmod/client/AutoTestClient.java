@@ -172,6 +172,7 @@ public final class AutoTestClient {
             case "mob:archer" -> new int[] {40, 100, 160};
             case "mob:items" -> new int[] {30, 60, 120, 190};
             case "mob:spider" -> new int[] {40, 80};
+            case "mob:dragon" -> new int[] {12, 45, 100, 118, 150, 196, 245, 262, 300};
             default -> new int[] {6};
         };
     }
@@ -181,6 +182,7 @@ public final class AutoTestClient {
         return switch (id) {
             case "mob:pillar", "mob:dig", "mob:archer", "mob:items" -> 220;
             case "mob:creeper", "mob:spider" -> 120;
+            case "mob:dragon" -> 330;
             default -> SLOT;
         };
     }
@@ -193,8 +195,8 @@ public final class AutoTestClient {
             showSkills = new java.util.ArrayList<>();
             if ("all".equals(System.getProperty("rpgmod.showcase"))) showSkills.addAll(com.jo112ss.rpgmod.job.core.JobDefs.SKILLS.keySet());
             // enemy work: levels, plates and damage numbers (skills were checked in earlier runs)
-            showSkills.addAll(java.util.List.of("mob:levels", "fp:mob:levels", "mob:pillar", "mob:dig", "mob:creeper", "mob:archer",
-                    "mob:items", "mob:spider"));
+            showSkills.addAll(java.util.List.of("mob:levels", "fp:mob:levels", "mob:pillar", "fp:mob:dig", "mob:creeper", "mob:archer",
+                    "mob:items", "mob:spider", "mob:dragon"));
             mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK);
             mc.options.particles().set(net.minecraft.server.level.ParticleStatus.ALL);
             AutoTestServer.requestShowcase();
