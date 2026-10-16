@@ -60,6 +60,8 @@ public final class AutoTestServer {
     private static final java.util.List<net.minecraft.world.entity.monster.zombie.Zombie> targets = new java.util.ArrayList<>();
     private static net.minecraft.world.phys.Vec3 arena;
     private static String lastCast;
+    private static com.jo112ss.rpgmod.job.core.SkillDef pendingCast;
+    private static int pendingDelay;
     private static int sinceCast = -1;
 
     /** Client test: build the arena (dummies in front of the player) for casting every skill. */
@@ -113,11 +115,22 @@ public final class AutoTestServer {
                 if (id.equals("lucky_shot")) weapon = com.jo112ss.rpgmod.item.WeaponType.BOW;
                 player.getInventory().setItem(6, new ItemStack(com.jo112ss.rpgmod.item.ModItems.get(weapon, com.jo112ss.rpgmod.item.WeaponMaterial.IRON)));
                 player.getInventory().setSelectedSlot(6);
-                boolean ok = com.jo112ss.rpgmod.job.SkillExecutor.execute(player, def, 1.0);
-                RpgMod.LOGGER.info("[AUTOTEST] cast {} ok={}", id, ok);
-                lastCast = id;
-                sinceCast = 0;
+                // cast two ticks later, once the held weapon's attack is applied to the player
+                pendingCast = def;
+                pendingDelay = 2;
             }
+        }
+        if (pendingCast != null && --pendingDelay <= 0) {
+            var def = pendingCast;
+            pendingCast = null;
+            double mult = com.jo112ss.rpgmod.job.JobManager.powerMultiplier(player, def);
+            boolean ok = com.jo112ss.rpgmod.job.SkillExecutor.execute(player, def, mult);
+            RpgMod.LOGGER.info("[AUTOTEST] cast {} ok={} atk={} matk={} ratio={} -> {}", def.id(), ok,
+                    String.format("%.1f", com.jo112ss.rpgmod.job.JobManager.physicalAttack(player)),
+                    String.format("%.1f", com.jo112ss.rpgmod.job.JobManager.magicAttack(player)), def.power(),
+                    String.format("%.1f", def.power() * mult));
+            lastCast = def.id();
+            sinceCast = 0;
         }
         if (sinceCast >= 0 && ++sinceCast == 40) logLastCast();
         if (arena != null && player.tickCount % 10 == 0) {
