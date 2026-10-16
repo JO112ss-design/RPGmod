@@ -402,7 +402,7 @@
   "rpgmod.skill.purify": "浄化",
   "rpgmod.skill.purify.desc": "近くの味方の悪い効果・炎・凍えをすべて消し、少し回復する。",
   "rpgmod.skill.poison_coat": "毒塗り",
-  "rpgmod.skill.poison_coat.desc": "30秒間、武器に毒を塗る。攻撃した敵に効果。しゃがみ＋キーで種類を切替：攻撃低下／防御低下／毒。",
+  "rpgmod.skill.poison_coat.desc": "30秒間、武器に毒を塗る。攻撃した敵に効果。しゃがみ＋キーで種類を切替（塗っている最中でもすぐ切り替わる）：攻撃低下／防御低下／毒。",
   "rpgmod.skill.throwing_knives": "投げナイフ",
   "rpgmod.skill.throwing_knives.desc": "扇状に5本のナイフを投げる。毒塗り中は毒も乗る。",
   "rpgmod.skill.shadow_bind": "影縛り",
@@ -418,7 +418,7 @@
   "rpgmod.coat.0": "攻撃低下",
   "rpgmod.coat.1": "防御低下",
   "rpgmod.coat.2": "毒",
-  "rpgmod.coat.switched": "毒の種類: %s",
+  "rpgmod.coat.switched": "次に塗る毒: %s",
   "rpgmod.coat.applied": "武器に毒を塗った: %s",
   "rpgmod.roulette.click": "カチッ… 残り%s発",
   "rpgmod.roulette.bang": "バン！",
@@ -433,5 +433,7 @@
   "death.attack.rpgmod.skill.player": "%1$sは%2$sのスキルで倒された",
   "death.attack.rpgmod.skill_magic": "%1$sは%2$sの魔法で倒された",
   "death.attack.rpgmod.skill_magic.item": "%1$sは%2$sの%3$sの魔法で倒された",
-  "death.attack.rpgmod.skill_magic.player": "%1$sは%2$sの魔法で倒された"
+  "death.attack.rpgmod.skill_magic.player": "%1$sは%2$sの魔法で倒された",
+  "rpgmod.coat.switched_now": "毒を切り替えた: %s（残り%s秒）",
+  "rpgmod.node.legend_skill": "スキル（金の輪＝今覚えられる）"
 }

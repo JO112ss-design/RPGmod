@@ -402,7 +402,7 @@
   "rpgmod.skill.purify": "Purify",
   "rpgmod.skill.purify.desc": "Removes all harmful effects, fire and freezing from nearby allies and heals a little.",
   "rpgmod.skill.poison_coat": "Weapon Coating",
-  "rpgmod.skill.poison_coat.desc": "Coats your weapon for 30s; hits apply it. Sneak + key switches: attack down / armour break / poison.",
+  "rpgmod.skill.poison_coat.desc": "Coats your weapon for 30s; hits apply it. Sneak + key switches it at once: attack down / armour break / poison.",
   "rpgmod.skill.throwing_knives": "Throwing Knives",
   "rpgmod.skill.throwing_knives.desc": "Throws five knives in a fan; they carry your coating.",
   "rpgmod.skill.shadow_bind": "Shadow Bind",
@@ -418,7 +418,7 @@
   "rpgmod.coat.0": "Attack Down",
   "rpgmod.coat.1": "Armour Break",
   "rpgmod.coat.2": "Poison",
-  "rpgmod.coat.switched": "Coating: %s",
+  "rpgmod.coat.switched": "Next coating: %s",
   "rpgmod.coat.applied": "Weapon coated: %s",
   "rpgmod.roulette.click": "Click... %s chambers left",
   "rpgmod.roulette.bang": "BANG!",
@@ -433,5 +433,7 @@
   "death.attack.rpgmod.skill.player": "%1$s was struck down by %2$s",
   "death.attack.rpgmod.skill_magic": "%1$s was blasted by the magic of %2$s",
   "death.attack.rpgmod.skill_magic.item": "%1$s was blasted by %2$s using %3$s",
-  "death.attack.rpgmod.skill_magic.player": "%1$s was blasted by the magic of %2$s"
+  "death.attack.rpgmod.skill_magic.player": "%1$s was blasted by the magic of %2$s",
+  "rpgmod.coat.switched_now": "Coating switched: %s (%ss left)",
+  "rpgmod.node.legend_skill": "Skill (gold ring = learnable)"
 }

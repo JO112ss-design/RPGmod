@@ -1382,9 +1382,37 @@ public final class SkillExecutor {
         }
     }
 
+    /**
+     * The coating on the player's weapon right now, or -1 if none. The kind always comes from the
+     * player's current choice, so switching takes effect on the very next hit.
+     */
+    public static int activeCoat(ServerPlayer p) {
+        if (!p.hasEffect(com.jo112ss.rpgmod.registry.ModEffects.POISON_COAT)) return -1;
+        return JobManager.data(p).coatMode();
+    }
+
+    /**
+     * Switches the coating. If the weapon is coated, the coating changes at once and keeps its
+     * remaining time (the effect is replaced, since a lower amplifier would otherwise be hidden behind
+     * the old one and only show up after it ran out).
+     */
+    public static int switchCoat(ServerPlayer p, int mode) {
+        var holder = com.jo112ss.rpgmod.registry.ModEffects.POISON_COAT;
+        MobEffectInstance cur = p.getEffect(holder);
+        if (cur == null) return 0;
+        int left = cur.getDuration();
+        p.removeEffect(holder);
+        p.addEffect(new MobEffectInstance(holder, left, mode), p);
+        if (p.level() instanceof ServerLevel sl) {
+            ServerFx.of("poison_coat", p.position()).follow(p).b(mode).a(left / 20.0).send(sl);
+        }
+        return left;
+    }
+
     /** Assassin: coats the weapon; hits apply the chosen coating. Sneak + key switches the coating. */
     private static boolean poisonCoat(Ctx c) {
         int mode = JobManager.data(c.p).coatMode();
+        c.p.removeEffect(com.jo112ss.rpgmod.registry.ModEffects.POISON_COAT); // a fresh coat replaces the old one outright
         c.p.addEffect(new MobEffectInstance(com.jo112ss.rpgmod.registry.ModEffects.POISON_COAT, ticks(c.def.duration()), mode), c.p);
         ServerFx.of("poison_coat", c.p.position()).follow(c.p).b(mode).a(c.def.duration()).send(c.level);
         sound(c, SoundEvents.BREWING_STAND_BREW, 1.2F);
@@ -1397,14 +1425,14 @@ public final class SkillExecutor {
     /** Assassin: a fan of five knives; coated knives carry the coating. */
     private static boolean throwingKnives(Ctx c) {
         Vec3 look = c.look();
-        var coat = c.p.getEffect(com.jo112ss.rpgmod.registry.ModEffects.POISON_COAT);
+        int coat = activeCoat(c.p);
         for (int i = 0; i < 5; i++) {
             Vec3 dir = Fx3.rotY(look, Math.toRadians((i - 2) * 9));
             Vec3 start = c.hand();
-            ServerFx.of("knife", start).vec(dir.scale(1.6)).a(c.def.radius()).b(coat == null ? -1 : coat.getAmplifier()).send(c.level);
+            ServerFx.of("knife", start).vec(dir.scale(1.6)).a(c.def.radius()).b(coat).send(c.level);
             projectile(c, start, dir, 1.6, c.def.radius(), null, 0, (e, at, d) -> {
                 hurt(c, e, c.dmg(1), melee(c));
-                if (coat != null) applyCoat(e, coat.getAmplifier(), c.p);
+                if (coat >= 0) applyCoat(e, coat, c.p);
                 ServerFx.of("hit", at).color(0xD0D8E0).a(0.6).point(at).send(c.level);
             }, (at, d, wall) -> { });
         }

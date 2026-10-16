@@ -108,8 +108,8 @@ public final class JobEvents {
         if (!(event.getSource().getEntity() instanceof ServerPlayer sp) || event.getSource().getDirectEntity() != sp) return;
         if (event.getEntity() == sp || event.getAmount() <= 0) return;
         var target = event.getEntity();
-        var coat = sp.getEffect(com.jo112ss.rpgmod.registry.ModEffects.POISON_COAT);
-        if (coat != null) SkillExecutor.applyCoat(target, coat.getAmplifier(), sp);
+        int coat = SkillExecutor.activeCoat(sp);
+        if (coat >= 0) SkillExecutor.applyCoat(target, coat, sp);
         var fire = sp.getEffect(com.jo112ss.rpgmod.registry.ModEffects.FIRE_WEAPON);
         if (fire != null) {
             target.igniteForSeconds(3);

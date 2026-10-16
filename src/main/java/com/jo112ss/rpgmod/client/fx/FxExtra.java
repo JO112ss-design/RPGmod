@@ -377,12 +377,17 @@ final class FxExtra {
 
     // ================================================================== assassin
 
+    /** Latest coating per entity id, so an old drip stops when the coating is switched. */
+    private static final java.util.Map<Integer, Integer> COAT_GEN = new java.util.HashMap<>();
+
     private static void poisonCoat(P p) {
         Entity e = p.e();
         Vec3 o = feet(e, p.pos());
         int mode = Math.floorMod((int) p.b(), 3);
         int color = COAT[mode];
         int dur = (int) (p.a() * 20);
+        // a re-coat or a switch replaces the drip of the previous coating
+        int gen = e == null ? 0 : COAT_GEN.merge(e.getId(), 1, Integer::sum);
         FxAnims.follow(e, 16, age -> {
             Vec3 h = hand(e, o);
             for (int k = 0; k < 2; k++) {
@@ -393,6 +398,7 @@ final class FxExtra {
         });
         flash(hand(e, o), color, 0.7F, 6);
         FxAnims.follow(e, dur, age -> {
+            if (e != null && COAT_GEN.getOrDefault(e.getId(), 0) != gen) return true;
             if (age % 6 != 0) return false;
             Vec3 h = hand(e, o);
             Fx.p(S.GLOW, h.add(Fx.randomUnit().scale(0.12))).gravity(0.4F).color(0xFFFFFF, color).size(0.09F, 0.04F).alpha(0.9F, 0).life(12).spawn();

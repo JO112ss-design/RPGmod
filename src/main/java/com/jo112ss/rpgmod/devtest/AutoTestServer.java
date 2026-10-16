@@ -192,6 +192,36 @@ public final class AutoTestServer {
             com.jo112ss.rpgmod.job.JobData jd = com.jo112ss.rpgmod.job.JobManager.data(player);
             // unlock a path towards the outer ring so the panel shows every state
             for (int id : new int[] {1, 2, 7, 8, 9, 19, 20}) com.jo112ss.rpgmod.job.JobManager.unlockNode(player, id);
+            // and walk up to the two nearest skill cells, so they show as "learnable now"
+            var panel = com.jo112ss.rpgmod.job.core.SkillPanel.forJob(jd.jobId());
+            java.util.Set<Integer> reached = new java.util.HashSet<>();
+            for (int goalCount = 0; goalCount < 2; goalCount++) {
+                java.util.Map<Integer, Integer> prev = new java.util.HashMap<>();
+                java.util.ArrayDeque<com.jo112ss.rpgmod.job.core.SkillPanel.Node> queue = new java.util.ArrayDeque<>();
+                for (int id : jd.unlocked()) {
+                    prev.put(id, -1);
+                    queue.add(panel.node(id));
+                }
+                com.jo112ss.rpgmod.job.core.SkillPanel.Node goal = null;
+                while (!queue.isEmpty()) {
+                    var n = queue.poll();
+                    if (!jd.unlocked().contains(n.id()) && n.type() != com.jo112ss.rpgmod.job.core.SkillPanel.NodeType.STAT && !reached.contains(n.id())) {
+                        goal = n;
+                        break;
+                    }
+                    for (var o : panel.neighbours(n)) {
+                        if (!prev.containsKey(o.id()) && (o.type() == com.jo112ss.rpgmod.job.core.SkillPanel.NodeType.STAT || !jd.unlocked().contains(o.id()))) {
+                            prev.put(o.id(), n.id());
+                            queue.add(o);
+                        }
+                    }
+                }
+                if (goal == null) break;
+                reached.add(goal.id());
+                java.util.List<Integer> path = new java.util.ArrayList<>();
+                for (int id = prev.get(goal.id()); id >= 0 && !jd.unlocked().contains(id); id = prev.get(id)) path.add(0, id);
+                for (int id : path) com.jo112ss.rpgmod.job.JobManager.unlockNode(player, id);
+            }
             ItemStack staff = new ItemStack(com.jo112ss.rpgmod.item.ModItems.get(com.jo112ss.rpgmod.item.WeaponType.STAFF, com.jo112ss.rpgmod.item.WeaponMaterial.IRON));
             player.getInventory().setItem(0, staff);
             player.getInventory().setSelectedSlot(0);

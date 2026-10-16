@@ -403,8 +403,16 @@ public class JobScreen extends Screen {
                 case SKILL -> Ui.mix(Ui.argb(c), 0xFFFFFFFF, 0.4f);
                 default -> 0;
             };
+            boolean special = typeTint != 0;
             int edge, body, tc;
-            if (owned) {
+            if (special && !owned) {
+                // skill / spell / ultimate cells keep their own colour in every state, with a double
+                // frame, so they never look like a stat cell; reachable ones also get a gold ring (pass 3)
+                float k = affordable ? 0.5f - pulse * 0.15f : reachable ? 0.62f : 0.8f;
+                body = Ui.mix(typeTint, 0xFF0B0D12, k);
+                edge = affordable ? Ui.mix(typeTint, 0xFFFFFFFF, pulse * 0.5f) : reachable ? typeTint : Ui.mix(typeTint, 0xFF0D0F14, 0.45f);
+                tc = reachable ? 0xFFFFFFFF : Ui.mix(typeTint, 0xFF0D0F14, 0.3f);
+            } else if (owned) {
                 body = n.type() == SkillPanel.NodeType.STAT ? Ui.argb(c) : Ui.mix(Ui.argb(c), 0xFFFFFFFF, 0.2f);
                 edge = typeTint != 0 ? typeTint : Ui.mix(Ui.argb(c), 0xFFFFFFFF, 0.6f);
                 tc = 0xFFFFFFFF;
@@ -423,7 +431,13 @@ public class JobScreen extends Screen {
             }
             boolean hover = !panning && in(mouseX, mouseY, ax, ay, aw, ah) && Math.hypot(mouseX - px, mouseY - py) < hexR * 0.85;
             if (hover) hoveredNode = n;
-            Ui.hexFramed(g, px, py, hexR, hover ? 0xFFFFFFFF : edge, body);
+            if (special && !owned) {
+                Ui.hex(g, px, py, hexR, hover ? 0xFFFFFFFF : edge);
+                Ui.hex(g, px, py, hexR - 2, 0xFF0B0D12);
+                Ui.hex(g, px, py, hexR - 3, body);
+            } else {
+                Ui.hexFramed(g, px, py, hexR, hover ? 0xFFFFFFFF : edge, body);
+            }
             if (owned) Ui.hex(g, px, py - hexR / 2, Math.max(2, hexR / 3), 0x30FFFFFF); // small highlight
             Long t = unlockAnim.get(n.id());
             if (t != null) {
@@ -442,6 +456,21 @@ public class JobScreen extends Screen {
             if (font.width(glyph) > 8) gs *= 0.8f;
             Ui.glyph(g, font, glyph, px + 1, py + 1, gs, tc);
         }
+        // pass 3: a pulsing gold ring around skill cells that can be learned now (drawn last so the
+        // neighbouring cells do not cover it); a dimmer one when they are next in line but need points
+        for (SkillPanel.Node n : panel.nodes()) {
+            if (n.type() == SkillPanel.NodeType.STAT || n.type() == SkillPanel.NodeType.START) continue;
+            if (!panel.isReachable(n, d.unlocked())) continue;
+            int px = ox + (int) Math.round(hexR * Math.sqrt(3) * (n.q() + n.r() / 2.0));
+            int py = oy + (int) Math.round(hexR * 1.5 * n.r());
+            if (d.freePoints() >= n.cost()) {
+                int a = (int) (140 + 115 * pulse);
+                Ui.circle(g, px, py, hexR + 2, Ui.alpha(Ui.GOLD, a), 1);
+                Ui.circle(g, px, py, hexR + 3 + (int) (pulse * 2), Ui.alpha(Ui.GOLD, a / 3), 1);
+            } else {
+                Ui.circle(g, px, py, hexR + 2, Ui.alpha(0x8A6A2A, 0xB0), 1);
+            }
+        }
         g.disableScissor();
         // hint and legend sit on a dark plate so the honeycomb scrolling under them stays readable
         Component hint = Component.translatable("rpgmod.jobscreen.zoom_hint");
@@ -449,15 +478,20 @@ public class JobScreen extends Screen {
         g.text(font, hint, ax + 5, ay + ah - 11, 0xFF7A8090, false);
         // legend (top-left corner)
         int lx = ax + 5, ly = ay + 5;
-        int lw = 14 + Math.max(font.width(Component.translatable("rpgmod.node.legend_owned")),
+        int lw = 14 + Math.max(Math.max(font.width(Component.translatable("rpgmod.node.legend_owned")), font.width(Component.translatable("rpgmod.node.legend_skill"))),
                 Math.max(font.width(Component.translatable("rpgmod.node.legend_open")), font.width(Component.translatable("rpgmod.node.legend_locked"))));
-        g.fill(ax + 1, ay + 1, lx + lw + 3, ly + 33, 0xD00B0D12);
+        g.fill(ax + 1, ay + 1, lx + lw + 3, ly + 44, 0xD00B0D12);
         Ui.hexFramed(g, lx + 4, ly + 3, 5, Ui.mix(Ui.argb(c), 0xFFFFFFFF, 0.6f), Ui.argb(c));
         g.text(font, Component.translatable("rpgmod.node.legend_owned"), lx + 12, ly, Ui.DIM, false);
         Ui.hexFramed(g, lx + 4, ly + 14, 5, Ui.GOLD, 0xFF262B3A);
         g.text(font, Component.translatable("rpgmod.node.legend_open"), lx + 12, ly + 11, Ui.DIM, false);
         Ui.hexFramed(g, lx + 4, ly + 25, 5, 0xFF252933, 0xFF0D0F14);
         g.text(font, Component.translatable("rpgmod.node.legend_locked"), lx + 12, ly + 22, Ui.DIM, false);
+        int skTint = Ui.mix(Ui.argb(c), 0xFFFFFFFF, 0.4f);
+        Ui.hex(g, lx + 4, ly + 36, 5, skTint);
+        Ui.hex(g, lx + 4, ly + 36, 3, Ui.mix(skTint, 0xFF0B0D12, 0.55f));
+        Ui.circle(g, lx + 4, ly + 36, 6, Ui.alpha(Ui.GOLD, (int) (140 + 115 * pulse)), 1);
+        g.text(font, Component.translatable("rpgmod.node.legend_skill"), lx + 12, ly + 33, Ui.DIM, false);
 
         // info column
         int ix = ax + aw + 6, iy = ay, iw = W - (ix - left) - 8;

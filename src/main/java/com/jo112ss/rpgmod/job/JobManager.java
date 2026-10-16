@@ -259,9 +259,12 @@ public final class JobManager {
         if (def.id().equals("poison_coat") && player.isShiftKeyDown()) {
             // sneak + key: switch the coating instead of using the skill (free)
             d.setCoatMode(d.coatMode() + 1);
+            int left = SkillExecutor.switchCoat(player, d.coatMode());
             sync(player);
-            player.sendSystemMessage(Component.translatable("rpgmod.coat.switched",
-                    Component.translatable("rpgmod.coat." + d.coatMode())).withStyle(ChatFormatting.GREEN), true);
+            Component kind = Component.translatable("rpgmod.coat." + d.coatMode());
+            player.sendSystemMessage((left > 0
+                    ? Component.translatable("rpgmod.coat.switched_now", kind, (left + 19) / 20)
+                    : Component.translatable("rpgmod.coat.switched", kind)).withStyle(ChatFormatting.GREEN), true);
             player.level().playSound(null, player.blockPosition(), SoundEvents.BREWING_STAND_BREW, SoundSource.PLAYERS, 0.6F, 1.6F);
             return;
         }
