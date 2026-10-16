@@ -29,8 +29,8 @@ public class RpgBowItem extends BowItem {
     @Override
     public InteractionResult use(Level level, Player player, InteractionHand hand) {
         if (!JobManager.canUseBow(player)) {
-            if (!level.isClientSide()) {
-                player.sendSystemMessage(Component.translatable("rpgmod.job.bow_restricted").withStyle(ChatFormatting.RED), true);
+            if (player instanceof net.minecraft.server.level.ServerPlayer sp) {
+                sp.sendSystemMessage(Component.translatable("rpgmod.job.bow_restricted").withStyle(ChatFormatting.RED), true);
             }
             return InteractionResult.FAIL;
         }
