@@ -31,6 +31,14 @@ public class BalanceSim {
             sumT += s; minT = Math.min(minT, s); maxT = Math.max(maxT, s);
         }
         System.out.printf("target totals: avg %.1f min %.1f max %.1f%n", sumT / 2000, minT, maxT);
+        double[] avgPart = new double[5]; int midMax = 0, shape = 0;
+        for (int i = 0; i < 2000; i++) {
+            double[] t = TargetGenerator.generate(rules, TargetProfile.SWORD, new Random(i));
+            for (int k = 0; k < 5; k++) avgPart[k] += t[k] / 2000;
+            if (t[2] >= Arrays.stream(t).max().getAsDouble()) midMax++;
+            if (TargetProfile.SWORD.matchesShape(t)) shape++;
+        }
+        System.out.printf("avg per part: %s  middle is max: %.0f%%  shape ok: %.0f%%%n", Arrays.toString(Arrays.stream(avgPart).map(x -> Math.round(x * 10) / 10.0).toArray()), midMax / 20.0, shape / 20.0);
         for (Skill sk : skills) {
             int[] q = new int[4];
             double errSum = 0;
@@ -49,19 +57,35 @@ public class BalanceSim {
         }
     }
 
-    static Judgement hit(SmithingRules rules, double speed, double sigmaMs, RandomGenerator r) {
+    /** aim = intended distance from the centre (0 = strong zone centre); error is timing noise. */
+    static Judgement hit(SmithingRules rules, double speed, double sigmaMs, double aim, RandomGenerator r) {
         double dt = r.nextGaussian() * sigmaMs / 1000.0;
-        double off = 4 * speed * Math.abs(dt);
+        double off = Math.abs(aim + 4 * speed * dt);
         double pos = 0.5 + Math.min(1, off) / 2;
         return TimingBar.judge(rules, pos);
     }
 
-    static double expectedMult(SmithingRules rules, double speed, double sigmaMs) {
-        // Monte Carlo-free approximation via a fixed sample
+    static Judgement hit(SmithingRules rules, double speed, double sigmaMs, RandomGenerator r) {
+        return hit(rules, speed, sigmaMs, 0, r);
+    }
+
+    static double expectedMult(SmithingRules rules, double speed, double sigmaMs, double aim) {
         Random r = new Random(42);
         double sum = 0;
-        for (int i = 0; i < 200; i++) sum += rules.multiplier(hit(rules, speed, sigmaMs, r));
+        for (int i = 0; i < 200; i++) sum += rules.multiplier(hit(rules, speed, sigmaMs, aim, r));
         return sum / 200;
+    }
+
+    static double[] aims(SmithingRules rules) {
+        return new double[] {0, (rules.perfectZone + rules.goodZone) / 2, (rules.goodZone + rules.badZone) / 2};
+    }
+
+    static double[] apply(SmithingRules rules, double[] v, int p, double dmg) {
+        double[] nv = v.clone();
+        nv[p] += dmg;
+        if (p > 0) nv[p - 1] += dmg * rules.adjacentRatio;
+        if (p < nv.length - 1) nv[p + 1] += dmg * rules.adjacentRatio;
+        return nv;
     }
 
     static ForgeState play(SmithingRules rules, double[] targets, Skill sk, Random r) {
@@ -75,6 +99,7 @@ public class BalanceSim {
             for (double temp = rules.initialTempMin; temp <= rules.initialTempMax; temp += 1) {
                 double budget = 0;
                 for (double tt = temp; tt > rules.endTemp; tt -= rules.tempLossPerStrike) budget += rules.basePower(tt) * 0.85 * 1.4;
+                // (smart players aim strong early and use medium/weak hits to fine tune)
                 if (budget >= total * 1.15) { wantTemp = temp; break; }
             }
         } else {
@@ -88,38 +113,31 @@ public class BalanceSim {
         while (s.phase() == ForgeState.Phase.WORKING && guard++ < 60) {
             double speed = rules.strikeBarSpeed(s.temperature());
             if (sk.smart) {
-                double em = expectedMult(rules, speed, sk.sigmaMs);
-                double bestScore = ForgeState.errorRatio(rules, targets, s.values());
-                int bestAction = -1; // -1 finish, -2 cool, else part
                 double[] v = s.values();
-                for (int p = 0; p < targets.length; p++) {
-                    double[] nv = v.clone();
-                    double dmg = rules.basePower(s.temperature()) * em;
-                    nv[p] += dmg;
-                    if (p > 0) nv[p - 1] += dmg * rules.adjacentRatio;
-                    if (p < nv.length - 1) nv[p + 1] += dmg * rules.adjacentRatio;
-                    double sc = ForgeState.errorRatio(rules, targets, nv);
-                    if (sc < bestScore - 1e-9) { bestScore = sc; bestAction = p; }
+                double bestScore = ForgeState.errorRatio(rules, targets, v);
+                int bestPart = -1; double bestAim = 0; boolean cool = false;
+                for (double aim : aims(rules)) {
+                    double em = expectedMult(rules, speed, sk.sigmaMs, aim);
+                    for (int p = 0; p < targets.length; p++) {
+                        double sc = ForgeState.errorRatio(rules, targets, apply(rules, v, p, rules.basePower(s.temperature()) * em));
+                        if (sc < bestScore - 1e-9) { bestScore = sc; bestPart = p; bestAim = aim; }
+                    }
                 }
-                if (bestAction == -1) {
-                    // would cooling let a smaller strike help?
+                if (bestPart < 0) {
                     double ct = s.temperature() - rules.coolAmount;
                     if (ct > rules.endTemp) {
-                        double em2 = expectedMult(rules, rules.strikeBarSpeed(ct), sk.sigmaMs);
-                        for (int p = 0; p < targets.length; p++) {
-                            double[] nv = v.clone();
-                            double dmg = rules.basePower(ct) * em2;
-                            nv[p] += dmg;
-                            if (p > 0) nv[p - 1] += dmg * rules.adjacentRatio;
-                            if (p < nv.length - 1) nv[p + 1] += dmg * rules.adjacentRatio;
-                            double sc = ForgeState.errorRatio(rules, targets, nv);
-                            if (sc < bestScore - 1e-9) { bestScore = sc; bestAction = -2; }
+                        for (double aim : aims(rules)) {
+                            double em2 = expectedMult(rules, rules.strikeBarSpeed(ct), sk.sigmaMs, aim);
+                            for (int p = 0; p < targets.length; p++) {
+                                double sc = ForgeState.errorRatio(rules, targets, apply(rules, v, p, rules.basePower(ct) * em2));
+                                if (sc < bestScore - 1e-9) { bestScore = sc; cool = true; }
+                            }
                         }
                     }
                 }
-                if (bestAction == -1) { s.finish(); break; }
-                if (bestAction == -2) { s.cool(0); continue; }
-                s.applyStrike(bestAction, hit(rules, speed, sk.sigmaMs, r));
+                if (cool) { s.cool(0); continue; }
+                if (bestPart < 0) { s.finish(); break; }
+                s.applyStrike(bestPart, hit(rules, speed, sk.sigmaMs, bestAim, r));
             } else {
                 double[] v = s.values();
                 int best = -1; double deficit = 0.5;

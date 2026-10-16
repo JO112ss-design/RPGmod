@@ -9,6 +9,20 @@ public record TargetProfile(double[] partWeights) {
         return partWeights.length;
     }
 
+    /**
+     * True if the targets follow the profile's shape: wherever one part's weight is clearly larger
+     * (30%+) than another's, its target must not be smaller. Used to make "middle heavy, ends light"
+     * the usual outcome while still allowing variation.
+     */
+    public boolean matchesShape(double[] targets) {
+        for (int i = 0; i < partWeights.length; i++) {
+            for (int j = 0; j < partWeights.length; j++) {
+                if (partWeights[i] > partWeights[j] * 1.3 && targets[i] < targets[j]) return false;
+            }
+        }
+        return true;
+    }
+
     /** Swords: tip and base need less shaping, the middle of the blade needs the most. */
-    public static final TargetProfile SWORD = new TargetProfile(new double[] {0.7, 1.1, 1.3, 1.1, 0.8});
+    public static final TargetProfile SWORD = new TargetProfile(new double[] {0.45, 1.0, 1.7, 1.0, 0.55});
 }

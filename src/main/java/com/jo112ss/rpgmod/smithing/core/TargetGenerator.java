@@ -13,14 +13,19 @@ public final class TargetGenerator {
 
     public static double[] generate(SmithingRules rules, TargetProfile profile, RandomGenerator random) {
         double[] best = null;
+        double[] fallback = null;
         for (int attempt = 0; attempt < 64; attempt++) {
             double[] t = plan(rules, profile, random);
             if (t == null) continue;
             best = t;
             boolean ok = true;
             for (double v : t) if (v < rules.targetMinPerPart) { ok = false; break; }
-            if (ok) return t;
+            if (!ok) continue;
+            if (fallback == null) fallback = t;
+            // most of the time insist on the profile's shape (e.g. sword: middle heavy, ends light)
+            if (profile.matchesShape(t) || random.nextDouble() < 0.1) return t;
         }
+        if (fallback != null) return fallback;
         if (best == null) {
             best = new double[profile.parts()];
             java.util.Arrays.fill(best, rules.targetMinPerPart);
@@ -45,7 +50,8 @@ public final class TargetGenerator {
                 continue;
             }
             int part = pickPart(profile, random);
-            Judgement j = random.nextDouble() < 0.55 ? Judgement.PERFECT : Judgement.GOOD;
+            double roll = random.nextDouble();
+            Judgement j = roll < 0.5 ? Judgement.PERFECT : roll < 0.85 ? Judgement.GOOD : Judgement.BAD;
             s.applyStrike(part, j);
             done++;
         }

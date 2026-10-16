@@ -33,7 +33,7 @@
   "rpgmod.gui.heating": "加熱：バーを止めて初期温度を決めよう",
   "rpgmod.gui.heating_hint": "右ほど高温（威力↑・バー遅い）／左ほど低温",
   "rpgmod.gui.select_part": "叩く部位をクリックで選択",
-  "rpgmod.gui.strike_hint": "クリック または スペースで叩く",
+  "rpgmod.gui.strike_hint": "クリック/スペースで叩く（中央ほど強い）",
   "rpgmod.gui.temperature": "温度",
   "rpgmod.gui.power": "推定威力: %s（隣接 %s）",
   "rpgmod.gui.cool": "冷却",
@@ -45,10 +45,10 @@
   "rpgmod.gui.error": "誤差: %s%%",
   "rpgmod.gui.close": "閉じる",
   "rpgmod.gui.again": "もう一度",
-  "rpgmod.judgement.perfect": "Perfect!",
-  "rpgmod.judgement.good": "Good",
-  "rpgmod.judgement.bad": "Bad",
-  "rpgmod.judgement.miss": "Miss",
+  "rpgmod.judgement.perfect": "強",
+  "rpgmod.judgement.good": "中",
+  "rpgmod.judgement.bad": "弱",
+  "rpgmod.judgement.miss": "ミス",
   "rpgmod.message.forged": "%sを鍛え上げた！（%s）",
   "rpgmod.message.inventory_full": "インベントリがいっぱいなので足元に落としました"
 }

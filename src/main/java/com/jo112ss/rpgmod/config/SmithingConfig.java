@@ -27,7 +27,7 @@ public final class SmithingConfig {
     public static final ModConfigSpec.DoubleValue POWER_COLD = B.comment("Base strike power at the end temperature").defineInRange("powerCold", D.powerCold, 0, 1000);
     public static final ModConfigSpec.DoubleValue POWER_HOT = B.comment("Base strike power at heat 100").defineInRange("powerHot", D.powerHot, 0, 1000);
     public static final ModConfigSpec.DoubleValue ADJACENT_RATIO = B.comment("Share of a strike that also hits each neighbouring part").defineInRange("adjacentRatio", D.adjacentRatio, 0, 1);
-    static { B.pop().comment("Timing judgement. Zones are half-widths as a fraction of half the bar (0 = centre only, 1 = whole bar)").push("judgement"); }
+    static { B.pop().comment("Strike power zones (perfect = strong / centre, good = medium, bad = weak / outer, miss = outside). Zones are half-widths as a fraction of half the bar (0 = centre only, 1 = whole bar)").push("judgement"); }
     public static final ModConfigSpec.DoubleValue PERFECT_ZONE = B.defineInRange("perfectZone", D.perfectZone, 0, 1);
     public static final ModConfigSpec.DoubleValue GOOD_ZONE = B.defineInRange("goodZone", D.goodZone, 0, 1);
     public static final ModConfigSpec.DoubleValue BAD_ZONE = B.defineInRange("badZone", D.badZone, 0, 1);
@@ -51,10 +51,38 @@ public final class SmithingConfig {
     public static final ModConfigSpec.LongValue TOLERANCE_MILLIS = B.comment("Max accepted difference between client and server bar time in ms").defineInRange("toleranceMillis", D.timingToleranceMillis, 0L, 10000L);
     static { B.pop(); }
 
+    /** Bump when the default balance changes; older files are reset to the new defaults once. */
+    private static final int CURRENT_VERSION = 2;
+    public static final ModConfigSpec.IntValue CONFIG_VERSION = B
+            .comment("Balance version of this file. When the mod's default balance changes, an older file is reset to the new defaults.")
+            .defineInRange("configVersion", 0, 0, Integer.MAX_VALUE); // missing in old files -> 0 -> migrate
+
     public static final ModConfigSpec SPEC = B.build();
+
+    private static final java.util.List<ModConfigSpec.ConfigValue<?>> ALL = java.util.List.of(
+            INITIAL_TEMP_MIN, INITIAL_TEMP_MAX, TEMP_LOSS_PER_STRIKE, COOL_AMOUNT, END_TEMP,
+            HEAT_BAR_SPEED, STRIKE_BAR_SPEED_HOT, STRIKE_BAR_SPEED_COLD, POWER_COLD, POWER_HOT, ADJACENT_RATIO,
+            PERFECT_ZONE, GOOD_ZONE, BAD_ZONE, PERFECT_MULT, GOOD_MULT, BAD_MULT, MISS_MULT,
+            UNDER_PENALTY, OVER_PENALTY, LEGENDARY_MAX, RARE_MAX, FINE_MAX,
+            PLAN_TEMP_MIN, PLAN_TEMP_MAX, PLAN_MIN_STRIKES, MIN_PER_PART, MIN_STOP_MILLIS, TOLERANCE_MILLIS);
+
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    private static void migrateIfOld() {
+        if (CONFIG_VERSION.get() >= CURRENT_VERSION) return;
+        try {
+            for (ModConfigSpec.ConfigValue v : ALL) v.set(v.getDefault());
+            CONFIG_VERSION.set(CURRENT_VERSION);
+            SPEC.save();
+            com.jo112ss.rpgmod.RpgMod.LOGGER.info("rpgmod smithing config reset to the new default balance (v{})", CURRENT_VERSION);
+        } catch (RuntimeException e) {
+            // e.g. a read-only synced copy on a client; the server's values are used there anyway
+            com.jo112ss.rpgmod.RpgMod.LOGGER.debug("Could not migrate smithing config", e);
+        }
+    }
 
     /** Copies the config into the live rules. Called on load and reload. */
     public static void apply() {
+        migrateIfOld();
         SmithingRules r = new SmithingRules();
         r.initialTempMin = Math.min(INITIAL_TEMP_MIN.get(), INITIAL_TEMP_MAX.get());
         r.initialTempMax = Math.max(INITIAL_TEMP_MIN.get(), INITIAL_TEMP_MAX.get());

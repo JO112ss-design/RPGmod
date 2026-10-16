@@ -352,9 +352,9 @@ public class ForgeScreen extends AbstractContainerScreen<ForgeMenu> {
         if (working && v.lastJudgement() >= 0 && ClientForgeView.judgementAge() < 1200) {
             Judgement j = Judgement.byId(v.lastJudgement());
             int col = switch (j) {
-                case PERFECT -> 0xFF7CFF7C;
-                case GOOD -> 0xFFFFE070;
-                case BAD -> 0xFFFF9050;
+                case PERFECT -> 0xFFFF6A5A;
+                case GOOD -> 0xFFFFD060;
+                case BAD -> 0xFF80E080;
                 case MISS -> 0xFFB0B0B0;
             };
             float t = ClientForgeView.judgementAge() / 1200f;
@@ -434,9 +434,10 @@ public class ForgeScreen extends AbstractContainerScreen<ForgeMenu> {
         inset(g, x0, y0, x0 + BAR_W, y0 + BAR_H, 0xFF3A3533);
         int c = x0 + BAR_W / 2, half = BAR_W / 2;
         int bad = Math.round(v.badZone() * half), good = Math.round(v.goodZone() * half), perf = Math.max(1, Math.round(v.perfectZone() * half));
-        g.fill(c - bad, y0, c + bad, y0 + BAR_H, 0xFF7C3030);
-        g.fill(c - good, y0, c + good, y0 + BAR_H, 0xFFB8962E);
-        g.fill(c - perf, y0, c + perf, y0 + BAR_H, 0xFF4CB656);
+        // power zones: outer = weak (green), middle = medium (yellow), centre = strong (red)
+        g.fill(c - bad, y0, c + bad, y0 + BAR_H, 0xFF4C9F56);
+        g.fill(c - good, y0, c + good, y0 + BAR_H, 0xFFD9A22B);
+        g.fill(c - perf, y0, c + perf, y0 + BAR_H, 0xFFD23A36);
         if (v.barRunning()) drawMarker(g, x0, y0);
         else g.centeredText(font, Component.translatable("rpgmod.gui.select_part"), c, y0 + 2, C_TEXT);
     }

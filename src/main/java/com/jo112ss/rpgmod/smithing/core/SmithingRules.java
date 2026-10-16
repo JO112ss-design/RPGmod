@@ -21,7 +21,7 @@ public final class SmithingRules {
     /** Highest temperature the heating bar can produce (bar fully right). */
     public double initialTempMax = 100;
     /** Temperature lost per strike (Miss included). */
-    public double tempLossPerStrike = 8;
+    public double tempLossPerStrike = 5;
     /** Temperature lost by the cooling action. */
     public double coolAmount = 15;
     /** Forging ends when the temperature is at or below this value. */
@@ -59,18 +59,18 @@ public final class SmithingRules {
     /** Penalty factor for overworking (target exceeded); heavier than under. */
     public double overPenalty = 1.5;
     /** Error ratio (weighted error / total target) at or below which the result is Legendary. */
-    public double legendaryMaxError = 0.075;
-    public double rareMaxError = 0.15;
-    public double fineMaxError = 0.28;
+    public double legendaryMaxError = 0.08;
+    public double rareMaxError = 0.16;
+    public double fineMaxError = 0.30;
 
     // ---- target generation ----
     /** Reference plans used to create reachable targets start between these temperatures. */
-    public double targetPlanTempMin = 72;
+    public double targetPlanTempMin = 75;
     public double targetPlanTempMax = 92;
     /** Minimum strikes in a reference plan. */
-    public int targetPlanMinStrikes = 5;
+    public int targetPlanMinStrikes = 9;
     /** Lowest acceptable target for any part. */
-    public int targetMinPerPart = 3;
+    public int targetMinPerPart = 4;
 
     // ---- anti-cheat timing ----
     /** Fastest accepted reaction (ms) between a bar starting and stopping it. */
