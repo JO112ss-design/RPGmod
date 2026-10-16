@@ -35,6 +35,18 @@ jobs:
           set -o pipefail
           ./gradlew build --stacktrace 2>&1 | tee build.log
 
+      - name: Publish build
+        if: always() && github.event_name != 'pull_request'
+        run: |
+          rm -rf /tmp/b && mkdir -p /tmp/b
+          cp build.log /tmp/b/ 2>/dev/null || echo "no log" > /tmp/b/build.log
+          echo "${{ steps.build.outcome }}" > /tmp/b/status.txt
+          echo "${{ github.sha }}" > /tmp/b/sha.txt
+          cp build/libs/*.jar /tmp/b/ 2>/dev/null || true
+          cd /tmp/b && git init -q -b ci-log && git config user.name ci && git config user.email ci@users.noreply.github.com
+          git add -A && git commit -qm "build ${{ github.sha }}"
+          git push -f "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}" ci-log
+
       - name: Server smoke test
         id: server
         if: steps.build.outcome == 'success'
@@ -67,7 +79,7 @@ jobs:
           mkdir -p run/saves
           rm -rf run/saves/autotest && cp -r run/world run/saves/autotest
           export LIBGL_ALWAYS_SOFTWARE=1
-          timeout 900 xvfb-run -a -s "-screen 0 1280x720x24" ./gradlew runClient -Pautotest --console=plain > client.log 2>&1 || true
+          timeout 600 xvfb-run -a -s "-screen 0 1280x720x24" ./gradlew runClient -Pautotest --console=plain > client.log 2>&1 || true
           ls -la run/screenshots || true
 
       - name: Upload jar
@@ -77,9 +89,9 @@ jobs:
           name: rpgmod-jar
           path: build/libs/*.jar
 
-      # Publishes the build log (and the jar) to the ci-log branch so it can be read with plain git.
-      - name: Publish build log
-        if: always() && github.event_name != 'pull_request'
+      # Publishes game test logs and screenshots to the ci-test branch so they can be read with plain git.
+      - name: Publish test results
+        if: always() && github.event_name != 'pull_request' && steps.build.outcome == 'success'
         run: |
           mkdir -p /tmp/out
           cp build.log /tmp/out/ 2>/dev/null || echo "no log" > /tmp/out/build.log
@@ -107,12 +119,12 @@ jobs:
             [ -f "$f" ] || continue
             if [ $(stat -c%s "$f") -gt 90000000 ]; then split -b 80m "$f" "$f.part-"; rm "$f"; fi
           done
-          git init -q -b ci-log
+          git init -q -b ci-test
           git config user.name "ci"
           git config user.email "ci@users.noreply.github.com"
           git add -A
           git commit -qm "ci log for ${{ github.sha }}"
-          git push -f "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}" ci-log
+          git push -f "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}" ci-test
 
       - name: Fail if build failed
         if: steps.build.outcome != 'success'
