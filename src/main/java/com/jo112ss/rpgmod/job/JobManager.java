@@ -302,8 +302,12 @@ public final class JobManager {
         return com.jo112ss.rpgmod.effects.ForgeOptionEffects.data(player.getMainHandItem());
     }
 
+    /** Dev test only: force the RPG crit roll (null = normal). */
+    public static Boolean testForceCrit;
+
     /** RPG crit rate in percent: job stat + forged weapon option. */
     public static double critChance(Player player, net.minecraft.world.damagesource.DamageSource source) {
+        if (testForceCrit != null) return testForceCrit ? 100 : 0;
         double rate = JobStats.compute(data(player)).get(JobStat.CRIT_CHANCE);
         var fd = weaponData(player, source);
         if (fd != null) rate += fd.get(com.jo112ss.rpgmod.smithing.core.OptionType.CRIT_CHANCE);

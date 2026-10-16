@@ -370,5 +370,6 @@
   "rpgmod.node.legend_owned": "解放済",
   "rpgmod.node.legend_open": "解放可",
   "rpgmod.node.legend_locked": "未解放",
-  "rpgmod.tooltip.staff_bonus": "魔法威力 +%s%%（杖の素材）"
+  "rpgmod.tooltip.staff_bonus": "魔法威力 +%s%%（杖の素材）",
+  "rpgmod.crit.hit": "会心！ %sダメージ（×%s）"
 }

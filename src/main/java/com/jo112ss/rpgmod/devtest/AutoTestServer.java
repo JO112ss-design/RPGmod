@@ -105,7 +105,50 @@ public final class AutoTestServer {
             } else if (checkTicks == 20) {
                 log("after switching away");
                 checkTicks = -1;
+                critT = 0;
             }
+        }
+        if (critT >= 0) critTest();
+    }
+
+    private static int critT = -1;
+    private static net.minecraft.world.entity.monster.zombie.Zombie dummy;
+
+    /** Hits a dummy zombie with and without forced RPG crits and vanilla jump crits, logging the damage. */
+    private static void critTest() {
+        critT++;
+        var level = (net.minecraft.server.level.ServerLevel) player.level();
+        if (critT == 1) {
+            dummy = net.minecraft.world.entity.EntityTypes.ZOMBIE.create(level, net.minecraft.world.entity.EntitySpawnReason.COMMAND);
+            if (dummy == null) { critT = -1; return; }
+            dummy.snapTo(player.getX() + 1.5, player.getY(), player.getZ());
+            dummy.setNoAi(true);
+            dummy.getAttribute(Attributes.MAX_HEALTH).setBaseValue(1000);
+            dummy.getAttribute(Attributes.ARMOR).setBaseValue(0);
+            dummy.setHealth(1000);
+            level.addFreshEntity(dummy);
+            player.getInventory().setItem(7, new ItemStack(Items.IRON_SWORD));
+            player.getInventory().setSelectedSlot(7);
+        }
+        int[] at = {30, 60, 90, 120};
+        for (int k = 0; k < at.length; k++) {
+            if (critT == at[k]) {
+                boolean rpg = k % 2 == 1, jump = k >= 2;
+                com.jo112ss.rpgmod.job.JobManager.testForceCrit = rpg;
+                if (jump) { player.fallDistance = 1.0; player.setOnGround(false); }
+                float h0 = dummy.getHealth();
+                player.attack(dummy);
+                float dealt = h0 - dummy.getHealth();
+                RpgMod.LOGGER.info("[AUTOTEST] crit test rpg={} jump={} damage={}", rpg, jump, dealt);
+                player.setOnGround(true);
+                player.fallDistance = 0;
+            }
+        }
+        if (critT == 140) {
+            com.jo112ss.rpgmod.job.JobManager.testForceCrit = null;
+            dummy.discard();
+            critT = -1;
+        }
         }
     }
 

@@ -123,7 +123,7 @@ public final class AutoTestClient {
             after++;
             if (after == 10) AutoTestServer.requestEquipCheck();
             if (after == 30) shot(mc, "07_world");
-            if (after == 60) {
+            if (after == 200) {
                 RpgMod.LOGGER.info("[AUTOTEST] finished");
                 mc.stop();
             }

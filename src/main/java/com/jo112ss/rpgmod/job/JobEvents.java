@@ -63,12 +63,33 @@ public final class JobEvents {
         if (!(event.getSource().getEntity() instanceof ServerPlayer sp) || event.getEntity() == sp || event.getAmount() <= 0) return;
         double chance = JobManager.critChance(sp, event.getSource()) / 100.0;
         if (chance <= 0 || sp.getRandom().nextDouble() >= chance) return;
-        event.setAmount((float) (event.getAmount() * JobManager.critMultiplier(sp, event.getSource())));
-        var target = event.getEntity();
+        float before = event.getAmount();
+        double mult = JobManager.critMultiplier(sp, event.getSource());
+        event.setAmount((float) (before * mult));
+        showRpgCrit(sp, event.getEntity(), event.getAmount(), mult);
+        if (com.jo112ss.rpgmod.devtest.AutoTestServer.ENABLED) {
+            com.jo112ss.rpgmod.RpgMod.LOGGER.info("[AUTOTEST] rpg crit: {} x{} -> {}", before, mult, event.getAmount());
+        }
+    }
+
+    /**
+     * RPG crit feedback, deliberately unlike the vanilla crit (white stars + crit sound): a gold flash,
+     * a ring of gold dust and gold sparks, a bright chime, and the damage on the attacker's action bar.
+     */
+    private static void showRpgCrit(ServerPlayer sp, net.minecraft.world.entity.LivingEntity target, float damage, double mult) {
         var level = (net.minecraft.server.level.ServerLevel) sp.level();
-        level.sendParticles(net.minecraft.core.particles.ParticleTypes.ENCHANTED_HIT, target.getX(), target.getY() + target.getBbHeight() * 0.6, target.getZ(), 14, 0.3, 0.3, 0.3, 0.3);
-        level.sendParticles(net.minecraft.core.particles.ParticleTypes.CRIT, target.getX(), target.getY() + target.getBbHeight() * 0.6, target.getZ(), 10, 0.3, 0.3, 0.3, 0.4);
-        level.playSound(null, target.blockPosition(), net.minecraft.sounds.SoundEvents.PLAYER_ATTACK_CRIT, net.minecraft.sounds.SoundSource.PLAYERS, 0.9F, 1.4F);
+        double x = target.getX(), y = target.getY() + target.getBbHeight() * 0.6, z = target.getZ();
+        level.sendParticles(net.minecraft.core.particles.ColorParticleOption.create(net.minecraft.core.particles.ParticleTypes.FLASH, 0xFFFFC832), x, y, z, 1, 0, 0, 0, 0);
+        var gold = new net.minecraft.core.particles.DustParticleOptions(0xFFC832, 1.4F);
+        for (int i = 0; i < 16; i++) {
+            double a = Math.PI * 2 * i / 16;
+            level.sendParticles(gold, x + Math.cos(a) * 0.9, y, z + Math.sin(a) * 0.9, 1, 0, 0, 0, 0);
+        }
+        level.sendParticles(net.minecraft.core.particles.ParticleTypes.WAX_ON, x, y, z, 12, 0.35, 0.35, 0.35, 0.6);
+        level.playSound(null, target.blockPosition(), net.minecraft.sounds.SoundEvents.AMETHYST_CLUSTER_BREAK, net.minecraft.sounds.SoundSource.PLAYERS, 1.0F, 1.7F);
+        level.playSound(null, target.blockPosition(), net.minecraft.sounds.SoundEvents.PLAYER_ATTACK_STRONG, net.minecraft.sounds.SoundSource.PLAYERS, 0.8F, 0.8F);
+        sp.sendSystemMessage(net.minecraft.network.chat.Component.translatable("rpgmod.crit.hit", String.format("%.1f", damage), String.format("%.2f", mult))
+                .withStyle(net.minecraft.ChatFormatting.GOLD, net.minecraft.ChatFormatting.BOLD), true);
     }
 
     /**

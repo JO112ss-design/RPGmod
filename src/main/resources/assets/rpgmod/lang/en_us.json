@@ -370,5 +370,6 @@
   "rpgmod.node.legend_owned": "Owned",
   "rpgmod.node.legend_open": "Open",
   "rpgmod.node.legend_locked": "Locked",
-  "rpgmod.tooltip.staff_bonus": "Magic power +%s%% (staff material)"
+  "rpgmod.tooltip.staff_bonus": "Magic power +%s%% (staff material)",
+  "rpgmod.crit.hit": "Critical! %s damage (x%s)"
 }
