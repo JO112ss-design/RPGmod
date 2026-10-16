@@ -287,7 +287,7 @@ public final class SkillExecutor {
     }
 
     private static boolean isUndead(LivingEntity e) {
-        return e.getType().is(EntityTypeTags.UNDEAD);
+        return e.is(EntityTypeTags.UNDEAD);
     }
 
     private static void fail(ServerPlayer p, String key) {
