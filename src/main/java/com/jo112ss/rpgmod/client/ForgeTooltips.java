@@ -36,6 +36,12 @@ public final class ForgeTooltips {
         if (event.getItemStack().getItem() instanceof com.jo112ss.rpgmod.item.RpgBowItem bow) {
             tip.add(Math.min(1, tip.size()), Component.translatable("rpgmod.tooltip.bow_bonus", bow.damageBonus()).withStyle(ChatFormatting.DARK_GREEN));
         }
+        net.minecraft.world.item.Item it = event.getItemStack().getItem();
+        if (com.jo112ss.rpgmod.item.ModItems.typeOf(it) == com.jo112ss.rpgmod.item.WeaponType.STAFF) {
+            var mat = com.jo112ss.rpgmod.item.ModItems.materialOf(it);
+            if (mat != null) tip.add(Math.min(1, tip.size()), Component.translatable("rpgmod.tooltip.staff_bonus",
+                    String.format("%.0f", mat.staffMagicBonus() * 100)).withStyle(ChatFormatting.LIGHT_PURPLE));
+        }
         ForgedData d = event.getItemStack().get(ModRegistries.FORGED_DATA.get());
         if (d == null) return;
         Quality q = d.qualityEnum();

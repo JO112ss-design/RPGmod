@@ -362,5 +362,13 @@
   "rpgmod.job.reset_need": "リセットには経験値レベルが%s必要です",
   "rpgmod.job.reset_done": "スキルパネルをリセットしました（ポイント %s）",
   "rpgmod.job.panel_migrated": "スキルパネルが新しくなったため、ポイントを返却しました",
-  "rpgmod.job.bow_restricted": "この弓はレンジャーとギャンブラーしか使えません"
+  "rpgmod.job.bow_restricted": "この弓はレンジャーとギャンブラーしか使えません",
+  "rpgmod.option.magic_power": "魔法威力",
+  "rpgmod.option.cast_speed": "詠唱時間短縮",
+  "rpgmod.stat.cast_speed": "詠唱短縮",
+  "rpgmod.stat.magic_power": "魔法威力",
+  "rpgmod.node.legend_owned": "解放済",
+  "rpgmod.node.legend_open": "解放可",
+  "rpgmod.node.legend_locked": "未解放",
+  "rpgmod.tooltip.staff_bonus": "魔法威力 +%s%%（杖の素材）"
 }

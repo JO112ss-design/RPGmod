@@ -245,9 +245,13 @@ public class JobScreen extends Screen {
         rows.add(row("skill_power", String.format("+%.0f%%", st.get(JobStat.SKILL_POWER))));
         rows.add(row("cooldown_reduction", String.format("%.0f%%", st.get(JobStat.COOLDOWN_REDUCTION))));
         rows.add(row("luck", fmt(p.getAttributeValue(Attributes.LUCK))));
+        double magic = com.jo112ss.rpgmod.job.JobManager.gearOption(p, com.jo112ss.rpgmod.smithing.core.OptionType.MAGIC_POWER);
+        double staff = com.jo112ss.rpgmod.job.JobManager.staffBonus(p) * 100;
+        rows.add(row("magic_power", String.format("+%.0f%%", magic + staff)));
+        rows.add(row("cast_speed", String.format("-%.0f%%", Math.min(60, com.jo112ss.rpgmod.job.JobManager.castSpeedPercent(p)))));
         for (int i = 0; i < rows.size(); i++) {
-            int col = i / 6, r = i % 6;
-            int rx = sx + 6 + col * (sw / 2), ry = sy + 18 + r * 16;
+            int col = i / 7, r = i % 7;
+            int rx = sx + 6 + col * (sw / 2), ry = sy + 17 + r * 14;
             if (r % 2 == 0) g.fill(rx - 2, ry - 3, rx + sw / 2 - 10, ry + 11, 0x18FFFFFF);
             g.text(font, rows.get(i)[0], rx, ry, Ui.DIM, false);
             g.text(font, rows.get(i)[1], rx + sw / 2 - 14 - font.width(rows.get(i)[1]), ry, Ui.TEXT, false);
@@ -296,42 +300,72 @@ public class JobScreen extends Screen {
         Ui.disc(g, ox, oy, 76, 0x0CFFFFFF);
         Ui.disc(g, ox, oy, 46, 0x0CFFFFFF);
         int c = job.color();
-        float pulse = (float) (0.5 + 0.5 * Math.sin(now / 250.0));
+        float pulse = (float) (0.5 + 0.5 * Math.sin(now / 220.0));
+        // pass 1: soft glow behind owned cells so the unlocked area reads as one shape
+        for (SkillPanel.Node n : panel.nodes()) {
+            if (!d.unlocked().contains(n.id())) continue;
+            int px = ox + (int) Math.round(HEX_R * Math.sqrt(3) * (n.q() + n.r() / 2.0));
+            int py = oy + (int) Math.round(HEX_R * 1.5 * n.r());
+            Ui.hex(g, px, py, HEX_R + 3, Ui.alpha(c, 0x55));
+        }
+        // pass 2: cells
         for (SkillPanel.Node n : panel.nodes()) {
             int px = ox + (int) Math.round(HEX_R * Math.sqrt(3) * (n.q() + n.r() / 2.0));
             int py = oy + (int) Math.round(HEX_R * 1.5 * n.r());
             boolean owned = d.unlocked().contains(n.id());
             boolean reachable = panel.isReachable(n, d.unlocked());
             boolean affordable = reachable && d.freePoints() >= n.cost();
-            int edge = switch (n.type()) {
+            int typeTint = switch (n.type()) {
                 case ULTIMATE -> Ui.GOLD;
                 case SPELL -> 0xFFB09CFF;
-                case SKILL -> Ui.argb(Ui.mix(Ui.argb(c), 0xFFFFFFFF, 0.35f));
-                default -> owned ? Ui.argb(c) : Ui.EDGE_LIGHT;
+                case SKILL -> Ui.mix(Ui.argb(c), 0xFFFFFFFF, 0.4f);
+                default -> 0;
             };
-            int body;
-            if (owned) body = Ui.mix(Ui.argb(c), 0xFF000000, n.type() == SkillPanel.NodeType.STAT ? 0.45f : 0.2f);
-            else if (affordable) body = Ui.mix(0xFF1C2030, Ui.argb(c), 0.15f + 0.2f * pulse);
-            else if (reachable) body = 0xFF1C2030;
-            else body = 0xFF12141B;
-            if (!owned && !reachable) edge = Ui.mix(edge, 0xFF12141B, 0.6f);
+            int edge, body, tc;
+            if (owned) {
+                body = n.type() == SkillPanel.NodeType.STAT ? Ui.argb(c) : Ui.mix(Ui.argb(c), 0xFFFFFFFF, 0.2f);
+                edge = typeTint != 0 ? typeTint : Ui.mix(Ui.argb(c), 0xFFFFFFFF, 0.6f);
+                tc = 0xFFFFFFFF;
+            } else if (affordable) {
+                body = 0xFF262B3A;
+                edge = Ui.mix(Ui.GOLD, 0xFFFFFFFF, pulse * 0.6f);
+                tc = Ui.TEXT;
+            } else if (reachable) {
+                body = 0xFF1E2230;
+                edge = 0xFF8A6A2A;
+                tc = Ui.DIM;
+            } else {
+                body = 0xFF0D0F14;
+                edge = typeTint != 0 ? Ui.mix(typeTint, 0xFF0D0F14, 0.65f) : 0xFF252933;
+                tc = 0xFF3C424E;
+            }
             boolean hover = Math.hypot(mouseX - px, mouseY - py) < HEX_R * 0.85;
             if (hover) hoveredNode = n;
-            Ui.hexFramed(g, px, py, HEX_R + (hover ? 1 : 0), hover ? 0xFFFFFFFF : edge, body);
+            Ui.hexFramed(g, px, py, HEX_R, hover ? 0xFFFFFFFF : edge, body);
+            if (owned) Ui.hex(g, px, py - HEX_R / 2, Math.max(2, HEX_R / 3), 0x30FFFFFF); // small highlight
             Long t = unlockAnim.get(n.id());
             if (t != null) {
-                float k = (now - t) / 600f;
-                if (k < 1) Ui.circle(g, px, py, (int) (HEX_R * (1 + k)), Ui.alpha(c, (int) (255 * (1 - k))), 1);
-                else unlockAnim.remove(n.id());
+                float k = (now - t) / 700f;
+                if (k < 1) {
+                    Ui.circle(g, px, py, (int) (HEX_R * (1 + k * 1.2f)), Ui.alpha(0xFFFFFF, (int) (255 * (1 - k))), 1);
+                    Ui.circle(g, px, py, (int) (HEX_R * (1 + k * 0.6f)), Ui.alpha(c, (int) (255 * (1 - k))), 1);
+                } else unlockAnim.remove(n.id());
             }
             String glyph = switch (n.type()) {
                 case START -> job.def().glyph();
                 case STAT -> n.stat().glyph;
                 default -> JobDefs.skill(n.skill()).glyph();
             };
-            int tc = owned ? Ui.TEXT : reachable ? Ui.DIM : 0xFF4A505E;
-            Ui.glyph(g, font, glyph, px + 1, py + 1, n.type() == SkillPanel.NodeType.STAT ? 1f : 1.2f, tc);
+            Ui.glyph(g, font, glyph, px + 1, py + 1, n.type() == SkillPanel.NodeType.STAT ? 1f : 1.15f, tc);
         }
+        // legend (top-left corner, clear of the honeycomb)
+        int lx = ax + 5, ly = ay + 5;
+        Ui.hexFramed(g, lx + 4, ly + 3, 5, Ui.mix(Ui.argb(c), 0xFFFFFFFF, 0.6f), Ui.argb(c));
+        g.text(font, Component.translatable("rpgmod.node.legend_owned"), lx + 12, ly, Ui.DIM, false);
+        Ui.hexFramed(g, lx + 4, ly + 14, 5, Ui.GOLD, 0xFF262B3A);
+        g.text(font, Component.translatable("rpgmod.node.legend_open"), lx + 12, ly + 11, Ui.DIM, false);
+        Ui.hexFramed(g, lx + 4, ly + 25, 5, 0xFF252933, 0xFF0D0F14);
+        g.text(font, Component.translatable("rpgmod.node.legend_locked"), lx + 12, ly + 22, Ui.DIM, false);
 
         // info column
         int ix = ax + aw + 6, iy = ay, iw = W - (ix - left) - 8;

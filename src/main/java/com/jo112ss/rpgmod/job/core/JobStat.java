@@ -15,7 +15,8 @@ public enum JobStat {
     MAX_MANA("max_mana", "MP", false),
     MANA_REGEN("mana_regen", "回", false),
     SKILL_POWER("skill_power", "技", true),
-    COOLDOWN_REDUCTION("cooldown_reduction", "短", true);
+    COOLDOWN_REDUCTION("cooldown_reduction", "短", true),
+    CAST_SPEED("cast_speed", "詠", true);
 
     public final String id;
     /** Single character drawn on panel nodes. */
@@ -43,6 +44,7 @@ public enum JobStat {
             case MANA_REGEN -> 0.2;
             case SKILL_POWER -> 4;
             case COOLDOWN_REDUCTION -> 3;
+            case CAST_SPEED -> 4;
         };
     }
 

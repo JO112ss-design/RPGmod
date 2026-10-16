@@ -362,5 +362,13 @@
   "rpgmod.job.reset_need": "You need %s experience levels to reset",
   "rpgmod.job.reset_done": "Skill panel reset (%s points)",
   "rpgmod.job.panel_migrated": "The skill panel changed, your points were refunded",
-  "rpgmod.job.bow_restricted": "Only rangers and gamblers can use this bow"
+  "rpgmod.job.bow_restricted": "Only rangers and gamblers can use this bow",
+  "rpgmod.option.magic_power": "Magic Power",
+  "rpgmod.option.cast_speed": "Cast Time Reduction",
+  "rpgmod.stat.cast_speed": "Cast Time",
+  "rpgmod.stat.magic_power": "Magic Power",
+  "rpgmod.node.legend_owned": "Owned",
+  "rpgmod.node.legend_open": "Open",
+  "rpgmod.node.legend_locked": "Locked",
+  "rpgmod.tooltip.staff_bonus": "Magic power +%s%% (staff material)"
 }

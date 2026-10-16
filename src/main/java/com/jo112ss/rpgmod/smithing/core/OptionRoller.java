@@ -10,8 +10,17 @@ public final class OptionRoller {
     private OptionRoller() {}
 
     public static List<RolledOption> roll(int count, boolean armor, RandomGenerator random) {
+        return roll(count, armor, false, random);
+    }
+
+    /** {@code staff}: magic options (magic power, cast speed) are only in a weapon's pool for staffs. */
+    public static List<RolledOption> roll(int count, boolean armor, boolean staff, RandomGenerator random) {
         List<OptionType> pool = new ArrayList<>();
-        for (OptionType t : OptionType.values()) if (t.inPool(armor)) pool.add(t);
+        for (OptionType t : OptionType.values()) {
+            if (!t.inPool(armor)) continue;
+            if (t.isMagic() && !armor && !staff) continue;
+            pool.add(t);
+        }
         for (int i = pool.size() - 1; i > 0; i--) Collections.swap(pool, i, random.nextInt(i + 1));
         List<RolledOption> out = new ArrayList<>();
         for (int i = 0; i < Math.min(count, pool.size()); i++) {

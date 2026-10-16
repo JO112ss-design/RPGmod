@@ -84,7 +84,7 @@ public final class JobDefs {
                         skill("judgement", SkillKind.ULTIMATE, SkillEffect.WHIRL, 90, 60, 16, 6, 0, List.of(), 0, "審")),
                 List.of());
         // ---- Wizard: spells on the staff, skills 1/2 for mana and mobility
-        job("wizard", 0x7B68EE, "魔", List.of(JobStat.MAX_MANA, JobStat.MANA_REGEN, JobStat.SKILL_POWER),
+        job("wizard", 0x7B68EE, "魔", List.of(JobStat.MAX_MANA, JobStat.SKILL_POWER, JobStat.MANA_REGEN, JobStat.CAST_SPEED),
                 stats(JobStat.MAX_MANA, 50, JobStat.MANA_REGEN, 0.5), stats(JobStat.MAX_MANA, 2, JobStat.SKILL_POWER, 0.3),
                 List.of(
                         skill("mana_surge", SkillKind.ACTIVE, SkillEffect.MANA, 20, 0, 40, 0, 0, List.of(), 0, "充"),

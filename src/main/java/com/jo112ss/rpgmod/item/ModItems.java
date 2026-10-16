@@ -73,4 +73,12 @@ public final class ModItems {
         }
         return reverse.get(item);
     }
+
+    /** Material of one of the RPG weapons, or null. */
+    public static WeaponMaterial materialOf(Item item) {
+        WeaponType t = typeOf(item);
+        if (t == null) return null;
+        for (WeaponMaterial m : WeaponMaterial.values()) if (get(t, m) == item) return m;
+        return null;
+    }
 }

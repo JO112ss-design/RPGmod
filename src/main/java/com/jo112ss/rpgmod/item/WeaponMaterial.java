@@ -32,4 +32,15 @@ public enum WeaponMaterial {
         this.forgeable = forgeable;
         this.defaultDifficulty = defaultDifficulty;
     }
+
+    /** Magic power bonus of a staff made of this material (0.10 = +10%). */
+    public double staffMagicBonus() {
+        return switch (this) {
+            case COPPER -> 0.05;
+            case IRON -> 0.10;
+            case GOLD -> 0.20;
+            case DIAMOND -> 0.25;
+            case NETHERITE -> 0.35;
+        };
+    }
 }

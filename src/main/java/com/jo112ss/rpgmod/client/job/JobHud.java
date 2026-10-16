@@ -79,7 +79,7 @@ public final class JobHud {
         if (mc.player.isUsingItem() && mc.player.getUseItem().getItem() instanceof com.jo112ss.rpgmod.item.RpgStaffItem) {
             SkillDef sp = com.jo112ss.rpgmod.job.JobManager.selectedSpell(mc.player, mc.player.getUseItem());
             if (sp != null) {
-                int need = Math.max(1, com.jo112ss.rpgmod.job.JobManager.castTicks(sp));
+                int need = Math.max(1, com.jo112ss.rpgmod.job.JobManager.castTicks(mc.player, sp));
                 float f = Math.min(1f, mc.player.getTicksUsingItem() / (float) need);
                 int cw = 60, cx = sw / 2 - cw / 2, cy = sh / 2 + 14;
                 g.fill(cx - 1, cy - 1, cx + cw + 1, cy + 5, 0xC0000000);

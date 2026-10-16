@@ -294,15 +294,56 @@ public final class JobManager {
         return true;
     }
 
-    public static int castTicks(SkillDef def) {
-        return (int) Math.round(def.castTime() * 20);
+    /** Charge time in ticks after cast speed (skill panel + forged options, capped at -60%). */
+    public static int castTicks(Player player, SkillDef def) {
+        double speed = Math.min(60, castSpeedPercent(player)) / 100.0;
+        return (int) Math.round(def.castTime() * 20 * (1 - speed));
+    }
+
+    private static final net.minecraft.world.entity.EquipmentSlot[] GEAR = {
+            net.minecraft.world.entity.EquipmentSlot.MAINHAND, net.minecraft.world.entity.EquipmentSlot.HEAD,
+            net.minecraft.world.entity.EquipmentSlot.CHEST, net.minecraft.world.entity.EquipmentSlot.LEGS,
+            net.minecraft.world.entity.EquipmentSlot.FEET};
+
+    /** Sum of a forged option over the held weapon and worn armor. */
+    public static double gearOption(Player player, com.jo112ss.rpgmod.smithing.core.OptionType type) {
+        double sum = 0;
+        for (var slot : GEAR) {
+            var fd = com.jo112ss.rpgmod.effects.ForgeOptionEffects.data(player.getItemBySlot(slot));
+            if (fd != null) sum += fd.get(type);
+        }
+        return sum;
+    }
+
+    public static double castSpeedPercent(Player player) {
+        return JobStats.compute(data(player)).get(JobStat.CAST_SPEED) + gearOption(player, com.jo112ss.rpgmod.smithing.core.OptionType.CAST_SPEED);
+    }
+
+    /** Staff material bonus (0 when not holding a staff). */
+    public static double staffBonus(Player player) {
+        var item = player.getMainHandItem().getItem();
+        if (ModItems.typeOf(item) != WeaponType.STAFF) return 0;
+        var mat = ModItems.materialOf(item);
+        return mat == null ? 0 : mat.staffMagicBonus();
+    }
+
+    /**
+     * Power multiplier of a skill: skill power stat, plus for spells and anything cast while holding a
+     * staff the forged magic power and the staff material bonus.
+     */
+    public static double powerMultiplier(Player player, SkillDef def) {
+        double skillPower = JobStats.compute(data(player)).get(JobStat.SKILL_POWER);
+        boolean magic = def.kind() == SkillKind.SPELL || ModItems.typeOf(player.getMainHandItem().getItem()) == WeaponType.STAFF;
+        if (!magic) return 1 + skillPower / 100.0;
+        double magicPower = gearOption(player, com.jo112ss.rpgmod.smithing.core.OptionType.MAGIC_POWER);
+        return (1 + (skillPower + magicPower) / 100.0) * (1 + staffBonus(player));
     }
 
     /** Charging particles; a chime when the cast becomes ready. */
     public static void chargeTick(ServerPlayer player, ItemStack staff, int held, ServerLevel level) {
         SkillDef def = selectedSpell(player, staff);
         if (def == null) return;
-        int need = castTicks(def);
+        int need = castTicks(player, def);
         if (held < need) {
             if (held % 2 == 0) {
                 double a = held * 0.6;
@@ -320,7 +361,7 @@ public final class JobManager {
     public static boolean releaseCast(ServerPlayer player, ItemStack staff, int held) {
         SkillDef def = selectedSpell(player, staff);
         if (def == null) return false;
-        if (held < castTicks(def)) {
+        if (held < castTicks(player, def)) {
             player.sendSystemMessage(Component.translatable("rpgmod.job.fizzle").withStyle(ChatFormatting.GRAY), true);
             return false;
         }
@@ -339,7 +380,7 @@ public final class JobManager {
             return false;
         }
         Map<JobStat, Double> st = JobStats.compute(d);
-        double power = 1 + st.get(JobStat.SKILL_POWER) / 100.0;
+        double power = powerMultiplier(player, def);
         if (!SkillExecutor.execute(player, def, power)) return false;
         double cdr = st.get(JobStat.COOLDOWN_REDUCTION) / 100.0;
         d.setMana(d.mana() - def.mana());

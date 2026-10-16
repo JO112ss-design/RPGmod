@@ -21,7 +21,10 @@ public enum OptionType {
     KNOCKBACK_RESISTANCE("knockback_resistance", 0.1, true, 5, 15, 3, 8),
     ARMOR_TOUGHNESS("armor_toughness", 0.1, false, NaN(), NaN(), 0.5, 1.5),
     DAMAGE_REDUCTION("damage_reduction", 0.1, true, NaN(), NaN(), 2, 4),
-    BOSS_RESISTANCE("boss_resistance", 0.1, true, NaN(), NaN(), 3, 8);
+    BOSS_RESISTANCE("boss_resistance", 0.1, true, NaN(), NaN(), 3, 8),
+    // magic options: weapons only roll them on magic staffs (see OptionRoller)
+    MAGIC_POWER("magic_power", 0.1, true, 5, 12, 2, 5),
+    CAST_SPEED("cast_speed", 0.1, true, 5, 12, 2, 5);
 
     public final String id;
     public final double step;
@@ -45,6 +48,10 @@ public enum OptionType {
     public static OptionType byId(String id) {
         for (OptionType t : values()) if (t.id.equals(id)) return t;
         return null;
+    }
+
+    public boolean isMagic() {
+        return this == MAGIC_POWER || this == CAST_SPEED;
     }
 
     public boolean inPool(boolean armor) {
