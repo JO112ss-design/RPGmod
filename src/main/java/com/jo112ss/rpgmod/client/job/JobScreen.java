@@ -443,9 +443,15 @@ public class JobScreen extends Screen {
             Ui.glyph(g, font, glyph, px + 1, py + 1, gs, tc);
         }
         g.disableScissor();
-        g.text(font, Component.translatable("rpgmod.jobscreen.zoom_hint"), ax + 5, ay + ah - 11, 0xFF5A6070, false);
-        // legend (top-left corner, clear of the honeycomb)
+        // hint and legend sit on a dark plate so the honeycomb scrolling under them stays readable
+        Component hint = Component.translatable("rpgmod.jobscreen.zoom_hint");
+        g.fill(ax + 1, ay + ah - 14, ax + 9 + font.width(hint), ay + ah - 1, 0xD00B0D12);
+        g.text(font, hint, ax + 5, ay + ah - 11, 0xFF7A8090, false);
+        // legend (top-left corner)
         int lx = ax + 5, ly = ay + 5;
+        int lw = 14 + Math.max(font.width(Component.translatable("rpgmod.node.legend_owned")),
+                Math.max(font.width(Component.translatable("rpgmod.node.legend_open")), font.width(Component.translatable("rpgmod.node.legend_locked"))));
+        g.fill(ax + 1, ay + 1, lx + lw + 3, ly + 33, 0xD00B0D12);
         Ui.hexFramed(g, lx + 4, ly + 3, 5, Ui.mix(Ui.argb(c), 0xFFFFFFFF, 0.6f), Ui.argb(c));
         g.text(font, Component.translatable("rpgmod.node.legend_owned"), lx + 12, ly, Ui.DIM, false);
         Ui.hexFramed(g, lx + 4, ly + 14, 5, Ui.GOLD, 0xFF262B3A);

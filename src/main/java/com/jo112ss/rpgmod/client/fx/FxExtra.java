@@ -135,14 +135,25 @@ final class FxExtra {
 
     // ================================================================== paladin
 
-    /** A hemisphere of glowing hex plates that stays for the dome's life. */
+    static final int DOME = 0xE8B048;
+
+    /**
+     * A hemisphere of faint gold hex plates that stays for the dome's life. Kept see-through on
+     * purpose: you fight from inside it for 8 seconds, so it must not paint over the sky.
+     */
     private static void guardianDome(P p) {
         Vec3 o = p.pos();
         float r = Math.max(1.5F, p.a());
         int life = Math.max(20, (int) p.b());
         flash(o.add(0, 1, 0), HOLY, 2.0F, 8);
-        ground(S.CIRCLE_HOLY, o, r, HOLY, life).alpha(0.8F, 0.6F).fadeIn(0.05F).spin(0.01F).spawn();
-        ground(S.RING, o, r * 1.02F, HOLY, life).alpha(0.9F, 0.7F).fadeIn(0.05F).spawn();
+        // the dome rises from the ground: a bright ring that climbs, then the plates appear row by row
+        ground(S.WAVE, o, 0.5F, HOLY, 12).size(0.5F, r * 1.05F).easeOut().color(0xFFFFFF, HOLY).alpha(0.8F, 0).spawn();
+        ground(S.RING, o, r * 1.02F, DOME, life).alpha(0.55F, 0.4F).fadeIn(0.05F).spawn();
+        for (int k = 1; k <= 6; k++) {
+            double y = k / 7.0;
+            float rr = (float) (r * Math.sqrt(1 - y * y));
+            ground(S.RING, o.add(0, r * y, 0), rr, HOLY, 8).color(0xFFFFFF, HOLY).alpha(0.7F, 0).delay(k).spawn();
+        }
         int count = Fx.n(150);
         double golden = Math.PI * (3 - Math.sqrt(5));
         java.util.List<FxParticle> cells = new java.util.ArrayList<>();
@@ -151,17 +162,24 @@ final class FxExtra {
             double rr = Math.sqrt(1 - y * y);
             double th = golden * i;
             Vec3 n = new Vec3(Math.cos(th) * rr, y, Math.sin(th) * rr);
-            int delay = (int) ((1 - y) * 8);
-            FxParticle cell = Fx.p(S.HEX, o.add(n.scale(r))).fixed(Fx.across(n)).size(0.62F).color(0xFFF2C0, HOLY).alpha(0.42F, 0.42F)
+            int delay = (int) (y * 8);
+            FxParticle cell = Fx.p(S.HEX, o.add(n.scale(r))).fixed(Fx.across(n)).size(0.58F).color(0xFFE6A0, DOME).alpha(0.2F, 0.16F)
                     .fadeIn(0.03F).life(life - delay).delay(delay).spawn();
             if (cell != null) cells.add(cell);
         }
         FxAnims.run(life, age -> {
-            // shimmer: a few cells flare up, and light runs over the surface
-            for (int k = 0, n = Fx.n(3); k < n; k++) {
+            // shimmer: a few plates light up, as if something touched the shield
+            if (age % 2 == 0) {
                 double th = Fx.r(0, Math.PI * 2), y = Fx.r(0.05, 0.95), rr = Math.sqrt(1 - y * y);
                 Vec3 nrm = new Vec3(Math.cos(th) * rr, y, Math.sin(th) * rr);
-                Fx.p(S.HEX, o.add(nrm.scale(r * 1.01))).fixed(Fx.across(nrm)).size(0.62F).color(0xFFFFFF, HOLY).alpha(0.8F, 0).life(10).spawn();
+                Fx.p(S.HEX, o.add(nrm.scale(r * 1.01))).fixed(Fx.across(nrm)).size(0.58F).color(0xFFF4D0, DOME).alpha(0.45F, 0).life(12).spawn();
+            }
+            // a slow band of light sweeping up the dome every two seconds
+            if (age % 40 == 10) {
+                for (int k = 1; k <= 6; k++) {
+                    double y = k / 7.0;
+                    ground(S.RING, o.add(0, r * y, 0), (float) (r * Math.sqrt(1 - y * y)), DOME, 8).alpha(0.35F, 0).delay(k * 2).spawn();
+                }
             }
             if (age == life - 12) for (FxParticle c : cells) c.fadeOut(12);
             return false;
@@ -341,7 +359,7 @@ final class FxExtra {
         Entity e = p.e();
         Vec3 o = feet(e, p.pos());
         float r = Math.max(2, p.a());
-        ground(S.WAVE, o, 0.5F, 0xE8FFFF, 16).size(0.5F, r).easeOut().color(0xFFFFFF, 0xA0F0FF).alpha(0.8F, 0).spawn();
+        ground(S.WAVE, o, 0.5F, 0xE8FFFF, 16).size(0.5F, r).easeOut().color(0xFFFFFF, 0xA0F0FF).alpha(0.5F, 0).spawn();
         java.util.List<Vec3> spots = new java.util.ArrayList<>();
         spots.add(o);
         for (Vec3 a : p.pts()) spots.add(a.add(0, -0.9, 0));
