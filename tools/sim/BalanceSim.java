@@ -39,6 +39,17 @@ public class BalanceSim {
             if (TargetProfile.SWORD.matchesShape(t)) shape++;
         }
         System.out.printf("avg per part: %s  middle is max: %.0f%%  shape ok: %.0f%%%n", Arrays.toString(Arrays.stream(avgPart).map(x -> Math.round(x * 10) / 10.0).toArray()), midMax / 20.0, shape / 20.0);
+        String[] names = {"SWORD", "DAGGER", "MACE", "HAMMER", "STAFF", "BOW"};
+        TargetProfile[] profiles = {TargetProfile.SWORD, TargetProfile.DAGGER, TargetProfile.MACE, TargetProfile.HAMMER, TargetProfile.STAFF, TargetProfile.BOW};
+        for (int pi = 0; pi < profiles.length; pi++) {
+        TargetProfile profile = profiles[pi];
+        double[] avg = new double[profile.parts()]; int shapeOk = 0;
+        for (int i = 0; i < 1000; i++) {
+            double[] t = TargetGenerator.generate(rules, profile, new Random(i));
+            for (int k = 0; k < t.length; k++) avg[k] += t[k] / 1000;
+            if (profile.matchesShape(t)) shapeOk++;
+        }
+        System.out.printf("== %s avg targets %s shape %.0f%%%n", names[pi], Arrays.toString(Arrays.stream(avg).map(x -> Math.round(x)).toArray()), shapeOk / 10.0);
         for (Skill sk : skills) {
             int[] q = new int[4];
             double errSum = 0;
@@ -46,7 +57,7 @@ public class BalanceSim {
             for (int i = 0; i < n; i++) {
                 long seed = seedRng.nextLong();
                 Random r = new Random(seed);
-                double[] t = TargetGenerator.generate(rules, TargetProfile.SWORD, r);
+                double[] t = TargetGenerator.generate(rules, profile, r);
                 ForgeState s = play(rules, t, sk, r);
                 q[s.quality().ordinal()]++;
                 errSum += s.errorRatio();
@@ -54,6 +65,7 @@ public class BalanceSim {
             }
             System.out.printf("%s  common %5.1f%%  fine %5.1f%%  rare %5.1f%%  legend %5.1f%%   avgErr %.3f  strikes %.1f%n",
                 sk.name, 100.0 * q[0] / n, 100.0 * q[1] / n, 100.0 * q[2] / n, 100.0 * q[3] / n, errSum / n, (double) strikesSum / n);
+        }
         }
     }
 

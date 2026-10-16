@@ -23,6 +23,16 @@ public record TargetProfile(double[] partWeights) {
         return true;
     }
 
-    /** Swords: tip and base need less shaping, the middle of the blade needs the most. */
+    /** Sword: tip / fore / middle / rear / base. Middle of the blade needs the most work. */
     public static final TargetProfile SWORD = new TargetProfile(new double[] {0.45, 1.0, 1.7, 1.0, 0.55});
+    /** Dagger: tip / blade / base. */
+    public static final TargetProfile DAGGER = new TargetProfile(new double[] {0.6, 1.5, 0.7});
+    /** Mace: tip / head / neck / upper shaft / lower shaft. The head carries the weight. */
+    public static final TargetProfile MACE = new TargetProfile(new double[] {0.8, 1.7, 1.0, 0.45, 0.35});
+    /** Hammer: striking face / head / neck / handle. */
+    public static final TargetProfile HAMMER = new TargetProfile(new double[] {1.2, 1.7, 0.8, 0.4});
+    /** Staff: head / ornament / upper / middle / lower shaft. */
+    public static final TargetProfile STAFF = new TargetProfile(new double[] {1.3, 1.1, 0.7, 0.6, 0.5});
+    /** Bow: upper tip / upper limb / grip / lower limb / lower tip. Both limbs need the most work. */
+    public static final TargetProfile BOW = new TargetProfile(new double[] {0.5, 1.4, 0.9, 1.4, 0.5});
 }

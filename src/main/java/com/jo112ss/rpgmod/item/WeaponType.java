@@ -1,0 +1,47 @@
+package com.jo112ss.rpgmod.item;
+
+import com.jo112ss.rpgmod.smithing.core.TargetProfile;
+import java.util.List;
+import java.util.function.Supplier;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.Items;
+
+/**
+ * Weapon kinds. Each has its melee stats (added on top of the material bonus, like vanilla swords),
+ * the materials needed per weapon besides the ingots, and its smithing layout: the parts and which
+ * horizontal span of its GUI image (160x40) they cover.
+ */
+public enum WeaponType {
+    SWORD("sword", 3.0F, -2.4F, 2, List.of(new Extra(() -> Items.STICK, 1)), TargetProfile.SWORD, 2, 123),
+    DAGGER("dagger", 1.0F, -1.5F, 1, List.of(new Extra(() -> Items.STICK, 1)), TargetProfile.DAGGER, 40, 85),
+    MACE("mace", 4.0F, -2.9F, 4, List.of(new Extra(() -> Items.STICK, 1)), TargetProfile.MACE, 2, 123),
+    HAMMER("hammer", 6.0F, -3.3F, 5, List.of(new Extra(() -> Items.STICK, 2)), TargetProfile.HAMMER, 2, 123),
+    STAFF("staff", 1.5F, -2.6F, 1, List.of(new Extra(() -> Items.STICK, 1), new Extra(() -> Items.AMETHYST_SHARD, 1)), TargetProfile.STAFF, 2, 123),
+    BOW("bow", 0, 0, 2, List.of(new Extra(() -> Items.BOW, 1)), TargetProfile.BOW, 2, 155);
+
+    public record Extra(Supplier<Item> item, int count) {}
+
+    public final String id;
+    public final float attackDamage;
+    public final float attackSpeed;
+    public final int ingots;
+    public final List<Extra> extras;
+    public final TargetProfile profile;
+    public final int workX;
+    public final int workW;
+
+    WeaponType(String id, float attackDamage, float attackSpeed, int ingots, List<Extra> extras, TargetProfile profile, int workX, int workW) {
+        this.id = id;
+        this.attackDamage = attackDamage;
+        this.attackSpeed = attackSpeed;
+        this.ingots = ingots;
+        this.extras = extras;
+        this.profile = profile;
+        this.workX = workX;
+        this.workW = workW;
+    }
+
+    public boolean isBow() {
+        return this == BOW;
+    }
+}

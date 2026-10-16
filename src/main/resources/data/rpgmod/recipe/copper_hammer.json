@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "pattern": [
+    "III",
+    "ISI",
+    " S "
+  ],
+  "key": {
+    "I": "minecraft:copper_ingot",
+    "S": "minecraft:stick"
+  },
+  "result": {
+    "id": "rpgmod:copper_hammer",
+    "count": 1
+  }
+}

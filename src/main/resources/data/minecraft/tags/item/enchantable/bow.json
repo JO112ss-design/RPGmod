@@ -1,0 +1,10 @@
+{
+  "replace": false,
+  "values": [
+    "rpgmod:copper_bow",
+    "rpgmod:iron_bow",
+    "rpgmod:gold_bow",
+    "rpgmod:diamond_bow",
+    "rpgmod:netherite_bow"
+  ]
+}

@@ -16,6 +16,8 @@ import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.projectile.arrow.AbstractArrow;
+import com.jo112ss.rpgmod.item.RpgBowItem;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
@@ -116,9 +118,22 @@ public final class ForgeOptionEffects {
 
     @SubscribeEvent
     public static void onIncomingDamage(LivingIncomingDamageEvent event) {
-        // only melee hits made directly by a player with a forged weapon in hand
-        if (!(event.getSource().getEntity() instanceof Player player) || event.getSource().getDirectEntity() != player) return;
-        ForgedData d = mainHandData(player);
+        if (!(event.getSource().getEntity() instanceof Player player)) return;
+        ForgedData d;
+        if (event.getSource().getDirectEntity() == player) {
+            d = mainHandData(player); // melee
+        } else if (event.getSource().getDirectEntity() instanceof AbstractArrow arrow && arrow.getWeaponItem() != null) {
+            ItemStack bow = arrow.getWeaponItem();
+            if (bow.getItem() instanceof RpgBowItem rpgBow) {
+                // material bonus, scaled by draw strength (arrow speed 3 = full draw)
+                double drawn = Math.min(1.0, arrow.getDeltaMovement().length() / 3.0);
+                event.setAmount((float) (event.getAmount() + rpgBow.damageBonus() * drawn));
+            }
+            d = data(bow);
+            if (d != null) applyRangedOptions(event, d, player);
+        } else {
+            return;
+        }
         if (d == null) return;
 
         double pen = d.get(OptionType.ARMOR_PENETRATION) / 100.0;
@@ -129,6 +144,19 @@ public final class ForgeOptionEffects {
         double boss = d.get(OptionType.BOSS_DAMAGE) / 100.0;
         if (boss > 0 && event.getEntity().is(Tags.EntityTypes.BOSSES)) {
             event.setAmount((float) (event.getAmount() * (1 + boss)));
+        }
+    }
+
+    /**
+     * Options of a forged bow that vanilla attributes cannot carry to the arrow: attack damage %,
+     * and a critical roll (arrows have no melee crit event).
+     */
+    private static void applyRangedOptions(LivingIncomingDamageEvent event, ForgedData d, Player player) {
+        double atk = d.get(OptionType.ATTACK_DAMAGE) / 100.0;
+        if (atk > 0) event.setAmount((float) (event.getAmount() * (1 + atk)));
+        double chance = d.get(OptionType.CRIT_CHANCE) / 100.0;
+        if (chance > 0 && player.getRandom().nextDouble() < chance) {
+            event.setAmount((float) (event.getAmount() * (BASE_CRIT_MULTIPLIER + d.get(OptionType.CRIT_DAMAGE) / 100.0)));
         }
     }
 

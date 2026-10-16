@@ -1,0 +1,30 @@
+{
+  "replace": false,
+  "values": [
+    "rpgmod:copper_dagger",
+    "rpgmod:iron_dagger",
+    "rpgmod:gold_dagger",
+    "rpgmod:diamond_dagger",
+    "rpgmod:netherite_dagger",
+    "rpgmod:copper_mace",
+    "rpgmod:iron_mace",
+    "rpgmod:gold_mace",
+    "rpgmod:diamond_mace",
+    "rpgmod:netherite_mace",
+    "rpgmod:copper_hammer",
+    "rpgmod:iron_hammer",
+    "rpgmod:gold_hammer",
+    "rpgmod:diamond_hammer",
+    "rpgmod:netherite_hammer",
+    "rpgmod:copper_staff",
+    "rpgmod:iron_staff",
+    "rpgmod:gold_staff",
+    "rpgmod:diamond_staff",
+    "rpgmod:netherite_staff",
+    "rpgmod:copper_bow",
+    "rpgmod:iron_bow",
+    "rpgmod:gold_bow",
+    "rpgmod:diamond_bow",
+    "rpgmod:netherite_bow"
+  ]
+}

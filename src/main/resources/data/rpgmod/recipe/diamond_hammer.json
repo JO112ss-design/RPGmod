@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "pattern": [
+    "III",
+    "ISI",
+    " S "
+  ],
+  "key": {
+    "I": "minecraft:diamond",
+    "S": "minecraft:stick"
+  },
+  "result": {
+    "id": "rpgmod:diamond_hammer",
+    "count": 1
+  }
+}

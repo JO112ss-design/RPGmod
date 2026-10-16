@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "pattern": [
+    " I ",
+    "III",
+    " S "
+  ],
+  "key": {
+    "I": "minecraft:gold_ingot",
+    "S": "minecraft:stick"
+  },
+  "result": {
+    "id": "rpgmod:gold_mace",
+    "count": 1
+  }
+}

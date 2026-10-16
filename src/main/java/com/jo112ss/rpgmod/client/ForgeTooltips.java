@@ -32,9 +32,12 @@ public final class ForgeTooltips {
 
     @SubscribeEvent
     public static void onTooltip(ItemTooltipEvent event) {
+        List<Component> tip = event.getToolTip();
+        if (event.getItemStack().getItem() instanceof com.jo112ss.rpgmod.item.RpgBowItem bow) {
+            tip.add(Math.min(1, tip.size()), Component.translatable("rpgmod.tooltip.bow_bonus", bow.damageBonus()).withStyle(ChatFormatting.DARK_GREEN));
+        }
         ForgedData d = event.getItemStack().get(ModRegistries.FORGED_DATA.get());
         if (d == null) return;
-        List<Component> tip = event.getToolTip();
         Quality q = d.qualityEnum();
         if (!tip.isEmpty()) {
             MutableComponent name = tip.get(0).copy().withColor(q.color);

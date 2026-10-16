@@ -51,8 +51,14 @@ public class ForgeScreen extends AbstractContainerScreen<ForgeMenu> {
     private static final int GAUGE_Y = 70, GAUGE_H = 46;
     private static final int BAR_X = 40, BAR_Y = 148, BAR_W = 176, BAR_H = 12;
     private static final int BTN_Y = 170;
+    // select stage
+    private static final int TYPE_X = 10, TYPE_Y = 34, TYPE_W = 38, TYPE_H = 24, TYPE_STEP = 40;
+    private static final int MAT_X = 10, MAT_Y = 72, MAT_W = 56, MAT_H = 20, MAT_STEP = 60;
+    private static final int PREVIEW_Y = 100;
 
-    private int chosenWeapon = 0;
+    private int chosenType = 0;
+    private int chosenMat = 1; // iron
+    private int chosenWeapon = ForgeableWeapons.indexOf(ForgeableWeapons.TYPES.get(0), ForgeableWeapons.MATERIALS.get(1));
     private Button startBtn, coolBtn, finishBtn, againBtn, closeBtn, stopBtn;
 
     public ForgeScreen(ForgeMenu menu, Inventory inventory, Component title) {
@@ -124,10 +130,19 @@ public class ForgeScreen extends AbstractContainerScreen<ForgeMenu> {
             ForgeSyncPayload v = ClientForgeView.get();
             switch (v.stage()) {
                 case ForgeSyncPayload.STAGE_SELECT -> {
-                    for (int i = 0; i < ForgeableWeapons.ALL.size(); i++) {
-                        int ry = 24 + i * 28;
-                        if (mx >= 10 && mx < W - 10 && my >= ry && my < ry + 26) {
-                            chosenWeapon = i;
+                    for (int i = 0; i < ForgeableWeapons.TYPES.size(); i++) {
+                        int tx = TYPE_X + i * TYPE_STEP;
+                        if (mx >= tx && mx < tx + TYPE_W && my >= TYPE_Y && my < TYPE_Y + TYPE_H) {
+                            chosenType = i;
+                            updateChoice();
+                            return true;
+                        }
+                    }
+                    for (int i = 0; i < ForgeableWeapons.MATERIALS.size(); i++) {
+                        int tx = MAT_X + i * MAT_STEP;
+                        if (mx >= tx && mx < tx + MAT_W && my >= MAT_Y && my < MAT_Y + MAT_H) {
+                            chosenMat = i;
+                            updateChoice();
                             return true;
                         }
                     }
@@ -139,7 +154,7 @@ public class ForgeScreen extends AbstractContainerScreen<ForgeMenu> {
                     }
                 }
                 case ForgeSyncPayload.STAGE_WORKING -> {
-                    int part = partAt(mx, my, v.targets().length);
+                    int part = partAt(ForgeableWeapons.byIndex(v.weapon()), mx, my, v.targets().length);
                     if (part >= 0) {
                         selectPart(part);
                         return true;
@@ -175,24 +190,28 @@ public class ForgeScreen extends AbstractContainerScreen<ForgeMenu> {
         return super.keyPressed(event);
     }
 
+    private void updateChoice() {
+        chosenWeapon = ForgeableWeapons.indexOf(ForgeableWeapons.TYPES.get(chosenType), ForgeableWeapons.MATERIALS.get(chosenMat));
+    }
+
     private static boolean inBar(double mx, double my) {
         return mx >= BAR_X - 4 && mx < BAR_X + BAR_W + 4 && my >= BAR_Y - 8 && my < BAR_Y + BAR_H + 6;
     }
 
-    /** Blade area (excluding the hilt) is split evenly into parts; the gauge column below belongs to the same part. */
-    private static int partLeft(int i, int parts) {
-        return SWORD_X + 2 + Math.round(i * (123f / parts));
+    /** The hammered span of the weapon image is split evenly into parts; the gauge column below belongs to the same part. */
+    private static int partLeft(ForgeableWeapon w, int i, int parts) {
+        return SWORD_X + w.workX() + Math.round(i * ((float) w.workW() / parts));
     }
 
-    private static int partWidth(int parts) {
-        return Math.round(123f / parts) - 1;
+    private static int partWidth(ForgeableWeapon w, int parts) {
+        return Math.round((float) w.workW() / parts) - 1;
     }
 
-    private static int partAt(double mx, double my, int parts) {
-        if (my < SWORD_Y || my >= GAUGE_Y + GAUGE_H + 12) return -1;
+    private static int partAt(ForgeableWeapon w, double mx, double my, int parts) {
+        if (w == null || my < SWORD_Y || my >= GAUGE_Y + GAUGE_H + 12) return -1;
         for (int i = 0; i < parts; i++) {
-            int l = partLeft(i, parts);
-            if (mx >= l && mx < l + partWidth(parts)) return i;
+            int l = partLeft(w, i, parts);
+            if (mx >= l && mx < l + partWidth(w, parts)) return i;
         }
         return -1;
     }
@@ -210,11 +229,17 @@ public class ForgeScreen extends AbstractContainerScreen<ForgeMenu> {
         super.extractRenderState(graphics, mouseX, mouseY, a);
         ForgeSyncPayload v = ClientForgeView.get();
         if (v.stage() == ForgeSyncPayload.STAGE_WORKING || v.stage() == ForgeSyncPayload.STAGE_HEATING) {
-            int part = partAt(mouseX - leftPos, mouseY - topPos, v.targets().length);
             ForgeableWeapon w = ForgeableWeapons.byIndex(v.weapon());
+            int part = partAt(w, mouseX - leftPos, mouseY - topPos, v.targets().length);
             if (part >= 0 && w != null) {
                 graphics.setTooltipForNextFrame(font, Component.translatable(w.partKeys().get(part))
                         .append(String.format("  %.1f / %.0f", v.values()[part], v.targets()[part])), mouseX, mouseY);
+            }
+        } else if (v.stage() == ForgeSyncPayload.STAGE_SELECT) {
+            ForgeableWeapon w = ForgeableWeapons.byIndex(chosenWeapon);
+            int rx = mouseX - leftPos, ry = mouseY - topPos;
+            if (w != null && rx >= SWORD_X && rx < SWORD_X + SWORD_W && ry >= PREVIEW_Y && ry < PREVIEW_Y + SWORD_H) {
+                graphics.setTooltipForNextFrame(font, new ItemStack(w.result().get()), mouseX, mouseY);
             }
         } else if (v.stage() == ForgeSyncPayload.STAGE_FINISHED && !v.result().isEmpty()) {
             if (mouseX >= leftPos + 16 && mouseX < leftPos + 40 && mouseY >= topPos + 26 && mouseY < topPos + 50) {
@@ -262,29 +287,46 @@ public class ForgeScreen extends AbstractContainerScreen<ForgeMenu> {
     // ---- select stage
 
     private void drawSelect(GuiGraphicsExtractor g, int x, int y, int mouseX, int mouseY) {
-        List<ForgeableWeapon> all = ForgeableWeapons.ALL;
-        for (int i = 0; i < all.size(); i++) {
-            ForgeableWeapon w = all.get(i);
-            int ry = y + 24 + i * 28;
-            boolean chosen = i == chosenWeapon;
-            boolean hover = mouseX >= x + 10 && mouseX < x + W - 10 && mouseY >= ry && mouseY < ry + 26;
-            inset(g, x + 10, ry, x + W - 10, ry + 26, chosen ? 0xFF3D2E22 : hover ? 0xFF2F2621 : C_BG_INNER);
-            if (chosen) g.outline(x + 10, ry, W - 20, 26, C_EMBER);
-            ItemStack icon = new ItemStack(w.result().get());
-            g.item(icon, x + 15, ry + 5);
-            g.text(font, icon.getHoverName(), x + 36, ry + 9, C_TEXT, false);
-            int mx = x + 140;
-            for (ForgeableWeapon.Material m : w.materials()) {
-                Item item = m.item().get();
-                g.item(new ItemStack(item), mx, ry + 5);
-                boolean enough = count(item) >= m.count();
-                g.text(font, "x" + m.count(), mx + 17, ry + 9, enough ? C_OK : C_OVER, false);
-                mx += 40;
-            }
+        int rx = mouseX - x, ry = mouseY - y;
+        g.text(font, Component.translatable("rpgmod.gui.type"), x + 10, y + TYPE_Y - 10, C_DIM, false);
+        for (int i = 0; i < ForgeableWeapons.TYPES.size(); i++) {
+            int tx = TYPE_X + i * TYPE_STEP;
+            boolean chosen = i == chosenType;
+            boolean hover = rx >= tx && rx < tx + TYPE_W && ry >= TYPE_Y && ry < TYPE_Y + TYPE_H;
+            inset(g, x + tx, y + TYPE_Y, x + tx + TYPE_W, y + TYPE_Y + TYPE_H, chosen ? 0xFF3D2E22 : hover ? 0xFF2F2621 : C_BG_INNER);
+            if (chosen) g.outline(x + tx, y + TYPE_Y, TYPE_W, TYPE_H, C_EMBER);
+            com.jo112ss.rpgmod.item.WeaponType t = ForgeableWeapons.TYPES.get(i);
+            g.item(new ItemStack(com.jo112ss.rpgmod.item.ModItems.get(t, ForgeableWeapons.MATERIALS.get(chosenMat))), x + tx + 11, y + TYPE_Y + 4);
+            if (hover) g.setTooltipForNextFrame(font, Component.translatable("rpgmod.type." + t.id), mouseX, mouseY);
+        }
+        g.text(font, Component.translatable("rpgmod.gui.material"), x + 10, y + MAT_Y - 10, C_DIM, false);
+        for (int i = 0; i < ForgeableWeapons.MATERIALS.size(); i++) {
+            int tx = MAT_X + i * MAT_STEP;
+            boolean chosen = i == chosenMat;
+            boolean hover = rx >= tx && rx < tx + MAT_W && ry >= MAT_Y && ry < MAT_Y + MAT_H;
+            inset(g, x + tx, y + MAT_Y, x + tx + MAT_W, y + MAT_Y + MAT_H, chosen ? 0xFF3D2E22 : hover ? 0xFF2F2621 : C_BG_INNER);
+            if (chosen) g.outline(x + tx, y + MAT_Y, MAT_W, MAT_H, C_EMBER);
+            com.jo112ss.rpgmod.item.WeaponMaterial m = ForgeableWeapons.MATERIALS.get(i);
+            g.item(new ItemStack(m.ingot.get()), x + tx + 3, y + MAT_Y + 2);
+            g.text(font, Component.translatable("rpgmod.material." + m.id), x + tx + 21, y + MAT_Y + 6, chosen ? C_TEXT : C_DIM, false);
         }
         ForgeableWeapon w = ForgeableWeapons.byIndex(chosenWeapon);
-        if (w != null && !hasMaterials(w)) {
-            g.centeredText(font, Component.translatable("rpgmod.gui.missing"), x + W / 2, y + BTN_Y - 12, C_OVER);
+        if (w == null) return;
+        inset(g, x + SWORD_X - 2, y + PREVIEW_Y - 2, x + SWORD_X + SWORD_W + 2, y + PREVIEW_Y + SWORD_H + 2, C_BG_INNER);
+        g.blit(RenderPipelines.GUI_TEXTURED, w.guiTexture(), x + SWORD_X, y + PREVIEW_Y, 0, 0, SWORD_W, SWORD_H, SWORD_W, SWORD_H);
+        ItemStack result = new ItemStack(w.result().get());
+        int ly = y + PREVIEW_Y + SWORD_H + 6;
+        g.text(font, result.getHoverName(), x + 12, ly + 4, C_TEXT, false);
+        int mx = x + 112;
+        for (ForgeableWeapon.Material m : w.materials()) {
+            Item item = m.item().get();
+            g.item(new ItemStack(item), mx, ly);
+            boolean enough = count(item) >= m.count();
+            g.text(font, "x" + m.count(), mx + 17, ly + 4, enough ? C_OK : C_OVER, false);
+            mx += 36;
+        }
+        if (!hasMaterials(w)) {
+            g.centeredText(font, Component.translatable("rpgmod.gui.missing"), x + W / 2, y + BTN_Y + 23, C_OVER);
         }
     }
 
@@ -319,8 +361,8 @@ public class ForgeScreen extends AbstractContainerScreen<ForgeMenu> {
             g.blit(RenderPipelines.GUI_TEXTURED, w.guiTexture(), x + SWORD_X, y + SWORD_Y, 0, 0, SWORD_W, SWORD_H, SWORD_W, SWORD_H);
         }
         int sel = working ? v.selectedPart() : -1;
-        for (int i = 0; i < parts; i++) {
-            int l = x + partLeft(i, parts), pw = partWidth(parts);
+        for (int i = 0; i < parts && w != null; i++) {
+            int l = x + partLeft(w, i, parts), pw = partWidth(w, parts);
             boolean isSel = i == sel;
             boolean isAdj = sel >= 0 && Math.abs(i - sel) == 1;
             if (isSel) {
@@ -333,15 +375,16 @@ public class ForgeScreen extends AbstractContainerScreen<ForgeMenu> {
             drawGauge(g, l, y, pw, i, v, isSel, isAdj);
         }
 
-        // info column (right of the gauges)
-        int ix = x + SWORD_X + 128;
+        // info column (right of the weapon image)
+        int ix = x + SWORD_X + SWORD_W + 6;
         if (working) {
-            String pow = String.format("%.1f", v.estimatedPower());
-            String adj = String.format("%.1f", v.estimatedPower() * v.adjacentRatio());
-            g.textWithWordWrap(font, Component.translatable("rpgmod.gui.power", pow, adj), ix, y + GAUGE_Y, W - (ix - x) - 6, C_TEXT, false);
-            g.text(font, Component.translatable("rpgmod.gui.strikes", v.strikes()), ix, y + GAUGE_Y + 30, C_DIM, false);
+            g.text(font, Component.translatable("rpgmod.gui.power_label"), ix, y + GAUGE_Y, C_DIM, false);
+            g.text(font, String.format("%.1f", v.estimatedPower()), ix, y + GAUGE_Y + 10, 0xFFFFC070, false);
+            g.text(font, Component.translatable("rpgmod.gui.adjacent_label"), ix, y + GAUGE_Y + 22, C_DIM, false);
+            g.text(font, String.format("%.1f", v.estimatedPower() * v.adjacentRatio()), ix, y + GAUGE_Y + 32, C_TEXT, false);
+            g.text(font, Component.translatable("rpgmod.gui.strikes_label", v.strikes()), ix, y + GAUGE_Y + 46, C_DIM, false);
         } else {
-            g.textWithWordWrap(font, Component.translatable("rpgmod.gui.heating_hint"), ix, y + GAUGE_Y, W - (ix - x) - 6, C_DIM, false);
+            g.centeredText(font, Component.translatable("rpgmod.gui.heating_hint"), x + W / 2, y + GAUGE_Y + GAUGE_H + 15, C_DIM);
         }
 
         // timing bar

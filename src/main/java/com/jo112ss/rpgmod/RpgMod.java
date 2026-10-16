@@ -19,6 +19,7 @@ public class RpgMod {
     public static final Logger LOGGER = LogUtils.getLogger();
 
     public RpgMod(IEventBus modBus, ModContainer container) {
+        com.jo112ss.rpgmod.item.ModItems.init();
         ModRegistries.register(modBus);
         container.registerConfig(ModConfig.Type.SYNCED, SmithingConfig.SPEC);
         modBus.addListener(ModNetwork::register);
