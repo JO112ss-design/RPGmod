@@ -113,27 +113,6 @@ public final class AutoTestServer {
 
     private static int critT = -1;
 
-    @SubscribeEvent
-    public static void onDamagePost(net.neoforged.neoforge.event.entity.living.LivingDamageEvent.Post e) {
-        if (!ENABLED || dummy == null || e.getEntity() != dummy) return;
-        var R = net.neoforged.neoforge.common.damagesource.DamageContainer.Reduction.class;
-        StringBuilder sb = new StringBuilder();
-        for (var r : R.getEnumConstants()) {
-            float v = e.getReduction(r);
-            if (v != 0) sb.append(r).append('=').append(v).append(' ');
-        }
-        RpgMod.LOGGER.info("[AUTOTEST] damage post: original={} inflicted={} health={} reductions={}", e.getOriginalDamage(),
-                e.getInflictedDamage(), e.getHealthDamage(), sb);
-    }
-
-    @SubscribeEvent(priority = net.neoforged.bus.api.EventPriority.LOWEST)
-    public static void onIncomingLast(net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent e) {
-        if (!ENABLED || dummy == null || e.getEntity() != dummy) return;
-        RpgMod.LOGGER.info("[AUTOTEST] incoming (lowest): amount={} original={}", e.getAmount(), e.getOriginalAmount());
-    }
-    private static net.minecraft.world.entity.monster.zombie.Zombie dummy;
-
-    /** Hits a dummy zombie with and without forced RPG crits and vanilla jump crits, logging the damage. */
     private static void critTest() {
         critT++;
         var level = (net.minecraft.server.level.ServerLevel) player.level();
@@ -142,6 +121,7 @@ public final class AutoTestServer {
             if (dummy == null) { critT = -1; return; }
             dummy.snapTo(player.getX() + 1.5, player.getY(), player.getZ());
             dummy.setNoAi(true);
+            dummy.addEffect(new net.minecraft.world.effect.MobEffectInstance(net.minecraft.world.effect.MobEffects.FIRE_RESISTANCE, 20000, 0)); // no sunburn ticks during the test
             dummy.getAttribute(Attributes.MAX_HEALTH).setBaseValue(1000);
             dummy.getAttribute(Attributes.ARMOR).setBaseValue(0);
             dummy.setHealth(1000);
