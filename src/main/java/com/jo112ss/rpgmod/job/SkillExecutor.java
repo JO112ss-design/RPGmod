@@ -245,7 +245,7 @@ public final class SkillExecutor {
     }
 
     private static SkillDef copy(SkillDef d, SkillEffect effect, double power, double radius, double duration, List<String> fx) {
-        return new SkillDef(d.id(), d.job(), d.kind(), effect, d.cooldown(), d.mana(), power, radius, duration, fx, d.amplifier(), d.glyph(), d.color());
+        return d.withEffect(effect, power, radius, duration, fx);
     }
 
     private static boolean bolt(ServerPlayer p, ServerLevel level, SkillDef def, double power) {

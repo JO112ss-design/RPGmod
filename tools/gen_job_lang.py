@@ -9,7 +9,7 @@ JOBS = {  # id: (ja name, ja role, ja desc, en name, en role, en desc)
             'Ranger', 'Ranged damage', 'A master archer who keeps moving, firing volleys and setting snares.'),
  'paladin': ('パラディン', '盾役・支援', 'メイスと剣を持つ聖騎士。高い体力と防御で前に立ち、味方を守り癒す。',
              'Paladin', 'Tank / support', 'A holy knight with mace and sword. Very sturdy; protects and heals allies.'),
- 'wizard': ('ウィザード', '魔法火力', '杖に呪文をセットして戦う魔法使い。呪文はVキー長押しで切り替え、右クリックで詠唱。',
+ 'wizard': ('ウィザード', '魔法火力', '杖に呪文をセットして戦う魔法使い。Vキー長押しで呪文を切り替え、右クリック長押しで詠唱して離すと発動。',
             'Wizard', 'Magic damage', 'Sets spells on a staff. Hold V to switch spells, right-click to cast.'),
  'healer': ('ヒーラー', '回復・強化', '杖とメイスで仲間を支える癒し手。回復と持続回復、MPの譲渡が得意。',
             'Healer', 'Healing / buffs', 'Supports the party with staff and mace: healing, regeneration and mana gifts.'),

@@ -25,6 +25,7 @@ public final class JobActionHandler {
             case JobActionPayload.EQUIP_SKILL -> JobManager.equipSkill(player, p.arg(), p.text());
             case JobActionPayload.SET_SPELL -> JobManager.setSpell(player, p.arg(), p.text());
             case JobActionPayload.SELECT_SPELL -> JobManager.selectSpell(player, p.arg());
+            case JobActionPayload.RESET_PANEL -> JobManager.resetPanel(player);
             default -> { }
         }
     }

@@ -49,7 +49,9 @@ public final class JobEvents {
 
     @SubscribeEvent
     public static void onTick(PlayerTickEvent.Post event) {
-        if (event.getEntity() instanceof ServerPlayer sp && sp.tickCount % 20 == 0) JobManager.tickMana(sp);
+        if (!(event.getEntity() instanceof ServerPlayer sp)) return;
+        if (sp.tickCount % 20 == 0) JobManager.tickMana(sp);
+        if (sp.tickCount % 2 == 0) JobManager.updateAffinity(sp);
     }
 
     /** Job critical chance (on top of forged weapon options). */

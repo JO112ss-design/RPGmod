@@ -14,6 +14,9 @@ public final class JobConfig {
     public static final ModConfigSpec.DoubleValue SHARE_RADIUS = B.comment("Players within this many blocks of a kill get the same experience (co-op); 0 = killer only").defineInRange("shareRadius", 24.0, 0, 256);
     public static final ModConfigSpec.BooleanValue REQUIRE_JOB_WEAPON = B.comment("Skills only work while holding one of the job's weapons").define("requireJobWeapon", true);
 
+    public static final ModConfigSpec.IntValue RESET_COST_LEVELS = B.comment("Vanilla experience levels it costs to reset the skill panel").defineInRange("panelResetLevels", 20, 0, 1000);
+    public static final ModConfigSpec.DoubleValue AFFINITY_ATTACK_SPEED = B.comment("Attack speed bonus while holding one of your job's weapons (0.3 = x1.3)").defineInRange("jobWeaponAttackSpeed", 0.3, 0, 10);
+
     public static final ModConfigSpec SPEC = B.build();
 
     public static int maxLevel() {

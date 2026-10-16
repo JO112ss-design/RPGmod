@@ -32,6 +32,8 @@ public final class JobData {
     private double mana = JobDefs.BASE_MANA;
     /** Skill id -> game time when it is ready again. */
     private final Map<String, Long> cooldowns = new HashMap<>();
+    /** Skill panel layout version the unlocked ids belong to. */
+    private int panelVersion = SkillPanel.VERSION;
 
     public static final MapCodec<JobData> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
             Codec.STRING.optionalFieldOf("job", "").forGetter(d -> d.job),
@@ -40,7 +42,8 @@ public final class JobData {
             Codec.INT.listOf().optionalFieldOf("unlocked", List.of()).forGetter(d -> List.copyOf(d.unlocked)),
             Codec.STRING.listOf().optionalFieldOf("slots", List.of("", "", "")).forGetter(d -> List.of(d.slots)),
             Codec.DOUBLE.optionalFieldOf("mana", JobDefs.BASE_MANA).forGetter(d -> d.mana),
-            Codec.unboundedMap(Codec.STRING, Codec.LONG).optionalFieldOf("cooldowns", Map.of()).forGetter(d -> Map.copyOf(d.cooldowns))
+            Codec.unboundedMap(Codec.STRING, Codec.LONG).optionalFieldOf("cooldowns", Map.of()).forGetter(d -> Map.copyOf(d.cooldowns)),
+            Codec.INT.optionalFieldOf("panel_version", 1).forGetter(d -> d.panelVersion)
     ).apply(i, JobData::new));
 
     public static final StreamCodec<RegistryFriendlyByteBuf, JobData> STREAM_CODEC = StreamCodec.of(
@@ -74,7 +77,8 @@ public final class JobData {
 
     public JobData() {}
 
-    private JobData(String job, int level, long exp, List<Integer> unlocked, List<String> slots, double mana, Map<String, Long> cooldowns) {
+    private JobData(String job, int level, long exp, List<Integer> unlocked, List<String> slots, double mana, Map<String, Long> cooldowns, int panelVersion) {
+        this.panelVersion = panelVersion;
         this.job = job;
         this.level = Math.max(1, level);
         this.exp = Math.max(0, exp);
@@ -184,6 +188,7 @@ public final class JobData {
         exp = 0;
         unlocked.clear();
         cooldowns.clear();
+        panelVersion = SkillPanel.VERSION;
         slots[0] = slots[1] = slots[2] = "";
         if (hasJob()) {
             unlocked.add(0);
@@ -209,6 +214,23 @@ public final class JobData {
         }
         if (level >= maxLevel) exp = 0;
         return gained;
+    }
+
+    /** True if the saved unlocked cells belong to an older panel layout. */
+    public boolean panelOutdated() {
+        return hasJob() && panelVersion != SkillPanel.VERSION;
+    }
+
+    /** Back to only the centre cell (all points refunded); the first skill stays equipped. */
+    public void resetPanel() {
+        unlocked.clear();
+        panelVersion = SkillPanel.VERSION;
+        slots[0] = slots[1] = slots[2] = "";
+        if (hasJob()) {
+            unlocked.add(0);
+            JobDefs.Job def = jobDef();
+            if (!def.actives().isEmpty()) slots[0] = def.actives().get(0);
+        }
     }
 
     public void unlock(int nodeId) {

@@ -12,12 +12,12 @@ import java.util.Set;
  * A job's honeycomb skill panel. Nodes sit on a hex grid (axial coordinates q,r); the centre is
  * unlocked from the start and any node next to an unlocked node can be bought with skill points.
  *
- * <p>Default layout (radius 3, 37 nodes):
+ * <p>Layout (radius 5, 91 cells, far more than the points available at max level):
  * <ul>
  *   <li>centre: start (grants the job's first active skill, and first spell for spell users)</li>
- *   <li>ring 1: stat nodes (1 point)</li>
- *   <li>ring 2: three skill nodes (2 points) and stat nodes; spell users also get spell nodes</li>
- *   <li>ring 3: ultimate nodes (3 points), more spells, and stronger stat nodes (2 points)</li>
+ *   <li>rings 1-2: stat cells (1 point); ring 2 also holds three skills (2 points) and spells</li>
+ *   <li>rings 3-4: stronger stat cells (2 points); ring 4 holds the last spell</li>
+ *   <li>ring 5: the strongest stat cells (3 points) and two ultimates (4 points) on opposite sides</li>
  * </ul>
  */
 public final class SkillPanel {
@@ -106,43 +106,54 @@ public final class SkillPanel {
         return out;
     }
 
+    /** Panel layout version; bump when node ids change so saved progress is refunded. */
+    public static final int VERSION = 2;
+    public static final int RADIUS = 5;
+
     private static SkillPanel build(JobDefs.Job job) {
         List<Node> nodes = new ArrayList<>();
         List<JobStat> stats = job.panelStats();
         nodes.add(new Node(0, 0, 0, NodeType.START, null, 0, null, 0));
-        // ring 1
-        List<int[]> r1 = ring(1);
-        for (int i = 0; i < r1.size(); i++) {
-            JobStat st = stats.get(i % stats.size());
-            nodes.add(new Node(nodes.size(), r1.get(i)[0], r1.get(i)[1], NodeType.STAT, st, st.nodeAmount(), null, 1));
-        }
-        // ring 2: skills at 0/4/8, spells at 2/6/10 for spell users
-        List<int[]> r2 = ring(2);
-        for (int i = 0; i < r2.size(); i++) {
-            int[] p = r2.get(i);
-            if (i % 4 == 0 && i / 4 + 1 < job.actives().size()) {
-                nodes.add(new Node(nodes.size(), p[0], p[1], NodeType.SKILL, null, 0, job.actives().get(i / 4 + 1), 2));
-            } else if (job.usesSpells() && i % 4 == 2 && i / 4 + 1 < job.spells().size()) {
-                nodes.add(new Node(nodes.size(), p[0], p[1], NodeType.SPELL, null, 0, job.spells().get(i / 4 + 1), 2));
-            } else {
-                JobStat st = stats.get((i + 1) % stats.size());
-                nodes.add(new Node(nodes.size(), p[0], p[1], NodeType.STAT, st, st.nodeAmount(), null, 1));
-            }
-        }
-        // ring 3: ultimates on opposite sides (cells 1 and 10), remaining spells at 5/14
-        List<int[]> r3 = ring(3);
-        int ult = 0, spell = 4;
-        for (int i = 0; i < r3.size(); i++) {
-            int[] p = r3.get(i);
-            if ((i == 1 || i == 10) && ult < job.ultimates().size()) {
-                nodes.add(new Node(nodes.size(), p[0], p[1], NodeType.ULTIMATE, null, 0, job.ultimates().get(ult++), 3));
-            } else if (job.usesSpells() && (i == 5 || i == 14) && spell < job.spells().size()) {
-                nodes.add(new Node(nodes.size(), p[0], p[1], NodeType.SPELL, null, 0, job.spells().get(spell++), 2));
-            } else {
-                JobStat st = stats.get((i + 2) % stats.size());
-                nodes.add(new Node(nodes.size(), p[0], p[1], NodeType.STAT, st, st.nodeAmount() * 1.5, null, 2));
+        for (int k = 1; k <= RADIUS; k++) {
+            List<int[]> cells = ring(k);
+            int n = cells.size();
+            for (int i = 0; i < n; i++) {
+                int[] p = cells.get(i);
+                Node node = special(job, k, i, n, nodes.size(), p);
+                if (node == null) {
+                    JobStat st = stats.get((i + k) % stats.size());
+                    double mult = k <= 2 ? 1.0 : k == 3 ? 1.25 : k == 4 ? 1.5 : 2.0;
+                    int cost = k <= 2 ? 1 : k <= 4 ? 2 : 3;
+                    node = new Node(nodes.size(), p[0], p[1], NodeType.STAT, st, st.nodeAmount() * mult, null, cost);
+                }
+                nodes.add(node);
             }
         }
         return new SkillPanel(nodes);
+    }
+
+    /**
+     * Skill / spell / ultimate cells: actives spread around ring 2, spells between them (ring 2) and
+     * on ring 4, ultimates at opposite points of the outer ring.
+     */
+    private static Node special(JobDefs.Job job, int ring, int i, int n, int id, int[] p) {
+        if (ring == 2) {
+            if (i % 4 == 0 && i / 4 + 1 < job.actives().size()) {
+                return new Node(id, p[0], p[1], NodeType.SKILL, null, 0, job.actives().get(i / 4 + 1), 2);
+            }
+            if (job.usesSpells() && i % 4 == 2 && i / 4 + 1 < job.spells().size()) {
+                return new Node(id, p[0], p[1], NodeType.SPELL, null, 0, job.spells().get(i / 4 + 1), 2);
+            }
+        }
+        if (ring == 4 && job.usesSpells() && i == n / 2 && 4 < job.spells().size()) {
+            return new Node(id, p[0], p[1], NodeType.SPELL, null, 0, job.spells().get(4), 3);
+        }
+        if (ring == RADIUS) {
+            int u = i == 2 ? 0 : i == 2 + n / 2 ? 1 : -1;
+            if (u >= 0 && u < job.ultimates().size()) {
+                return new Node(id, p[0], p[1], NodeType.ULTIMATE, null, 0, job.ultimates().get(u), 4);
+            }
+        }
+        return null;
     }
 }

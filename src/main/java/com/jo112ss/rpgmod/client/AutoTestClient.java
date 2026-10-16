@@ -51,6 +51,7 @@ public final class AutoTestClient {
             case 116 -> shot(mc, "15_spells");
             case 118 -> mc.gui.setScreen(null);
             case 124 -> com.jo112ss.rpgmod.client.job.JobClient.send(com.jo112ss.rpgmod.network.JobActionPayload.USE_SKILL, 0, "");
+            case 126 -> mc.gameMode.useItem(mc.player, net.minecraft.world.InteractionHand.MAIN_HAND);
             case 132 -> shot(mc, "16_hud");
             case 134 -> {
                 com.jo112ss.rpgmod.client.job.SpellWheelScreen.testHold = true;

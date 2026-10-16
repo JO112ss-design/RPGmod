@@ -47,6 +47,10 @@ public final class JobManager {
 
     public static void onLogin(ServerPlayer player) {
         JobData d = data(player);
+        if (d.panelOutdated()) {
+            d.resetPanel();
+            player.sendSystemMessage(Component.translatable("rpgmod.job.panel_migrated").withStyle(ChatFormatting.GOLD));
+        }
         JobStats.apply(player, d);
         d.setMana(Math.min(d.mana(), maxMana(d)));
         sync(player);
@@ -143,6 +147,54 @@ public final class JobManager {
         sync(player);
     }
 
+    /** Resets the skill panel for vanilla experience levels (free in creative). */
+    public static void resetPanel(ServerPlayer player) {
+        JobData d = data(player);
+        if (!d.hasJob() || d.unlocked().size() <= 1) return;
+        int cost = JobConfig.RESET_COST_LEVELS.get();
+        if (!player.hasInfiniteMaterials()) {
+            if (player.experienceLevel < cost) {
+                tell(player, "rpgmod.job.reset_need", cost);
+                return;
+            }
+            player.giveExperienceLevels(-cost);
+        }
+        d.resetPanel();
+        JobStats.apply(player, d);
+        player.sendSystemMessage(Component.translatable("rpgmod.job.reset_done", d.freePoints()).withStyle(ChatFormatting.GOLD));
+        player.level().playSound(null, player.blockPosition(), SoundEvents.GRINDSTONE_USE, SoundSource.PLAYERS, 1.0F, 1.0F);
+        sync(player);
+    }
+
+    private static final net.minecraft.resources.Identifier AFFINITY_ID =
+            net.minecraft.resources.Identifier.fromNamespaceAndPath(com.jo112ss.rpgmod.RpgMod.MODID, "job/weapon_affinity");
+
+    /** Attack speed bonus while a job weapon is in the main hand (encourages using your job's weapons). */
+    public static void updateAffinity(ServerPlayer player) {
+        var inst = player.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_SPEED);
+        if (inst == null) return;
+        JobData d = data(player);
+        JobType type = d.jobType();
+        WeaponType held = ModItems.typeOf(player.getMainHandItem().getItem());
+        boolean on = type != null && held != null && type.weapons.contains(held);
+        double amount = JobConfig.AFFINITY_ATTACK_SPEED.get();
+        var current = inst.getModifier(AFFINITY_ID);
+        if (on && amount > 0) {
+            if (current == null || current.amount() != amount) {
+                inst.addOrUpdateTransientModifier(new net.minecraft.world.entity.ai.attributes.AttributeModifier(AFFINITY_ID, amount,
+                        net.minecraft.world.entity.ai.attributes.AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL));
+            }
+        } else if (current != null) {
+            inst.removeModifier(AFFINITY_ID);
+        }
+    }
+
+    /** Material bows can only be drawn by jobs that use bows. */
+    public static boolean canUseBow(Player player) {
+        JobData d = data(player);
+        return d.hasJob() && d.jobType().weapons.contains(WeaponType.BOW);
+    }
+
     /** Puts a learnt skill into slot 0/1 (actives) or 2 (ultimate); an empty id clears the slot. */
     public static void equipSkill(ServerPlayer player, int slot, String skillId) {
         JobData d = data(player);
@@ -211,18 +263,68 @@ public final class JobManager {
         cast(player, d, def);
     }
 
-    /** Right-click with a magic staff: cast the staff's selected spell (wizards only). */
-    public static boolean castSpell(ServerPlayer player, ItemStack staff) {
+    /** The staff's selected spell if the player is a wizard who knows it, else null. */
+    public static SkillDef selectedSpell(Player player, ItemStack staff) {
+        JobData d = data(player);
+        if (!d.hasJob() || !d.jobDef().usesSpells()) return null;
+        SpellLoadout loadout = staff.getOrDefault(ModRegistries.SPELL_LOADOUT.get(), SpellLoadout.EMPTY);
+        SkillDef def = JobDefs.skill(loadout.selectedSpell());
+        return def != null && d.knows(def.id()) ? def : null;
+    }
+
+    /** Can a charge start? (spell set, off cooldown, enough mana). Messages only when {@code notify}. */
+    public static boolean canStartCast(Player player, ItemStack staff, boolean notify) {
         JobData d = data(player);
         if (!d.hasJob() || !d.jobDef().usesSpells()) return false;
-        SpellLoadout loadout = staff.getOrDefault(ModRegistries.SPELL_LOADOUT.get(), SpellLoadout.EMPTY);
-        String id = loadout.selectedSpell();
-        SkillDef def = JobDefs.skill(id);
-        if (def == null || !d.knows(id)) {
-            tell(player, "rpgmod.job.no_spell");
+        SkillDef def = selectedSpell(player, staff);
+        ServerPlayer sp = notify && player instanceof ServerPlayer s ? s : null;
+        if (def == null) {
+            if (sp != null) tell(sp, "rpgmod.job.no_spell");
             return false;
         }
-        return cast(player, d, def);
+        long ready = d.cooldownEnd(def.id()) - player.level().getGameTime();
+        if (ready > 0) {
+            if (sp != null) tell(sp, "rpgmod.job.cooldown", String.format("%.1f", ready / 20.0));
+            return false;
+        }
+        if (d.mana() < def.mana()) {
+            if (sp != null) tell(sp, "rpgmod.job.no_mana");
+            return false;
+        }
+        return true;
+    }
+
+    public static int castTicks(SkillDef def) {
+        return (int) Math.round(def.castTime() * 20);
+    }
+
+    /** Charging particles; a chime when the cast becomes ready. */
+    public static void chargeTick(ServerPlayer player, ItemStack staff, int held, ServerLevel level) {
+        SkillDef def = selectedSpell(player, staff);
+        if (def == null) return;
+        int need = castTicks(def);
+        if (held < need) {
+            if (held % 2 == 0) {
+                double a = held * 0.6;
+                level.sendParticles(ParticleTypes.ENCHANT, player.getX() + Math.cos(a) * 0.8, player.getY() + 1.2, player.getZ() + Math.sin(a) * 0.8, 2, 0.05, 0.2, 0.05, 0.4);
+            }
+        } else if (held == need) {
+            level.playSound(null, player.blockPosition(), SoundEvents.AMETHYST_BLOCK_RESONATE, SoundSource.PLAYERS, 1.0F, 1.6F);
+            level.sendParticles(ParticleTypes.END_ROD, player.getX(), player.getY() + 1.4, player.getZ(), 12, 0.3, 0.3, 0.3, 0.05);
+        } else if (held % 6 == 0) {
+            level.sendParticles(ParticleTypes.END_ROD, player.getX(), player.getY() + 2.1, player.getZ(), 1, 0.15, 0.05, 0.15, 0.01);
+        }
+    }
+
+    /** Right-click released: fire the spell if it was charged long enough. */
+    public static boolean releaseCast(ServerPlayer player, ItemStack staff, int held) {
+        SkillDef def = selectedSpell(player, staff);
+        if (def == null) return false;
+        if (held < castTicks(def)) {
+            player.sendSystemMessage(Component.translatable("rpgmod.job.fizzle").withStyle(ChatFormatting.GRAY), true);
+            return false;
+        }
+        return cast(player, data(player), def);
     }
 
     private static boolean cast(ServerPlayer player, JobData d, SkillDef def) {

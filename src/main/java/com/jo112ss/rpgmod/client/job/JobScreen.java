@@ -35,8 +35,8 @@ import net.minecraft.world.item.ItemStack;
 public class JobScreen extends Screen {
     public enum Tab { STATUS, PANEL, SKILLS, SPELLS }
 
-    private static final int W = 324, H = 236;
-    private static final int HEX_R = 13;
+    private static final int W = 384, H = 258;
+    private static final int HEX_R = 11;
 
     private Tab tab;
     private int left, top;
@@ -44,6 +44,12 @@ public class JobScreen extends Screen {
     private int selectedSpellSlot = 0; // spells tab: 0..3
     private String hoveredSkill;
     private SkillPanel.Node hoveredNode;
+    private int resetX, resetY, resetW;
+    private boolean resetArmed;
+
+    private static int resetCost() {
+        return com.jo112ss.rpgmod.job.JobConfig.SPEC.isLoaded() ? com.jo112ss.rpgmod.job.JobConfig.RESET_COST_LEVELS.get() : 20;
+    }
     private final Map<Integer, Long> unlockAnim = new HashMap<>();
     private Set<Integer> lastUnlocked = new HashSet<>();
 
@@ -101,6 +107,16 @@ public class JobScreen extends Screen {
         if (!d.hasJob()) return super.mouseClicked(event, doubleClick);
         switch (tab) {
             case PANEL -> {
+                if (resetW > 0 && in(mx, my, resetX, resetY, resetW, 18)) {
+                    if (resetArmed) {
+                        JobClient.send(JobActionPayload.RESET_PANEL, 0, "");
+                        resetArmed = false;
+                    } else {
+                        resetArmed = true;
+                    }
+                    return true;
+                }
+                resetArmed = false;
                 if (hoveredNode != null && d.panel().isReachable(hoveredNode, d.unlocked()) && d.freePoints() >= hoveredNode.cost()) {
                     JobClient.send(JobActionPayload.UNLOCK_NODE, hoveredNode.id(), "");
                     return true;
@@ -272,12 +288,13 @@ public class JobScreen extends Screen {
         for (int id : d.unlocked()) if (!lastUnlocked.contains(id)) unlockAnim.put(id, now);
         lastUnlocked = new HashSet<>(d.unlocked());
 
-        int ax = left + 8, ay = top + 40, aw = 206, ah = H - 48;
+        int ax = left + 8, ay = top + 40, aw = 252, ah = H - 48;
         Ui.inset(g, ax, ay, aw, ah);
         int ox = ax + aw / 2, oy = ay + ah / 2;
         // subtle radial backdrop
-        Ui.disc(g, ox, oy, 92, 0x10FFFFFF);
-        Ui.disc(g, ox, oy, 60, 0x10FFFFFF);
+        Ui.disc(g, ox, oy, 104, 0x0CFFFFFF);
+        Ui.disc(g, ox, oy, 76, 0x0CFFFFFF);
+        Ui.disc(g, ox, oy, 46, 0x0CFFFFFF);
         int c = job.color();
         float pulse = (float) (0.5 + 0.5 * Math.sin(now / 250.0));
         for (SkillPanel.Node n : panel.nodes()) {
@@ -352,10 +369,21 @@ public class JobScreen extends Screen {
                     : d.freePoints() >= n.cost() ? Component.translatable("rpgmod.node.click", n.cost())
                     : Component.translatable("rpgmod.node.need", n.cost());
             int sc = owned ? Ui.EXP : reachable && d.freePoints() >= n.cost() ? Ui.GOLD : Ui.BAD;
-            g.textWithWordWrap(font, state, ix + 5, iy + ah - 24, iw - 10, sc, false);
+            g.textWithWordWrap(font, state, ix + 5, iy + ah - 50, iw - 10, sc, false);
         } else {
             g.textWithWordWrap(font, Component.translatable("rpgmod.jobscreen.panel_hint"), ix + 5, iy + 28, iw - 10, Ui.DIM, false);
         }
+        // reset button
+        resetX = ix + 4;
+        resetY = iy + ah - 22;
+        resetW = iw - 8;
+        boolean canReset = d.unlocked().size() > 1 && (minecraft.player.hasInfiniteMaterials() || minecraft.player.experienceLevel >= resetCost());
+        boolean hov = in(mouseX, mouseY, resetX, resetY, resetW, 18);
+        g.fill(resetX, resetY, resetX + resetW, resetY + 18, resetArmed ? Ui.BAD : hov && canReset ? Ui.EDGE_LIGHT : Ui.EDGE);
+        g.fill(resetX + 1, resetY + 1, resetX + resetW - 1, resetY + 17, canReset ? 0xFF1E2230 : 0xFF14161C);
+        Component label = resetArmed ? Component.translatable("rpgmod.jobscreen.reset_confirm")
+                : Component.translatable("rpgmod.jobscreen.reset", resetCost());
+        g.centeredText(font, label, resetX + resetW / 2, resetY + 5, canReset ? (resetArmed ? Ui.BAD : Ui.TEXT) : 0xFF5A6070);
     }
 
     /** Cooldown / mana / description lines for a skill; returns the next y. */
@@ -365,6 +393,10 @@ public class JobScreen extends Screen {
         g.text(font, Component.translatable("rpgmod.jobscreen.cd", fmt(def.cooldown())), x, y, Ui.DIM, false);
         g.text(font, Component.translatable("rpgmod.jobscreen.mp", fmt(def.mana())), x + w / 2, y, Ui.MANA, false);
         y += 12;
+        if (def.castTime() > 0) {
+            g.text(font, Component.translatable("rpgmod.jobscreen.cast", fmt(def.castTime())), x, y, 0xFFB09CFF, false);
+            y += 12;
+        }
         int lines = font.split(Ui.skillDesc(id), w).size();
         g.textWithWordWrap(font, Ui.skillDesc(id), x, y, w, Ui.TEXT, false);
         return y + lines * 9 + 4;

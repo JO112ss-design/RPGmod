@@ -18,6 +18,7 @@ import java.util.List;
  * @param amplifier mob effect level - 1
  * @param glyph     one or two characters drawn on the icon
  * @param color     icon colour (RGB)
+ * @param castTime  seconds the cast must be charged (held) before it fires; 0 = instant
  */
 public record SkillDef(
         String id,
@@ -32,5 +33,10 @@ public record SkillDef(
         List<String> effects,
         int amplifier,
         String glyph,
-        int color
-) {}
+        int color,
+        double castTime
+) {
+    public SkillDef withEffect(SkillEffect effect, double power, double radius, double duration, List<String> effects) {
+        return new SkillDef(id, job, kind, effect, cooldown, mana, power, radius, duration, effects, amplifier, glyph, color, castTime);
+    }
+}

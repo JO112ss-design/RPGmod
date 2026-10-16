@@ -14,6 +14,7 @@ public record JobActionPayload(int action, int arg, String text) implements Cust
     public static final int EQUIP_SKILL = 3;  // arg = slot 0..2, text = skill id ("" clears)
     public static final int SET_SPELL = 4;    // arg = staff slot, text = spell id ("" clears)
     public static final int SELECT_SPELL = 5; // arg = staff slot
+    public static final int RESET_PANEL = 6;
 
     public static final Type<JobActionPayload> TYPE = new Type<>(Identifier.fromNamespaceAndPath(RpgMod.MODID, "job_action"));
 

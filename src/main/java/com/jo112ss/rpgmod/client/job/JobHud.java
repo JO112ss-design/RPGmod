@@ -75,6 +75,21 @@ public final class JobHud {
             g.text(font, k, x + (SLOT - font.width(k)) / 2, y + SLOT + 2, Ui.DIM, true);
         }
 
+        // spell charge gauge under the crosshair
+        if (mc.player.isUsingItem() && mc.player.getUseItem().getItem() instanceof com.jo112ss.rpgmod.item.RpgStaffItem) {
+            SkillDef sp = com.jo112ss.rpgmod.job.JobManager.selectedSpell(mc.player, mc.player.getUseItem());
+            if (sp != null) {
+                int need = Math.max(1, com.jo112ss.rpgmod.job.JobManager.castTicks(sp));
+                float f = Math.min(1f, mc.player.getTicksUsingItem() / (float) need);
+                int cw = 60, cx = sw / 2 - cw / 2, cy = sh / 2 + 14;
+                g.fill(cx - 1, cy - 1, cx + cw + 1, cy + 5, 0xC0000000);
+                int col = f >= 1 ? 0xFFFFE07A : 0xFFB09CFF;
+                g.fill(cx, cy, cx + Math.round(cw * f), cy + 4, col);
+                Component t = f >= 1 ? Component.translatable("rpgmod.hud.charged") : Ui.skillName(sp.id());
+                g.centeredText(font, t, sw / 2, cy + 8, col);
+            }
+        }
+
         // wizard: active spell on the held staff
         if (d.jobDef().usesSpells() && JobClient.holdingStaff()) {
             SpellLoadout l = mc.player.getMainHandItem().getOrDefault(ModRegistries.SPELL_LOADOUT.get(), SpellLoadout.EMPTY);

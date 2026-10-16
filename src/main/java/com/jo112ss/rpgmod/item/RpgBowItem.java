@@ -1,6 +1,13 @@
 package com.jo112ss.rpgmod.item;
 
+import com.jo112ss.rpgmod.job.JobManager;
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BowItem;
+import net.minecraft.world.level.Level;
 
 /**
  * A material bow. Its arrows deal a flat bonus on top of a normal bow (reached at full draw);
@@ -16,6 +23,18 @@ public class RpgBowItem extends BowItem {
 
     public WeaponMaterial material() {
         return material;
+    }
+
+    /** Only jobs that use bows (ranger, gambler) can draw material bows. */
+    @Override
+    public InteractionResult use(Level level, Player player, InteractionHand hand) {
+        if (!JobManager.canUseBow(player)) {
+            if (!level.isClientSide()) {
+                player.sendSystemMessage(Component.translatable("rpgmod.job.bow_restricted").withStyle(ChatFormatting.RED), true);
+            }
+            return InteractionResult.FAIL;
+        }
+        return super.use(level, player, hand);
     }
 
     public int damageBonus() {

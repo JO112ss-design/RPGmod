@@ -35,6 +35,9 @@ public final class JobDefs {
     }
 
     public static final Map<String, SkillDef> SKILLS = new LinkedHashMap<>();
+    /** Charge (hold) time in seconds for spells cast from a staff. */
+    private static final Map<String, Double> CAST_TIMES = Map.of(
+            "magic_bolt", 0.6, "flame_burst", 1.2, "frost_nova", 1.0, "thunder", 1.6, "arcane_shield", 0.8);
     public static final Map<String, Job> JOBS = new LinkedHashMap<>();
 
     /** Mana every job starts with before job / level / panel bonuses. */
@@ -92,11 +95,11 @@ public final class JobDefs {
                         skill("meteor", SkillKind.ULTIMATE, SkillEffect.WHIRL, 100, 80, 20, 6, 5, List.of(), 0, "隕"),
                         skill("time_warp", SkillKind.ULTIMATE, SkillEffect.DEBUFF, 90, 60, 0, 10, 8, List.of("minecraft:slowness", "minecraft:weakness"), 2, "遅")),
                 List.of(
-                        skill("magic_bolt", SkillKind.SPELL, SkillEffect.BOLT, 1.2, 8, 6, 24, 0, List.of(), 0, "弾"),
-                        skill("flame_burst", SkillKind.SPELL, SkillEffect.WHIRL, 6, 20, 6, 4, 4, List.of(), 0, "炎"),
-                        skill("frost_nova", SkillKind.SPELL, SkillEffect.DEBUFF, 8, 20, 4, 5, 5, List.of("minecraft:slowness"), 2, "氷"),
-                        skill("thunder", SkillKind.SPELL, SkillEffect.LIGHTNING, 10, 30, 10, 24, 0, List.of(), 0, "雷"),
-                        skill("arcane_shield", SkillKind.SPELL, SkillEffect.BUFF, 20, 25, 0, 0, 10, List.of("minecraft:absorption", "minecraft:resistance"), 0, "護")));
+                        skill("magic_bolt", SkillKind.SPELL, SkillEffect.BOLT, 1.2, 8, 10, 28, 0, List.of(), 0, "弾"),
+                        skill("flame_burst", SkillKind.SPELL, SkillEffect.WHIRL, 6, 20, 10, 4.5, 4, List.of(), 0, "炎"),
+                        skill("frost_nova", SkillKind.SPELL, SkillEffect.DEBUFF, 8, 20, 7, 5.5, 6, List.of("minecraft:slowness"), 2, "氷"),
+                        skill("thunder", SkillKind.SPELL, SkillEffect.LIGHTNING, 10, 30, 16, 28, 0, List.of(), 0, "雷"),
+                        skill("arcane_shield", SkillKind.SPELL, SkillEffect.BUFF, 20, 25, 0, 0, 15, List.of("minecraft:absorption", "minecraft:resistance"), 1, "護")));
         // ---- Healer: heals and buffs
         job("healer", 0x5BC0DE, "癒", List.of(JobStat.MAX_MANA, JobStat.SKILL_POWER, JobStat.MAX_HEALTH),
                 stats(JobStat.MAX_MANA, 40, JobStat.SKILL_POWER, 10), stats(JobStat.SKILL_POWER, 0.4, JobStat.MAX_MANA, 1.5),
@@ -170,7 +173,7 @@ public final class JobDefs {
     /** Registers a skill for the job currently being defined (the job id is filled in by {@link #job}). */
     private static SkillDef skill(String id, SkillKind kind, SkillEffect effect, double cooldown, double mana, double power,
                                   double radius, double duration, List<String> effects, int amplifier, String glyph) {
-        SkillDef def = new SkillDef(id, "", kind, effect, cooldown, mana, power, radius, duration, effects, amplifier, glyph, 0);
+        SkillDef def = new SkillDef(id, "", kind, effect, cooldown, mana, power, radius, duration, effects, amplifier, glyph, 0, CAST_TIMES.getOrDefault(id, 0.0));
         SKILLS.put(id, def);
         return def;
     }
@@ -185,7 +188,7 @@ public final class JobDefs {
                 SkillDef d = SKILLS.get(s);
                 int color = d.kind() == SkillKind.ULTIMATE ? 0xE8B33A : d.kind() == SkillKind.SPELL ? 0x7B68EE : j.color();
                 SKILLS.put(s, new SkillDef(d.id(), j.id(), d.kind(), d.effect(), d.cooldown(), d.mana(), d.power(), d.radius(),
-                        d.duration(), d.effects(), d.amplifier(), d.glyph(), color));
+                        d.duration(), d.effects(), d.amplifier(), d.glyph(), color, d.castTime()));
             }
         }
     }
