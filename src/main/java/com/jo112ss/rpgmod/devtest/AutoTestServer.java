@@ -149,7 +149,6 @@ public final class AutoTestServer {
             dummy.discard();
             critT = -1;
         }
-        }
     }
 
     private static void log(String when) {
