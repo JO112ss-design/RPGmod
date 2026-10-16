@@ -160,10 +160,10 @@ public class JobSelectScreen extends Screen {
             Component line = Component.translatable("rpgmod.stat." + e.getKey().id).append(" " + v);
             int lw = font.width(line);
             if (bx > wx && bx + lw > maxX) {
-                if (++row > 1) break;
+                if (++row > 2) break;
                 bx = wx;
             }
-            g.text(font, line, bx, y + 35 + row * 10, Ui.EXP, false);
+            g.text(font, line, bx, y + 33 + row * 8, Ui.EXP, false);
             bx += lw + 8;
         }
         // signature skills: first skill and ultimates
