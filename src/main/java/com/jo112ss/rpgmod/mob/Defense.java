@@ -29,7 +29,30 @@ public final class Defense {
     private Defense() {}
 
     public static double defence(LivingEntity e) {
-        return e.getArmorValue() * 2.0 + e.getAttributeValue(Attributes.ARMOR_TOUGHNESS) * 2.0;
+        return armor(e) * 2.0 + toughness(e) * 2.0;
+    }
+
+    /** Armour without vanilla's cap of 30 (job, panel and forged armour keep counting). */
+    public static double armor(LivingEntity e) {
+        return uncapped(e, Attributes.ARMOR);
+    }
+
+    /** Armour toughness without vanilla's cap of 20. */
+    public static double toughness(LivingEntity e) {
+        return uncapped(e, Attributes.ARMOR_TOUGHNESS);
+    }
+
+    /** An attribute's value computed like vanilla but without clamping it to the attribute's range. */
+    static double uncapped(LivingEntity e, net.minecraft.core.Holder<net.minecraft.world.entity.ai.attributes.Attribute> attr) {
+        var inst = e.getAttribute(attr);
+        if (inst == null) return 0;
+        double base = inst.getBaseValue();
+        var mods = inst.getModifiers();
+        for (var m : mods) if (m.operation() == net.minecraft.world.entity.ai.attributes.AttributeModifier.Operation.ADD_VALUE) base += m.amount();
+        double result = base;
+        for (var m : mods) if (m.operation() == net.minecraft.world.entity.ai.attributes.AttributeModifier.Operation.ADD_MULTIPLIED_BASE) result += base * m.amount();
+        for (var m : mods) if (m.operation() == net.minecraft.world.entity.ai.attributes.AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL) result *= 1 + m.amount();
+        return Math.max(0, result);
     }
 
     /** Fraction of a hit that armour takes away (0..1). */

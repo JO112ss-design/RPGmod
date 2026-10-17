@@ -313,7 +313,7 @@ public class JobScreen extends Screen {
         List<Component[]> rows = new ArrayList<>();
         rows.add(row("max_health", fmt(p.getMaxHealth())));
         rows.add(row("attack_damage", fmt(com.jo112ss.rpgmod.job.JobManager.physicalAttack(p))));
-        rows.add(row("armor", fmt(p.getAttributeValue(Attributes.ARMOR))));
+        rows.add(row("armor", fmt(com.jo112ss.rpgmod.mob.MobConfig.rpgArmor() ? com.jo112ss.rpgmod.mob.Defense.armor(p) : p.getAttributeValue(Attributes.ARMOR))));
         if (com.jo112ss.rpgmod.mob.MobConfig.rpgArmor()) {
             double red = com.jo112ss.rpgmod.mob.Defense.reduction(p) * 100;
             rows.add(row("damage_reduction", red < 0.5 ? "0%" : String.format("-%.0f%%", red)));
