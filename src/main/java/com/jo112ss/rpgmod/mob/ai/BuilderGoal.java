@@ -28,8 +28,6 @@ import net.neoforged.neoforge.event.EventHooks;
  * once the zombie has been stuck for a second.
  */
 public final class BuilderGoal extends Goal {
-    /** Digging starts at this level, so the area right around spawn stays forgiving. */
-    public static final int DIG_LEVEL = 5;
     private static final int MAX_BLOCKS = 40;
 
     private final Mob mob;
@@ -213,7 +211,7 @@ public final class BuilderGoal extends Goal {
     // ------------------------------------------------------------------ digging
 
     private boolean canBreak(ServerLevel sl, BlockPos p) {
-        if (level < DIG_LEVEL || !MobConfig.breakBlocks() || !EventHooks.canEntityGrief(sl, mob)) return false;
+        if (!MobConfig.breakBlocks() || !EventHooks.canEntityGrief(sl, mob)) return false;
         BlockState s = sl.getBlockState(p);
         float h = s.getDestroySpeed(sl, p);
         return !s.isAir() && h >= 0 && h < 50 && !s.hasBlockEntity() && EventHooks.onEntityDestroyBlock(mob, p, s);

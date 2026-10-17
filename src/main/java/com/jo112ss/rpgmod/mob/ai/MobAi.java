@@ -66,11 +66,11 @@ public final class MobAi {
         if (!MobConfig.smartAi()) return;
         RandomSource r = mob.getRandom();
         if (isBuilderZombie(mob) && mob.getOffhandItem().isEmpty()) {
-            double chance = Math.min(0.45, 0.08 + lv * 0.006);
+            double chance = 0.25; // every level: a quarter of the zombies carry something
             if (r.nextDouble() < chance) {
                 double roll = r.nextDouble();
                 ItemStack item;
-                if (lv >= 8 && roll < 0.25 && MobConfig.breakBlocks()) item = new ItemStack(Items.TNT, 1 + r.nextInt(2));
+                if (roll < 0.25 && MobConfig.breakBlocks()) item = new ItemStack(Items.TNT, 1 + r.nextInt(2));
                 else if (roll < 0.6) item = new ItemStack(Items.FISHING_ROD);
                 else item = new ItemStack(Items.ENDER_PEARL, 2);
                 mob.setItemSlot(EquipmentSlot.OFFHAND, item);
@@ -79,7 +79,7 @@ public final class MobAi {
         }
         if (mob instanceof Creeper c) {
             c.maxSwell = Math.max(16, 30 - Math.min(14, lv / 5));
-            double charged = lv >= 40 ? 0.04 + (lv - 40) * 0.003 : 0;
+            double charged = 0.05;
             if (r.nextDouble() < charged) c.getEntityData().set(Creeper.DATA_IS_POWERED, true);
         }
     }
@@ -117,7 +117,7 @@ public final class MobAi {
 
     /**
      * Re-aims an arrow a levelled monster just fired: leads a moving target (better with level), tighter
-     * spread, and from level 20 a chance of a three-arrow volley; from 35 some arrows burn.
+     * spread, a chance of a three-arrow volley, and some arrows burn.
      */
     private static void aimArrow(AbstractArrow arrow) {
         if (!(arrow.getOwner() instanceof Mob shooter) || !(arrow.level() instanceof ServerLevel sl)) return;
@@ -143,9 +143,9 @@ public final class MobAi {
         double drop = 0.5 * 0.05 * flight * flight; // arrow gravity
         float spread = (float) Math.max(0.3, 6.0 - lv * 0.12);
         arrow.shoot(d.x, d.y + drop, d.z, (float) speed, spread);
-        if (lv >= 35 && sl.getRandom().nextDouble() < 0.3) arrow.setRemainingFireTicks(100);
+        if (sl.getRandom().nextDouble() < 0.25) arrow.setRemainingFireTicks(100);
         if (shooter instanceof AbstractSkeleton) tipArrow(arrow, lv, sl.getRandom());
-        if (!inVolley && lv >= 20 && shooter instanceof AbstractSkeleton sk && sl.getRandom().nextDouble() < Math.min(0.35, (lv - 15) * 0.008)) {
+        if (!inVolley && shooter instanceof AbstractSkeleton sk && sl.getRandom().nextDouble() < 0.2) {
             SkillTasks.later(1, () -> {
                 if (!sk.isAlive() || sk.getTarget() == null) return;
                 inVolley = true;
@@ -174,11 +174,10 @@ public final class MobAi {
         sk.bowGoal.setMinAttackInterval(Math.max(6, base - lv / 3));
     }
 
-    /** Tipped arrows from level 25: slowness or weakness, poison from 45, a short blindness from 65. */
+    /** Tipped arrows (any level, 30%): slowness, weakness, poison or a short blindness. */
     private static void tipArrow(AbstractArrow arrow, int lv, RandomSource r) {
-        if (lv < 25 || !(arrow instanceof net.minecraft.world.entity.projectile.arrow.Arrow a) || r.nextDouble() > 0.35) return;
-        int kinds = lv >= 65 ? 4 : lv >= 45 ? 3 : 2;
-        switch (r.nextInt(kinds)) {
+        if (!(arrow instanceof net.minecraft.world.entity.projectile.arrow.Arrow a) || r.nextDouble() > 0.3) return;
+        switch (r.nextInt(4)) {
             case 0 -> a.addEffect(new net.minecraft.world.effect.MobEffectInstance(net.minecraft.world.effect.MobEffects.SLOWNESS, 100, 1));
             case 1 -> a.addEffect(new net.minecraft.world.effect.MobEffectInstance(net.minecraft.world.effect.MobEffects.WEAKNESS, 120, 0));
             case 2 -> a.addEffect(new net.minecraft.world.effect.MobEffectInstance(net.minecraft.world.effect.MobEffects.POISON, 80, 0));
@@ -212,7 +211,7 @@ public final class MobAi {
         if (mob instanceof AbstractSkeleton sk && e.tickCount % 40 == 0) tuneBow(sk, lv);
         if (!ready(mob, now)) return;
         double d = mob.distanceTo(t);
-        if (mob instanceof AbstractSkeleton && !(mob instanceof WitherSkeleton) && lv >= 15 && mob.onGround() && d > 4 && aimingAt(p, mob)) {
+        if (mob instanceof AbstractSkeleton && !(mob instanceof WitherSkeleton) && mob.onGround() && d > 4 && aimingAt(p, mob)) {
             // the player is drawing a bow or crossbow on it: sidestep out of the line of fire
             Vec3 toMob = new Vec3(mob.getX() - p.getX(), 0, mob.getZ() - p.getZ()).normalize();
             Vec3 side = new Vec3(-toMob.z, 0, toMob.x).scale(sl.getRandom().nextBoolean() ? 1 : -1);
@@ -220,7 +219,7 @@ public final class MobAi {
             NEXT.put(mob, now + 40 + sl.getRandom().nextInt(30));
             return;
         }
-        if (mob instanceof AbstractSkeleton && !(mob instanceof WitherSkeleton) && lv >= 10 && d < 3.5 && mob.onGround()) {
+        if (mob instanceof AbstractSkeleton && !(mob instanceof WitherSkeleton) && d < 3.5 && mob.onGround()) {
             // hop back out of sword reach
             Vec3 away = new Vec3(mob.getX() - t.getX(), 0, mob.getZ() - t.getZ());
             if (away.lengthSqr() < 1e-4) away = new Vec3(1, 0, 0);
@@ -228,7 +227,7 @@ public final class MobAi {
             mob.setDeltaMovement(away.x * 0.6, 0.38, away.z * 0.6);
             sl.playSound(null, mob.getX(), mob.getY(), mob.getZ(), SoundEvents.SKELETON_STEP, SoundSource.HOSTILE, 1.0F, 1.4F);
             NEXT.put(mob, now + 60 + sl.getRandom().nextInt(40));
-        } else if (mob instanceof Spider && lv >= 20 && d >= 2 && d <= 14 && mob.getSensing().hasLineOfSight(t) && sl.getRandom().nextDouble() < 0.3) {
+        } else if (mob instanceof Spider && d >= 2 && d <= 14 && mob.getSensing().hasLineOfSight(t) && sl.getRandom().nextDouble() < 0.3) {
             spitWeb(sl, mob, p);
             NEXT.put(mob, now + 200 + sl.getRandom().nextInt(100));
         }
@@ -280,7 +279,7 @@ public final class MobAi {
             }
         }
         // strong endermen blink behind whoever hits them
-        if (mob instanceof Enderman em && lv >= 40 && victim.isAlive() && sl.getRandom().nextDouble() < 0.35) {
+        if (mob instanceof Enderman em && victim.isAlive() && sl.getRandom().nextDouble() < 0.35) {
             Vec3 back = p.position().subtract(p.getLookAngle().multiply(1, 0, 1).normalize().scale(2.0));
             if (em.randomTeleport(back.x, p.getY(), back.z, true, s -> false)) {
                 em.setTarget(p);

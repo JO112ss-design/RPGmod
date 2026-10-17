@@ -17,8 +17,6 @@ import net.neoforged.neoforge.event.EventHooks;
  * you and blows a hole in it (breach). Explosions follow the usual mobGriefing rules.
  */
 public final class SmartSwellGoal extends Goal {
-    /** Breaching walls starts at this level. */
-    public static final int BREACH_LEVEL = 10;
 
     private final Creeper creeper;
     private final int level;
@@ -53,7 +51,7 @@ public final class SmartSwellGoal extends Goal {
     }
 
     private boolean shouldBreach(LivingEntity t, double d2) {
-        if (level < BREACH_LEVEL || d2 > 100 || Math.abs(t.getY() - creeper.getY()) > 4) return false;
+        if (d2 > 100 || Math.abs(t.getY() - creeper.getY()) > 4) return false;
         Path path = creeper.getNavigation().getPath();
         boolean pathOk = path != null && path.canReach();
         stuck = pathOk ? 0 : stuck + 1;
