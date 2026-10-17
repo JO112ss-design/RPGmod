@@ -445,5 +445,6 @@
   "rpgmod.dragon.stage3.sub": "Frenzy - dives and raining breath",
   "rpgmod.stat.damage_reduction": "Damage Taken",
   "rpgmod.option.max_mana": "Max Mana",
-  "rpgmod.option.mana_regen": "Mana Regen"
+  "rpgmod.option.mana_regen": "Mana Regen",
+  "rpgmod.hud.resting": "Mana regen x%s"
 }

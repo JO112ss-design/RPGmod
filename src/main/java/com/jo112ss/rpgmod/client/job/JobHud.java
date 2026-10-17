@@ -51,6 +51,18 @@ public final class JobHud {
         float mf = (float) (d.mana() / Math.max(1, max));
         g.fill(x0, y0 - 9, x0 + bw, y0 - 4, 0xFF20242C);
         g.fillGradient(x0, y0 - 9, x0 + Math.round(bw * mf), y0 - 4, 0xFF8AB4FF, Ui.MANA);
+        if (d.resting() && mf < 1) {
+            // out of combat: faster regeneration, shown as a sweep of light along the bar and a small label
+            int fill = Math.round(bw * mf);
+            int sweep = (int) ((mc.level.getGameTime() * 2 + delta.getGameTimeDeltaPartialTick(true) * 2) % Math.max(1, fill + 12)) - 6;
+            g.fill(x0 + Math.max(0, sweep), y0 - 9, x0 + Math.min(fill, sweep + 6), y0 - 4, 0x60FFFFFF);
+            g.pose().pushMatrix();
+            g.pose().translate(sw - 4, y0 - 33);
+            g.pose().scale(0.6F, 0.6F);
+            Component rest = Component.translatable("rpgmod.hud.resting", (int) Math.round(com.jo112ss.rpgmod.job.JobConfig.REST_MULT.get()));
+            g.text(font, rest, -font.width(rest), 0, 0xFF8AB4FF, true);
+            g.pose().popMatrix();
+        }
 
         // skill slots
         double cdr = st.get(JobStat.COOLDOWN_REDUCTION) / 100.0;

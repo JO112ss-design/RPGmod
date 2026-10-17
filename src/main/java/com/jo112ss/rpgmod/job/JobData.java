@@ -36,6 +36,8 @@ public final class JobData {
     private int panelVersion = SkillPanel.VERSION;
     /** Assassin weapon coating: 0 = attack down, 1 = armour break, 2 = poison. */
     private int coatMode;
+    /** Out of combat long enough for faster mana regeneration (not saved, only synced for the HUD). */
+    private boolean resting;
 
     public static final MapCodec<JobData> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
             Codec.STRING.optionalFieldOf("job", "").forGetter(d -> d.job),
@@ -64,6 +66,7 @@ public final class JobData {
                     buf.writeVarLong(v);
                 });
                 buf.writeVarInt(d.coatMode);
+                buf.writeBoolean(d.resting);
             },
             buf -> {
                 JobData d = new JobData();
@@ -77,6 +80,7 @@ public final class JobData {
                 int c = Math.min(buf.readVarInt(), 256);
                 for (int k = 0; k < c; k++) d.cooldowns.put(buf.readUtf(), buf.readVarLong());
                 d.coatMode = buf.readVarInt();
+                d.resting = buf.readBoolean();
                 return d;
             });
 
@@ -220,6 +224,14 @@ public final class JobData {
         }
         if (level >= maxLevel) exp = 0;
         return gained;
+    }
+
+    public boolean resting() {
+        return resting;
+    }
+
+    public void setResting(boolean resting) {
+        this.resting = resting;
     }
 
     public int coatMode() {

@@ -17,6 +17,9 @@ public final class JobConfig {
     public static final ModConfigSpec.IntValue RESET_COST_LEVELS = B.comment("Vanilla experience levels it costs to reset the skill panel").defineInRange("panelResetLevels", 20, 0, 1000);
     public static final ModConfigSpec.DoubleValue AFFINITY_ATTACK_SPEED = B.comment("Attack speed bonus while holding one of your job's weapons (0.3 = x1.3)").defineInRange("jobWeaponAttackSpeed", 0.3, 0, 10);
 
+    public static final ModConfigSpec.IntValue REST_DELAY = B.comment("Seconds without attacking or being hurt before mana regenerates faster").defineInRange("restRegenDelay", 30, 0, 3600);
+    public static final ModConfigSpec.DoubleValue REST_MULT = B.comment("Mana regeneration multiplier while out of combat").defineInRange("restRegenMultiplier", 3.0, 1, 100);
+
     public static final ModConfigSpec SPEC = B.build();
 
     public static int maxLevel() {

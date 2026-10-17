@@ -24,6 +24,15 @@ public final class JobEvents {
     @SubscribeEvent
     public static void onLogout(PlayerEvent.PlayerLoggedOutEvent event) {
         JobActionHandler.forget(event.getEntity().getUUID());
+        JobManager.forgetCombat(event.getEntity());
+    }
+
+    /** Attacking or being hurt puts a player "in combat" (pauses the faster out-of-combat mana regeneration). */
+    @SubscribeEvent(priority = net.neoforged.bus.api.EventPriority.LOWEST)
+    public static void onCombat(net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent event) {
+        if (event.getAmount() <= 0) return;
+        if (event.getEntity() instanceof ServerPlayer victim) JobManager.markCombat(victim);
+        if (event.getSource().getEntity() instanceof ServerPlayer attacker && attacker != event.getEntity()) JobManager.markCombat(attacker);
     }
 
     @SubscribeEvent

@@ -230,17 +230,39 @@ public final class JobManager {
         return base * (1 + gearOption(player, com.jo112ss.rpgmod.smithing.core.OptionType.MANA_REGEN) / 100.0);
     }
 
+    /** Game time of each player's last attack or hit taken (out-of-combat mana regeneration). */
+    private static final Map<java.util.UUID, Long> LAST_COMBAT = new java.util.HashMap<>();
+
+    public static void markCombat(Player player) {
+        LAST_COMBAT.put(player.getUUID(), player.level().getGameTime());
+    }
+
+    public static void forgetCombat(Player player) {
+        LAST_COMBAT.remove(player.getUUID());
+    }
+
+    /** True after {@code restRegenDelay} seconds without attacking or being hurt. */
+    public static boolean outOfCombat(Player player) {
+        Long last = LAST_COMBAT.get(player.getUUID());
+        return last == null || player.level().getGameTime() - last >= JobConfig.REST_DELAY.get() * 20L;
+    }
+
     public static void tickMana(ServerPlayer player) {
         JobData d = data(player);
         if (!d.hasJob()) return;
         double max = maxMana(player);
+        boolean resting = outOfCombat(player);
+        boolean changed = resting != d.resting();
+        d.setResting(resting);
         if (d.mana() > max) { // took off gear with max mana
             d.setMana(max);
-            sync(player);
+            changed = true;
         } else if (d.mana() < max) {
-            d.setMana(Math.min(max, d.mana() + manaRegen(player)));
-            sync(player);
+            double regen = manaRegen(player) * (resting ? JobConfig.REST_MULT.get() : 1);
+            d.setMana(Math.min(max, d.mana() + regen));
+            changed = true;
         }
+        if (changed) sync(player);
     }
 
     public static void restoreMana(ServerPlayer player, double amount) {
