@@ -47,7 +47,27 @@ public final class AutoTestServer {
     private static volatile boolean forgeRequested;
 
     /** Client test: level the player up, unlock some panel cells, hand over a staff with spells. */
+    /** Logs every weapon's attack (material steps) once. */
+    private static void logWeaponAttacks() {
+        StringBuilder sb = new StringBuilder();
+        for (var type : new com.jo112ss.rpgmod.item.WeaponType[] {com.jo112ss.rpgmod.item.WeaponType.SWORD, com.jo112ss.rpgmod.item.WeaponType.DAGGER,
+                com.jo112ss.rpgmod.item.WeaponType.MACE, com.jo112ss.rpgmod.item.WeaponType.HAMMER}) {
+            sb.append(type.id).append(':');
+            for (var mat : com.jo112ss.rpgmod.item.WeaponMaterial.values()) {
+                ItemStack st = new ItemStack(com.jo112ss.rpgmod.item.ModItems.get(type, mat));
+                double[] dmg = {0};
+                st.forEachModifier(net.minecraft.world.entity.EquipmentSlot.MAINHAND, (attr, mod) -> {
+                    if (attr.is(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE)) dmg[0] += mod.amount();
+                });
+                sb.append(' ').append(mat.id).append('=').append(dmg[0] + 1);
+            }
+            sb.append(" | ");
+        }
+        RpgMod.LOGGER.info("[AUTOTEST] weapon attack (incl. base 1): {}", sb);
+    }
+
     public static void requestJobSetup() {
+        logWeaponAttacks();
         jobSetup = true;
     }
 
