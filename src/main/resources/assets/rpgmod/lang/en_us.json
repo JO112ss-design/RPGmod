@@ -461,5 +461,7 @@
   "rpgmod.boss.king_slime.enraged": "The King Slime is enraged!",
   "rpgmod.boss.king_slime.left": "Dawn breaks and the King Slime sinks into the ground...",
   "rpgmod.boss.king_slime.defeated": "The King Slime was defeated! (%s)",
-  "rpgmod.boss.reward": "Reward: %s Skill Books (use for +1 skill point, sneak-use for all)"
+  "rpgmod.boss.reward": "Reward: %s Skill Books (use for +1 skill point, sneak-use for all)",
+  "rpgmod.boss.king_slime.absorb": "The King Slime is absorbing its small slimes - kill them first!",
+  "rpgmod.boss.opening": "Opening!"
 }

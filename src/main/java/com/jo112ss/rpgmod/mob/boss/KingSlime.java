@@ -6,7 +6,9 @@ import com.jo112ss.rpgmod.mob.MobConfig;
 import com.jo112ss.rpgmod.mob.MobLevels;
 import com.jo112ss.rpgmod.mob.core.MobLevelMath;
 import com.jo112ss.rpgmod.registry.ModRegistries;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -21,7 +23,6 @@ import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerBossEvent;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
@@ -45,28 +46,38 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
-import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
 /**
- * King Slime, the blood moon boss. A giant crowned slime that hops after its target like any slime,
- * and every few seconds does one of its readable moves:
+ * King Slime, the blood moon boss: a giant crowned slime with a rhythm. It hops after its target
+ * quickly, then strings together a <b>combo</b> of readable moves (two, three below half health) and
+ * ends it <b>exhausted</b>: it sags and pants for a few seconds and takes 1.5x damage. A dodged slam
+ * also leaves a short opening, and a dash into a wall a long one.
  * <ul>
- * <li>slam: crouches (a red circle marks where it will land), leaps and lands with a shockwave ring
- * that rolls outwards and can be jumped; afterwards it is stunned and takes extra damage</li>
- * <li>spit: puffs up and spits slow slime globs that slow you down</li>
- * <li>split: at 75 / 50 / 25 % health it shrinks and throws out small slimes</li>
- * <li>below half health: faster, more globs, and a triple slam ending in a long stun</li>
+ * <li>slam: red circle where it will land, a leap, a hit inside the circle and a ground shockwave
+ * that can be jumped</li>
+ * <li>bounce: a string of quick low hops after you, each with a small circle and ripple</li>
+ * <li>dash: a line marks the path, then it slides straight along it leaving sticky puddles</li>
+ * <li>slime rain: globs shot into the sky come down on marked spots around every player</li>
+ * <li>spit: slow slime globs in a fan</li>
+ * <li>below half health: triple slam, stomp ripples (three rings to jump in rhythm) and absorbing
+ * its small slimes to heal unless they are killed first</li>
+ * <li>split: at 75 / 50 / 25 % health it shrinks a size and throws out small slimes</li>
  * </ul>
- * No hit takes more than a fifth of a player's health (see {@link BossEvents}). Health follows the
- * boss level (highest player job level) and the number of players online. Leaves at dawn.
+ * No single hit takes more than a fifth of a player's health (see {@link BossEvents}). Health follows
+ * the boss level (highest player job level) and the number of players online. Leaves at dawn.
  */
 public class KingSlime extends Slime {
     public static final int START_SIZE = 10;
     private static final int[] SPLIT_SIZES = {8, 7, 6};
     private static final float[] SPLIT_AT = {0.75F, 0.5F, 0.25F};
 
-    public enum State { CHASE, WINDUP, LEAP, STUN, SPIT, ROAR, LEAVE }
+    /** What the king is doing (synced: the renderer squashes and stretches the body by it). */
+    public enum State { CHASE, WINDUP, LEAP, STUN, SPIT, ROAR, LEAVE, DASH_AIM, DASH, STOMP, TIRED, ABSORB, CAST }
+
+    enum Move { SLAM, TRIPLE, BOUNCE, SPIT, DASH, RAIN, RIPPLE, ABSORB }
+
+    enum Hop { SLAM, TRIPLE, BOUNCE }
 
     private static final EntityDataAccessor<Integer> DATA_STATE = SynchedEntityData.defineId(KingSlime.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Integer> DATA_PHASE = SynchedEntityData.defineId(KingSlime.class, EntityDataSerializers.INT);
@@ -75,37 +86,67 @@ public class KingSlime extends Slime {
     private State state = State.CHASE;
     private int stateTicks;
     private int stateLength;
-    private int nextMove = 80;
+    private int nextMove = 50;
+    private final Deque<Move> combo = new ArrayDeque<>();
     private int splits;
-    private int leapsLeft;
-    private boolean tripleSlam;
-    private Vec3 leapFrom = Vec3.ZERO, leapTo = Vec3.ZERO;
-    private int leapTime;
-    private double leapHeight;
+    private float damageTakenMult = 1;
+    private int absorbCooldown = 300;
     private int lastLand = -100;
     private int onlineSeen = -1;
     private double healthTarget;
     private final Set<UUID> participants = new HashSet<>();
     private final Map<UUID, Integer> touchCooldown = new HashMap<>();
     private final List<Wave> waves = new ArrayList<>();
+    private final List<Drop> drops = new ArrayList<>();
+    private final List<Puddle> puddles = new ArrayList<>();
     private ServerBossEvent bossBar;
+    /** Dev test: how many dashes ended against a wall. */
+    public int wallHits;
+
+    // leaps (slam / triple / bounce)
+    private Hop hop = Hop.SLAM;
+    private int hopsLeft;
+    private Vec3 leapFrom = Vec3.ZERO, leapTo = Vec3.ZERO;
+    private int leapTime;
+    private double leapHeight;
+    // dash
+    private Vec3 dashDir = Vec3.ZERO;
+    private final Set<UUID> dashHit = new HashSet<>();
+    // stomp
+    private int stompsDone;
+    private boolean stompAir;
 
     // ---- client animation
     public int clientStateTicks;
 
-    /** A shockwave ring rolling out from a landing: it hits players on the ground once as it passes. */
+    /** A shockwave ring rolling out along the ground: hits each player once as it passes, jumpable. */
     private static final class Wave {
         final Vec3 c;
         double r;
-        final double max;
+        final double max, speed;
         final float damage;
         final Set<UUID> hit = new HashSet<>();
 
-        Wave(Vec3 c, double r, double max, float damage) {
+        Wave(Vec3 c, double r, double max, double speed, float damage) {
             this.c = c;
             this.r = r;
             this.max = max;
+            this.speed = speed;
             this.damage = damage;
+        }
+    }
+
+    /** A glob of slime rain falling on a marked spot. */
+    private record Drop(Vec3 at, int landTick) {}
+
+    /** A sticky puddle left by the dash: slows whoever stands in it. */
+    private static final class Puddle {
+        final Vec3 at;
+        int life;
+
+        Puddle(Vec3 at, int life) {
+            this.at = at;
+            this.life = life;
         }
     }
 
@@ -117,7 +158,7 @@ public class KingSlime extends Slime {
 
     public static AttributeSupplier.Builder createAttributes() {
         return Monster.createMonsterAttributes()
-                .add(Attributes.MAX_HEALTH, 400)
+                .add(Attributes.MAX_HEALTH, 800)
                 .add(Attributes.FOLLOW_RANGE, 48)
                 .add(Attributes.KNOCKBACK_RESISTANCE, 0.9)
                 .add(Attributes.ARMOR, 4)
@@ -139,12 +180,16 @@ public class KingSlime extends Slime {
 
     // ------------------------------------------------------------------ size, health, level
 
+    private double chaseSpeed() {
+        return phase() >= 2 ? 1.1 : 0.95;
+    }
+
     @Override
     public void setSize(int size, boolean updateHealth) {
         super.setSize(size, updateHealth);
         // vanilla scales speed and damage with size: the king keeps its own numbers
         this.getAttribute(Attributes.ATTACK_DAMAGE).setBaseValue(4);
-        this.getAttribute(Attributes.MOVEMENT_SPEED).setBaseValue(phase() >= 2 ? 0.85 : 0.7);
+        this.getAttribute(Attributes.MOVEMENT_SPEED).setBaseValue(chaseSpeed());
         this.xpReward = 200;
     }
 
@@ -192,8 +237,8 @@ public class KingSlime extends Slime {
 
     @Override
     protected int getJumpDelay() {
-        // divided by 3 while chasing: 10-16 ticks between hops, 6-11 below half health
-        return phase() >= 2 ? 18 + this.random.nextInt(14) : 30 + this.random.nextInt(18);
+        // divided by 3 while chasing: a hop every 6-9 ticks, 4-7 below half health
+        return phase() >= 2 ? 12 + this.random.nextInt(9) : 18 + this.random.nextInt(10);
     }
 
     @Override
@@ -213,18 +258,22 @@ public class KingSlime extends Slime {
         state = s;
         stateTicks = 0;
         stateLength = length;
+        damageTakenMult = 1;
         this.entityData.set(DATA_STATE, s.ordinal());
     }
 
     private void serverTick(ServerLevel sl) {
         if (!this.isAlive()) return;
         stateTicks++;
+        if (absorbCooldown > 0) absorbCooldown--;
         if (this.tickCount % 10 == 0) updateBossBar(sl);
         if (this.tickCount % 20 == 0) {
             if (sl.getServer().getPlayerList().getPlayerCount() != onlineSeen && healthTarget > 0) recomputeHealth(false);
             if (state != State.LEAVE && !BloodMoon.isBloodMoon(sl) && !BloodMoon.testKeep) startLeaving(sl);
         }
         tickWaves(sl);
+        tickDrops(sl);
+        tickPuddles(sl);
         touchCooldown.replaceAll((k, v) -> v - 1);
         touchCooldown.values().removeIf(v -> v <= 0);
         if (state != State.LEAVE) checkSplit(sl);
@@ -233,16 +282,26 @@ public class KingSlime extends Slime {
             case CHASE -> chase(sl);
             case WINDUP -> windup(sl);
             case LEAP -> leap(sl);
-            case STUN -> {
+            case STUN, TIRED -> {
                 this.setDeltaMovement(this.getDeltaMovement().multiply(0.5, 1, 0.5));
-                if (stateTicks % 8 == 0) sl.playSound(null, this.blockPosition(), SoundEvents.SLIME_SQUISH_SMALL, SoundSource.HOSTILE, 0.8F, 0.6F);
-                if (stateTicks >= stateLength) endMove();
+                if (stateTicks % (state == State.TIRED ? 14 : 8) == 0) {
+                    sl.playSound(null, this.blockPosition(), SoundEvents.SLIME_SQUISH_SMALL, SoundSource.HOSTILE, 0.9F, state == State.TIRED ? 0.45F : 0.6F);
+                }
+                if (stateTicks >= stateLength) {
+                    if (state == State.TIRED) restAfterTired();
+                    else moveDone();
+                }
             }
             case SPIT -> spit(sl);
             case ROAR -> {
                 this.setDeltaMovement(this.getDeltaMovement().multiply(0.3, 1, 0.3));
-                if (stateTicks >= stateLength) endMove();
+                if (stateTicks >= stateLength) moveDone();
             }
+            case DASH_AIM -> dashAim(sl);
+            case DASH -> dash(sl);
+            case STOMP -> stomp(sl);
+            case ABSORB -> absorb(sl);
+            case CAST -> cast(sl);
             case LEAVE -> leave(sl);
         }
     }
@@ -250,6 +309,7 @@ public class KingSlime extends Slime {
     private LivingEntity target(ServerLevel sl) {
         LivingEntity t = this.getTarget();
         if (t instanceof Player p && (!p.isAlive() || p.isSpectator() || p.isCreative())) t = null;
+        if (t != null && !t.isAlive()) t = null;
         if (t == null || t.distanceToSqr(this) > 48 * 48) {
             Player best = null;
             double bd = 48 * 48;
@@ -267,54 +327,126 @@ public class KingSlime extends Slime {
         return t;
     }
 
+    // ------------------------------------------------------------------ rhythm: combo -> exhausted
+
     private void chase(ServerLevel sl) {
         LivingEntity t = target(sl);
         if (t == null) return;
         if (--nextMove > 0 || !this.onGround()) return;
-        double dist = Math.sqrt(t.distanceToSqr(this));
-        if (dist > 36) return;
-        double roll = this.random.nextDouble();
-        if (phase() >= 2) {
-            if (roll < 0.4) startSlam(sl, t, 3);
-            else if (roll < 0.7) startSlam(sl, t, 1);
-            else startSpit(sl);
-        } else {
-            if (roll < 0.65 || dist > 14) startSlam(sl, t, 1);
-            else startSpit(sl);
+        if (Math.sqrt(t.distanceToSqr(this)) > 40) return;
+        if (combo.isEmpty()) buildCombo(sl);
+        Move m = combo.poll();
+        if (m != null) start(sl, m, t);
+    }
+
+    /** Two moves (three below half health), no repeats; may open with absorbing its small slimes. */
+    private void buildCombo(ServerLevel sl) {
+        boolean p2 = phase() >= 2;
+        List<Move> pool = new ArrayList<>(p2
+                ? List.of(Move.TRIPLE, Move.TRIPLE, Move.SLAM, Move.BOUNCE, Move.BOUNCE, Move.SPIT, Move.DASH, Move.DASH, Move.RAIN, Move.RIPPLE, Move.RIPPLE)
+                : List.of(Move.SLAM, Move.SLAM, Move.BOUNCE, Move.BOUNCE, Move.SPIT, Move.DASH, Move.DASH, Move.RAIN));
+        int n = p2 ? 3 : 2;
+        if (p2 && absorbCooldown <= 0 && children(sl).size() >= 2 && this.random.nextBoolean()) {
+            combo.add(Move.ABSORB);
+            n--;
+        }
+        while (n > 0 && !pool.isEmpty()) {
+            Move m = pool.get(this.random.nextInt(pool.size()));
+            pool.removeIf(x -> x == m);
+            combo.add(m);
+            n--;
         }
     }
 
-    private void endMove() {
-        setState(State.CHASE, 0);
-        nextMove = phase() >= 2 ? 70 + this.random.nextInt(40) : 100 + this.random.nextInt(50);
+    private void start(ServerLevel sl, Move m, LivingEntity t) {
+        switch (m) {
+            case SLAM -> startHops(sl, t, Hop.SLAM, 1);
+            case TRIPLE -> startHops(sl, t, Hop.TRIPLE, 3);
+            case BOUNCE -> startHops(sl, t, Hop.BOUNCE, phase() >= 2 ? 6 : 4);
+            case SPIT -> startSpit(sl);
+            case DASH -> startDash(sl, t);
+            case RAIN -> startRain(sl);
+            case RIPPLE -> startStomp(sl);
+            case ABSORB -> startAbsorb(sl);
+        }
     }
 
-    // ------------------------------------------------------------------ slam
+    /** A move finished: next move of the combo after a short hop, or the exhausted window. */
+    private void moveDone() {
+        if (!combo.isEmpty()) {
+            setState(State.CHASE, 0);
+            nextMove = phase() >= 2 ? 6 + this.random.nextInt(6) : 10 + this.random.nextInt(8);
+        } else {
+            startTired();
+        }
+    }
+
+    private void startTired() {
+        int len = phase() >= 2 ? 55 : 70;
+        setState(State.TIRED, len);
+        damageTakenMult = 1.5F;
+        if (this.level() instanceof ServerLevel sl) {
+            ServerFx.of("king_tired", this.position()).follow(this).a(this.getBbWidth()).b(len).send(sl);
+            sl.playSound(null, this.blockPosition(), SoundEvents.SLIME_SQUISH, SoundSource.HOSTILE, 2.5F, 0.35F);
+        }
+    }
+
+    private void restAfterTired() {
+        setState(State.CHASE, 0);
+        nextMove = phase() >= 2 ? 22 + this.random.nextInt(14) : 30 + this.random.nextInt(20);
+    }
+
+    private void stun(ServerLevel sl, int ticks, float mult) {
+        setState(State.STUN, ticks);
+        damageTakenMult = mult;
+        ServerFx.of("king_stun", this.position()).follow(this).a(this.getBbWidth()).b(ticks).send(sl);
+    }
+
+    // ------------------------------------------------------------------ slam / triple / bounce
 
     private float hitRadius() {
-        return this.getBbWidth() / 2 + 1.2F;
+        return this.getBbWidth() / 2 + (hop == Hop.BOUNCE ? 0.8F : 1.2F);
     }
 
-    private void startSlam(ServerLevel sl, LivingEntity t, int leaps) {
-        leapsLeft = leaps;
-        tripleSlam = leaps > 1;
-        windupAt(sl, t);
+    private void startHops(ServerLevel sl, LivingEntity t, Hop kind, int hops) {
+        hop = kind;
+        hopsLeft = hops;
+        windupAt(sl, t, true);
     }
 
-    private void windupAt(ServerLevel sl, LivingEntity t) {
-        Vec3 to = groundBelow(sl, t.position());
-        Vec3 flat = to.subtract(this.position());
-        double dist = Math.hypot(flat.x, flat.z);
-        int windup = tripleSlam ? (leapsLeft == 3 ? 16 : 9) : (phase() >= 2 ? 15 : 18);
+    private void windupAt(ServerLevel sl, LivingEntity t, boolean first) {
+        boolean p2 = phase() >= 2;
+        Vec3 aim = t.position().add(t.getDeltaMovement().multiply(4, 0, 4)); // a little lead
+        Vec3 flat = aim.subtract(this.position()).multiply(1, 0, 1);
+        double dist = flat.length();
+        int windup;
+        switch (hop) {
+            case BOUNCE -> {
+                if (dist > 7) aim = this.position().add(flat.normalize().scale(7)); // short hops
+                dist = Math.min(dist, 7);
+                windup = first ? 10 : 4;
+                leapTime = 10;
+                leapHeight = 2.2;
+            }
+            case TRIPLE -> {
+                windup = first ? 12 : 7;
+                leapTime = (int) Mth.clamp(8 + dist * 0.6, 10, 18);
+                leapHeight = 3 + dist * 0.15;
+            }
+            default -> {
+                windup = p2 ? 11 : 14;
+                leapTime = (int) Mth.clamp(8 + dist * 0.7, 12, 22);
+                leapHeight = 4.5 + dist * 0.2;
+            }
+        }
+        Vec3 to = groundBelow(sl, aim);
         leapFrom = this.position();
         leapTo = to;
-        leapTime = (int) Mth.clamp(10 + dist * 0.9, 14, 28);
-        leapHeight = tripleSlam ? 3 + dist * 0.15 : 4.5 + dist * 0.25;
         setState(State.WINDUP, windup);
         this.getNavigation().stop();
-        // the marker stays until the landing: windup + flight
+        // the circle stays until the landing: windup + flight
         ServerFx.of("king_mark", to).a(hitRadius()).b(windup + leapTime).send(sl);
-        sl.playSound(null, this.blockPosition(), SoundEvents.SLIME_SQUISH, SoundSource.HOSTILE, 3.0F, 0.5F);
+        if (first || hop != Hop.BOUNCE) sl.playSound(null, this.blockPosition(), SoundEvents.SLIME_SQUISH, SoundSource.HOSTILE, 3.0F, 0.5F);
     }
 
     /** Lands on the ground under a point (a player in the air or on a ledge). */
@@ -332,7 +464,7 @@ public class KingSlime extends Slime {
         if (stateTicks >= stateLength) {
             leapFrom = this.position();
             setState(State.LEAP, leapTime);
-            sl.playSound(null, this.blockPosition(), SoundEvents.SLIME_JUMP, SoundSource.HOSTILE, 3.0F, 0.6F);
+            sl.playSound(null, this.blockPosition(), hop == Hop.BOUNCE ? SoundEvents.SLIME_JUMP_SMALL : SoundEvents.SLIME_JUMP, SoundSource.HOSTILE, 3.0F, 0.6F);
         }
     }
 
@@ -349,8 +481,9 @@ public class KingSlime extends Slime {
     private void land(ServerLevel sl) {
         Vec3 c = this.position();
         lastLand = this.tickCount;
-        float lv = 1; // damage is scaled by level in MobLevels
-        float slam = 8 * lv, wave = 5 * lv;
+        float slam = switch (hop) { case BOUNCE -> 5; case TRIPLE -> 7; default -> 8; };
+        float waveDmg = switch (hop) { case BOUNCE -> 3; case TRIPLE -> 4; default -> 5; };
+        double reach = switch (hop) { case BOUNCE -> 4; case TRIPLE -> 6; default -> 9; };
         double r = hitRadius();
         for (ServerPlayer p : sl.players()) {
             if (!p.isAlive() || p.isSpectator()) continue;
@@ -361,28 +494,30 @@ public class KingSlime extends Slime {
                 participants.add(p.getUUID());
             }
         }
-        waves.add(new Wave(c, this.getBbWidth() / 2, this.getBbWidth() / 2 + (tripleSlam ? 6 : 9), wave));
-        ServerFx.of("king_land", c).a(this.getBbWidth() / 2).b(tripleSlam ? 6 : 9).send(sl);
-        sl.playSound(null, this.blockPosition(), SoundEvents.SLIME_BLOCK_FALL, SoundSource.HOSTILE, 3.0F, 0.5F);
-        sl.playSound(null, this.blockPosition(), SoundEvents.GENERIC_EXPLODE.value(), SoundSource.HOSTILE, 1.2F, 0.7F);
+        waves.add(new Wave(c, this.getBbWidth() / 2, this.getBbWidth() / 2 + reach, 0.6, waveDmg));
+        ServerFx.of("king_land", c).a(this.getBbWidth() / 2).b(reach).send(sl);
+        sl.playSound(null, this.blockPosition(), SoundEvents.SLIME_BLOCK_FALL, SoundSource.HOSTILE, 3.0F, hop == Hop.BOUNCE ? 0.8F : 0.5F);
+        if (hop != Hop.BOUNCE) sl.playSound(null, this.blockPosition(), SoundEvents.GENERIC_EXPLODE.value(), SoundSource.HOSTILE, 1.2F, 0.7F);
         sl.playSound(null, this.blockPosition(), SoundEvents.SLIME_SQUISH, SoundSource.HOSTILE, 3.0F, 0.4F);
         this.setDeltaMovement(Vec3.ZERO);
-        if (--leapsLeft > 0) {
+        if (--hopsLeft > 0) {
             LivingEntity t = target(sl);
             if (t != null) {
-                windupAt(sl, t);
+                windupAt(sl, t, false);
                 return;
             }
         }
-        int stun = tripleSlam ? 55 : phase() >= 2 ? 32 : 42;
-        setState(State.STUN, stun);
-        ServerFx.of("king_stun", this.position()).follow(this).a(this.getBbWidth()).b(stun).send(sl);
+        switch (hop) {
+            case SLAM -> stun(sl, phase() >= 2 ? 14 : 18, 1.3F); // a short opening after every slam
+            case TRIPLE -> stun(sl, 24, 1.3F);
+            default -> moveDone();
+        }
     }
 
     private void tickWaves(ServerLevel sl) {
         for (var it = waves.iterator(); it.hasNext(); ) {
             Wave w = it.next();
-            w.r += 0.55;
+            w.r += w.speed;
             for (ServerPlayer p : sl.players()) {
                 if (!p.isAlive() || p.isSpectator() || w.hit.contains(p.getUUID())) continue;
                 Vec3 d = p.position().subtract(w.c);
@@ -405,11 +540,215 @@ public class KingSlime extends Slime {
         e.needsSync = true;
     }
 
+    // ------------------------------------------------------------------ dash
+
+    private void startDash(ServerLevel sl, LivingEntity t) {
+        Vec3 d = t.position().subtract(this.position()).multiply(1, 0, 1);
+        dashDir = d.lengthSqr() < 1e-4 ? new Vec3(1, 0, 0) : d.normalize();
+        int aim = phase() >= 2 ? 13 : 18;
+        setState(State.DASH_AIM, aim);
+        this.setYRot((float) Math.toDegrees(Math.atan2(-dashDir.x, dashDir.z)));
+        this.yBodyRot = this.yHeadRot = this.getYRot();
+        double len = dashSpeed() * 22;
+        ServerFx.of("king_dash_line", this.position()).vec(dashDir.scale(len)).a(this.getBbWidth()).b(aim + 6).send(sl);
+        sl.playSound(null, this.blockPosition(), SoundEvents.RAVAGER_ROAR, SoundSource.HOSTILE, 1.5F, 1.6F);
+    }
+
+    private double dashSpeed() {
+        return phase() >= 2 ? 1.15 : 0.95;
+    }
+
+    private void dashAim(ServerLevel sl) {
+        this.setDeltaMovement(this.getDeltaMovement().multiply(0.2, 1, 0.2));
+        this.setYRot((float) Math.toDegrees(Math.atan2(-dashDir.x, dashDir.z)));
+        this.yBodyRot = this.yHeadRot = this.getYRot();
+        if (stateTicks >= stateLength) {
+            dashHit.clear();
+            setState(State.DASH, 22);
+            sl.playSound(null, this.blockPosition(), SoundEvents.SLIME_JUMP, SoundSource.HOSTILE, 3.0F, 0.4F);
+        }
+    }
+
+    private void dash(ServerLevel sl) {
+        Vec3 v = this.getDeltaMovement();
+        this.setDeltaMovement(dashDir.x * dashSpeed(), v.y, dashDir.z * dashSpeed());
+        this.needsSync = true;
+        this.setYRot((float) Math.toDegrees(Math.atan2(-dashDir.x, dashDir.z)));
+        this.yBodyRot = this.yHeadRot = this.getYRot();
+        var box = this.getBoundingBox().inflate(0.4);
+        for (ServerPlayer p : sl.players()) {
+            if (!p.isAlive() || p.isSpectator() || dashHit.contains(p.getUUID()) || !p.getBoundingBox().intersects(box)) continue;
+            dashHit.add(p.getUUID());
+            p.hurtServer(sl, this.damageSources().mobAttack(this), 7);
+            // thrown aside, off the line
+            Vec3 side = new Vec3(-dashDir.z, 0, dashDir.x);
+            if (side.dot(p.position().subtract(this.position())) < 0) side = side.scale(-1);
+            p.setDeltaMovement(p.getDeltaMovement().add(side.scale(1.0)).add(dashDir.scale(0.4)).add(0, 0.45, 0));
+            p.needsSync = true;
+        }
+        if (stateTicks % 3 == 0) {
+            Vec3 at = this.position();
+            puddles.add(new Puddle(at, 160));
+            ServerFx.of("king_puddle", at).a(1.6).b(160).send(sl);
+        }
+        if (stateTicks % 4 == 0) sl.playSound(null, this.blockPosition(), SoundEvents.SLIME_SQUISH, SoundSource.HOSTILE, 1.5F, 0.7F);
+        if (stateTicks > 3 && this.horizontalCollision) {
+            // slammed into a wall: dazed for a long while - the best opening of the fight
+            wallHits++;
+            combo.clear();
+            this.setDeltaMovement(dashDir.scale(-0.3).add(0, 0.2, 0));
+            ServerFx.of("king_wall", this.position().add(dashDir.scale(this.getBbWidth() / 2)).add(0, 1, 0)).a(this.getBbWidth()).send(sl);
+            sl.playSound(null, this.blockPosition(), SoundEvents.GENERIC_EXPLODE.value(), SoundSource.HOSTILE, 1.5F, 0.8F);
+            sl.playSound(null, this.blockPosition(), SoundEvents.SLIME_BLOCK_FALL, SoundSource.HOSTILE, 3.0F, 0.4F);
+            stun(sl, 70, 1.5F);
+            return;
+        }
+        if (stateTicks >= stateLength) moveDone();
+    }
+
+    private void tickPuddles(ServerLevel sl) {
+        if (puddles.isEmpty()) return;
+        boolean check = this.tickCount % 10 == 0;
+        for (var it = puddles.iterator(); it.hasNext(); ) {
+            Puddle pd = it.next();
+            pd.life--;
+            if (check) {
+                for (ServerPlayer p : sl.players()) {
+                    Vec3 d = p.position().subtract(pd.at);
+                    if (Math.hypot(d.x, d.z) < 1.6 && Math.abs(d.y) < 1.5) p.addEffect(new MobEffectInstance(MobEffects.SLOWNESS, 30, 1), this);
+                }
+            }
+            if (pd.life <= 0) it.remove();
+        }
+    }
+
+    // ------------------------------------------------------------------ slime rain
+
+    private void startRain(ServerLevel sl) {
+        setState(State.CAST, 18);
+        ServerFx.of("mob_warn", this.position()).follow(this).a(this.getBbWidth() / 2).b(18).color(0x6C9CFF).send(sl);
+        sl.playSound(null, this.blockPosition(), SoundEvents.PUFFER_FISH_BLOW_UP, SoundSource.HOSTILE, 2.0F, 0.4F);
+    }
+
+    private void cast(ServerLevel sl) {
+        this.setDeltaMovement(this.getDeltaMovement().multiply(0.2, 1, 0.2));
+        if (stateTicks == stateLength) {
+            ServerFx.of("king_rain_up", this.position().add(0, this.getBbHeight(), 0)).a(this.getBbWidth()).send(sl);
+            sl.playSound(null, this.blockPosition(), SoundEvents.LLAMA_SPIT, SoundSource.HOSTILE, 3.0F, 0.4F);
+            int extra = phase() >= 2 ? 4 : 2;
+            int land = this.tickCount + 26;
+            for (ServerPlayer p : sl.players()) {
+                if (!p.isAlive() || p.isSpectator() || p.distanceToSqr(this) > 34 * 34) continue;
+                List<Vec3> spots = new ArrayList<>();
+                spots.add(p.position().add(p.getDeltaMovement().multiply(8, 0, 8)));
+                for (int i = 0; i < extra; i++) {
+                    double a = this.random.nextDouble() * Math.PI * 2, r = 2 + this.random.nextDouble() * 4;
+                    spots.add(p.position().add(Math.cos(a) * r, 0, Math.sin(a) * r));
+                }
+                for (int i = 0; i < spots.size(); i++) {
+                    Vec3 at = groundBelow(sl, spots.get(i));
+                    int when = land + i * 3; // they come down one after another
+                    drops.add(new Drop(at, when));
+                    ServerFx.of("king_rain_mark", at).a(1.8).b(when - this.tickCount).send(sl);
+                }
+            }
+        }
+        if (stateTicks >= stateLength + 4) moveDone();
+    }
+
+    private void tickDrops(ServerLevel sl) {
+        for (var it = drops.iterator(); it.hasNext(); ) {
+            Drop d = it.next();
+            if (this.tickCount < d.landTick) continue;
+            it.remove();
+            for (ServerPlayer p : sl.players()) {
+                Vec3 v = p.position().subtract(d.at);
+                if (Math.hypot(v.x, v.z) < 1.8 && Math.abs(v.y) < 2.5) {
+                    p.hurtServer(sl, this.damageSources().mobAttack(this), 4);
+                    p.addEffect(new MobEffectInstance(MobEffects.SLOWNESS, 50, 1), this);
+                }
+            }
+            ServerFx.of("king_rain_hit", d.at).send(sl);
+            sl.playSound(null, d.at.x, d.at.y, d.at.z, SoundEvents.SLIME_BLOCK_FALL, SoundSource.HOSTILE, 1.5F, 1.2F);
+        }
+    }
+
+    // ------------------------------------------------------------------ stomp ripples
+
+    private static final int STOMP_LEAD = 12;
+
+    private int stompEvery() {
+        return phase() >= 2 ? 12 : 14;
+    }
+
+    private void startStomp(ServerLevel sl) {
+        stompsDone = 0;
+        stompAir = false;
+        setState(State.STOMP, STOMP_LEAD + 3 * stompEvery() + 6);
+        ServerFx.of("mob_warn", this.position()).follow(this).a(this.getBbWidth() / 2 + 2).b(STOMP_LEAD).color(0xFF8040).send(sl);
+        sl.playSound(null, this.blockPosition(), SoundEvents.RAVAGER_ROAR, SoundSource.HOSTILE, 1.5F, 1.2F);
+    }
+
+    private void stomp(ServerLevel sl) {
+        this.setDeltaMovement(this.getDeltaMovement().multiply(0.2, 1, 0.2));
+        int k = stateTicks - STOMP_LEAD;
+        if (k >= 0 && stompsDone < 3 && k == stompsDone * stompEvery()) {
+            this.setDeltaMovement(0, 0.55, 0);
+            this.needsSync = true;
+            stompAir = true;
+        } else if (stompAir && k > stompsDone * stompEvery() + 3 && this.onGround()) {
+            stompAir = false;
+            stompsDone++;
+            Vec3 c = this.position();
+            waves.add(new Wave(c, this.getBbWidth() / 2, this.getBbWidth() / 2 + 11, 0.65, 4));
+            ServerFx.of("king_land", c).a(this.getBbWidth() / 2).b(11).send(sl);
+            sl.playSound(null, this.blockPosition(), SoundEvents.SLIME_BLOCK_FALL, SoundSource.HOSTILE, 3.0F, 0.5F);
+            sl.playSound(null, this.blockPosition(), SoundEvents.GENERIC_EXPLODE.value(), SoundSource.HOSTILE, 0.8F, 0.9F);
+        }
+        if (stateTicks >= stateLength) moveDone();
+    }
+
+    // ------------------------------------------------------------------ absorb
+
+    private List<Slime> children(ServerLevel sl) {
+        return sl.getEntitiesOfClass(Slime.class, this.getBoundingBox().inflate(24), s -> s != this && s.isAlive() && s.getPersistentData().getBooleanOr(BossEvents.CHILD, false));
+    }
+
+    private void startAbsorb(ServerLevel sl) {
+        absorbCooldown = 600;
+        setState(State.ABSORB, 70);
+        damageTakenMult = 1.3F;
+        for (ServerPlayer p : bossPlayers()) {
+            p.sendSystemMessage(Component.translatable("rpgmod.boss.king_slime.absorb").withStyle(ChatFormatting.AQUA), true);
+        }
+        sl.playSound(null, this.blockPosition(), SoundEvents.BEACON_POWER_SELECT, SoundSource.HOSTILE, 2.0F, 0.5F);
+    }
+
+    private void absorb(ServerLevel sl) {
+        this.setDeltaMovement(this.getDeltaMovement().multiply(0.2, 1, 0.2));
+        Vec3 c = this.position().add(0, this.getBbHeight() * 0.4, 0);
+        for (Slime s : children(sl)) {
+            Vec3 d = c.subtract(s.position());
+            if (d.length() < this.getBbWidth() / 2 + 0.8) {
+                this.heal(this.getMaxHealth() * 0.025F);
+                ServerFx.of("king_glob", s.position()).send(sl);
+                sl.playSound(null, s.blockPosition(), SoundEvents.SLIME_SQUISH_SMALL, SoundSource.HOSTILE, 1.5F, 1.4F);
+                s.discard();
+                continue;
+            }
+            s.setDeltaMovement(d.normalize().scale(0.22).add(0, s.onGround() ? 0.15 : 0, 0));
+            s.needsSync = true;
+            if (stateTicks % 5 == 0) ServerFx.of("king_absorb", s.position().add(0, s.getBbHeight() / 2, 0)).vec(c).send(sl);
+        }
+        if (stateTicks >= stateLength) moveDone();
+    }
+
     // ------------------------------------------------------------------ spit
 
     private void startSpit(ServerLevel sl) {
-        setState(State.SPIT, 14);
-        ServerFx.of("mob_warn", this.position()).follow(this).a(this.getBbWidth() / 2).b(14).color(0x6CFF7A).send(sl);
+        int w = phase() >= 2 ? 9 : 12;
+        setState(State.SPIT, w);
+        ServerFx.of("mob_warn", this.position()).follow(this).a(this.getBbWidth() / 2).b(w).color(0x6CFF7A).send(sl);
         sl.playSound(null, this.blockPosition(), SoundEvents.PUFFER_FISH_BLOW_UP, SoundSource.HOSTILE, 2.0F, 0.6F);
     }
 
@@ -429,12 +768,12 @@ public class KingSlime extends Slime {
                 ball.setPos(from.add(dir.normalize().scale(this.getBbWidth() * 0.45)));
                 ball.getPersistentData().putBoolean(BossEvents.GLOB, true);
                 // slow and lobbed a little: easy to sidestep
-                ball.shoot(dir.x, dir.y + dist * 0.12, dir.z, 0.75F, 2.0F);
+                ball.shoot(dir.x, dir.y + dist * 0.12, dir.z, 0.8F, 2.0F);
                 sl.addFreshEntity(ball);
             }
             sl.playSound(null, this.blockPosition(), SoundEvents.LLAMA_SPIT, SoundSource.HOSTILE, 2.5F, 0.5F);
         }
-        endMove();
+        moveDone();
     }
 
     /** A glob hit a player: a little damage and a slow. */
@@ -453,7 +792,7 @@ public class KingSlime extends Slime {
         this.setSize(size, false);
         if (splits >= 2 && phase() < 2) {
             this.entityData.set(DATA_PHASE, 2);
-            this.getAttribute(Attributes.MOVEMENT_SPEED).setBaseValue(0.85);
+            this.getAttribute(Attributes.MOVEMENT_SPEED).setBaseValue(chaseSpeed());
             if (bossBar != null) bossBar.setColor(BossEvent.BossBarColor.PURPLE);
         }
         int online = Math.max(1, sl.getServer().getPlayerList().getPlayerCount());
@@ -469,10 +808,11 @@ public class KingSlime extends Slime {
             kid.getPersistentData().putBoolean(BossEvents.CHILD, true);
             sl.addFreshEntity(kid);
         }
-        // a short roar instead of whatever it was doing (a slam in the air still lands first)
-        if (state != State.LEAP) {
-            setState(State.ROAR, 22);
-            waves.clear();
+        // a short roar instead of whatever it was doing (a leap in the air still lands first)
+        if (state != State.LEAP && state != State.DASH) {
+            combo.clear();
+            drops.clear();
+            setState(State.ROAR, 18);
         }
         ServerFx.of("king_split", this.position()).follow(this).a(this.getBbWidth()).b(splits).send(sl);
         sl.playSound(null, this.blockPosition(), SoundEvents.SLIME_DEATH, SoundSource.HOSTILE, 3.0F, 0.5F);
@@ -490,8 +830,14 @@ public class KingSlime extends Slime {
     public boolean hurtServer(ServerLevel level, DamageSource source, float damage) {
         if (state == State.LEAVE) return false;
         if (source.getEntity() instanceof ServerPlayer p) participants.add(p.getUUID());
-        if (state == State.STUN) damage *= 1.3F; // the opening after a slam
+        // the openings: after a slam, dazed against a wall, exhausted after a combo, absorbing
+        if (state == State.STUN || state == State.TIRED || state == State.ABSORB) damage *= damageTakenMult;
         return super.hurtServer(level, source, damage);
+    }
+
+    /** Opening multiplier right now (for the overlay / tests): 1 when not open. */
+    public float openingMultiplier() {
+        return state == State.STUN || state == State.TIRED || state == State.ABSORB ? damageTakenMult : 1;
     }
 
     /** Touching the king only hurts while it bounces onto you, so melee can stand next to it. */
@@ -549,7 +895,11 @@ public class KingSlime extends Slime {
     }
 
     private Component name() {
-        return Component.translatable("entity.rpgmod.king_slime").append(Component.literal("  Lv " + bossLevel()));
+        Component n = Component.translatable("entity.rpgmod.king_slime").append(Component.literal("  Lv " + bossLevel()));
+        if (state == State.TIRED || (state == State.STUN && damageTakenMult > 1.4F)) {
+            n = n.copy().append(Component.literal("  ")).append(Component.translatable("rpgmod.boss.opening").withStyle(ChatFormatting.YELLOW));
+        }
+        return n;
     }
 
     @Override
@@ -563,6 +913,8 @@ public class KingSlime extends Slime {
     private void startLeaving(ServerLevel sl) {
         setState(State.LEAVE, 70);
         waves.clear();
+        drops.clear();
+        combo.clear();
         this.noPhysics = true;
         ServerFx.of("king_leave", this.position()).follow(this).a(this.getBbWidth()).b(70).send(sl);
         sl.playSound(null, this.blockPosition(), SoundEvents.SLIME_SQUISH, SoundSource.HOSTILE, 3.0F, 0.3F);
@@ -628,29 +980,21 @@ public class KingSlime extends Slime {
 
     // ------------------------------------------------------------------ dev test
 
-    /** Autotest: start a move right away ("slam", "triple", "spit"). */
+    /** Autotest: start a move right away (slam, triple, bounce, spit, dash, rain, ripple, absorb, tired, combo). */
     public void testMove(String move) {
         if (!(this.level() instanceof ServerLevel sl)) return;
         LivingEntity t = target(sl);
         if (t == null) return;
         setState(State.CHASE, 0);
+        combo.clear();
         switch (move) {
-            case "slam" -> startSlam(sl, t, 1);
-            case "triple" -> startSlam(sl, t, 3);
-            case "spit" -> startSpit(sl);
-            default -> { }
+            case "tired" -> startTired();
+            case "combo" -> nextMove = 0;
+            default -> start(sl, Move.valueOf(move.toUpperCase(java.util.Locale.ROOT)), t);
         }
     }
 
     public int splits() {
         return splits;
-    }
-
-    public void playBossSound(SoundEvent s, float vol, float pitch) {
-        this.level().playSound(null, this.blockPosition(), s, SoundSource.HOSTILE, vol, pitch);
-    }
-
-    public AABB area(double r) {
-        return this.getBoundingBox().inflate(r);
     }
 }

@@ -178,7 +178,7 @@ public final class AutoTestClient {
             case "mob:spider" -> new int[] {40, 80};
             case "mob:dragon" -> new int[] {12, 45, 100, 118, 150, 196, 245, 262, 300};
             case "mob:nether" -> new int[] {30, 70, 110, 150, 190, 230, 270};
-            case "mob:king" -> new int[] {56, 70, 84, 100, 115, 160, 170, 194, 205, 250, 275, 300, 335, 400, 430, 482};
+            case "mob:king" -> new int[] {56, 70, 86, 104, 122, 140, 172, 195, 212, 222, 290, 345, 362, 395, 434, 470, 490, 552, 580, 680, 760, 880, 945};
             default -> new int[] {6};
         };
     }
@@ -190,7 +190,7 @@ public final class AutoTestClient {
             case "mob:creeper", "mob:spider" -> 120;
             case "mob:dragon" -> 330;
             case "mob:nether" -> 280;
-            case "mob:king" -> 520;
+            case "mob:king" -> 960;
             default -> SLOT;
         };
     }

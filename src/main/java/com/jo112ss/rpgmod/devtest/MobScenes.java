@@ -163,6 +163,8 @@ final class MobScenes {
         return list.isEmpty() ? null : list.get(0);
     }
 
+    private static final java.util.Map<String, Integer> kingMoves = new java.util.LinkedHashMap<>();
+
     private static void kingTick(ServerLevel level, ServerPlayer player) {
         var k = king;
         switch (t) {
@@ -190,46 +192,56 @@ final class MobScenes {
                 net.neoforged.neoforge.common.NeoForge.EVENT_BUS.post(ev);
                 RpgMod.LOGGER.info("[AUTOTEST] king sleep blocked={}", ev.getProblem() != null);
             }
-            case 52, 108, 200, 296 -> portrait(player, k);
-            case 60, 120, 208, 304 -> {
-                tp(player, Vec3.atBottomCenterOf(c), -90, -6);
-                if (t == 60 && k != null) k.testMove("slam");
-            }
-            case 150 -> { if (k != null) k.testMove("spit"); }
-            case 190 -> { if (k != null) k.setHealth(k.getMaxHealth() * 0.74F); }
-            case 230 -> { if (k != null) k.setHealth(k.getMaxHealth() * 0.49F); }
-            case 240 -> { if (k != null) k.testMove("triple"); }
-            case 330 -> {
+            case 52, 100, 168, 285, 430, 548 -> portrait(player, k);
+            case 58, 106, 174, 292, 436 -> tp(player, Vec3.atBottomCenterOf(c), -90, -6);
+            case 60 -> move(k, "bounce");
+            case 110 -> move(k, "dash");
+            case 180 -> move(k, "rain");
+            case 240 -> { if (k != null) k.setHealth(k.getMaxHealth() * 0.74F); }
+            case 270 -> move(k, "tired");
+            case 300 -> { if (k != null) k.setHealth(k.getMaxHealth() * 0.49F); }
+            case 330 -> move(k, "ripple");
+            case 400 -> move(k, "absorb");
+            case 460 -> move(k, "triple");
+            case 515 -> { // dash into a wall: the long opening
                 if (k != null) {
-                    RpgMod.LOGGER.info("[AUTOTEST] king before kill: size={} splits={} phase={} hp={}/{} state={} max hit={} lost={}", k.getSize(), k.splits(), k.phase(),
-                            String.format("%.0f", k.getHealth()), String.format("%.0f", k.getMaxHealth()), k.state(), String.format("%.1f", maxHit), String.format("%.1f", lostHealth));
-                    k.hurtServer(level, player.damageSources().playerAttack(player), 100000);
+                    for (int x = -6; x <= 6; x++) for (int y = 0; y <= 6; y++) level.setBlockAndUpdate(c.offset(11 + x, y, -10), Blocks.STONE.defaultBlockState());
+                    k.snapTo(c.getX() + 11.5, c.getY(), c.getZ() + 8.5, 180, 0);
+                    dummy.snapTo(c.getX() + 11.5, c.getY(), c.getZ() - 6.5, 0, 0);
+                    dummy.setPos(c.getX() + 11.5, c.getY(), c.getZ() - 6.5);
                 }
             }
-            case 340 -> {
-                int books = player.getInventory().countItem(com.jo112ss.rpgmod.registry.ModRegistries.SKILL_BOOK.get());
-                var d = com.jo112ss.rpgmod.job.JobManager.data(player);
-                int before = d.freePoints();
-                ItemStack stack = new ItemStack(com.jo112ss.rpgmod.registry.ModRegistries.SKILL_BOOK.get(), 1);
-                player.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, stack);
-                stack.getItem().use(level, player, net.minecraft.world.InteractionHand.MAIN_HAND);
-                RpgMod.LOGGER.info("[AUTOTEST] king dead={} books={} free points {} -> {} (bonus {})", k == null || !k.isAlive(), books, before, d.freePoints(), d.bonusPoints());
-                long kids = level.getEntitiesOfClass(net.minecraft.world.entity.monster.cubemob.Slime.class, player.getBoundingBox().inflate(64)).size();
-                RpgMod.LOGGER.info("[AUTOTEST] king slimes left after death={}", kids);
+            case 520 -> move(k, "dash");
+            case 575 -> {
+                if (k != null) {
+                    RpgMod.LOGGER.info("[AUTOTEST] king wall hits={} state={} opening x{}", k.wallHits, k.state(), k.openingMultiplier());
+                    RpgMod.LOGGER.info("[AUTOTEST] king before kill: size={} splits={} phase={} hp={}/{} moves={} max hit={} lost={}", k.getSize(), k.splits(), k.phase(),
+                            String.format("%.0f", k.getHealth()), String.format("%.0f", k.getMaxHealth()), kingMoves, String.format("%.1f", maxHit), String.format("%.1f", lostHealth));
+                    k.hurtServer(level, player.damageSources().playerAttack(player), 1000000);
+                }
             }
-            case 360 -> {
+            case 585 -> {
+                int books = player.getInventory().countItem(com.jo112ss.rpgmod.registry.ModRegistries.SKILL_BOOK.get());
+                RpgMod.LOGGER.info("[AUTOTEST] king dead={} books={}", k == null || !k.isAlive(), books);
+            }
+            case 590 -> { // a free-running king: its own combos and exhausted windows
                 k = king = com.jo112ss.rpgmod.mob.boss.BloodMoon.spawnNear(level, player);
+                kingMoves.clear();
                 if (k != null) {
                     k.snapTo(c.getX() + 14.5, c.getY(), c.getZ() + 0.5, 90, 0);
-                    if (dummy != null) k.setTarget(dummy);
+                    if (dummy != null) {
+                        dummy.setPos(c.getX() + 8.5, c.getY(), c.getZ() + 0.5);
+                        k.setTarget(dummy);
+                    }
                 }
             }
-            case 380 -> {
+            case 840 -> {
+                RpgMod.LOGGER.info("[AUTOTEST] king free run states={}", kingMoves);
                 com.jo112ss.rpgmod.mob.boss.BloodMoon.testKeep = false;
                 setTime(level, 9 * 24000L + 23300); // dawn
             }
-            case 480 -> RpgMod.LOGGER.info("[AUTOTEST] king left at dawn={} bloodMoon={}", k == null || k.isRemoved(), com.jo112ss.rpgmod.mob.boss.BloodMoon.active());
-            case 470 -> setTime(level, 10 * 24000L + 300); // morning of day 11: the day title
+            case 930 -> RpgMod.LOGGER.info("[AUTOTEST] king left at dawn={} bloodMoon={}", k == null || k.isRemoved(), com.jo112ss.rpgmod.mob.boss.BloodMoon.active());
+            case 935 -> setTime(level, 10 * 24000L + 300); // morning of day 11: the day title
             default -> { }
         }
         if (t % 10 == 0) { // keep the stage to the boss: no wandering monsters, the player stays alive
@@ -238,12 +250,20 @@ final class MobScenes {
             player.setHealth(player.getMaxHealth());
             player.getFoodData().setFoodLevel(20);
         }
-        if (k != null && k.isAlive() && dummy != null && dummy.isAlive() && k.getTarget() != dummy && t < 330) k.setTarget(dummy);
-        if (k != null && k.isAlive() && t % 20 == 0) {
-            RpgMod.LOGGER.info("[AUTOTEST] king t={} state={} size={} hp={}/{} dist={} max hit={} lost={}", t, k.state(), k.getSize(),
-                    String.format("%.0f", k.getHealth()), String.format("%.0f", k.getMaxHealth()), String.format("%.1f", k.distanceTo(player)),
-                    String.format("%.1f", maxHit), String.format("%.1f", lostHealth));
+        if (k != null && k.isAlive() && dummy != null && dummy.isAlive() && k.getTarget() != dummy) k.setTarget(dummy);
+        if (k != null && k.isAlive()) {
+            String st = k.state().name();
+            if (t % 2 == 0) kingMoves.merge(st, 1, Integer::sum);
+            if (t % 20 == 0) {
+                RpgMod.LOGGER.info("[AUTOTEST] king t={} state={} size={} hp={}/{} dist={} max hit={} lost={}", t, k.state(), k.getSize(),
+                        String.format("%.0f", k.getHealth()), String.format("%.0f", k.getMaxHealth()), String.format("%.1f", k.distanceTo(player)),
+                        String.format("%.1f", maxHit), String.format("%.1f", lostHealth));
+            }
         }
+    }
+
+    private static void move(com.jo112ss.rpgmod.mob.boss.KingSlime k, String m) {
+        if (k != null) k.testMove(m);
     }
 
     /** Puts the camera beside the king, looking at it (the moves themselves are filmed from behind the player). */

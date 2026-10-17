@@ -58,7 +58,7 @@ public class KingSlimeRenderer extends AbstractCubeMobRenderer<KingSlime, KingSl
     protected void scale(KingSlimeRenderState state, PoseStack poseStack) {
         this.downscaleSlightly(poseStack);
         super.scale(state, poseStack);
-        float t = state.modeTicks, xz = 1, y = 1;
+        float t = state.modeTicks, x = 1, z = 1, y = 1, xz = 1;
         KingSlime.State mode = KingSlime.State.values()[Mth.clamp(state.mode, 0, KingSlime.State.values().length - 1)];
         switch (mode) {
             case WINDUP -> { // crouch, trembling more and more
@@ -91,9 +91,42 @@ public class KingSlimeRenderer extends AbstractCubeMobRenderer<KingSlime, KingSl
                 y = 1 - 0.55F * k;
                 xz = 1 + 0.35F * k;
             }
+            case DASH_AIM -> { // dug in, leaning forward, shaking
+                float k = Math.min(1, t / 10F);
+                float shake = Mth.sin(t * 3.1F) * 0.03F * k;
+                y = 1 - 0.22F * k + shake;
+                xz = 1 + 0.1F * k;
+                z = 1 + 0.12F * k;
+            }
+            case DASH -> { // stretched along the slide
+                y = 0.82F;
+                z = 1.3F;
+                xz = 0.95F;
+            }
+            case STOMP -> { // bobbing with each stomp
+                float w = Mth.abs(Mth.sin(t * 0.25F));
+                y = 1 - 0.12F * w;
+                xz = 1 + 0.07F * w;
+            }
+            case TIRED -> { // sagging and panting: the opening
+                float breath = Mth.sin(t * 0.22F);
+                float in = Math.min(1, t / 6F);
+                y = 1 - in * (0.3F + 0.06F * breath);
+                xz = 1 + in * (0.18F - 0.04F * breath);
+            }
+            case ABSORB -> { // pulsing as it draws its slimes in
+                float k = Mth.sin(t * 0.5F);
+                y = xz = 1 + 0.07F * k;
+            }
+            case CAST -> { // swelling up before the rain
+                float k = Math.min(1, t / 18F);
+                float shake = Mth.sin(t * 2.4F) * 0.04F * k;
+                y = 1 + 0.22F * k + shake;
+                xz = 1 - 0.06F * k;
+            }
             default -> { }
         }
-        poseStack.scale(xz, y, xz);
+        poseStack.scale(xz * x, y, xz * z);
     }
 
     /** The translucent outer body with the king's texture (purple-tinted when enraged). */

@@ -461,5 +461,7 @@
   "rpgmod.boss.king_slime.enraged": "キングスライムが怒り狂っている！",
   "rpgmod.boss.king_slime.left": "夜が明け、キングスライムは地面に沈んで去っていった…",
   "rpgmod.boss.king_slime.defeated": "キングスライムを倒した！（%s）",
-  "rpgmod.boss.reward": "報酬：スキルの書 ×%s（右クリックでスキルポイント+1、しゃがみ右クリックでまとめて使用）"
+  "rpgmod.boss.reward": "報酬：スキルの書 ×%s（右クリックでスキルポイント+1、しゃがみ右クリックでまとめて使用）",
+  "rpgmod.boss.king_slime.absorb": "キングスライムが子スライムを吸収しようとしている！先に倒せ！",
+  "rpgmod.boss.opening": "チャンス！"
 }

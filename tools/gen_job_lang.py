@@ -169,6 +169,8 @@ UI = {  # key: (ja, en)
  'rpgmod.bloodmoon.no_sleep': ('ブラッドムーンの夜は眠れない', 'You cannot sleep during a blood moon'),
  'rpgmod.boss.king_slime.appeared': ('ブラッドムーンが昇った…キングスライムが %s の近くに現れた！', 'The blood moon rises... the King Slime appeared near %s!'),
  'rpgmod.boss.king_slime.near': ('キングスライムが %s の近くに現れた', 'The King Slime appeared near %s'),
+ 'rpgmod.boss.king_slime.absorb': ('キングスライムが子スライムを吸収しようとしている！先に倒せ！', 'The King Slime is absorbing its small slimes - kill them first!'),
+ 'rpgmod.boss.opening': ('チャンス！', 'Opening!'),
  'rpgmod.boss.king_slime.enraged': ('キングスライムが怒り狂っている！', 'The King Slime is enraged!'),
  'rpgmod.boss.king_slime.left': ('夜が明け、キングスライムは地面に沈んで去っていった…', 'Dawn breaks and the King Slime sinks into the ground...'),
  'rpgmod.boss.king_slime.defeated': ('キングスライムを倒した！（%s）', 'The King Slime was defeated! (%s)'),
