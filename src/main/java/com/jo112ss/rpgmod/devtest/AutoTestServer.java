@@ -165,6 +165,10 @@ public final class AutoTestServer {
                     var z = targets.get(i);
                     com.jo112ss.rpgmod.mob.MobLevels.apply(z, lv[i % lv.length]);
                     com.jo112ss.rpgmod.mob.MobGear.equip(z, i == 4 ? 95 : lv[i % lv.length]);
+                    z.tick();
+                    RpgMod.LOGGER.info("[AUTOTEST] gear Lv{} armor={} defence={} reduction={} attack={}", lv[i % lv.length], z.getArmorValue(),
+                            com.jo112ss.rpgmod.mob.Defense.defence(z), String.format("%.2f", com.jo112ss.rpgmod.mob.Defense.reduction(z)),
+                            String.format("%.1f", z.getAttributeValue(Attributes.ATTACK_DAMAGE)));
                     RpgMod.LOGGER.info("[AUTOTEST] gear Lv{}: {}", lv[i % lv.length], java.util.Arrays.stream(net.minecraft.world.entity.EquipmentSlot.values())
                             .map(sl -> z.getItemBySlot(sl)).filter(st -> !st.isEmpty()).map(st -> st.getItem().toString()).toList());
                     z.getAttribute(Attributes.MAX_HEALTH).setBaseValue(20);

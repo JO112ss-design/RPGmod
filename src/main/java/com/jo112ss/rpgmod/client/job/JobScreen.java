@@ -314,7 +314,11 @@ public class JobScreen extends Screen {
         rows.add(row("max_health", fmt(p.getMaxHealth())));
         rows.add(row("attack_damage", fmt(com.jo112ss.rpgmod.job.JobManager.physicalAttack(p))));
         rows.add(row("armor", fmt(p.getAttributeValue(Attributes.ARMOR))));
-        rows.add(row("armor_toughness", fmt(p.getAttributeValue(Attributes.ARMOR_TOUGHNESS))));
+        if (com.jo112ss.rpgmod.mob.MobConfig.rpgArmor()) {
+            rows.add(row("damage_reduction", String.format("-%.0f%%", com.jo112ss.rpgmod.mob.Defense.reduction(p) * 100)));
+        } else {
+            rows.add(row("armor_toughness", fmt(p.getAttributeValue(Attributes.ARMOR_TOUGHNESS))));
+        }
         rows.add(row("movement_speed", String.format("%.0f%%", p.getAttributeValue(Attributes.MOVEMENT_SPEED) / 0.1 * 100)));
         rows.add(row("attack_speed", String.format("%.2f", p.getAttributeValue(Attributes.ATTACK_SPEED))));
         rows.add(row("crit_chance", String.format("%.1f%% ×%.2f", com.jo112ss.rpgmod.job.JobManager.critChance(p, null), com.jo112ss.rpgmod.job.JobManager.critMultiplier(p, null))));

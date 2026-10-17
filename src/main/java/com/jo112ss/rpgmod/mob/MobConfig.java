@@ -16,6 +16,10 @@ public final class MobConfig {
     public static final ModConfigSpec.IntValue PLAYER_MAX = B.defineInRange("playerLevelMax", 10, -1000, 1000);
     public static final ModConfigSpec.DoubleValue SPEED = B.comment("Movement speed multiplier for every hostile monster").defineInRange("monsterSpeedMultiplier", 1.5, 0.1, 10);
     public static final ModConfigSpec.BooleanValue EQUIPMENT = B.comment("Random armour and job weapons by level for hostile monsters except endermen and bosses (never dropped)").define("monsterEquipment", true);
+    public static final ModConfigSpec.BooleanValue RPG_ARMOR = B.comment("RPG armour: reduction = defence / (defence + K), defence = armour x2 + toughness x2 (replaces the vanilla formula)").define("rpgArmor", true);
+    public static final ModConfigSpec.DoubleValue PLAYER_ARMOR_K = B.comment("K for players (bigger = armour less effective; 40: diamond set -58%)").defineInRange("playerArmorK", 40.0, 1, 10000);
+    public static final ModConfigSpec.DoubleValue MONSTER_ARMOR_K = B.comment("K for monsters (their random gear counts for less)").defineInRange("monsterArmorK", 80.0, 1, 10000);
+    public static final ModConfigSpec.DoubleValue GEAR_WEAPON = B.comment("Share of a monster's weapon attack that counts").defineInRange("monsterWeaponShare", 0.5, 0, 1);
     public static final ModConfigSpec.IntValue ZOMBIE_RANGE = B.comment("How far zombies notice and follow players (blocks)").defineInRange("zombieFollowRange", 128, 8, 512);
 
     static {
@@ -109,6 +113,22 @@ public final class MobConfig {
 
     public static double speed() {
         return SPEC.isLoaded() ? SPEED.get() : 1.5;
+    }
+
+    public static boolean rpgArmor() {
+        return !SPEC.isLoaded() || RPG_ARMOR.get();
+    }
+
+    public static double playerArmorK() {
+        return SPEC.isLoaded() ? PLAYER_ARMOR_K.get() : 40;
+    }
+
+    public static double monsterArmorK() {
+        return SPEC.isLoaded() ? MONSTER_ARMOR_K.get() : 80;
+    }
+
+    public static double weaponShare() {
+        return SPEC.isLoaded() ? GEAR_WEAPON.get() : 0.5;
     }
 
     public static boolean equipment() {

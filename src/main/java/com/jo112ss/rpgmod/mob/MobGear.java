@@ -63,7 +63,27 @@ public final class MobGear {
         // keep the ranged weapons monsters shoot with (pillagers, piglins, drowned) and the witch's hands free for potions
         if (held.getItem() instanceof net.minecraft.world.item.ProjectileWeaponItem || held.is(Items.TRIDENT)
                 || mob instanceof net.minecraft.world.entity.monster.Witch) return;
-        put(mob, EquipmentSlot.MAINHAND, new ItemStack(ModItems.get(MELEE[r.nextInt(MELEE.length)], material(lv, r))));
+        ItemStack weapon = new ItemStack(ModItems.get(MELEE[r.nextInt(MELEE.length)], material(lv, r)));
+        put(mob, EquipmentSlot.MAINHAND, weapon);
+        dampenWeapon(mob, weapon);
+    }
+
+    private static final net.minecraft.resources.Identifier DAMPEN = net.minecraft.resources.Identifier.fromNamespaceAndPath(com.jo112ss.rpgmod.RpgMod.MODID, "gear_weapon_share");
+
+    /** Only part of a monster weapon's attack counts (monsterWeaponShare, half by default). */
+    private static void dampenWeapon(Mob mob, ItemStack weapon) {
+        var inst = mob.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE);
+        var mods = weapon.get(net.minecraft.core.component.DataComponents.ATTRIBUTE_MODIFIERS);
+        if (inst == null || mods == null) return;
+        double bonus = 0;
+        for (var e : mods.modifiers()) {
+            if (e.attribute().value() == net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE.value()
+                    && e.modifier().operation() == net.minecraft.world.entity.ai.attributes.AttributeModifier.Operation.ADD_VALUE) bonus += e.modifier().amount();
+        }
+        inst.removeModifier(DAMPEN);
+        double cut = -bonus * (1 - MobConfig.weaponShare());
+        if (cut < 0) inst.addPermanentModifier(new net.minecraft.world.entity.ai.attributes.AttributeModifier(DAMPEN, cut,
+                net.minecraft.world.entity.ai.attributes.AttributeModifier.Operation.ADD_VALUE));
     }
 
     private static void put(Mob mob, EquipmentSlot slot, ItemStack stack) {

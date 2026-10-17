@@ -442,5 +442,6 @@
   "rpgmod.dragon.stage2": "Stage II",
   "rpgmod.dragon.stage2.sub": "Wing gusts, void orbs and its brood",
   "rpgmod.dragon.stage3": "Final Stage",
-  "rpgmod.dragon.stage3.sub": "Frenzy - dives and raining breath"
+  "rpgmod.dragon.stage3.sub": "Frenzy - dives and raining breath",
+  "rpgmod.stat.damage_reduction": "Damage Taken"
 }
