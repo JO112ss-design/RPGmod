@@ -38,6 +38,9 @@ public final class AutoTestServer {
         if (!ENABLED || !(event.getEntity() instanceof ServerPlayer sp)) return;
         player = sp;
         ticks = 0;
+        // monsters are fast and strong now: keep the test player alive outside the monster scenes
+        sp.getAbilities().invulnerable = true;
+        sp.onUpdateAbilities();
     }
 
     private static volatile boolean jobSetup;

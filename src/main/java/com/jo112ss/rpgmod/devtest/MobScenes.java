@@ -66,6 +66,8 @@ final class MobScenes {
         arrowsHit = 0;
         lostHealth = 0;
         player.setGameMode(GameType.SURVIVAL);
+        player.getAbilities().invulnerable = false;
+        player.onUpdateAbilities();
         player.removeAllEffects();
         player.addEffect(new MobEffectInstance(MobEffects.RESISTANCE, 600, 2, false, false));
         player.addEffect(new MobEffectInstance(MobEffects.REGENERATION, 600, 2, false, false));
