@@ -34,7 +34,8 @@ public final class MobLevelMath {
         public double damageLinear = 0.02, damageSquare = 0.0002;
         /** Share of the damage growth that explosions get. */
         public double explosionShare = 0.25;
-        public double speedPerLevel = 0.0025, speedCap = 0.15;
+        /** Off by default: every monster gets the flat speed multiplier instead (config speedMultiplier). */
+        public double speedPerLevel = 0.0025, speedCap = 0;
         public double knockbackPerLevel = 0.006, knockbackCap = 0.5;
     }
 
@@ -53,6 +54,12 @@ public final class MobLevelMath {
             case NETHER -> clamp(r.netherMin + (int) Math.floor(dist * 8 / r.netherBlocksPerLevel), r.netherMin, r.netherMax);
             case END -> clamp(r.endMin + (int) Math.floor(Math.max(0, dist - r.endOuterStart) / r.endBlocksPerLevel), r.endMin, r.endMax);
         };
+    }
+
+    /** Level relative to the strongest player: top + min .. top + max ({@code roll} in [0,1)). */
+    public static int playerRelative(int topPlayerLevel, int min, int max, double roll) {
+        int spread = Math.max(0, max - min);
+        return Math.max(1, topPlayerLevel + min + Math.min(spread, (int) Math.floor(roll * (spread + 1))));
     }
 
     /** Level with a small random spread ({@code roll} in [0,1)); never leaves the realm's range. */

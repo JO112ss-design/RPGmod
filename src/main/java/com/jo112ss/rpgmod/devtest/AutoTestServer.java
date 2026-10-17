@@ -172,6 +172,10 @@ public final class AutoTestServer {
                             String.format("%.2f", com.jo112ss.rpgmod.mob.core.MobLevelMath.explosionMultiplier(r, l)),
                             String.format("%.2f", com.jo112ss.rpgmod.mob.core.MobLevelMath.speedBonus(r, l)));
                 }
+                int[] rolls = new int[8];
+                for (int i = 0; i < rolls.length; i++) rolls[i] = com.jo112ss.rpgmod.mob.MobLevels.rollLevel(level, player.blockPosition(), i / 8.0);
+                RpgMod.LOGGER.info("[AUTOTEST] top player level {} -> new monsters {}", com.jo112ss.rpgmod.mob.MobLevels.topPlayerLevel(level.getServer()),
+                        java.util.Arrays.toString(rolls));
                 for (int d : new int[] {0, 500, 1500, 3000, 5000}) {
                     RpgMod.LOGGER.info("[AUTOTEST] overworld level at {} blocks: {}", d, com.jo112ss.rpgmod.mob.core.MobLevelMath.baseLevel(r,
                             com.jo112ss.rpgmod.mob.core.MobLevelMath.Realm.OVERWORLD, d, 64));

@@ -96,7 +96,7 @@ public final class BuilderGoal extends Goal {
         }
         Path path = mob.getNavigation().getPath();
         boolean pathOk = path != null && path.canReach();
-        stuck = !pathOk || sinceBest > 60 ? stuck + 1 : Math.max(0, stuck - 2);
+        stuck = !pathOk || sinceBest > 40 ? stuck + 1 : Math.max(0, stuck - 2);
         if (digPos != null) {
             continueDig(sl);
             return;
@@ -105,7 +105,7 @@ public final class BuilderGoal extends Goal {
             continuePillar(sl);
             return;
         }
-        if (stuck < 20 || cooldown > 0 || placed >= MAX_BLOCKS) return;
+        if (stuck < 10 || cooldown > 0 || placed >= MAX_BLOCKS) return;
         act(sl, t);
     }
 
@@ -145,7 +145,7 @@ public final class BuilderGoal extends Goal {
                 return;
             }
             if (place(sl, under)) {
-                cooldown = 8;
+                cooldown = 3;
                 walk(front);
             }
             return;
@@ -166,7 +166,8 @@ public final class BuilderGoal extends Goal {
         }
         if (!mob.onGround()) return;
         mob.getNavigation().stop();
-        mob.getJumpControl().jump();
+        // a strong hop straight up: clears one block in about three ticks
+        mob.setDeltaMovement(0, 0.55, 0);
         pillarBase = feet;
         pillarAge = 0;
     }
@@ -176,7 +177,7 @@ public final class BuilderGoal extends Goal {
         // stay centred over the column
         mob.setDeltaMovement(0, mob.getDeltaMovement().y, 0);
         if (mob.getY() >= pillarBase.getY() + 1.0 && sl.getBlockState(pillarBase).canBeReplaced()) {
-            if (place(sl, pillarBase)) cooldown = 3;
+            place(sl, pillarBase);
             pillarBase = null;
             return;
         }
@@ -226,8 +227,8 @@ public final class BuilderGoal extends Goal {
         float h = sl.getBlockState(p).getDestroySpeed(sl, p);
         digPos = p;
         digTime = 0;
-        // dirt ~1.5 s, stone ~3 s, deepslate ~4.5 s; quicker for stronger zombies
-        digNeed = Math.max(10, (int) ((20 + h * 30) * (1 - Math.min(0.5, level * 0.006))));
+        // dirt ~0.6 s, stone ~1.2 s, deepslate ~2 s; quicker for stronger zombies
+        digNeed = Math.max(6, (int) ((8 + h * 12) * (1 - Math.min(0.5, level * 0.008))));
         mob.getNavigation().stop();
     }
 
@@ -239,7 +240,7 @@ public final class BuilderGoal extends Goal {
         }
         mob.getLookControl().setLookAt(digPos.getX() + 0.5, digPos.getY() + 0.5, digPos.getZ() + 0.5);
         digTime++;
-        if (digTime % 5 == 0) {
+        if (digTime % 4 == 0) {
             mob.swingForAttack(InteractionHand.MAIN_HAND);
             sl.playSound(null, digPos, s.getSoundType().getHitSound(), SoundSource.HOSTILE, 0.8F, 0.8F);
         }
@@ -248,7 +249,7 @@ public final class BuilderGoal extends Goal {
             BlockPos p = digPos;
             resetDig();
             sl.destroyBlock(p, true, mob);
-            cooldown = 2;
+            cooldown = 1;
         }
     }
 

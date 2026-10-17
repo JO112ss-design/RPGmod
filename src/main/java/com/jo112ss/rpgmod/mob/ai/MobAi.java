@@ -103,6 +103,7 @@ public final class MobAi {
             mob.goalSelector.addGoal(1, new BuilderGoal(mob, lv));
             mob.goalSelector.addGoal(1, new ZombieItemGoal(mob));
         }
+        if (mob instanceof AbstractSkeleton sk) tuneBow(sk, lv);
         if (mob instanceof Creeper c && c.goalSelector.getAvailableGoals().stream().noneMatch(g -> g.getGoal() instanceof SmartSwellGoal)) {
             c.goalSelector.removeAllGoals(g -> g instanceof SwellGoal);
             c.goalSelector.addGoal(2, new SmartSwellGoal(c, lv));
@@ -143,6 +144,7 @@ public final class MobAi {
         float spread = (float) Math.max(0.3, 6.0 - lv * 0.12);
         arrow.shoot(d.x, d.y + drop, d.z, (float) speed, spread);
         if (lv >= 35 && sl.getRandom().nextDouble() < 0.3) arrow.setRemainingFireTicks(100);
+        if (shooter instanceof AbstractSkeleton) tipArrow(arrow, lv, sl.getRandom());
         if (!inVolley && lv >= 20 && shooter instanceof AbstractSkeleton sk && sl.getRandom().nextDouble() < Math.min(0.35, (lv - 15) * 0.008)) {
             SkillTasks.later(1, () -> {
                 if (!sk.isAlive() || sk.getTarget() == null) return;
@@ -156,6 +158,31 @@ public final class MobAi {
                     inVolley = false;
                 }
             });
+        }
+    }
+
+    /**
+     * Skeleton bow handling by level: shoots from further away (15 blocks + 1 per 4 levels, up to 30)
+     * and waits less between shots (vanilla 40 ticks on normal, 20 on hard; minus a tick per 3 levels).
+     * Re-applied now and then because vanilla resets the interval when the skeleton changes weapons.
+     */
+    static void tuneBow(AbstractSkeleton sk, int lv) {
+        if (sk.bowGoal == null) return;
+        float radius = 15 + Math.min(15, lv / 4F);
+        sk.bowGoal.attackRadiusSqr = radius * radius;
+        int base = sk.level().getDifficulty() == net.minecraft.world.Difficulty.HARD ? 20 : 40;
+        sk.bowGoal.setMinAttackInterval(Math.max(6, base - lv / 3));
+    }
+
+    /** Tipped arrows from level 25: slowness or weakness, poison from 45, a short blindness from 65. */
+    private static void tipArrow(AbstractArrow arrow, int lv, RandomSource r) {
+        if (lv < 25 || !(arrow instanceof net.minecraft.world.entity.projectile.arrow.Arrow a) || r.nextDouble() > 0.35) return;
+        int kinds = lv >= 65 ? 4 : lv >= 45 ? 3 : 2;
+        switch (r.nextInt(kinds)) {
+            case 0 -> a.addEffect(new net.minecraft.world.effect.MobEffectInstance(net.minecraft.world.effect.MobEffects.SLOWNESS, 100, 1));
+            case 1 -> a.addEffect(new net.minecraft.world.effect.MobEffectInstance(net.minecraft.world.effect.MobEffects.WEAKNESS, 120, 0));
+            case 2 -> a.addEffect(new net.minecraft.world.effect.MobEffectInstance(net.minecraft.world.effect.MobEffects.POISON, 80, 0));
+            default -> a.addEffect(new net.minecraft.world.effect.MobEffectInstance(net.minecraft.world.effect.MobEffects.BLINDNESS, 40, 0));
         }
     }
 
@@ -182,8 +209,17 @@ public final class MobAi {
         LivingEntity t = mob.getTarget();
         if (lv <= 0 || !(t instanceof Player p) || p.isCreative() || p.isSpectator()) return;
         long now = sl.getGameTime();
+        if (mob instanceof AbstractSkeleton sk && e.tickCount % 40 == 0) tuneBow(sk, lv);
         if (!ready(mob, now)) return;
         double d = mob.distanceTo(t);
+        if (mob instanceof AbstractSkeleton && !(mob instanceof WitherSkeleton) && lv >= 15 && mob.onGround() && d > 4 && aimingAt(p, mob)) {
+            // the player is drawing a bow or crossbow on it: sidestep out of the line of fire
+            Vec3 toMob = new Vec3(mob.getX() - p.getX(), 0, mob.getZ() - p.getZ()).normalize();
+            Vec3 side = new Vec3(-toMob.z, 0, toMob.x).scale(sl.getRandom().nextBoolean() ? 1 : -1);
+            mob.setDeltaMovement(side.x * 0.65, 0.3, side.z * 0.65);
+            NEXT.put(mob, now + 40 + sl.getRandom().nextInt(30));
+            return;
+        }
         if (mob instanceof AbstractSkeleton && !(mob instanceof WitherSkeleton) && lv >= 10 && d < 3.5 && mob.onGround()) {
             // hop back out of sword reach
             Vec3 away = new Vec3(mob.getX() - t.getX(), 0, mob.getZ() - t.getZ());
@@ -196,6 +232,15 @@ public final class MobAi {
             spitWeb(sl, mob, p);
             NEXT.put(mob, now + 200 + sl.getRandom().nextInt(100));
         }
+    }
+
+    /** True while the player holds a drawn bow or crossbow and looks roughly at {@code mob}. */
+    private static boolean aimingAt(Player p, Mob mob) {
+        if (!p.isUsingItem()) return false;
+        var item = p.getUseItem().getItem();
+        if (!(item instanceof net.minecraft.world.item.BowItem) && !(item instanceof net.minecraft.world.item.CrossbowItem)) return false;
+        Vec3 to = mob.getEyePosition().subtract(p.getEyePosition()).normalize();
+        return p.getLookAngle().dot(to) > 0.97;
     }
 
     /** A sticky glob that lands at the target's feet as a cobweb (gone again after 5 seconds). */

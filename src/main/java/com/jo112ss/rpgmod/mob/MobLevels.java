@@ -38,7 +38,7 @@ public final class MobLevels {
     /** The Ender Dragon is a fixed level: it is the final fight, not a roll of the dice. */
     public static final int DRAGON_LEVEL = 80;
 
-    private static final Identifier HP = id("level_health"), SPEED = id("level_speed"), KB = id("level_knockback"), FOLLOW = id("level_follow");
+    private static final Identifier HP = id("level_health"), SPEED = id("level_speed"), FLY = id("level_fly_speed"), KB = id("level_knockback"), FOLLOW = id("level_follow");
 
     private static Identifier id(String p) {
         return Identifier.fromNamespaceAndPath(RpgMod.MODID, p);
@@ -56,15 +56,36 @@ public final class MobLevels {
     public static void onJoin(EntityJoinLevelEvent event) {
         if (event.getLevel().isClientSide() || !MobConfig.levels()) return;
         if (!(event.getEntity() instanceof Mob mob) || !(mob instanceof Enemy)) return;
-        if (level(mob) > 0) return; // already levelled (loaded from disk, or a second join)
+        if (level(mob) > 0) { // already levelled (loaded from disk): refresh the modifiers in case the settings changed
+            apply(mob, level(mob));
+            return;
+        }
         ServerLevel sl = (ServerLevel) event.getLevel();
-        int lv = mob instanceof EnderDragon ? DRAGON_LEVEL : rollLevel(sl, mob.blockPosition(), mob.getRandom().nextDouble());
+        int lv = mob instanceof EnderDragon ? dragonLevel(sl) : rollLevel(sl, mob.blockPosition(), mob.getRandom().nextDouble());
         apply(mob, lv);
         com.jo112ss.rpgmod.mob.ai.MobAi.onFirstLevel(mob, lv);
     }
 
+    /** Highest job level among the players online (1 if nobody has a job yet). */
+    public static int topPlayerLevel(net.minecraft.server.MinecraftServer server) {
+        int top = 1;
+        for (net.minecraft.server.level.ServerPlayer p : server.getPlayerList().getPlayers()) {
+            var d = com.jo112ss.rpgmod.job.JobManager.data(p);
+            if (d.hasJob()) top = Math.max(top, d.level());
+        }
+        return top;
+    }
+
+    /** The dragon: the top of the usual range when levels follow the players, otherwise fixed. */
+    public static int dragonLevel(ServerLevel level) {
+        return MobConfig.fromPlayers() ? topPlayerLevel(level.getServer()) + MobConfig.playerMax() : DRAGON_LEVEL;
+    }
+
     /** Level for a monster appearing at {@code pos}. */
     public static int rollLevel(ServerLevel level, BlockPos pos, double roll) {
+        if (MobConfig.fromPlayers()) {
+            return MobLevelMath.playerRelative(topPlayerLevel(level.getServer()), MobConfig.playerMin(), MobConfig.playerMax(), roll);
+        }
         MobLevelMath.Rules r = MobConfig.rules();
         Realm realm = realm(level);
         double cx = 0, cz = 0;
@@ -93,10 +114,19 @@ public final class MobLevels {
         if (mob instanceof EnderDragon) hp = MobConfig.dragonHealth() - 1; // 600 health by default: tuned for the three-stage fight
         modifier(mob, Attributes.MAX_HEALTH, HP, hp, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);
         if (!(mob instanceof EnderDragon)) {
-            modifier(mob, Attributes.MOVEMENT_SPEED, SPEED, MobLevelMath.speedBonus(r, lv), AttributeModifier.Operation.ADD_MULTIPLIED_BASE);
+            // every hostile monster moves faster (x2 by default), on foot and in the air
+            double speed = (1 + MobLevelMath.speedBonus(r, lv)) * MobConfig.speed() - 1;
+            modifier(mob, Attributes.MOVEMENT_SPEED, SPEED, speed, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);
+            modifier(mob, Attributes.FLYING_SPEED, FLY, speed, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);
             modifier(mob, Attributes.KNOCKBACK_RESISTANCE, KB, MobLevelMath.knockbackResistance(r, lv), AttributeModifier.Operation.ADD_VALUE);
-            // stronger monsters notice you from further away (+1 block per 4 levels, up to +16)
-            modifier(mob, Attributes.FOLLOW_RANGE, FOLLOW, Math.min(16, lv / 4.0), AttributeModifier.Operation.ADD_VALUE);
+            AttributeInstance follow = mob.getAttribute(Attributes.FOLLOW_RANGE);
+            if (com.jo112ss.rpgmod.mob.ai.MobAi.isBuilderZombie(mob) && follow != null) {
+                // zombies hunt from far away (128 blocks by default)
+                modifier(mob, Attributes.FOLLOW_RANGE, FOLLOW, Math.max(0, MobConfig.zombieRange() - follow.getBaseValue()), AttributeModifier.Operation.ADD_VALUE);
+            } else {
+                // stronger monsters notice you from further away (+1 block per 4 levels, up to +16)
+                modifier(mob, Attributes.FOLLOW_RANGE, FOLLOW, Math.min(16, lv / 4.0), AttributeModifier.Operation.ADD_VALUE);
+            }
         }
         if (full) mob.setHealth(mob.getMaxHealth());
         mob.setData(ModRegistries.MOB_LEVEL, lv);

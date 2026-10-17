@@ -107,12 +107,9 @@ public final class ZombieItemGoal extends Goal {
         ServerFx.of("rod_line", from).follow(mob).vec(t.position().add(0, t.getBbHeight() * 0.6, 0)).a(flight).b(t.getId()).send(sl);
         SkillTasks.later(flight, () -> {
             if (!mob.isAlive() || !t.isAlive() || mob.distanceTo(t) > 18 || !mob.getSensing().hasLineOfSight(t)) return;
-            if (t instanceof Player p && p.isBlocking()) return; // a raised shield stops the hook
-            Vec3 pull = mob.position().subtract(t.position());
-            double len = pull.length();
-            Vec3 dir = new Vec3(pull.x, 0, pull.z).normalize();
-            double strength = Math.min(1.25, 0.3 + len * 0.07);
-            t.push(dir.x * strength, 0.32, dir.z * strength);
+            // exactly like reeling in a hooked mob with a vanilla rod: a tenth of the distance as velocity
+            Vec3 pull = mob.position().subtract(t.position()).scale(0.1);
+            t.push(pull.x, pull.y, pull.z);
             sl.playSound(null, t.getX(), t.getY(), t.getZ(), SoundEvents.FISHING_BOBBER_RETRIEVE, SoundSource.HOSTILE, 1.0F, 0.8F);
             ServerFx.of("rod_pull", t.position().add(0, t.getBbHeight() * 0.6, 0)).follow(t).vec(mob.position()).send(sl);
         });

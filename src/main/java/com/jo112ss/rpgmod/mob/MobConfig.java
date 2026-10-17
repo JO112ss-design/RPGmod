@@ -9,7 +9,13 @@ public final class MobConfig {
 
     private static final ModConfigSpec.Builder B = new ModConfigSpec.Builder();
 
-    public static final ModConfigSpec.BooleanValue LEVELS = B.comment("Give monsters levels that make them stronger further from spawn").define("levels", true);
+    public static final ModConfigSpec.BooleanValue LEVELS = B.comment("Give monsters levels that make them stronger").define("levels", true);
+    public static final ModConfigSpec.BooleanValue FROM_PLAYERS = B.comment("true: monsters appear at (highest job level among online players) + playerLevelMin..playerLevelMax;",
+            "false: level by place (distance from spawn and dimension, see the sections below)").define("levelsFromPlayers", true);
+    public static final ModConfigSpec.IntValue PLAYER_MIN = B.defineInRange("playerLevelMin", 5, -1000, 1000);
+    public static final ModConfigSpec.IntValue PLAYER_MAX = B.defineInRange("playerLevelMax", 10, -1000, 1000);
+    public static final ModConfigSpec.DoubleValue SPEED = B.comment("Movement speed multiplier for every hostile monster").defineInRange("speedMultiplier", 2.0, 0.1, 10);
+    public static final ModConfigSpec.IntValue ZOMBIE_RANGE = B.comment("How far zombies notice and follow players (blocks)").defineInRange("zombieFollowRange", 128, 8, 512);
 
     static {
         B.push("overworld");
@@ -86,6 +92,26 @@ public final class MobConfig {
 
     public static boolean levels() {
         return !SPEC.isLoaded() || LEVELS.get();
+    }
+
+    public static boolean fromPlayers() {
+        return !SPEC.isLoaded() || FROM_PLAYERS.get();
+    }
+
+    public static int playerMin() {
+        return SPEC.isLoaded() ? Math.min(PLAYER_MIN.get(), PLAYER_MAX.get()) : 5;
+    }
+
+    public static int playerMax() {
+        return SPEC.isLoaded() ? Math.max(PLAYER_MIN.get(), PLAYER_MAX.get()) : 10;
+    }
+
+    public static double speed() {
+        return SPEC.isLoaded() ? SPEED.get() : 2.0;
+    }
+
+    public static int zombieRange() {
+        return SPEC.isLoaded() ? ZOMBIE_RANGE.get() : 128;
     }
 
     public static boolean smartAi() {
