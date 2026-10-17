@@ -36,7 +36,7 @@ public final class MobLevels {
     private MobLevels() {}
 
     /** The Ender Dragon is a fixed level: it is the final fight, not a roll of the dice. */
-    public static final int DRAGON_LEVEL = 80;
+    public static final int DRAGON_LEVEL = 100;
 
     private static final Identifier HP = id("level_health"), SPEED = id("level_speed"), FLY = id("level_fly_speed"), KB = id("level_knockback"), FOLLOW = id("level_follow");
 
@@ -57,7 +57,7 @@ public final class MobLevels {
         if (event.getLevel().isClientSide() || !MobConfig.levels()) return;
         if (!(event.getEntity() instanceof Mob mob) || !(mob instanceof Enemy)) return;
         if (level(mob) > 0) { // already levelled (loaded from disk): refresh the modifiers in case the settings changed
-            apply(mob, level(mob));
+            apply(mob, mob instanceof EnderDragon ? DRAGON_LEVEL : level(mob));
             return;
         }
         ServerLevel sl = (ServerLevel) event.getLevel();
@@ -76,9 +76,9 @@ public final class MobLevels {
         return top;
     }
 
-    /** The dragon: the top of the usual range when levels follow the players, otherwise fixed. */
+    /** The dragon is always the same level: it is the final fight, not a roll of the dice. */
     public static int dragonLevel(ServerLevel level) {
-        return MobConfig.fromPlayers() ? topPlayerLevel(level.getServer()) + MobConfig.playerMax() : DRAGON_LEVEL;
+        return DRAGON_LEVEL;
     }
 
     /** Level for a monster appearing at {@code pos}. */
