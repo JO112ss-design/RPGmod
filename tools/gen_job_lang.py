@@ -82,7 +82,7 @@ SKILLS = {  # id: (ja, ja desc, en, en desc)
  'taunt': ('挑発', '周囲10ブロックの敵を全部自分に向けさせ、身構えて耐性を得る。', 'Taunt', 'Every monster within 10 blocks turns on you; you gain resistance.'),
  'piercing_shot': ('貫通矢', '一直線上の敵をすべて貫く強力な一射。', 'Piercing Shot', 'A powerful shot that goes through every enemy in a line.'),
  'explosive_arrow': ('爆裂矢', '着弾点で爆発する矢を放つ（地形は壊さない）。', 'Explosive Arrow', 'An arrow that explodes where it lands (no block damage).'),
- 'guardian_dome': ('守護ドーム', '8秒間、周囲に光のドームを張る。敵は中に入れず、敵の飛び道具も止める。', 'Guardian Dome', 'A dome of light for 8s: monsters cannot get in and enemy projectiles are stopped.'),
+ 'guardian_dome': ('守護ドーム', '12秒間、周囲に光のドームを張る。敵は中に入れず、敵の飛び道具も止める。', 'Guardian Dome', 'A dome of light for 12s: monsters cannot get in and enemy projectiles are stopped.'),
  'holy_wave': ('聖光の波', '前方へ光の波を走らせ、敵にダメージ、味方を回復する。', 'Holy Wave', 'A wave of light rolls forward, hurting enemies and healing allies.'),
  'quick_cast': ('高速詠唱', '12秒間、詠唱時間を40%短くする（上限を超えて効く）。', 'Quick Cast', 'Spells charge 40% faster for 12s (beyond the usual cap).'),
  'chrono': ('時の砂', '他のスキルと呪文の残りクールタイムを半分にする。', 'Sands of Time', 'Halves the remaining cooldown of all your other skills and spells.'),

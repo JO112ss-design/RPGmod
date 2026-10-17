@@ -384,7 +384,7 @@
   "rpgmod.skill.explosive_arrow": "爆裂矢",
   "rpgmod.skill.explosive_arrow.desc": "着弾点で爆発する矢を放つ（地形は壊さない）。",
   "rpgmod.skill.guardian_dome": "守護ドーム",
-  "rpgmod.skill.guardian_dome.desc": "8秒間、周囲に光のドームを張る。敵は中に入れず、敵の飛び道具も止める。",
+  "rpgmod.skill.guardian_dome.desc": "12秒間、周囲に光のドームを張る。敵は中に入れず、敵の飛び道具も止める。",
   "rpgmod.skill.holy_wave": "聖光の波",
   "rpgmod.skill.holy_wave.desc": "前方へ光の波を走らせ、敵にダメージ、味方を回復する。",
   "rpgmod.skill.quick_cast": "高速詠唱",

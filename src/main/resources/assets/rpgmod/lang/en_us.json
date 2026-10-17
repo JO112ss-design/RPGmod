@@ -384,7 +384,7 @@
   "rpgmod.skill.explosive_arrow": "Explosive Arrow",
   "rpgmod.skill.explosive_arrow.desc": "An arrow that explodes where it lands (no block damage).",
   "rpgmod.skill.guardian_dome": "Guardian Dome",
-  "rpgmod.skill.guardian_dome.desc": "A dome of light for 8s: monsters cannot get in and enemy projectiles are stopped.",
+  "rpgmod.skill.guardian_dome.desc": "A dome of light for 12s: monsters cannot get in and enemy projectiles are stopped.",
   "rpgmod.skill.holy_wave": "Holy Wave",
   "rpgmod.skill.holy_wave.desc": "A wave of light rolls forward, hurting enemies and healing allies.",
   "rpgmod.skill.quick_cast": "Quick Cast",
