@@ -17,7 +17,7 @@ import net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent;
  *
  * <pre>
  *   defence   = armour x 2 + toughness x 2      (job and panel armour included)
- *   reduction = defence / (defence + K)          K = 40 for players, 80 for monsters
+ *   reduction = defence / (defence + K)          K = 20 for players, 80 for monsters
  * </pre>
  *
  * The reduction is the same for every hit, so it can be shown as a plain percentage, keeps growing

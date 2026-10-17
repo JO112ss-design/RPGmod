@@ -59,7 +59,10 @@ public final class JobEvents {
     public static void onTick(PlayerTickEvent.Post event) {
         if (!(event.getEntity() instanceof ServerPlayer sp)) return;
         if (sp.tickCount % 20 == 0) JobManager.tickMana(sp);
-        if (sp.tickCount % 2 == 0) JobManager.updateAffinity(sp);
+        if (sp.tickCount % 2 == 0) {
+            JobManager.updateAffinity(sp);
+            JobManager.updateArmorTier(sp);
+        }
     }
 
     /**

@@ -211,6 +211,45 @@ public final class JobManager {
         }
     }
 
+    private static final net.minecraft.resources.Identifier TIER_ARMOR_ID =
+            net.minecraft.resources.Identifier.fromNamespaceAndPath(com.jo112ss.rpgmod.RpgMod.MODID, "armor_tier_bonus");
+    private static final WeaponType[] ARMOR_PIECES = {WeaponType.HELMET, WeaponType.CHESTPLATE, WeaponType.LEGGINGS, WeaponType.BOOTS};
+    private static final net.minecraft.world.entity.EquipmentSlot[] ARMOR_SLOTS = {net.minecraft.world.entity.EquipmentSlot.HEAD,
+            net.minecraft.world.entity.EquipmentSlot.CHEST, net.minecraft.world.entity.EquipmentSlot.LEGS, net.minecraft.world.entity.EquipmentSlot.FEET};
+    /** Extra armour per piece (helmet, chest, legs, boots) for players: iron +3, gold +6, diamond +9, netherite +12 per set. */
+    private static final int[][] TIER_ARMOR = {
+            {0, 0, 0, 0}, // copper
+            {1, 1, 1, 0}, // iron
+            {1, 2, 2, 1}, // gold
+            {2, 3, 3, 1}, // diamond
+            {2, 4, 4, 2}, // netherite
+    };
+
+    /** Higher-tier armour worn by a player is worth more than its vanilla value (monsters never get this). */
+    public static void updateArmorTier(ServerPlayer player) {
+        var inst = player.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.ARMOR);
+        if (inst == null) return;
+        int bonus = 0;
+        for (int i = 0; i < 4; i++) {
+            var worn = player.getItemBySlot(ARMOR_SLOTS[i]).getItem();
+            for (com.jo112ss.rpgmod.item.WeaponMaterial mat : com.jo112ss.rpgmod.item.WeaponMaterial.values()) {
+                if (ModItems.get(ARMOR_PIECES[i], mat) == worn) {
+                    bonus += TIER_ARMOR[Math.min(mat.ordinal(), TIER_ARMOR.length - 1)][i];
+                    break;
+                }
+            }
+        }
+        var current = inst.getModifier(TIER_ARMOR_ID);
+        if (bonus > 0) {
+            if (current == null || current.amount() != bonus) {
+                inst.addOrUpdateTransientModifier(new net.minecraft.world.entity.ai.attributes.AttributeModifier(TIER_ARMOR_ID, bonus,
+                        net.minecraft.world.entity.ai.attributes.AttributeModifier.Operation.ADD_VALUE));
+            }
+        } else if (current != null) {
+            inst.removeModifier(TIER_ARMOR_ID);
+        }
+    }
+
     /** Material bows can only be drawn by jobs that use bows. */
     public static boolean canUseBow(Player player) {
         JobData d = data(player);

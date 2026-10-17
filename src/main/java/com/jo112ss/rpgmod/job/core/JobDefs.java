@@ -68,7 +68,7 @@ public final class JobDefs {
     static {
         // ---- Fighter: heavy melee
         job("fighter", 0xD9534F, "闘", List.of(JobStat.MAX_HEALTH, JobStat.ATTACK_DAMAGE, JobStat.ARMOR),
-                stats(JobStat.MAX_HEALTH, 4, JobStat.ATTACK_DAMAGE, 2), stats(JobStat.MAX_HEALTH, hpTo(40, 4), JobStat.ATTACK_DAMAGE, 0.08 + 4 / 99.0),
+                stats(JobStat.MAX_HEALTH, 4, JobStat.ATTACK_DAMAGE, 2), stats(JobStat.MAX_HEALTH, hpTo(40, 4), JobStat.ATTACK_DAMAGE, 0.08 + 4 / 99.0, JobStat.ARMOR, LEVEL_ARMOR),
                 List.of(
                         skill("power_slash", SkillKind.ACTIVE, SkillEffect.SWEEP, 6, 10.5, 3.0, 4.5, 0, List.of(), 0, "斬"),
                         skill("charge", SkillKind.ACTIVE, SkillEffect.DASH, 8, 7, 2.0, 0, 0, List.of(), 0, "突"),
@@ -82,7 +82,7 @@ public final class JobDefs {
                 List.of());
         // ---- Ranger: bows
         job("ranger", 0x5CB85C, "弓", List.of(JobStat.ATTACK_DAMAGE, JobStat.MOVEMENT_SPEED, JobStat.CRIT_CHANCE),
-                stats(JobStat.MOVEMENT_SPEED, 5, JobStat.CRIT_CHANCE, 3, JobStat.ATTACK_DAMAGE, 1), stats(JobStat.CRIT_CHANCE, 0.05, JobStat.ATTACK_DAMAGE, 0.08 + 4 / 99.0, JobStat.MAX_HEALTH, hpTo(30, 0)),
+                stats(JobStat.MOVEMENT_SPEED, 5, JobStat.CRIT_CHANCE, 3, JobStat.ATTACK_DAMAGE, 1), stats(JobStat.CRIT_CHANCE, 0.05, JobStat.ATTACK_DAMAGE, 0.08 + 4 / 99.0, JobStat.MAX_HEALTH, hpTo(30, 0), JobStat.ARMOR, LEVEL_ARMOR),
                 List.of(
                         skill("multishot", SkillKind.ACTIVE, SkillEffect.SHOT, 6, 10.5, 1.6, 0, 0, List.of(), 0, "連"),
                         skill("backstep", SkillKind.ACTIVE, SkillEffect.BACKSTEP, 7, 7, 1.4, 0, 0, List.of(), 0, "退"),
@@ -96,7 +96,7 @@ public final class JobDefs {
                 List.of());
         // ---- Paladin: front line, protects allies
         job("paladin", 0xF0C040, "聖", List.of(JobStat.MAX_HEALTH, JobStat.ARMOR, JobStat.ATTACK_DAMAGE, JobStat.SKILL_POWER),
-                stats(JobStat.MAX_HEALTH, 6, JobStat.ARMOR, 4), stats(JobStat.MAX_HEALTH, hpTo(60, 6), JobStat.ARMOR, 0.05, JobStat.ATTACK_DAMAGE, 0.06 + 4 / 99.0),
+                stats(JobStat.MAX_HEALTH, 6, JobStat.ARMOR, 4), stats(JobStat.MAX_HEALTH, hpTo(60, 6), JobStat.ARMOR, 0.05 + LEVEL_ARMOR, JobStat.ATTACK_DAMAGE, 0.06 + 4 / 99.0),
                 List.of(
                         skill("shield_bash", SkillKind.ACTIVE, SkillEffect.SWEEP, 7, 10.5, 1.6, 4, 3, List.of("minecraft:slowness"), 1, "打"),
                         skill("holy_guard", SkillKind.ACTIVE, SkillEffect.BUFF, 20, 17.5, 0, 7, 8, List.of("minecraft:resistance"), 0, "護"),
@@ -110,7 +110,7 @@ public final class JobDefs {
                 List.of());
         // ---- Wizard: spells on the staff, skills 1/2 for mana and mobility
         job("wizard", 0x7B68EE, "魔", List.of(JobStat.MAX_MANA, JobStat.MAGIC_ATTACK, JobStat.SKILL_POWER, JobStat.CAST_SPEED, JobStat.MANA_REGEN),
-                stats(JobStat.MAX_MANA, 50, JobStat.MANA_REGEN, 0.5, JobStat.MAGIC_ATTACK, 2), stats(JobStat.MAX_MANA, 1, JobStat.MAGIC_ATTACK, 0.08 + 4 / 99.0, JobStat.ATTACK_DAMAGE, 4 / 99.0),
+                stats(JobStat.MAX_MANA, 50, JobStat.MANA_REGEN, 0.5, JobStat.MAGIC_ATTACK, 2), stats(JobStat.MAX_MANA, 1, JobStat.MAGIC_ATTACK, 0.08 + 4 / 99.0, JobStat.ATTACK_DAMAGE, 4 / 99.0, JobStat.ARMOR, LEVEL_ARMOR),
                 List.of(
                         skill("mana_surge", SkillKind.ACTIVE, SkillEffect.MANA, 20, 0, 40, 0, 0, List.of(), 0, "充"),
                         skill("blink", SkillKind.ACTIVE, SkillEffect.BLINK, 8, 21, 0, 10, 0, List.of(), 0, "瞬"),
@@ -132,7 +132,7 @@ public final class JobDefs {
                         skill("gravity", SkillKind.SPELL, SkillEffect.WHIRL, 12, 42, 1.6, 5, 0, List.of(), 0, "重")));
         // ---- Healer: heals and buffs
         job("healer", 0x5BC0DE, "癒", List.of(JobStat.MAX_MANA, JobStat.MAGIC_ATTACK, JobStat.SKILL_POWER, JobStat.MAX_HEALTH),
-                stats(JobStat.MAX_MANA, 40, JobStat.SKILL_POWER, 10, JobStat.MAGIC_ATTACK, 1), stats(JobStat.MAGIC_ATTACK, 0.07 + 4 / 99.0, JobStat.ATTACK_DAMAGE, 4 / 99.0, JobStat.MAX_MANA, 0.75, JobStat.MAX_HEALTH, hpTo(30, 0)),
+                stats(JobStat.MAX_MANA, 40, JobStat.SKILL_POWER, 10, JobStat.MAGIC_ATTACK, 1), stats(JobStat.MAGIC_ATTACK, 0.07 + 4 / 99.0, JobStat.ATTACK_DAMAGE, 4 / 99.0, JobStat.MAX_MANA, 0.75, JobStat.MAX_HEALTH, hpTo(30, 0), JobStat.ARMOR, LEVEL_ARMOR),
                 List.of(
                         skill("heal", SkillKind.ACTIVE, SkillEffect.HEAL, 6, 21, 0.9, 4, 0, List.of(), 0, "癒"),
                         skill("group_heal", SkillKind.ACTIVE, SkillEffect.HEAL, 12, 42, 0.6, 10, 0, List.of(), 0, "群"),
@@ -146,7 +146,7 @@ public final class JobDefs {
                 List.of());
         // ---- Assassin: daggers, burst and stealth
         job("assassin", 0x8E44AD, "影", List.of(JobStat.CRIT_CHANCE, JobStat.ATTACK_DAMAGE, JobStat.ATTACK_SPEED, JobStat.MOVEMENT_SPEED),
-                stats(JobStat.CRIT_CHANCE, 5, JobStat.MOVEMENT_SPEED, 5, JobStat.ATTACK_DAMAGE, 1), stats(JobStat.CRIT_CHANCE, 0.075, JobStat.ATTACK_DAMAGE, 0.08 + 4 / 99.0, JobStat.MAX_HEALTH, hpTo(30, 0)),
+                stats(JobStat.CRIT_CHANCE, 5, JobStat.MOVEMENT_SPEED, 5, JobStat.ATTACK_DAMAGE, 1), stats(JobStat.CRIT_CHANCE, 0.075, JobStat.ATTACK_DAMAGE, 0.08 + 4 / 99.0, JobStat.MAX_HEALTH, hpTo(30, 0), JobStat.ARMOR, LEVEL_ARMOR),
                 List.of(
                         skill("shadow_step", SkillKind.ACTIVE, SkillEffect.BLINK, 7, 10.5, 0, 12, 0, List.of(), 0, "影"),
                         skill("backstab", SkillKind.ACTIVE, SkillEffect.SWEEP, 6, 10.5, 3.0, 3.5, 0, List.of(), 0, "急"),
@@ -160,7 +160,7 @@ public final class JobDefs {
                 List.of());
         // ---- Enchanter: buffs allies, weakens enemies
         job("enchanter", 0xE67EB5, "付", List.of(JobStat.SKILL_POWER, JobStat.MAGIC_ATTACK, JobStat.COOLDOWN_REDUCTION, JobStat.MAX_MANA),
-                stats(JobStat.COOLDOWN_REDUCTION, 5, JobStat.MAX_MANA, 30, JobStat.MAGIC_ATTACK, 1), stats(JobStat.MAGIC_ATTACK, 0.07 + 4 / 99.0, JobStat.ATTACK_DAMAGE, 4 / 99.0, JobStat.COOLDOWN_REDUCTION, 0.05, JobStat.MAX_HEALTH, hpTo(30, 0)),
+                stats(JobStat.COOLDOWN_REDUCTION, 5, JobStat.MAX_MANA, 30, JobStat.MAGIC_ATTACK, 1), stats(JobStat.MAGIC_ATTACK, 0.07 + 4 / 99.0, JobStat.ATTACK_DAMAGE, 4 / 99.0, JobStat.COOLDOWN_REDUCTION, 0.05, JobStat.MAX_HEALTH, hpTo(30, 0), JobStat.ARMOR, LEVEL_ARMOR),
                 List.of(
                         skill("empower", SkillKind.ACTIVE, SkillEffect.BUFF, 18, 35, 0, 8, 20, List.of("minecraft:strength"), 0, "強"),
                         skill("haste", SkillKind.ACTIVE, SkillEffect.BUFF, 18, 35, 0, 8, 20, List.of("minecraft:speed", "minecraft:haste"), 0, "速"),
@@ -174,7 +174,7 @@ public final class JobDefs {
                 List.of());
         // ---- Gambler: random results
         job("gambler", 0x1ABC9C, "賭", List.of(JobStat.CRIT_CHANCE, JobStat.ATTACK_DAMAGE, JobStat.LUCK, JobStat.COOLDOWN_REDUCTION),
-                stats(JobStat.LUCK, 2, JobStat.CRIT_CHANCE, 5), stats(JobStat.LUCK, 0.025, JobStat.CRIT_CHANCE, 0.05, JobStat.ATTACK_DAMAGE, 0.06 + 4 / 99.0, JobStat.MAX_HEALTH, hpTo(40, 0)),
+                stats(JobStat.LUCK, 2, JobStat.CRIT_CHANCE, 5), stats(JobStat.LUCK, 0.025, JobStat.CRIT_CHANCE, 0.05, JobStat.ATTACK_DAMAGE, 0.06 + 4 / 99.0, JobStat.MAX_HEALTH, hpTo(40, 0), JobStat.ARMOR, LEVEL_ARMOR),
                 List.of(
                         skill("coin_toss", SkillKind.ACTIVE, SkillEffect.GAMBLE, 8, 7, 2, 6, 6, List.of(), 0, "銭"),
                         skill("lucky_shot", SkillKind.ACTIVE, SkillEffect.SHOT, 6, 7, 2.0, 0, 0, List.of(), 0, "幸"),
@@ -209,6 +209,9 @@ public final class JobDefs {
     private static double hpTo(double total, double start) {
         return (total - 20 - start) / (LevelCurve.DEFAULT_MAX_LEVEL - 1);
     }
+
+    /** Armour every job gains per level: +22 at Lv100, so late-game defence keeps up with monster damage. */
+    private static final double LEVEL_ARMOR = 22 / 99.0;
 
     private static Map<JobStat, Double> stats(Object... kv) {
         Map<JobStat, Double> m = new EnumMap<>(JobStat.class);
