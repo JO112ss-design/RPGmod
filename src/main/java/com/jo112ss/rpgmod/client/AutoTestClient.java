@@ -201,7 +201,7 @@ public final class AutoTestClient {
             showSkills = new java.util.ArrayList<>();
             if ("all".equals(System.getProperty("rpgmod.showcase"))) showSkills.addAll(com.jo112ss.rpgmod.job.core.JobDefs.SKILLS.keySet());
             // enemy work: levels, plates and damage numbers (skills were checked in earlier runs)
-            showSkills.addAll(java.util.List.of("hunters_mark", "mob:levels", "mob:nether", "mob:pillar", "fp:mob:dig", "mob:creeper", "mob:archer",
+            showSkills.addAll(java.util.List.of("hunters_mark", "empower", "fire_weapon", "mob:levels", "mob:nether", "mob:pillar", "fp:mob:dig", "mob:creeper", "mob:archer",
                     "mob:items", "mob:spider", "mob:dragon"));
             mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK);
             mc.options.particles().set(net.minecraft.server.level.ParticleStatus.ALL);
