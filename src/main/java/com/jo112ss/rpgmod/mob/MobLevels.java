@@ -114,7 +114,7 @@ public final class MobLevels {
         if (mob instanceof EnderDragon) hp = MobConfig.dragonHealth() - 1; // 600 health by default: tuned for the three-stage fight
         modifier(mob, Attributes.MAX_HEALTH, HP, hp, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);
         if (!(mob instanceof EnderDragon)) {
-            // every hostile monster moves faster (x2 by default), on foot and in the air
+            // every hostile monster moves faster (x1.5 by default), on foot and in the air
             double speed = (1 + MobLevelMath.speedBonus(r, lv)) * MobConfig.speed() - 1;
             modifier(mob, Attributes.MOVEMENT_SPEED, SPEED, speed, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);
             modifier(mob, Attributes.FLYING_SPEED, FLY, speed, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);

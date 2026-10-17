@@ -124,7 +124,7 @@ Minecraft **26.3 / NeoForge** 向けのRPG系mod。「鍛冶ミニゲーム」�
 | エンド | Lv70〜85 | 中央の島はLv70、外側の島ほど高い（800ブロック先から400ブロックごとに+1） |
 | エンダードラゴン | Lv80固定 | |
 
-- すべての敵対モブの移動速度は2倍（`speedMultiplier`）。ドラゴンは体力600
+- すべての敵対モブの移動速度は1.5倍（`monsterSpeedMultiplier`）。ドラゴンは体力600
 
 レベルごとの強さ：
 
@@ -171,7 +171,7 @@ Minecraft **26.3 / NeoForge** 向けのRPG系mod。「鍛冶ミニゲーム」�
 
 ### 設定
 
-`config/rpgmod-mobs.toml`：レベルの決め方（`levelsFromPlayers`, `playerLevelMin/Max`）、移動速度（`speedMultiplier`）、ゾンビの索敵範囲（`zombieFollowRange`）、場所方式のレベル範囲・距離、体力と攻撃力の伸び（`healthA/B`, `damageA/B`）、爆発の伸び、賢いAIのオン/オフ、ブロック破壊のオン/オフ（`breakBlocks`）、ドラゴンの体力・攻撃倍率、3段階ドラゴンのオン/オフ。
+`config/rpgmod-mobs.toml`：レベルの決め方（`levelsFromPlayers`, `playerLevelMin/Max`）、移動速度（`monsterSpeedMultiplier`）、ゾンビの索敵範囲（`zombieFollowRange`）、場所方式のレベル範囲・距離、体力と攻撃力の伸び（`healthA/B`, `damageA/B`）、爆発の伸び、賢いAIのオン/オフ、ブロック破壊のオン/オフ（`breakBlocks`）、ドラゴンの体力・攻撃倍率、3段階ドラゴンのオン/オフ。
 
 ## マルチプレイ
 

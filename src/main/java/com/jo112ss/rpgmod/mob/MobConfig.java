@@ -14,7 +14,7 @@ public final class MobConfig {
             "false: level by place (distance from spawn and dimension, see the sections below)").define("levelsFromPlayers", true);
     public static final ModConfigSpec.IntValue PLAYER_MIN = B.defineInRange("playerLevelMin", 5, -1000, 1000);
     public static final ModConfigSpec.IntValue PLAYER_MAX = B.defineInRange("playerLevelMax", 10, -1000, 1000);
-    public static final ModConfigSpec.DoubleValue SPEED = B.comment("Movement speed multiplier for every hostile monster").defineInRange("speedMultiplier", 2.0, 0.1, 10);
+    public static final ModConfigSpec.DoubleValue SPEED = B.comment("Movement speed multiplier for every hostile monster").defineInRange("monsterSpeedMultiplier", 1.5, 0.1, 10);
     public static final ModConfigSpec.IntValue ZOMBIE_RANGE = B.comment("How far zombies notice and follow players (blocks)").defineInRange("zombieFollowRange", 128, 8, 512);
 
     static {
@@ -107,7 +107,7 @@ public final class MobConfig {
     }
 
     public static double speed() {
-        return SPEC.isLoaded() ? SPEED.get() : 2.0;
+        return SPEC.isLoaded() ? SPEED.get() : 1.5;
     }
 
     public static int zombieRange() {
