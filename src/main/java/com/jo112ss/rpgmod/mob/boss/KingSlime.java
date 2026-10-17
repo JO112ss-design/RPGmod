@@ -1001,6 +1001,11 @@ public class KingSlime extends Slime {
         }
     }
 
+    /** Damage taken is divided by this past the max health cap (1 below it). */
+    public float toughness() {
+        return toughness;
+    }
+
     /** Health the fight is really worth (max health x toughness past the vanilla cap). */
     public float effectiveMaxHealth() {
         return this.getMaxHealth() * toughness;

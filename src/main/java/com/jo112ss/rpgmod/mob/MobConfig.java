@@ -10,10 +10,10 @@ public final class MobConfig {
     private static final ModConfigSpec.Builder B = new ModConfigSpec.Builder();
 
     public static final ModConfigSpec.BooleanValue LEVELS = B.comment("Give monsters levels that make them stronger").define("levels", true);
-    public static final ModConfigSpec.BooleanValue FROM_PLAYERS = B.comment("true: monsters appear at (highest job level among online players) + playerLevelMin..playerLevelMax;",
+    public static final ModConfigSpec.BooleanValue FROM_PLAYERS = B.comment("true: monsters appear at (highest job level among online players) + playerLevelBonusMin..playerLevelBonusMax;",
             "false: level by place (distance from spawn and dimension, see the sections below)").define("levelsFromPlayers", true);
-    public static final ModConfigSpec.IntValue PLAYER_MIN = B.defineInRange("playerLevelMin", 5, -1000, 1000);
-    public static final ModConfigSpec.IntValue PLAYER_MAX = B.defineInRange("playerLevelMax", 10, -1000, 1000);
+    public static final ModConfigSpec.IntValue PLAYER_MIN = B.defineInRange("playerLevelBonusMin", 0, -1000, 1000);
+    public static final ModConfigSpec.IntValue PLAYER_MAX = B.defineInRange("playerLevelBonusMax", 3, -1000, 1000);
     public static final ModConfigSpec.DoubleValue SPEED = B.comment("Movement speed multiplier for every hostile monster").defineInRange("monsterSpeedMultiplier", 1.5, 0.1, 10);
     public static final ModConfigSpec.BooleanValue EQUIPMENT = B.comment("Random armour and job weapons by level for hostile monsters except endermen and bosses (never dropped)").define("monsterEquipment", true);
     public static final ModConfigSpec.BooleanValue RPG_ARMOR = B.comment("RPG armour: reduction = defence / (defence + K), defence = armour x2 + toughness x2 (replaces the vanilla formula)").define("rpgArmor", true);
@@ -152,11 +152,11 @@ public final class MobConfig {
     }
 
     public static int playerMin() {
-        return SPEC.isLoaded() ? Math.min(PLAYER_MIN.get(), PLAYER_MAX.get()) : 5;
+        return SPEC.isLoaded() ? Math.min(PLAYER_MIN.get(), PLAYER_MAX.get()) : 0;
     }
 
     public static int playerMax() {
-        return SPEC.isLoaded() ? Math.max(PLAYER_MIN.get(), PLAYER_MAX.get()) : 10;
+        return SPEC.isLoaded() ? Math.max(PLAYER_MIN.get(), PLAYER_MAX.get()) : 3;
     }
 
     public static double speed() {
