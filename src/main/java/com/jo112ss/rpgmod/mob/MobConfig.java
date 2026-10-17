@@ -15,7 +15,7 @@ public final class MobConfig {
     public static final ModConfigSpec.IntValue PLAYER_MIN = B.defineInRange("playerLevelMin", 5, -1000, 1000);
     public static final ModConfigSpec.IntValue PLAYER_MAX = B.defineInRange("playerLevelMax", 10, -1000, 1000);
     public static final ModConfigSpec.DoubleValue SPEED = B.comment("Movement speed multiplier for every hostile monster").defineInRange("monsterSpeedMultiplier", 1.5, 0.1, 10);
-    public static final ModConfigSpec.BooleanValue EQUIPMENT = B.comment("Random armour and job weapons by level for zombies, skeletons and piglins (never dropped)").define("monsterEquipment", true);
+    public static final ModConfigSpec.BooleanValue EQUIPMENT = B.comment("Random armour and job weapons by level for hostile monsters except endermen and bosses (never dropped)").define("monsterEquipment", true);
     public static final ModConfigSpec.IntValue ZOMBIE_RANGE = B.comment("How far zombies notice and follow players (blocks)").defineInRange("zombieFollowRange", 128, 8, 512);
 
     static {

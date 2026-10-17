@@ -178,6 +178,17 @@ public final class AutoTestServer {
                             String.format("%.2f", com.jo112ss.rpgmod.mob.core.MobLevelMath.explosionMultiplier(r, l)),
                             String.format("%.2f", com.jo112ss.rpgmod.mob.core.MobLevelMath.speedBonus(r, l)));
                 }
+                for (var type : java.util.List.of(net.minecraft.world.entity.EntityTypes.CREEPER, net.minecraft.world.entity.EntityTypes.SPIDER)) {
+                    var m = type.create(level, net.minecraft.world.entity.EntitySpawnReason.COMMAND);
+                    for (int k = 0; k < 4 && m.getArmorValue() == 0; k++) {
+                        com.jo112ss.rpgmod.mob.MobGear.equip(m, 60);
+                        m.tick(); // equipment attributes are applied on tick
+                    }
+                    RpgMod.LOGGER.info("[AUTOTEST] hidden gear {}: armor={} attack={} items={}", type.getDescriptionId(), m.getArmorValue(),
+                            m.getAttribute(Attributes.ATTACK_DAMAGE) == null ? "-" : String.format("%.1f", m.getAttributeValue(Attributes.ATTACK_DAMAGE)),
+                            java.util.Arrays.stream(net.minecraft.world.entity.EquipmentSlot.values()).map(m::getItemBySlot).filter(st -> !st.isEmpty()).map(st -> st.getItem().toString()).toList());
+                    m.discard();
+                }
                 int[] rolls = new int[8];
                 for (int i = 0; i < rolls.length; i++) rolls[i] = com.jo112ss.rpgmod.mob.MobLevels.rollLevel(level, player.blockPosition(), i / 8.0);
                 RpgMod.LOGGER.info("[AUTOTEST] top player level {} -> new monsters {}", com.jo112ss.rpgmod.mob.MobLevels.topPlayerLevel(level.getServer()),

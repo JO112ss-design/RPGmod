@@ -6,18 +6,15 @@ import com.jo112ss.rpgmod.item.WeaponType;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.Mob;
-import net.minecraft.world.entity.monster.piglin.AbstractPiglin;
 import net.minecraft.world.entity.monster.skeleton.AbstractSkeleton;
 import net.minecraft.world.entity.monster.skeleton.WitherSkeleton;
-import net.minecraft.world.entity.monster.zombie.Zombie;
-import net.minecraft.world.item.CrossbowItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 
 /**
- * Random equipment by level for monsters that can wear it (zombies, skeletons, piglins and their
- * kin): armour pieces and one of the jobs' weapons, from copper up to diamond, netherite only from
- * level 90. Nothing of it drops.
+ * Random equipment by level for every hostile monster but endermen and bosses: armour pieces and one
+ * of the jobs' weapons, from copper up to diamond, netherite only from level 90. Monsters whose model
+ * cannot show it still get its armour and attack. Nothing of it drops.
  */
 public final class MobGear {
     private MobGear() {}
@@ -26,9 +23,14 @@ public final class MobGear {
     private static final WeaponType[] ARMOR = {WeaponType.HELMET, WeaponType.CHESTPLATE, WeaponType.LEGGINGS, WeaponType.BOOTS};
     private static final EquipmentSlot[] ARMOR_SLOTS = {EquipmentSlot.HEAD, EquipmentSlot.CHEST, EquipmentSlot.LEGS, EquipmentSlot.FEET};
 
-    /** Monsters whose models show armour and held items. */
+    /**
+     * Every hostile monster except endermen (they carry blocks), the dragon and other bosses. Most
+     * monsters (creepers, spiders, slimes...) cannot show it, but the armour and the weapon's attack
+     * still count, just out of sight.
+     */
     public static boolean wearsGear(Mob m) {
-        return m instanceof Zombie || m instanceof AbstractSkeleton || m instanceof AbstractPiglin;
+        return m instanceof net.minecraft.world.entity.monster.Enemy && !(m instanceof net.minecraft.world.entity.monster.Enderman)
+                && !(m instanceof net.minecraft.world.entity.boss.enderdragon.EnderDragon) && !m.is(net.neoforged.neoforge.common.Tags.EntityTypes.BOSSES);
     }
 
     /** A material for this level, with some spread; netherite only from level 90. */
@@ -58,7 +60,9 @@ public final class MobGear {
             ((AbstractSkeleton) mob).reassessWeaponGoal();
             return;
         }
-        if (held.getItem() instanceof CrossbowItem || held.is(Items.TRIDENT)) return; // keep ranged piglins and trident drowned
+        // keep the ranged weapons monsters shoot with (pillagers, piglins, drowned) and the witch's hands free for potions
+        if (held.getItem() instanceof net.minecraft.world.item.ProjectileWeaponItem || held.is(Items.TRIDENT)
+                || mob instanceof net.minecraft.world.entity.monster.Witch) return;
         put(mob, EquipmentSlot.MAINHAND, new ItemStack(ModItems.get(MELEE[r.nextInt(MELEE.length)], material(lv, r))));
     }
 
