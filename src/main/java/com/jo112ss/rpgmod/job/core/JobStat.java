@@ -40,9 +40,9 @@ public enum JobStat {
      */
     public double nodeAmount() {
         return switch (this) {
-            case MAX_HEALTH -> 1;
-            case ATTACK_DAMAGE -> 0.2;
-            case ARMOR -> 0.5;
+            case MAX_HEALTH -> 2;
+            case ATTACK_DAMAGE -> 0.4;
+            case ARMOR -> 1;
             case MOVEMENT_SPEED -> 1;
             case ATTACK_SPEED -> 1.5;
             case LUCK -> 0.5;
@@ -52,7 +52,7 @@ public enum JobStat {
             case SKILL_POWER -> 2;
             case COOLDOWN_REDUCTION -> 1.5;
             case CAST_SPEED -> 2;
-            case MAGIC_ATTACK -> 0.2;
+            case MAGIC_ATTACK -> 0.4;
         };
     }
 
