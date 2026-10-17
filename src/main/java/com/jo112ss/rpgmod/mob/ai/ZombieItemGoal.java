@@ -25,10 +25,12 @@ import net.minecraft.world.phys.Vec3;
  */
 public final class ZombieItemGoal extends Goal {
     private final Mob mob;
-    private int cooldown = 40;
+    private int cooldown;
 
     public ZombieItemGoal(Mob mob) {
         this.mob = mob;
+        // a rod is for reeling in from a distance: ready almost at once, before the zombie has closed in
+        this.cooldown = mob.getOffhandItem().is(Items.FISHING_ROD) ? 8 + mob.getRandom().nextInt(12) : 40;
         setFlags(EnumSet.noneOf(Goal.Flag.class));
     }
 
@@ -71,9 +73,9 @@ public final class ZombieItemGoal extends Goal {
         if (held.is(Items.ENDER_PEARL) && d >= 9 && d <= 32) {
             throwPearl(sl, t, held);
             cooldown = 120 + mob.getRandom().nextInt(60);
-        } else if (held.is(Items.FISHING_ROD) && d >= 3.5 && d <= 14) {
+        } else if (held.is(Items.FISHING_ROD) && d >= 4.5 && d <= 16) {
             castRod(sl, t);
-            cooldown = 70 + mob.getRandom().nextInt(40);
+            cooldown = 60 + mob.getRandom().nextInt(40);
         } else if (held.is(Items.TNT) && d >= 5 && d <= 16 && MobConfig.breakBlocks()) {
             throwTnt(sl, t, held);
             cooldown = 140 + mob.getRandom().nextInt(60);
