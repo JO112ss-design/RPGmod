@@ -14,8 +14,8 @@ import net.minecraft.world.item.Items;
 public enum WeaponType {
     SWORD("sword", 3.0F, -2.4F, 2, List.of(new Extra(() -> Items.STICK, 1)), TargetProfile.SWORD, 2, 123),
     DAGGER("dagger", 1.0F, -1.5F, 1, List.of(new Extra(() -> Items.STICK, 1)), TargetProfile.DAGGER, 40, 85),
-    MACE("mace", 7.0F, -2.9F, 4, List.of(new Extra(() -> Items.STICK, 1)), TargetProfile.MACE, 2, 123),
-    HAMMER("hammer", 12.0F, -3.3F, 5, List.of(new Extra(() -> Items.STICK, 2)), TargetProfile.HAMMER, 2, 123),
+    MACE("mace", 4.0F, -2.9F, 4, List.of(new Extra(() -> Items.STICK, 1)), TargetProfile.MACE, 2, 123),
+    HAMMER("hammer", 6.0F, -3.3F, 5, List.of(new Extra(() -> Items.STICK, 2)), TargetProfile.HAMMER, 2, 123),
     STAFF("staff", 1.5F, -2.6F, 1, List.of(new Extra(() -> Items.STICK, 1), new Extra(() -> Items.AMETHYST_SHARD, 1)), TargetProfile.STAFF, 2, 123),
     BOW("bow", 0, 0, 2, List.of(new Extra(() -> Items.BOW, 1)), TargetProfile.BOW, 2, 155),
     HELMET("helmet", 0, 0, 5, List.of(), TargetProfile.HELMET, 10, 140),
