@@ -25,12 +25,11 @@ import net.minecraft.world.phys.Vec3;
  */
 public final class ZombieItemGoal extends Goal {
     private final Mob mob;
-    private int cooldown;
+    private int cooldown = 40;
+    private boolean primed;
 
     public ZombieItemGoal(Mob mob) {
         this.mob = mob;
-        // a rod is for reeling in from a distance: ready almost at once, before the zombie has closed in
-        this.cooldown = mob.getOffhandItem().is(Items.FISHING_ROD) ? 8 + mob.getRandom().nextInt(12) : 40;
         setFlags(EnumSet.noneOf(Goal.Flag.class));
     }
 
@@ -61,6 +60,11 @@ public final class ZombieItemGoal extends Goal {
 
     @Override
     public void tick() {
+        if (!primed) {
+            primed = true;
+            // a rod is for reeling in from a distance: ready almost at once, before the zombie has closed in
+            if (mob.getOffhandItem().is(Items.FISHING_ROD)) cooldown = Math.min(cooldown, 6 + mob.getRandom().nextInt(10));
+        }
         if (cooldown > 0) {
             cooldown--;
             return;
@@ -102,6 +106,7 @@ public final class ZombieItemGoal extends Goal {
 
     private void castRod(ServerLevel sl, LivingEntity t) {
         Vec3 from = hand();
+        if (com.jo112ss.rpgmod.devtest.AutoTestServer.ENABLED) com.jo112ss.rpgmod.RpgMod.LOGGER.info("[AUTOTEST] rod cast at distance {}", String.format("%.1f", mob.distanceTo(t)));
         double d = from.distanceTo(t.position());
         int flight = Math.max(3, (int) Math.ceil(d / 1.6));
         mob.swingForAttack(InteractionHand.OFF_HAND);
