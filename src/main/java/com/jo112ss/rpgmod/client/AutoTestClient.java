@@ -178,7 +178,7 @@ public final class AutoTestClient {
             case "mob:spider" -> new int[] {40, 80};
             case "mob:dragon" -> new int[] {12, 45, 100, 118, 150, 196, 245, 262, 300};
             case "mob:nether" -> new int[] {30, 70, 110, 150, 190, 230, 270};
-            case "mob:king" -> new int[] {50, 70, 88, 104, 120, 160, 168, 194, 205, 250, 275, 300, 335, 400, 430, 482};
+            case "mob:king" -> new int[] {56, 70, 84, 100, 115, 160, 170, 194, 205, 250, 275, 300, 335, 400, 430, 482};
             default -> new int[] {6};
         };
     }

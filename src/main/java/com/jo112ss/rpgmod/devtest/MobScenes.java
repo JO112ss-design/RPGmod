@@ -39,6 +39,7 @@ final class MobScenes {
     private static float lostHealth;
     private static float maxHit;
     private static com.jo112ss.rpgmod.mob.boss.KingSlime king;
+    private static Mob dummy;
     private static long savedTime = -1;
 
     static boolean active() {
@@ -174,8 +175,16 @@ final class MobScenes {
                 if (k == null) k = king = com.jo112ss.rpgmod.mob.boss.BloodMoon.spawnNear(level, player);
                 if (k != null) {
                     com.jo112ss.rpgmod.mob.boss.BloodMoon.testKeep = true;
-                    k.snapTo(c.getX() + 16.5, c.getY(), c.getZ() + 0.5, 90, 0);
-                    k.setTarget(player);
+                    k.snapTo(c.getX() + 22.5, c.getY(), c.getZ() + 0.5, 90, 0);
+                    // the scripted moves aim at a dummy in front of the camera; its waves still reach the player
+                    dummy = EntityTypes.HUSK.create(level, EntitySpawnReason.COMMAND);
+                    dummy.snapTo(c.getX() + 11.5, c.getY(), c.getZ() + 0.5, 90, 0);
+                    dummy.setNoAi(true);
+                    dummy.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.MAX_HEALTH).setBaseValue(5000);
+                    dummy.setHealth(5000);
+                    dummy.setItemSlot(EquipmentSlot.HEAD, new ItemStack(Items.LEATHER_HELMET));
+                    level.addFreshEntity(dummy);
+                    k.setTarget(dummy);
                 }
                 var ev = new net.neoforged.neoforge.event.entity.player.CanPlayerSleepEvent(player, c, null);
                 net.neoforged.neoforge.common.NeoForge.EVENT_BUS.post(ev);
@@ -208,7 +217,7 @@ final class MobScenes {
                 k = king = com.jo112ss.rpgmod.mob.boss.BloodMoon.spawnNear(level, player);
                 if (k != null) {
                     k.snapTo(c.getX() + 14.5, c.getY(), c.getZ() + 0.5, 90, 0);
-                    k.setTarget(player);
+                    if (dummy != null) k.setTarget(dummy);
                 }
             }
             case 380 -> {
@@ -219,6 +228,13 @@ final class MobScenes {
             case 470 -> setTime(level, 10 * 24000L + 300); // morning of day 11: the day title
             default -> { }
         }
+        if (t % 10 == 0) { // keep the stage to the boss: no wandering monsters, the player stays alive
+            for (var m : level.getEntitiesOfClass(net.minecraft.world.entity.monster.Monster.class, player.getBoundingBox().inflate(96),
+                    m -> !(m instanceof net.minecraft.world.entity.monster.cubemob.Slime) && m != dummy)) m.discard();
+            player.setHealth(player.getMaxHealth());
+            player.getFoodData().setFoodLevel(20);
+        }
+        if (k != null && k.isAlive() && dummy != null && dummy.isAlive() && k.getTarget() != dummy && t < 330) k.setTarget(dummy);
         if (k != null && k.isAlive() && t % 20 == 0) {
             RpgMod.LOGGER.info("[AUTOTEST] king t={} state={} size={} hp={}/{} dist={} max hit={} lost={}", t, k.state(), k.getSize(),
                     String.format("%.0f", k.getHealth()), String.format("%.0f", k.getMaxHealth()), String.format("%.1f", k.distanceTo(player)),
@@ -352,6 +368,8 @@ final class MobScenes {
     static void end(ServerLevel level, ServerPlayer player) {
         if (king != null) king.discard();
         king = null;
+        if (dummy != null) dummy.discard();
+        dummy = null;
         com.jo112ss.rpgmod.mob.boss.BloodMoon.testKeep = false;
         if (savedTime >= 0) setTime(level, savedTime);
         savedTime = -1;
