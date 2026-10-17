@@ -544,7 +544,7 @@ public class KingSlime extends Slime {
         Vec3 d = e.position().subtract(from).multiply(1, 0, 1);
         d = d.lengthSqr() < 1e-4 ? new Vec3(1, 0, 0) : d.normalize();
         e.setDeltaMovement(e.getDeltaMovement().add(d.scale(out)).add(0, up, 0));
-        e.needsSync = true;
+        e.syncVelocity = true; // also to the player being thrown, who moves on their own computer
     }
 
     // ------------------------------------------------------------------ dash
@@ -591,7 +591,7 @@ public class KingSlime extends Slime {
             Vec3 side = new Vec3(-dashDir.z, 0, dashDir.x);
             if (side.dot(p.position().subtract(this.position())) < 0) side = side.scale(-1);
             p.setDeltaMovement(p.getDeltaMovement().add(side.scale(1.0)).add(dashDir.scale(0.4)).add(0, 0.45, 0));
-            p.needsSync = true;
+            p.syncVelocity = true;
         }
         if (stateTicks % 3 == 0) {
             Vec3 at = this.position();

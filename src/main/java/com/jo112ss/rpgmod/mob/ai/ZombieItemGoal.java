@@ -120,7 +120,7 @@ public final class ZombieItemGoal extends Goal {
             double lift = t.onGround() ? Math.max(pull.y, 0.25) : pull.y;
             t.push(pull.x, lift, pull.z);
             // players move themselves on their own computer: the new velocity has to be sent to them
-            t.needsSync = true;
+            t.syncVelocity = true;
             if (com.jo112ss.rpgmod.devtest.AutoTestServer.ENABLED) {
                 com.jo112ss.rpgmod.RpgMod.LOGGER.info("[AUTOTEST] rod pull: distance {} velocity {}", String.format("%.1f", mob.distanceTo(t)), t.getDeltaMovement());
             }

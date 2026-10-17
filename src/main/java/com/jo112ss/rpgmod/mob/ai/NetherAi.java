@@ -172,6 +172,7 @@ public final class NetherAi {
                 p.igniteForSeconds(4);
                 Vec3 away = p.position().subtract(blaze.position()).multiply(1, 0, 1).normalize();
                 p.push(away.x * 0.9, 0.35, away.z * 0.9);
+                p.syncVelocity = true;
             }
             novas++;
         });
@@ -219,6 +220,7 @@ public final class NetherAi {
                 for (Player hit : sl.getEntitiesOfClass(Player.class, mob.getBoundingBox().inflate(0.6), x -> !x.isCreative() && !x.isSpectator())) {
                     mob.doHurtTarget(sl, hit);
                     hit.push(dir.x * 1.4, 0.7, dir.z * 1.4);
+                    hit.syncVelocity = true;
                     return true;
                 }
                 return mob.horizontalCollision;

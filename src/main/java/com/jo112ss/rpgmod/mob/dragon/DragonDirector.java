@@ -154,6 +154,7 @@ public final class DragonDirector {
             if (stage == 3 && p.distanceTo(dragon) < 20) { // the rage bursts out
                 Vec3 away = p.position().subtract(dragon.position()).multiply(1, 0, 1).normalize();
                 p.push(away.x * 1.6, 0.6, away.z * 1.6);
+                p.syncVelocity = true;
             }
         }
         RpgMod.LOGGER.info("Ender Dragon entered stage {} ({} / {} health)", stage, dragon.getHealth(), dragon.getMaxHealth());
@@ -226,6 +227,7 @@ public final class DragonDirector {
                 Vec3 away = p.position().subtract(at).multiply(1, 0, 1);
                 away = away.lengthSqr() < 1e-4 ? new Vec3(1, 0, 0) : away.normalize();
                 p.push(away.x * 2.0, 0.75, away.z * 2.0);
+                p.syncVelocity = true;
                 p.hurtServer(sl, sl.damageSources().mobAttack(dragon), 4.0F);
             }
         });
