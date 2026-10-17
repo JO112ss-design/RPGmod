@@ -107,6 +107,10 @@ public final class SurfaceGoal extends Goal {
         }
         if (goals.isEmpty()) return null;
         Path p = mob.getNavigation().createPath(goals, 1);
+        if (com.jo112ss.rpgmod.devtest.AutoTestServer.ENABLED) {
+            com.jo112ss.rpgmod.RpgMod.LOGGER.info("[AUTOTEST] exit path goals={} -> {}", goals.size(),
+                    p == null ? "null" : "nodes=" + p.getNodeCount() + " reach=" + p.canReach() + " end=" + p.getEndNode());
+        }
         return p != null && p.canReach() ? p : null;
     }
 
@@ -158,6 +162,10 @@ public final class SurfaceGoal extends Goal {
     public void tick() {
         if (mode != Mode.STAIRS || !(mob.level() instanceof ServerLevel sl)) return;
         LivingEntity t = target();
+        if (com.jo112ss.rpgmod.devtest.AutoTestServer.ENABLED && runTicks % 20 == 0) {
+            com.jo112ss.rpgmod.RpgMod.LOGGER.info("[AUTOTEST] stairs state at {} digging={} cool={} hops={} dir={} ground={} move={}", mob.position(),
+                    builder.digging(), cool, hops, dir, mob.onGround(), mob.getMoveControl().hasWanted());
+        }
         if (t == null || builder.digging()) return;
         if (cool > 0) {
             cool--;
