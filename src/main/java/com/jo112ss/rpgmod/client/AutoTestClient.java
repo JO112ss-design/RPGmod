@@ -44,7 +44,10 @@ public final class AutoTestClient {
             case 70 -> mc.gui.setScreen(new com.jo112ss.rpgmod.client.job.JobScreen(com.jo112ss.rpgmod.client.job.JobScreen.Tab.STATUS));
             case 80 -> shot(mc, "12_status");
             case 82 -> mc.gui.setScreen(new com.jo112ss.rpgmod.client.job.JobScreen(com.jo112ss.rpgmod.client.job.JobScreen.Tab.PANEL));
-            case 92 -> shot(mc, "13_panel");
+            case 92 -> {
+                com.jo112ss.rpgmod.RpgMod.LOGGER.info("[AUTOTEST] panel build={}us fps={}", com.jo112ss.rpgmod.client.job.JobScreen.lastPanelNanos / 1000, mc.getFps());
+                shot(mc, "13_panel");
+            }
             case 94 -> mc.gui.setScreen(new com.jo112ss.rpgmod.client.job.JobScreen(com.jo112ss.rpgmod.client.job.JobScreen.Tab.SKILLS));
             case 104 -> shot(mc, "14_skills");
             case 106 -> mc.gui.setScreen(new com.jo112ss.rpgmod.client.job.JobScreen(com.jo112ss.rpgmod.client.job.JobScreen.Tab.SPELLS));

@@ -60,14 +60,15 @@ public final class Ui {
         if (label != null && h >= 9) g.centeredText(font, Component.literal(label), x + w / 2, y + (h - 8) / 2, TEXT);
     }
 
-    /** Pointy-top hexagon filled with horizontal lines. */
+    /** Pointy-top hexagon, drawn as one polygon (two quads). */
     public static void hex(GuiGraphicsExtractor g, int cx, int cy, int r, int color) {
-        double hw = Math.sqrt(3) / 2 * r;
-        for (int dy = -r; dy <= r; dy++) {
-            double w = Math.abs(dy) <= r / 2.0 ? hw : hw * (r - Math.abs(dy)) / (r / 2.0);
-            int iw = (int) Math.round(w);
-            if (iw > 0) g.fill(cx - iw, cy + dy, cx + iw, cy + dy + 1, color);
-        }
+        if (r <= 0) return;
+        float x = cx, y = cy + 0.5f, h = r + 0.5f, hw = (float) (Math.sqrt(3) / 2 * r), s = h / 2;
+        ShapeState.submit(g, new float[] {
+                // left half: top, upper-left, lower-left, bottom
+                x, y - h, x - hw, y - s, x - hw, y + s, x, y + h,
+                // right half: top, bottom, lower-right, upper-right
+                x, y - h, x, y + h, x + hw, y + s, x + hw, y - s}, color);
     }
 
     /** Hexagon outline (outer colour) around a filled body. */
@@ -76,21 +77,44 @@ public final class Ui {
         hex(g, cx, cy, r - 2, body);
     }
 
-    /** Circle outline made of dots (used by the spell wheel and emblems). */
-    public static void circle(GuiGraphicsExtractor g, int cx, int cy, int r, int color, int thickness) {
-        int steps = Math.max(24, r * 6);
-        for (int i = 0; i < steps; i++) {
-            double a = Math.PI * 2 * i / steps;
-            int x = cx + (int) Math.round(Math.cos(a) * r), y = cy + (int) Math.round(Math.sin(a) * r);
-            g.fill(x, y, x + thickness, y + thickness, color);
-        }
+    private static int segments(int r) {
+        return Math.max(16, Math.min(96, r * 2)) & ~1; // even, for the disc's paired fan
     }
 
-    public static void disc(GuiGraphicsExtractor g, int cx, int cy, int r, int color) {
-        for (int dy = -r; dy <= r; dy++) {
-            int w = (int) Math.round(Math.sqrt(r * r - dy * dy));
-            g.fill(cx - w, cy + dy, cx + w, cy + dy + 1, color);
+    /** Circle outline {@code thickness} pixels wide, drawn as one ring of quads. */
+    public static void circle(GuiGraphicsExtractor g, int cx, int cy, int r, int color, int thickness) {
+        if (r <= 0) return;
+        int n = segments(r);
+        float ox = cx + 0.5f, oy = cy + 0.5f, ri = r - thickness / 2f, ro = r + thickness / 2f;
+        float[] q = new float[n * 8];
+        for (int i = 0; i < n; i++) {
+            double a0 = Math.PI * 2 * i / n, a1 = Math.PI * 2 * (i + 1) / n;
+            float c0 = (float) Math.cos(a0), s0 = (float) Math.sin(a0), c1 = (float) Math.cos(a1), s1 = (float) Math.sin(a1);
+            int k = i * 8;
+            q[k] = ox + c0 * ri; q[k + 1] = oy + s0 * ri;
+            q[k + 2] = ox + c0 * ro; q[k + 3] = oy + s0 * ro;
+            q[k + 4] = ox + c1 * ro; q[k + 5] = oy + s1 * ro;
+            q[k + 6] = ox + c1 * ri; q[k + 7] = oy + s1 * ri;
         }
+        ShapeState.submit(g, q, color);
+    }
+
+    /** Filled circle, drawn as one fan of quads. */
+    public static void disc(GuiGraphicsExtractor g, int cx, int cy, int r, int color) {
+        if (r <= 0) return;
+        int n = segments(r);
+        float ox = cx, oy = cy + 0.5f;
+        float[] q = new float[n / 2 * 8];
+        for (int i = 0; i < n; i += 2) {
+            int k = i / 2 * 8;
+            q[k] = ox; q[k + 1] = oy;
+            for (int j = 0; j < 3; j++) {
+                double a = Math.PI * 2 * (i + j) / n;
+                q[k + 2 + j * 2] = ox + (float) Math.cos(a) * r;
+                q[k + 3 + j * 2] = oy + (float) Math.sin(a) * r;
+            }
+        }
+        ShapeState.submit(g, q, color);
     }
 
     /** Glyph drawn at an integer scale, centred on (cx, cy). */

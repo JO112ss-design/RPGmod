@@ -56,6 +56,8 @@ public class JobScreen extends Screen {
     private static int resetCost() {
         return com.jo112ss.rpgmod.job.JobConfig.SPEC.isLoaded() ? com.jo112ss.rpgmod.job.JobConfig.RESET_COST_LEVELS.get() : 20;
     }
+    /** How long the last honeycomb frame took to build (autotest reads it). */
+    public static long lastPanelNanos;
     private final Map<Integer, Long> unlockAnim = new HashMap<>();
     private Set<Integer> lastUnlocked = new HashSet<>();
 
@@ -271,7 +273,11 @@ public class JobScreen extends Screen {
         } else {
             switch (tab) {
                 case STATUS -> drawStatus(g, d, job, mouseX, mouseY);
-                case PANEL -> drawPanel(g, d, job, mouseX, mouseY);
+                case PANEL -> {
+                    long t0 = System.nanoTime();
+                    drawPanel(g, d, job, mouseX, mouseY);
+                    lastPanelNanos = System.nanoTime() - t0;
+                }
                 case SKILLS -> drawSkills(g, d, mouseX, mouseY);
                 case SPELLS -> drawSpells(g, d, mouseX, mouseY);
             }
@@ -393,12 +399,14 @@ public class JobScreen extends Screen {
             if (!d.unlocked().contains(n.id())) continue;
             int px = ox + (int) Math.round(hexR * Math.sqrt(3) * (n.q() + n.r() / 2.0));
             int py = oy + (int) Math.round(hexR * 1.5 * n.r());
+            if (px < ax - hexR - 4 || px > ax + aw + hexR + 4 || py < ay - hexR - 4 || py > ay + ah + hexR + 4) continue; // off-screen
             Ui.hex(g, px, py, hexR + 3, Ui.alpha(c, 0x55));
         }
         // pass 2: cells
         for (SkillPanel.Node n : panel.nodes()) {
             int px = ox + (int) Math.round(hexR * Math.sqrt(3) * (n.q() + n.r() / 2.0));
             int py = oy + (int) Math.round(hexR * 1.5 * n.r());
+            if (px < ax - hexR - 4 || px > ax + aw + hexR + 4 || py < ay - hexR - 4 || py > ay + ah + hexR + 4) continue; // off-screen
             boolean owned = d.unlocked().contains(n.id());
             boolean reachable = panel.isReachable(n, d.unlocked());
             boolean affordable = reachable && d.freePoints() >= n.cost();
@@ -469,6 +477,7 @@ public class JobScreen extends Screen {
             if (!panel.isReachable(n, d.unlocked())) continue;
             int px = ox + (int) Math.round(hexR * Math.sqrt(3) * (n.q() + n.r() / 2.0));
             int py = oy + (int) Math.round(hexR * 1.5 * n.r());
+            if (px < ax - hexR - 4 || px > ax + aw + hexR + 4 || py < ay - hexR - 4 || py > ay + ah + hexR + 4) continue; // off-screen
             if (d.freePoints() >= n.cost()) {
                 int a = (int) (140 + 115 * pulse);
                 Ui.circle(g, px, py, hexR + 2, Ui.alpha(Ui.GOLD, a), 1);
