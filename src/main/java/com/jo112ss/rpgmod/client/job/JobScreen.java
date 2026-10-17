@@ -315,7 +315,8 @@ public class JobScreen extends Screen {
         rows.add(row("attack_damage", fmt(com.jo112ss.rpgmod.job.JobManager.physicalAttack(p))));
         rows.add(row("armor", fmt(p.getAttributeValue(Attributes.ARMOR))));
         if (com.jo112ss.rpgmod.mob.MobConfig.rpgArmor()) {
-            rows.add(row("damage_reduction", String.format("-%.0f%%", com.jo112ss.rpgmod.mob.Defense.reduction(p) * 100)));
+            double red = com.jo112ss.rpgmod.mob.Defense.reduction(p) * 100;
+            rows.add(row("damage_reduction", red < 0.5 ? "0%" : String.format("-%.0f%%", red)));
         } else {
             rows.add(row("armor_toughness", fmt(p.getAttributeValue(Attributes.ARMOR_TOUGHNESS))));
         }
