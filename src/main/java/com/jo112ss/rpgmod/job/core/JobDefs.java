@@ -96,7 +96,7 @@ public final class JobDefs {
                 List.of());
         // ---- Paladin: front line, protects allies
         job("paladin", 0xF0C040, "聖", List.of(JobStat.MAX_HEALTH, JobStat.ARMOR, JobStat.ATTACK_DAMAGE, JobStat.SKILL_POWER),
-                stats(JobStat.MAX_HEALTH, 6, JobStat.ARMOR, 4), stats(JobStat.MAX_HEALTH, hpTo(40, 6), JobStat.ARMOR, 0.05, JobStat.ATTACK_DAMAGE, 0.06),
+                stats(JobStat.MAX_HEALTH, 6, JobStat.ARMOR, 4), stats(JobStat.MAX_HEALTH, hpTo(60, 6), JobStat.ARMOR, 0.05, JobStat.ATTACK_DAMAGE, 0.06),
                 List.of(
                         skill("shield_bash", SkillKind.ACTIVE, SkillEffect.SWEEP, 7, 15, 0.8, 4, 3, List.of("minecraft:slowness"), 1, "打"),
                         skill("holy_guard", SkillKind.ACTIVE, SkillEffect.BUFF, 20, 25, 0, 7, 8, List.of("minecraft:resistance"), 0, "護"),
