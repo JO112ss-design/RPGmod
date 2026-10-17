@@ -147,7 +147,7 @@ public final class AutoTestServer {
         if (sinceCast >= 0 && ++sinceCast == 40) logLastCast();
         sceneStep(level);
         MobScenes.tick(level, player);
-        if (arena != null && player.tickCount % 10 == 0) {
+        if (arena != null && player.tickCount % 10 == 0 && !MobScenes.active()) {
             for (var m : level.getEntitiesOfClass(net.minecraft.world.entity.monster.cubemob.Slime.class, player.getBoundingBox().inflate(48))) m.discard();
         }
     }

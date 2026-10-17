@@ -448,5 +448,18 @@
   "rpgmod.option.mana_regen": "Mana Regen",
   "rpgmod.hud.resting": "Mana regen x%s",
   "rpgmod.scan.found": "Scan: %s enemies found",
-  "rpgmod.jobscreen.duration": "Lasts %1$ss (now %2$ss, longer with magic attack)"
+  "rpgmod.jobscreen.duration": "Lasts %1$ss (now %2$ss, longer with magic attack)",
+  "entity.rpgmod.king_slime": "King Slime",
+  "item.rpgmod.skill_book": "Skill Book",
+  "rpgmod.skill_book.used": "Skill points +%1$s (%2$s unspent)",
+  "rpgmod.day.title": "Day %s",
+  "rpgmod.bloodmoon.title": "Blood Moon",
+  "rpgmod.bloodmoon.subtitle": "No one sleeps tonight...",
+  "rpgmod.bloodmoon.no_sleep": "You cannot sleep during a blood moon",
+  "rpgmod.boss.king_slime.appeared": "The blood moon rises... the King Slime appeared near %s!",
+  "rpgmod.boss.king_slime.near": "The King Slime appeared near %s",
+  "rpgmod.boss.king_slime.enraged": "The King Slime is enraged!",
+  "rpgmod.boss.king_slime.left": "Dawn breaks and the King Slime sinks into the ground...",
+  "rpgmod.boss.king_slime.defeated": "The King Slime was defeated! (%s)",
+  "rpgmod.boss.reward": "Reward: %s Skill Books (use for +1 skill point, sneak-use for all)"
 }

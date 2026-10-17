@@ -38,6 +38,8 @@ public final class JobData {
     private int coatMode;
     /** Out of combat long enough for faster mana regeneration (not saved, only synced for the HUD). */
     private boolean resting;
+    /** Extra skill points from skill books; kept when the job changes. */
+    private int bonusPoints;
 
     public static final MapCodec<JobData> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
             Codec.STRING.optionalFieldOf("job", "").forGetter(d -> d.job),
@@ -48,7 +50,8 @@ public final class JobData {
             Codec.DOUBLE.optionalFieldOf("mana", JobDefs.BASE_MANA).forGetter(d -> d.mana),
             Codec.unboundedMap(Codec.STRING, Codec.LONG).optionalFieldOf("cooldowns", Map.of()).forGetter(d -> Map.copyOf(d.cooldowns)),
             Codec.INT.optionalFieldOf("panel_version", 1).forGetter(d -> d.panelVersion),
-            Codec.INT.optionalFieldOf("coat_mode", 0).forGetter(d -> d.coatMode)
+            Codec.INT.optionalFieldOf("coat_mode", 0).forGetter(d -> d.coatMode),
+            Codec.INT.optionalFieldOf("bonus_points", 0).forGetter(d -> d.bonusPoints)
     ).apply(i, JobData::new));
 
     public static final StreamCodec<RegistryFriendlyByteBuf, JobData> STREAM_CODEC = StreamCodec.of(
@@ -67,6 +70,7 @@ public final class JobData {
                 });
                 buf.writeVarInt(d.coatMode);
                 buf.writeBoolean(d.resting);
+                buf.writeVarInt(d.bonusPoints);
             },
             buf -> {
                 JobData d = new JobData();
@@ -81,12 +85,14 @@ public final class JobData {
                 for (int k = 0; k < c; k++) d.cooldowns.put(buf.readUtf(), buf.readVarLong());
                 d.coatMode = buf.readVarInt();
                 d.resting = buf.readBoolean();
+                d.bonusPoints = buf.readVarInt();
                 return d;
             });
 
     public JobData() {}
 
-    private JobData(String job, int level, long exp, List<Integer> unlocked, List<String> slots, double mana, Map<String, Long> cooldowns, int panelVersion, int coatMode) {
+    private JobData(String job, int level, long exp, List<Integer> unlocked, List<String> slots, double mana, Map<String, Long> cooldowns, int panelVersion, int coatMode, int bonusPoints) {
+        this.bonusPoints = Math.max(0, bonusPoints);
         this.panelVersion = panelVersion;
         this.coatMode = coatMode;
         this.job = job;
@@ -137,7 +143,15 @@ public final class JobData {
     }
 
     public int totalPoints() {
-        return LevelCurve.pointsForLevel(level);
+        return LevelCurve.pointsForLevel(level) + bonusPoints;
+    }
+
+    public int bonusPoints() {
+        return bonusPoints;
+    }
+
+    public void addBonusPoints(int n) {
+        bonusPoints = Math.max(0, bonusPoints + n);
     }
 
     public int spentPoints() {

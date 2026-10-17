@@ -37,6 +37,9 @@ final class MobScenes {
     private static Vec3 startPos;
     private static int arrowsHit;
     private static float lostHealth;
+    private static float maxHit;
+    private static com.jo112ss.rpgmod.mob.boss.KingSlime king;
+    private static long savedTime = -1;
 
     static boolean active() {
         return scene != null;
@@ -45,6 +48,7 @@ final class MobScenes {
     static void onPlayerHurt(float amount, boolean arrow) {
         if (scene == null) return;
         lostHealth += amount;
+        maxHit = Math.max(maxHit, amount);
         if (arrow) arrowsHit++;
     }
 
@@ -58,11 +62,13 @@ final class MobScenes {
             case "items" -> 4;
             case "dragon" -> 6;
             case "nether" -> 7;
+            case "king" -> 9;
             default -> 5;
         };
         c = BlockPos.containing(arena).offset(40, 0, idx * 24 - 60);
-        clear(level, c, 10);
+        clear(level, c, name.equals("king") ? 22 : 10);
         scene = name;
+        maxHit = 0;
         t = 0;
         arrowsHit = 0;
         lostHealth = 0;
@@ -131,6 +137,12 @@ final class MobScenes {
                 d.getPhaseManager().setPhase(net.minecraft.world.entity.boss.enderdragon.phases.EnderDragonPhase.HOVERING);
                 dragon = d;
             }
+            case "king" -> {
+                tp(player, Vec3.atBottomCenterOf(c), -90, -6);
+                savedTime = level.getOverworldClockTime();
+                level.setData(com.jo112ss.rpgmod.registry.ModRegistries.BOSS_DAY, -1L);
+                setTime(level, 9 * 24000L + 14000); // night of day 10: blood moon
+            }
             default -> {
                 tp(player, Vec3.atBottomCenterOf(c), -90, 15);
                 spawn(level, EntityTypes.SPIDER, c.offset(10, 0, 0), 40);
@@ -138,6 +150,80 @@ final class MobScenes {
         }
         for (Mob m : mobs) m.setTarget(player);
         RpgMod.LOGGER.info("[AUTOTEST] scene {} at {} with {}", name, c, mobs.stream().map(m -> m.getType().getDescriptionId() + " Lv" + MobLevels.level(m)).toList());
+    }
+
+    private static void setTime(ServerLevel level, long ticks) {
+        var clock = level.registryAccess().get(net.minecraft.world.clock.WorldClocks.OVERWORLD).orElseThrow();
+        level.getServer().clockManager().setTotalTicks(clock, ticks);
+    }
+
+    private static com.jo112ss.rpgmod.mob.boss.KingSlime findKing(ServerLevel level, ServerPlayer player) {
+        var list = level.getEntitiesOfClass(com.jo112ss.rpgmod.mob.boss.KingSlime.class, player.getBoundingBox().inflate(64));
+        return list.isEmpty() ? null : list.get(0);
+    }
+
+    private static void kingTick(ServerLevel level, ServerPlayer player) {
+        var k = king;
+        switch (t) {
+            case 45 -> {
+                k = king = findKing(level, player);
+                RpgMod.LOGGER.info("[AUTOTEST] king natural spawn={} bloodMoon={} day={} dist={} level={} hp={}", k != null,
+                        com.jo112ss.rpgmod.mob.boss.BloodMoon.active(), com.jo112ss.rpgmod.mob.boss.BloodMoon.day(level),
+                        k == null ? -1 : String.format("%.1f", k.distanceTo(player)), k == null ? -1 : MobLevels.level(k),
+                        k == null ? -1 : String.format("%.0f", k.getMaxHealth()));
+                if (k == null) k = king = com.jo112ss.rpgmod.mob.boss.BloodMoon.spawnNear(level, player);
+                if (k != null) {
+                    com.jo112ss.rpgmod.mob.boss.BloodMoon.testKeep = true;
+                    k.snapTo(c.getX() + 16.5, c.getY(), c.getZ() + 0.5, 90, 0);
+                    k.setTarget(player);
+                }
+                var ev = new net.neoforged.neoforge.event.entity.player.CanPlayerSleepEvent(player, c, null);
+                net.neoforged.neoforge.common.NeoForge.EVENT_BUS.post(ev);
+                RpgMod.LOGGER.info("[AUTOTEST] king sleep blocked={}", ev.getProblem() != null);
+            }
+            case 60 -> { if (k != null) k.testMove("slam"); }
+            case 150 -> { if (k != null) k.testMove("spit"); }
+            case 190 -> { if (k != null) k.setHealth(k.getMaxHealth() * 0.74F); }
+            case 230 -> { if (k != null) k.setHealth(k.getMaxHealth() * 0.49F); }
+            case 240 -> { if (k != null) k.testMove("triple"); }
+            case 330 -> {
+                if (k != null) {
+                    RpgMod.LOGGER.info("[AUTOTEST] king before kill: size={} splits={} phase={} hp={}/{} state={} max hit={} lost={}", k.getSize(), k.splits(), k.phase(),
+                            String.format("%.0f", k.getHealth()), String.format("%.0f", k.getMaxHealth()), k.state(), String.format("%.1f", maxHit), String.format("%.1f", lostHealth));
+                    k.hurtServer(level, player.damageSources().playerAttack(player), 100000);
+                }
+            }
+            case 340 -> {
+                int books = player.getInventory().countItem(com.jo112ss.rpgmod.registry.ModRegistries.SKILL_BOOK.get());
+                var d = com.jo112ss.rpgmod.job.JobManager.data(player);
+                int before = d.freePoints();
+                ItemStack stack = new ItemStack(com.jo112ss.rpgmod.registry.ModRegistries.SKILL_BOOK.get(), 1);
+                player.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, stack);
+                stack.getItem().use(level, player, net.minecraft.world.InteractionHand.MAIN_HAND);
+                RpgMod.LOGGER.info("[AUTOTEST] king dead={} books={} free points {} -> {} (bonus {})", k == null || !k.isAlive(), books, before, d.freePoints(), d.bonusPoints());
+                long kids = level.getEntitiesOfClass(net.minecraft.world.entity.monster.cubemob.Slime.class, player.getBoundingBox().inflate(64)).size();
+                RpgMod.LOGGER.info("[AUTOTEST] king slimes left after death={}", kids);
+            }
+            case 360 -> {
+                k = king = com.jo112ss.rpgmod.mob.boss.BloodMoon.spawnNear(level, player);
+                if (k != null) {
+                    k.snapTo(c.getX() + 14.5, c.getY(), c.getZ() + 0.5, 90, 0);
+                    k.setTarget(player);
+                }
+            }
+            case 380 -> {
+                com.jo112ss.rpgmod.mob.boss.BloodMoon.testKeep = false;
+                setTime(level, 9 * 24000L + 23300); // dawn
+            }
+            case 460 -> RpgMod.LOGGER.info("[AUTOTEST] king left at dawn={} bloodMoon={}", k == null || k.isRemoved(), com.jo112ss.rpgmod.mob.boss.BloodMoon.active());
+            case 470 -> setTime(level, 10 * 24000L + 300); // morning of day 11: the day title
+            default -> { }
+        }
+        if (k != null && k.isAlive() && t % 20 == 0) {
+            RpgMod.LOGGER.info("[AUTOTEST] king t={} state={} size={} hp={}/{} dist={} max hit={} lost={}", t, k.state(), k.getSize(),
+                    String.format("%.0f", k.getHealth()), String.format("%.0f", k.getMaxHealth()), String.format("%.1f", k.distanceTo(player)),
+                    String.format("%.1f", maxHit), String.format("%.1f", lostHealth));
+        }
     }
 
     private static void tp(ServerPlayer p, Vec3 at, float yaw, float pitch) {
@@ -171,6 +257,7 @@ final class MobScenes {
         t++;
         for (Mob m : mobs) if (m.isAlive() && m.getTarget() == null) m.setTarget(player);
         switch (scene) {
+            case "king" -> kingTick(level, player);
             case "dragon" -> {
                 var d = dragon;
                 if (d == null || !d.isAlive()) break;
@@ -263,6 +350,11 @@ final class MobScenes {
     }
 
     static void end(ServerLevel level, ServerPlayer player) {
+        if (king != null) king.discard();
+        king = null;
+        com.jo112ss.rpgmod.mob.boss.BloodMoon.testKeep = false;
+        if (savedTime >= 0) setTime(level, savedTime);
+        savedTime = -1;
         if (dragon != null) dragon.discard();
         dragon = null;
         for (Mob m : mobs) m.discard();

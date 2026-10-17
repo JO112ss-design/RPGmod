@@ -448,5 +448,18 @@
   "rpgmod.option.mana_regen": "MP回復",
   "rpgmod.hud.resting": "MP回復 ×%s",
   "rpgmod.scan.found": "スキャン：敵 %s 体を発見",
-  "rpgmod.jobscreen.duration": "効果時間 %1$s秒（今 %2$s秒・魔法攻撃力で伸びる）"
+  "rpgmod.jobscreen.duration": "効果時間 %1$s秒（今 %2$s秒・魔法攻撃力で伸びる）",
+  "entity.rpgmod.king_slime": "キングスライム",
+  "item.rpgmod.skill_book": "スキルの書",
+  "rpgmod.skill_book.used": "スキルポイント +%1$s（未使用 %2$s）",
+  "rpgmod.day.title": "%s日目",
+  "rpgmod.bloodmoon.title": "ブラッドムーン",
+  "rpgmod.bloodmoon.subtitle": "今夜は眠れない…",
+  "rpgmod.bloodmoon.no_sleep": "ブラッドムーンの夜は眠れない",
+  "rpgmod.boss.king_slime.appeared": "ブラッドムーンが昇った…キングスライムが %s の近くに現れた！",
+  "rpgmod.boss.king_slime.near": "キングスライムが %s の近くに現れた",
+  "rpgmod.boss.king_slime.enraged": "キングスライムが怒り狂っている！",
+  "rpgmod.boss.king_slime.left": "夜が明け、キングスライムは地面に沈んで去っていった…",
+  "rpgmod.boss.king_slime.defeated": "キングスライムを倒した！（%s）",
+  "rpgmod.boss.reward": "報酬：スキルの書 ×%s（右クリックでスキルポイント+1、しゃがみ右クリックでまとめて使用）"
 }

@@ -14,6 +14,10 @@ public final class ClientHandlerProxy {
         com.jo112ss.rpgmod.client.job.JobClient.openJobSelect();
     }
 
+    public static void bloodMoon(BloodMoonPayload payload, IPayloadContext context) {
+        com.jo112ss.rpgmod.client.boss.BloodMoonClient.set(payload.active());
+    }
+
     public static void playFx(FxPayload payload, IPayloadContext context) {
         com.jo112ss.rpgmod.client.fx.SkillFx.play(payload);
     }

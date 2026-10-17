@@ -22,5 +22,6 @@ public final class ModNetwork {
         });
         registrar.playToClient(OpenJobSelectPayload.TYPE, OpenJobSelectPayload.STREAM_CODEC, ClientHandlerProxy::openJobSelect);
         registrar.playToClient(FxPayload.TYPE, FxPayload.STREAM_CODEC, ClientHandlerProxy::playFx);
+        registrar.playToClient(BloodMoonPayload.TYPE, BloodMoonPayload.STREAM_CODEC, ClientHandlerProxy::bloodMoon);
     }
 }

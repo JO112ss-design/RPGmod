@@ -37,6 +37,16 @@ public final class ModRegistries {
 
     public static final DeferredItem<BlockItem> FORGING_ANVIL_ITEM = ITEMS.registerSimpleBlockItem("forging_anvil", FORGING_ANVIL);
 
+    public static final net.neoforged.neoforge.registries.DeferredItem<com.jo112ss.rpgmod.item.SkillBookItem> SKILL_BOOK =
+            ITEMS.registerItem("skill_book", com.jo112ss.rpgmod.item.SkillBookItem::new, p -> p.stacksTo(64).rarity(net.minecraft.world.item.Rarity.RARE));
+
+    public static final DeferredRegister.Entities ENTITIES = DeferredRegister.createEntities(RpgMod.MODID);
+
+    /** The blood moon boss. Same base box as a slime; the size scales it. */
+    public static final DeferredHolder<net.minecraft.world.entity.EntityType<?>, net.minecraft.world.entity.EntityType<com.jo112ss.rpgmod.mob.boss.KingSlime>> KING_SLIME =
+            ENTITIES.registerEntityType("king_slime", com.jo112ss.rpgmod.mob.boss.KingSlime::new, net.minecraft.world.entity.MobCategory.MONSTER,
+                    b -> b.sized(0.52F, 0.52F).eyeHeight(0.325F).clientTrackingRange(16).fireImmune());
+
     public static final DeferredHolder<MenuType<?>, MenuType<ForgeMenu>> FORGE_MENU = MENUS.register("forge",
             () -> IMenuTypeExtension.create((windowId, inv, buf) -> new ForgeMenu(windowId, inv)));
 
@@ -65,12 +75,19 @@ public final class ModRegistries {
                     .sync(net.minecraft.network.codec.ByteBufCodecs.VAR_INT)
                     .build());
 
+    /** Overworld: the day whose blood moon already had its boss (so it is not summoned twice). */
+    public static final java.util.function.Supplier<net.neoforged.neoforge.attachment.AttachmentType<Long>> BOSS_DAY =
+            ATTACHMENTS.register("boss_day", () -> net.neoforged.neoforge.attachment.AttachmentType.builder(() -> -1L)
+                    .serialize(com.mojang.serialization.Codec.LONG.fieldOf("day"), v -> v >= 0)
+                    .build());
+
     public static final DeferredHolder<CreativeModeTab, CreativeModeTab> TAB = CREATIVE_TABS.register("main", () -> CreativeModeTab.builder()
             .title(Component.translatable("itemGroup.rpgmod"))
             .withTabsBefore(CreativeModeTabs.COMBAT)
             .icon(() -> new ItemStack(FORGING_ANVIL_ITEM.get()))
             .displayItems((params, output) -> {
                 output.accept(FORGING_ANVIL_ITEM.get());
+                output.accept(SKILL_BOOK.get());
                 for (com.jo112ss.rpgmod.item.WeaponType t : com.jo112ss.rpgmod.item.WeaponType.values()) {
                     if (t.isVanilla()) continue;
                     for (com.jo112ss.rpgmod.item.WeaponMaterial m : com.jo112ss.rpgmod.item.WeaponMaterial.values()) {
@@ -82,6 +99,7 @@ public final class ModRegistries {
     public static void register(IEventBus modBus) {
         BLOCKS.register(modBus);
         ITEMS.register(modBus);
+        ENTITIES.register(modBus);
         ATTACHMENTS.register(modBus);
         MENUS.register(modBus);
         CREATIVE_TABS.register(modBus);

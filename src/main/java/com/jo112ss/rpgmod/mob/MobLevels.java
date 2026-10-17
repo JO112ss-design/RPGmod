@@ -56,6 +56,13 @@ public final class MobLevels {
     public static void onJoin(EntityJoinLevelEvent event) {
         if (event.getLevel().isClientSide() || !MobConfig.levels()) return;
         if (!(event.getEntity() instanceof Mob mob) || !(mob instanceof Enemy)) return;
+        if (mob instanceof com.jo112ss.rpgmod.mob.boss.KingSlime king) {
+            // bosses: level = highest player level (+ bonus), health set by the boss itself
+            boolean fresh = level(mob) <= 0;
+            if (fresh) mob.setData(ModRegistries.MOB_LEVEL, Math.max(1, topPlayerLevel(((ServerLevel) event.getLevel()).getServer()) + MobConfig.bossLevelBonus()));
+            king.recomputeHealth(fresh);
+            return;
+        }
         if (level(mob) > 0) { // already levelled (loaded from disk): refresh the modifiers in case the settings changed
             apply(mob, mob instanceof EnderDragon ? DRAGON_LEVEL : level(mob));
             return;

@@ -59,10 +59,58 @@ public final class MobConfig {
     public static final ModConfigSpec.DoubleValue DRAGON_HEALTH = B.comment("Ender Dragon health multiplier (vanilla 200)").defineInRange("dragonHealth", 3.0, 0.1, 100);
     public static final ModConfigSpec.DoubleValue DRAGON_DAMAGE = B.comment("Ender Dragon damage multiplier (all its attacks, breath included)").defineInRange("dragonDamage", 1.5, 0, 100);
     static {
+        B.pop().push("bloodMoon");
+    }
+    public static final ModConfigSpec.BooleanValue BLOOD_MOON = B.comment("Blood moon nights with a boss").define("enabled", true);
+    public static final ModConfigSpec.IntValue BLOOD_MOON_DAYS = B.comment("A blood moon rises on the night of every Nth day").defineInRange("everyDays", 10, 1, 1000);
+    public static final ModConfigSpec.DoubleValue BLOOD_MOON_SPAWNS = B.comment("Share of normal monster spawns during a blood moon").defineInRange("spawnRate", 0.2, 0, 1);
+    public static final ModConfigSpec.BooleanValue DAY_TITLE = B.comment("Show 'Day N' every morning").define("dayTitle", true);
+    public static final ModConfigSpec.DoubleValue KING_HEALTH = B.comment("King Slime health at level 1 for one player (grows with level like other monsters)").defineInRange("kingSlimeHealth", 400.0, 1, 100000);
+    public static final ModConfigSpec.DoubleValue BOSS_PER_PLAYER = B.comment("Extra boss health per additional player online (0.6 = +60%)").defineInRange("healthPerPlayer", 0.6, 0, 10);
+    public static final ModConfigSpec.IntValue BOSS_LEVEL_BONUS = B.comment("Boss level = highest player job level + this").defineInRange("levelBonus", 0, -100, 100);
+    public static final ModConfigSpec.DoubleValue BOSS_MAX_HIT = B.comment("Largest share of a player's max health one boss hit can take (before armour)").defineInRange("maxHitShare", 0.2, 0.01, 10);
+    public static final ModConfigSpec.IntValue BOSS_BOOKS = B.comment("Skill books every participant gets for defeating the boss").defineInRange("rewardBooks", 5, 0, 64);
+    static {
         B.pop();
     }
 
     public static final ModConfigSpec SPEC = B.build();
+
+    public static boolean bloodMoon() {
+        return !SPEC.isLoaded() || BLOOD_MOON.get();
+    }
+
+    public static int bloodMoonDays() {
+        return SPEC.isLoaded() ? BLOOD_MOON_DAYS.get() : 10;
+    }
+
+    public static double bloodMoonSpawns() {
+        return SPEC.isLoaded() ? BLOOD_MOON_SPAWNS.get() : 0.2;
+    }
+
+    public static boolean dayTitle() {
+        return !SPEC.isLoaded() || DAY_TITLE.get();
+    }
+
+    public static double kingHealth() {
+        return SPEC.isLoaded() ? KING_HEALTH.get() : 400;
+    }
+
+    public static double bossPerPlayer() {
+        return SPEC.isLoaded() ? BOSS_PER_PLAYER.get() : 0.6;
+    }
+
+    public static int bossLevelBonus() {
+        return SPEC.isLoaded() ? BOSS_LEVEL_BONUS.get() : 0;
+    }
+
+    public static double bossMaxHit() {
+        return SPEC.isLoaded() ? BOSS_MAX_HIT.get() : 0.2;
+    }
+
+    public static int bossBooks() {
+        return SPEC.isLoaded() ? BOSS_BOOKS.get() : 5;
+    }
 
     private static MobLevelMath.Rules cached;
 

@@ -178,6 +178,7 @@ public final class AutoTestClient {
             case "mob:spider" -> new int[] {40, 80};
             case "mob:dragon" -> new int[] {12, 45, 100, 118, 150, 196, 245, 262, 300};
             case "mob:nether" -> new int[] {30, 70, 110, 150, 190, 230, 270};
+            case "mob:king" -> new int[] {50, 70, 88, 104, 120, 160, 168, 194, 205, 250, 275, 300, 335, 400, 430, 482};
             default -> new int[] {6};
         };
     }
@@ -189,6 +190,7 @@ public final class AutoTestClient {
             case "mob:creeper", "mob:spider" -> 120;
             case "mob:dragon" -> 330;
             case "mob:nether" -> 280;
+            case "mob:king" -> 520;
             default -> SLOT;
         };
     }
@@ -201,8 +203,8 @@ public final class AutoTestClient {
             showSkills = new java.util.ArrayList<>();
             if ("all".equals(System.getProperty("rpgmod.showcase"))) showSkills.addAll(com.jo112ss.rpgmod.job.core.JobDefs.SKILLS.keySet());
             // enemy work: levels, plates and damage numbers (skills were checked in earlier runs)
-            showSkills.addAll(java.util.List.of("hunters_mark", "empower", "fire_weapon", "mob:levels", "mob:nether", "mob:pillar", "fp:mob:dig", "mob:creeper", "mob:archer",
-                    "mob:items", "mob:spider", "mob:dragon"));
+            // blood moon boss (the monster scenes and skills were checked in earlier runs)
+            showSkills.addAll(java.util.List.of("mob:king"));
             mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK);
             mc.options.particles().set(net.minecraft.server.level.ParticleStatus.ALL);
             AutoTestServer.requestShowcase();
