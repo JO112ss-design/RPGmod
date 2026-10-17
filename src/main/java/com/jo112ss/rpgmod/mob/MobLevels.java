@@ -156,8 +156,6 @@ public final class MobLevels {
         double mult;
         if (attacker instanceof EnderDragon) mult = MobConfig.dragonDamage(); // its breath ignores armour, so it gets its own, gentler factor
         else mult = event.getSource().is(DamageTypeTags.IS_EXPLOSION) ? MobLevelMath.explosionMultiplier(r, lv) : MobLevelMath.damageMultiplier(r, lv);
-        // overall scale on top of the level curve (0.5 by default: everything hits half as hard)
-        mult *= MobConfig.damageScale();
         event.setAmount((float) (event.getAmount() * mult));
     }
 

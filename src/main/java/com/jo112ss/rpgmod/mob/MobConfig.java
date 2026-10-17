@@ -15,8 +15,6 @@ public final class MobConfig {
     public static final ModConfigSpec.IntValue PLAYER_MIN = B.defineInRange("playerLevelMin", 5, -1000, 1000);
     public static final ModConfigSpec.IntValue PLAYER_MAX = B.defineInRange("playerLevelMax", 10, -1000, 1000);
     public static final ModConfigSpec.DoubleValue SPEED = B.comment("Movement speed multiplier for every hostile monster").defineInRange("monsterSpeedMultiplier", 1.5, 0.1, 10);
-    public static final ModConfigSpec.DoubleValue DAMAGE_SCALE = B.comment("Multiplier on all damage monsters deal (after the level curve), the dragon included")
-            .defineInRange("monsterDamageScale", 0.5, 0, 10);
     public static final ModConfigSpec.IntValue ZOMBIE_RANGE = B.comment("How far zombies notice and follow players (blocks)").defineInRange("zombieFollowRange", 128, 8, 512);
 
     static {
@@ -44,8 +42,8 @@ public final class MobConfig {
     public static final ModConfigSpec.IntValue VARIANCE = B.comment("Random spread of levels (+-)").defineInRange("variance", 2, 0, 50);
     public static final ModConfigSpec.DoubleValue HP_LINEAR = B.comment("Health x (1 + a(L-1) + b(L-1)^2)").defineInRange("healthA", 0.025, 0, 10);
     public static final ModConfigSpec.DoubleValue HP_SQUARE = B.defineInRange("healthB", 0.00025, 0, 10);
-    public static final ModConfigSpec.DoubleValue DMG_LINEAR = B.comment("Damage x (1 + a(L-1) + b(L-1)^2)").defineInRange("damageA", 0.02, 0, 10);
-    public static final ModConfigSpec.DoubleValue DMG_SQUARE = B.defineInRange("damageB", 0.0002, 0, 10);
+    public static final ModConfigSpec.DoubleValue DMG_LINEAR = B.comment("Damage x (1 + a(L-1) + b(L-1)^2): x1 at Lv1, about x2.8 at Lv110").defineInRange("damageGrowthA", 0.0078, 0, 10);
+    public static final ModConfigSpec.DoubleValue DMG_SQUARE = B.defineInRange("damageGrowthB", 0.000078, 0, 10);
     public static final ModConfigSpec.DoubleValue EXPLOSION_SHARE = B.comment("Share of the damage growth that explosions get").defineInRange("explosionShare", 0.25, 0, 1);
     static {
         B.pop().push("ai");
@@ -110,10 +108,6 @@ public final class MobConfig {
 
     public static double speed() {
         return SPEC.isLoaded() ? SPEED.get() : 1.5;
-    }
-
-    public static double damageScale() {
-        return SPEC.isLoaded() ? DAMAGE_SCALE.get() : 0.5;
     }
 
     public static int zombieRange() {
