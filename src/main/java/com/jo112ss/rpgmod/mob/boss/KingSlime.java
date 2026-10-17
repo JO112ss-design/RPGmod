@@ -333,7 +333,6 @@ public class KingSlime extends Slime {
             leapFrom = this.position();
             setState(State.LEAP, leapTime);
             sl.playSound(null, this.blockPosition(), SoundEvents.SLIME_JUMP, SoundSource.HOSTILE, 3.0F, 0.6F);
-            this.hasImpulse = true;
         }
     }
 
@@ -341,7 +340,6 @@ public class KingSlime extends Slime {
         double s = Math.min(1, (stateTicks + 1) / (double) stateLength);
         Vec3 want = leapFrom.lerp(leapTo, s).add(0, leapHeight * 4 * s * (1 - s), 0);
         this.setDeltaMovement(want.subtract(this.position()));
-        this.hasImpulse = true;
         this.needsSync = true;
         this.resetFallDistance();
         boolean blocked = stateTicks > stateLength / 2 && this.onGround();
@@ -565,7 +563,6 @@ public class KingSlime extends Slime {
     private void startLeaving(ServerLevel sl) {
         setState(State.LEAVE, 70);
         waves.clear();
-        this.setInvulnerable(true);
         this.noPhysics = true;
         ServerFx.of("king_leave", this.position()).follow(this).a(this.getBbWidth()).b(70).send(sl);
         sl.playSound(null, this.blockPosition(), SoundEvents.SLIME_SQUISH, SoundSource.HOSTILE, 3.0F, 0.3F);
@@ -576,7 +573,7 @@ public class KingSlime extends Slime {
     private void leave(ServerLevel sl) {
         this.noPhysics = true;
         this.setDeltaMovement(0, -this.getBbHeight() / 60.0, 0);
-        this.hasImpulse = true;
+        this.needsSync = true;
         if (stateTicks >= stateLength) this.discard();
     }
 
