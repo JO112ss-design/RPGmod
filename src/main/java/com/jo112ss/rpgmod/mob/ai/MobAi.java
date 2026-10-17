@@ -101,8 +101,11 @@ public final class MobAi {
         if (lv <= 0) return;
         if ((isBuilderZombie(mob) || mob instanceof ZombifiedPiglin) && mob.goalSelector.getAvailableGoals().stream().noneMatch(g -> g.getGoal() instanceof BuilderGoal)) {
             // zombified piglins only ever have a target once angered, so they build and dig only then
-            mob.goalSelector.addGoal(1, new BuilderGoal(mob, lv));
+            BuilderGoal builder = new BuilderGoal(mob, lv);
+            mob.goalSelector.addGoal(1, builder);
             mob.goalSelector.addGoal(1, new ZombieItemGoal(mob));
+            // out of caves by walking or by digging stairs (ahead of the attack goal, which only heads for the spot below)
+            if (isBuilderZombie(mob)) mob.goalSelector.addGoal(2, new SurfaceGoal(mob, builder));
         }
         if (isBuilderZombie(mob) && mob.targetSelector.getAvailableGoals().stream().noneMatch(g -> g.getGoal() instanceof ZombieSenseGoal)) {
             // zombies find players anywhere within their follow range, walls or not

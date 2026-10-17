@@ -38,11 +38,31 @@ public final class BuilderGoal extends Goal {
     private int digTime, digNeed;
     private BlockPos pillarBase;
     private int pillarAge;
+    /** Where the zombie was a second ago: walking along a path counts as progress, even a partial one. */
+    private net.minecraft.world.phys.Vec3 sample;
+    private int sampleAge;
+    private boolean moving;
+    /** The companion goal that takes zombies out of caves (walking out, or digging stairs up). */
+    private SurfaceGoal surface;
+    /** Dev test: blocks dug by all builders. */
+    public static int dugBlocks;
 
     public BuilderGoal(Mob mob, int level) {
         this.mob = mob;
         this.level = level;
         setFlags(EnumSet.noneOf(Goal.Flag.class));
+    }
+
+    void setSurface(SurfaceGoal surface) {
+        this.surface = surface;
+    }
+
+    boolean digging() {
+        return digPos != null;
+    }
+
+    void cancelDig() {
+        resetDig();
     }
 
     private LivingEntity target() {
@@ -92,9 +112,16 @@ public final class BuilderGoal extends Goal {
             resetDig();
             return;
         }
+        if (sample == null || ++sampleAge >= 20) {
+            moving = sample != null && mob.position().distanceTo(sample) >= 1.0;
+            sample = mob.position();
+            sampleAge = 0;
+        }
         Path path = mob.getNavigation().getPath();
         boolean pathOk = path != null && path.canReach();
-        stuck = !pathOk || sinceBest > 40 ? stuck + 1 : Math.max(0, stuck - 2);
+        // still walking somewhere (even only part of the way, like out of a cave): not stuck yet
+        boolean walking = mob.getNavigation().isInProgress() && moving;
+        stuck = walking || (pathOk && sinceBest <= 40) ? Math.max(0, stuck - 2) : stuck + 1;
         if (digPos != null) {
             continueDig(sl);
             return;
@@ -103,6 +130,7 @@ public final class BuilderGoal extends Goal {
             continuePillar(sl);
             return;
         }
+        if (surface != null && surface.running()) return;
         if (stuck < 10 || cooldown > 0 || placed >= MAX_BLOCKS) return;
         act(sl, t);
     }
@@ -184,7 +212,7 @@ public final class BuilderGoal extends Goal {
 
     // ------------------------------------------------------------------ blocks
 
-    private static boolean solid(ServerLevel sl, BlockPos p) {
+    static boolean solid(ServerLevel sl, BlockPos p) {
         return !sl.getBlockState(p).getCollisionShape(sl, p).isEmpty();
     }
 
@@ -194,7 +222,7 @@ public final class BuilderGoal extends Goal {
         return Blocks.DIRT;
     }
 
-    private boolean place(ServerLevel sl, BlockPos p) {
+    boolean place(ServerLevel sl, BlockPos p) {
         BlockState at = sl.getBlockState(p);
         if (!at.canBeReplaced()) return false;
         AABB box = new AABB(p);
@@ -217,10 +245,11 @@ public final class BuilderGoal extends Goal {
         return !s.isAir() && h >= 0 && h < 50 && !s.hasBlockEntity() && EventHooks.onEntityDestroyBlock(mob, p, s);
     }
 
-    private void tryDig(ServerLevel sl, BlockPos p) {
+    /** Starts digging {@code p}; false if this zombie may not break it. */
+    boolean tryDig(ServerLevel sl, BlockPos p) {
         if (!canBreak(sl, p)) {
             cooldown = 40;
-            return;
+            return false;
         }
         float h = sl.getBlockState(p).getDestroySpeed(sl, p);
         digPos = p;
@@ -228,6 +257,7 @@ public final class BuilderGoal extends Goal {
         // dirt ~0.6 s, stone ~1.2 s, deepslate ~2 s; quicker for stronger zombies
         digNeed = Math.max(6, (int) ((8 + h * 12) * (1 - Math.min(0.5, level * 0.008))));
         mob.getNavigation().stop();
+        return true;
     }
 
     private void continueDig(ServerLevel sl) {
@@ -247,6 +277,7 @@ public final class BuilderGoal extends Goal {
             BlockPos p = digPos;
             resetDig();
             sl.destroyBlock(p, true, mob);
+            dugBlocks++;
             cooldown = 1;
         }
     }

@@ -65,6 +65,8 @@ final class MobScenes {
             case "nether" -> 7;
             case "king" -> 9;
             case "sense" -> 8;
+            case "stairs" -> 10;
+            case "exit" -> 11;
             default -> 5;
         };
         c = BlockPos.containing(arena).offset(40, 0, idx * 24 - 60);
@@ -96,6 +98,28 @@ final class MobScenes {
                 }
                 tp(player, Vec3.atBottomCenterOf(c), -90, 10);
                 spawn(level, EntityTypes.HUSK, c.offset(6, 0, 0), 25);
+            }
+            case "stairs", "exit" -> {
+                // a stone hill 12 high; the player on top, a zombie in a cave inside it
+                for (int x = -6; x <= 30; x++) for (int z = -10; z <= 10; z++) for (int y = 0; y < 12; y++) {
+                    level.setBlock(c.offset(x, y, z), (name.equals("stairs") ? Blocks.DIRT : Blocks.STONE).defaultBlockState(), 2);
+                }
+                for (int x = 11; x <= 16; x++) for (int z = -1; z <= 1; z++) for (int y = 1; y <= 2; y++) level.setBlock(c.offset(x, y, z), Blocks.AIR.defaultBlockState(), 2);
+                BlockPos top = c.above(12);
+                if (name.equals("exit")) {
+                    // a walkable ramp up to the open air at the far end of the cave...
+                    for (int i = 0; i <= 11; i++) for (int y = 1; y <= 3; y++) level.setBlock(c.offset(17 + i, i + y, 0), Blocks.AIR.defaultBlockState(), 2);
+                    // ...and the player shut in a hut on top, so nobody can walk right up to them
+                    for (int x = -2; x <= 2; x++) for (int z = -2; z <= 2; z++) for (int y = 0; y <= 3; y++) {
+                        boolean wall = Math.abs(x) == 2 || Math.abs(z) == 2 || y == 3;
+                        if (wall) level.setBlockAndUpdate(top.offset(x, y, z), Blocks.STONE.defaultBlockState());
+                    }
+                }
+                tp(player, Vec3.atBottomCenterOf(top), -90, 25);
+                com.jo112ss.rpgmod.mob.ai.BuilderGoal.dugBlocks = 0;
+                com.jo112ss.rpgmod.mob.ai.SurfaceGoal.lastMode = "-";
+                spawn(level, EntityTypes.ZOMBIE, c.offset(12, 1, 0), 25);
+                for (Mob m : mobs) m.setTarget(null);
             }
             case "sense" -> {
                 // the player sealed in a stone hut: zombies far outside can never see them
@@ -320,7 +344,7 @@ final class MobScenes {
         if (scene == null) return;
         t++;
         // (the sense scene checks that zombies find the player on their own)
-        if (!"sense".equals(scene)) for (Mob m : mobs) if (m.isAlive() && m.getTarget() == null) m.setTarget(player);
+        if (!java.util.Set.of("sense", "stairs", "exit").contains(scene)) for (Mob m : mobs) if (m.isAlive() && m.getTarget() == null) m.setTarget(player);
         switch (scene) {
             case "king" -> kingTick(level, player);
             case "dragon" -> {
@@ -392,6 +416,15 @@ final class MobScenes {
                     Mob cr = mobs.isEmpty() ? null : mobs.get(0);
                     RpgMod.LOGGER.info("[AUTOTEST] creeper t={} alive={} swell={} wall broken={} health lost={}", t, cr != null && cr.isAlive(),
                             cr instanceof Creeper k ? k.getSwellDir() : 0, broken, String.format("%.1f", lostHealth));
+                }
+            }
+            case "stairs", "exit" -> {
+                if (t % 20 == 0 && !mobs.isEmpty()) {
+                    Mob z = mobs.get(0);
+                    RpgMod.LOGGER.info("[AUTOTEST] {} t={} zombie at {} (relative x={} y={}) target={} mode={} dug={} dist={} health lost={}", scene, t,
+                            z.blockPosition(), z.getBlockX() - c.getX(), z.getBlockY() - c.getY(), z.getTarget() == player,
+                            com.jo112ss.rpgmod.mob.ai.SurfaceGoal.lastMode, com.jo112ss.rpgmod.mob.ai.BuilderGoal.dugBlocks,
+                            String.format("%.1f", z.distanceTo(player)), String.format("%.1f", lostHealth));
                 }
             }
             case "sense" -> {
