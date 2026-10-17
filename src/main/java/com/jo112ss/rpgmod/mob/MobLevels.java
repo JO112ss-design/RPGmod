@@ -63,6 +63,7 @@ public final class MobLevels {
         ServerLevel sl = (ServerLevel) event.getLevel();
         int lv = mob instanceof EnderDragon ? dragonLevel(sl) : rollLevel(sl, mob.blockPosition(), mob.getRandom().nextDouble());
         apply(mob, lv);
+        MobGear.equip(mob, lv);
         com.jo112ss.rpgmod.mob.ai.MobAi.onFirstLevel(mob, lv);
     }
 
