@@ -408,7 +408,7 @@
   "rpgmod.skill.shadow_bind": "Shadow Bind",
   "rpgmod.skill.shadow_bind.desc": "Shadows pin the targeted enemy in place for 3s and lower its attack.",
   "rpgmod.skill.fire_weapon": "Fire Weapon",
-  "rpgmod.skill.fire_weapon.desc": "For 15s the hits of nearby allies set enemies on fire and deal extra damage.",
+  "rpgmod.skill.fire_weapon.desc": "The hits of nearby allies set enemies on fire and deal extra damage.",
   "rpgmod.skill.binding_field": "Binding Circle",
   "rpgmod.skill.binding_field.desc": "A circle on the aimed spot for 5s: enemies inside are heavily slowed and weakened.",
   "rpgmod.skill.russian_roulette": "Russian Roulette",
@@ -447,5 +447,6 @@
   "rpgmod.option.max_mana": "Max Mana",
   "rpgmod.option.mana_regen": "Mana Regen",
   "rpgmod.hud.resting": "Mana regen x%s",
-  "rpgmod.scan.found": "Scan: %s enemies found"
+  "rpgmod.scan.found": "Scan: %s enemies found",
+  "rpgmod.jobscreen.duration": "Lasts %1$ss (now %2$ss, longer with magic attack)"
 }

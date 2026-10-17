@@ -577,6 +577,11 @@ public class JobScreen extends Screen {
             g.text(font, power, x, y, 0xFFFFC870, false);
             y += 12;
         }
+        Component dur = durationLine(def);
+        if (dur != null) {
+            g.text(font, dur, x, y, 0xFF9CE6FF, false);
+            y += 12;
+        }
         int lines = font.split(Ui.skillDesc(id), w).size();
         g.textWithWordWrap(font, Ui.skillDesc(id), x, y, w, Ui.TEXT, false);
         return y + lines * 9 + 4;
@@ -709,6 +714,14 @@ public class JobScreen extends Screen {
                 String.format("%.0f", def.power() * 100), String.format("%.1f", now));
     }
 
+    /** Enchanter buffs: listed time and what the current magic attack makes of it. */
+    private Component durationLine(SkillDef def) {
+        if (minecraft.player == null) return null;
+        double scale = com.jo112ss.rpgmod.job.JobManager.buffDurationScale(minecraft.player, def);
+        if (scale == 1 && !("enchanter".equals(def.job()) && def.effect() == com.jo112ss.rpgmod.job.core.SkillEffect.BUFF)) return null;
+        return Component.translatable("rpgmod.jobscreen.duration", fmt(def.duration()), fmt(def.duration() * scale));
+    }
+
     private void drawSkillTooltip(GuiGraphicsExtractor g, int mouseX, int mouseY) {
         if (hoveredSkill == null) return;
         List<Component> lines = new ArrayList<>();
@@ -717,6 +730,8 @@ public class JobScreen extends Screen {
         lines.add(Component.translatable("rpgmod.jobscreen.cd", fmt(def.cooldown())).append("  ").append(Component.translatable("rpgmod.jobscreen.mp", fmt(def.mana()))));
         Component power = powerLine(def);
         if (power != null) lines.add(power.copy().withColor(0xFFFFC870));
+        Component dur = durationLine(def);
+        if (dur != null) lines.add(dur.copy().withColor(0xFF9CE6FF));
         lines.add(Ui.skillDesc(hoveredSkill));
         g.setComponentTooltipForNextFrame(font, lines, mouseX, mouseY);
     }

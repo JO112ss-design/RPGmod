@@ -147,6 +147,15 @@ public final class ForgeOptionEffects {
             }
             d = data(bow);
             if (d != null) applyRangedOptions(event, d, player);
+            // the shooter's own attack (job level, panel, strength...), taken when the arrow was loosed
+            double own = arrow.getPersistentData().getDoubleOr(OWN_ATTACK, 0);
+            if (own != 0) {
+                float before = event.getAmount();
+                event.setAmount((float) Math.max(0, before + own));
+                if (com.jo112ss.rpgmod.devtest.AutoTestServer.ENABLED) {
+                    com.jo112ss.rpgmod.RpgMod.LOGGER.info("[AUTOTEST] bow arrow {} + own {} -> {}", before, String.format("%.1f", own), event.getAmount());
+                }
+            }
         } else {
             return;
         }
@@ -171,6 +180,47 @@ public final class ForgeOptionEffects {
         else if (source.getDirectEntity() instanceof AbstractArrow arrow && arrow.getWeaponItem() != null) d = data(arrow.getWeaponItem());
         else return 0;
         return d == null ? 0 : Math.min(1, d.get(OptionType.ARMOR_PENETRATION) / 100.0);
+    }
+
+    private static final String OWN_ATTACK = "rpgmod_own_attack";
+
+    /**
+     * Vanilla arrows ignore the shooter's attack attribute, so a bow never felt job levels, the skill
+     * panel, strength (war cry, empower...) or weakness. When a player looses an arrow from a bow or
+     * crossbow, everything their attack attribute holds above the base 1 is stored on the arrow,
+     * scaled by draw strength like the material bonus, and added when it hits (before the RPG crit).
+     * That matches the attack the status screen shows for bows. Skill arrows carry no bow and are
+     * skipped: their damage already comes from the attack.
+     */
+    @SubscribeEvent
+    public static void onArrowLoosed(net.neoforged.neoforge.event.entity.EntityJoinLevelEvent event) {
+        if (event.getLevel().isClientSide() || event.loadedFromDisk()) return;
+        if (!(event.getEntity() instanceof AbstractArrow arrow) || !(arrow.getOwner() instanceof Player player)) return;
+        ItemStack bow = arrow.getWeaponItem();
+        if (bow == null || !(bow.getItem() instanceof net.minecraft.world.item.ProjectileWeaponItem)) return;
+        double own = ownAttack(player, bow);
+        if (Math.abs(own) < 1e-4) return;
+        double drawn = Math.min(1.0, arrow.getDeltaMovement().length() / 3.0);
+        arrow.getPersistentData().putDouble(OWN_ATTACK, own * drawn);
+    }
+
+    /** The player's attack attribute above the base, without a melee weapon held in the other hand. */
+    public static double ownAttack(Player player, ItemStack bow) {
+        var inst = player.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE);
+        if (inst == null) return 0;
+        double own = inst.getValue() - inst.getBaseValue();
+        ItemStack main = player.getMainHandItem();
+        if (main != bow && !main.isEmpty()) { // shot from the off hand: the main-hand weapon is not the bow's
+            double[] w = {0};
+            main.forEachModifier(net.minecraft.world.entity.EquipmentSlot.MAINHAND, (attr, mod) -> {
+                if (attr.is(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE)
+                        && mod.operation() == net.minecraft.world.entity.ai.attributes.AttributeModifier.Operation.ADD_VALUE) {
+                    w[0] += mod.amount();
+                }
+            });
+            own -= w[0];
+        }
+        return own;
     }
 
     /**

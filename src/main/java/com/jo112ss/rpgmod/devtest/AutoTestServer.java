@@ -101,6 +101,10 @@ public final class AutoTestServer {
             }
             resetArena();
             RpgMod.LOGGER.info("[AUTOTEST] showcase arena at {} with {} dummies", arena, targets.size());
+            if (targets.size() >= 2) { // bow arrows carry the shooter's own attack: plain, then with strength II
+                bowTest(level, player, targets.get(0), 0);
+                bowTest(level, player, targets.get(1), 2);
+            }
         }
         String id = castRequest;
         if (id != null && arena != null) {
@@ -236,6 +240,20 @@ public final class AutoTestServer {
                 default -> { }
             }
         }
+    }
+
+    private static void bowTest(net.minecraft.server.level.ServerLevel level, ServerPlayer player, net.minecraft.world.entity.LivingEntity target, int strength) {
+        if (strength > 0) player.addEffect(new net.minecraft.world.effect.MobEffectInstance(net.minecraft.world.effect.MobEffects.STRENGTH, 60, strength - 1));
+        ItemStack bow = new ItemStack(com.jo112ss.rpgmod.item.ModItems.get(com.jo112ss.rpgmod.item.WeaponType.BOW, com.jo112ss.rpgmod.item.WeaponMaterial.IRON));
+        var arrow = new net.minecraft.world.entity.projectile.arrow.Arrow(level, player, new ItemStack(net.minecraft.world.item.Items.ARROW), bow);
+        arrow.setPos(player.getEyePosition());
+        var to = target.position().add(0, target.getBbHeight() * 0.6, 0).subtract(player.getEyePosition());
+        arrow.shoot(to.x, to.y, to.z, 3.0F, 0);
+        level.addFreshEntity(arrow);
+        RpgMod.LOGGER.info("[AUTOTEST] bow test strength={} own attack={} stored={}", strength,
+                String.format("%.1f", com.jo112ss.rpgmod.effects.ForgeOptionEffects.ownAttack(player, bow)),
+                String.format("%.1f", arrow.getPersistentData().getDoubleOr("rpgmod_own_attack", 0)));
+        if (strength > 0) player.removeEffect(net.minecraft.world.effect.MobEffects.STRENGTH);
     }
 
     private static void logLastCast() {

@@ -426,6 +426,17 @@ public final class JobManager {
         return (1 + staffMagic(player) + own) * (1 + gear / 100.0);
     }
 
+    /**
+     * Enchanter buffs (empower, haste, fire weapon, grand enchant) last longer the higher the
+     * caster's magic attack: listed time x (magic attack / reference), clamped. 1 for everything else.
+     */
+    public static double buffDurationScale(Player player, SkillDef def) {
+        if (player == null || def == null || !"enchanter".equals(def.job()) || def.effect() != com.jo112ss.rpgmod.job.core.SkillEffect.BUFF) return 1;
+        boolean loaded = JobConfig.SPEC.isLoaded();
+        double ref = loaded ? JobConfig.ENCHANT_BUFF_REF.get() : 10, lo = loaded ? JobConfig.ENCHANT_BUFF_MIN.get() : 0.5, hi = loaded ? JobConfig.ENCHANT_BUFF_MAX.get() : 3.0;
+        return Math.max(lo, Math.min(Math.max(lo, hi), magicAttack(player) / ref));
+    }
+
     /** The attack a skill scales with. */
     public static double skillAttack(Player player, SkillDef def) {
         return JobDefs.isMagic(def) ? magicAttack(player) : physicalAttack(player);

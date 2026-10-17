@@ -20,6 +20,10 @@ public final class JobConfig {
     public static final ModConfigSpec.IntValue REST_DELAY = B.comment("Seconds without attacking or being hurt before mana regenerates faster").defineInRange("restRegenDelay", 30, 0, 3600);
     public static final ModConfigSpec.DoubleValue REST_MULT = B.comment("Mana regeneration multiplier while out of combat").defineInRange("restRegenMultiplier", 3.0, 1, 100);
 
+    public static final ModConfigSpec.DoubleValue ENCHANT_BUFF_REF = B.comment("Enchanter buffs last their listed time at this magic attack; longer above, shorter below").defineInRange("enchanterBuffReferenceAttack", 10.0, 0.1, 1000);
+    public static final ModConfigSpec.DoubleValue ENCHANT_BUFF_MIN = B.comment("Shortest enchanter buff time, as a multiple of the listed time").defineInRange("enchanterBuffMinMultiplier", 0.5, 0.01, 100);
+    public static final ModConfigSpec.DoubleValue ENCHANT_BUFF_MAX = B.comment("Longest enchanter buff time, as a multiple of the listed time").defineInRange("enchanterBuffMaxMultiplier", 3.0, 0.01, 100);
+
     public static final ModConfigSpec SPEC = B.build();
 
     public static int maxLevel() {

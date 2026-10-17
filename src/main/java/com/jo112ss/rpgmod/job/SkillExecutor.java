@@ -261,7 +261,11 @@ public final class SkillExecutor {
     }
 
     private static void apply(LivingEntity e, SkillDef def, ServerPlayer source) {
-        for (Holder<MobEffect> h : effects(def)) e.addEffect(new MobEffectInstance(h, ticks(def.duration()), def.amplifier()), source);
+        apply(e, def, source, 1);
+    }
+
+    private static void apply(LivingEntity e, SkillDef def, ServerPlayer source, double timeScale) {
+        for (Holder<MobEffect> h : effects(def)) e.addEffect(new MobEffectInstance(h, ticks(def.duration() * timeScale), def.amplifier()), source);
     }
 
     // ------------------------------------------------------------------ damage / movement helpers
@@ -574,8 +578,12 @@ public final class SkillExecutor {
     /** Buff for the party around the caster (the effect shows on each of them). */
     private static boolean partyBuff(Ctx c, String fx, SoundEvent s, float pitch) {
         List<ServerPlayer> allies = allies(c.p, c.def.radius());
-        for (ServerPlayer a : allies) apply(a, c.def, c.p);
-        ServerFx.of(fx, c.p.position()).follow(c.p).a(Math.max(1, c.def.radius())).b(c.def.duration()).points(others(c.p, allies)).send(c.level);
+        double scale = JobManager.buffDurationScale(c.p, c.def); // enchanter: magic attack stretches the buff
+        for (ServerPlayer a : allies) apply(a, c.def, c.p, scale);
+        ServerFx.of(fx, c.p.position()).follow(c.p).a(Math.max(1, c.def.radius())).b(c.def.duration() * scale).points(others(c.p, allies)).send(c.level);
+        if (com.jo112ss.rpgmod.devtest.AutoTestServer.ENABLED && scale != 1) {
+            com.jo112ss.rpgmod.RpgMod.LOGGER.info("[AUTOTEST] buff {} magic={} time x{} = {}s", c.def.id(), String.format("%.1f", JobManager.magicAttack(c.p)), String.format("%.2f", scale), String.format("%.1f", c.def.duration() * scale));
+        }
         sound(c, s, pitch);
         if (fx.equals("guardian_light") || fx.equals("divine_aegis")) sound(c, c.p.position(), SoundEvents.TOTEM_USE, 0.5F, 1.4F);
         if (fx.equals("grand_enchant")) sound(c, c.p.position(), SoundEvents.ENCHANTMENT_TABLE_USE, 1.0F, 0.7F);
@@ -1473,8 +1481,9 @@ public final class SkillExecutor {
     private static boolean fireWeapon(Ctx c) {
         List<ServerPlayer> allies = allies(c.p, c.def.radius());
         int bonus = Math.max(1, (int) Math.round(c.dmg(1)));
+        double scale = JobManager.buffDurationScale(c.p, c.def);
         for (ServerPlayer a : allies) {
-            a.addEffect(new MobEffectInstance(com.jo112ss.rpgmod.registry.ModEffects.FIRE_WEAPON, ticks(c.def.duration()), bonus - 1), c.p);
+            a.addEffect(new MobEffectInstance(com.jo112ss.rpgmod.registry.ModEffects.FIRE_WEAPON, ticks(c.def.duration() * scale), bonus - 1), c.p);
         }
         ServerFx.of("fire_weapon", c.p.position()).follow(c.p).a(c.def.radius()).points(others(c.p, allies)).send(c.level);
         sound(c, SoundEvents.FIRECHARGE_USE, 1.2F);
