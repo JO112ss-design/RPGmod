@@ -194,8 +194,8 @@
   "rpgmod.skill.multishot.desc": "Fire three arrows in a fan.",
   "rpgmod.skill.backstep": "Backstep",
   "rpgmod.skill.backstep.desc": "Leap backwards with a burst of speed.",
-  "rpgmod.skill.hunters_mark": "Hunter's Mark",
-  "rpgmod.skill.hunters_mark.desc": "Mark enemies ahead (16 blocks): they glow and are weakened.",
+  "rpgmod.skill.hunters_mark": "Scan",
+  "rpgmod.skill.hunters_mark.desc": "Scans 128 blocks around you: every hostile monster glows for 12s, visible through walls.",
   "rpgmod.skill.snare": "Snare",
   "rpgmod.skill.snare.desc": "Throw a snare where you aim; it roots enemies that enter.",
   "rpgmod.skill.arrow_rain": "Arrow Rain",
@@ -446,5 +446,6 @@
   "rpgmod.stat.damage_reduction": "Damage Taken",
   "rpgmod.option.max_mana": "Max Mana",
   "rpgmod.option.mana_regen": "Mana Regen",
-  "rpgmod.hud.resting": "Mana regen x%s"
+  "rpgmod.hud.resting": "Mana regen x%s",
+  "rpgmod.scan.found": "Scan: %s enemies found"
 }

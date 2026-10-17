@@ -34,7 +34,7 @@ SKILLS = {  # id: (ja, ja desc, en, en desc)
  'earthshatter': ('大地割り', '地面を叩き割り、広がる衝撃波で周囲の敵を打ち上げ鈍らせる。', 'Earthshatter', 'Smash the ground: a spreading shockwave hits, lifts and slows enemies.'),
  'multishot': ('連射', '扇状に3本の矢を放つ。', 'Multishot', 'Fire three arrows in a fan.'),
  'backstep': ('バックステップ', '後ろへ跳んで距離をとり、一瞬速くなる。', 'Backstep', 'Leap backwards with a burst of speed.'),
- 'hunters_mark': ('狩人の印', '前方の敵（16ブロック）に印をつけ、発光させ弱体化させる。', "Hunter's Mark", 'Mark enemies ahead (16 blocks): they glow and are weakened.'),
+ 'hunters_mark': ('索敵スキャン', '周囲128ブロックの敵をスキャンし、12秒間発光させる（壁越しにも見える）。', 'Scan', 'Scans 128 blocks around you: every hostile monster glows for 12s, visible through walls.'),
  'snare': ('罠', '狙った場所に罠を投げる。踏み込んだ敵を大きく鈍らせる。', 'Snare', 'Throw a snare where you aim; it roots enemies that enter.'),
  'arrow_rain': ('アローレイン', '狙った範囲に2秒間矢の雨を降らせる。', 'Arrow Rain', 'Arrows rain on the aimed area for two seconds.'),
  'eagle_eye': ('鷹の目', '攻撃力・移動速度・暗視を得る。', 'Eagle Eye', 'Gain strength, speed and night vision.'),

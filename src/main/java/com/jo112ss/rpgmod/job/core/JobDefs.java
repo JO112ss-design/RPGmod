@@ -86,7 +86,7 @@ public final class JobDefs {
                 List.of(
                         skill("multishot", SkillKind.ACTIVE, SkillEffect.SHOT, 6, 15, 0.8, 0, 0, List.of(), 0, "連"),
                         skill("backstep", SkillKind.ACTIVE, SkillEffect.BACKSTEP, 7, 10, 1.4, 0, 0, List.of(), 0, "退"),
-                        skill("hunters_mark", SkillKind.ACTIVE, SkillEffect.DEBUFF, 15, 20, 0, 16, 10, List.of("minecraft:glowing", "minecraft:weakness"), 0, "印"),
+                        skill("hunters_mark", SkillKind.ACTIVE, SkillEffect.DEBUFF, 20, 20, 0, 128, 12, List.of("minecraft:glowing"), 0, "探"),
                         skill("snare", SkillKind.ACTIVE, SkillEffect.DEBUFF, 12, 20, 0.4, 3.5, 4, List.of("minecraft:slowness"), 2, "罠"),
                         skill("piercing_shot", SkillKind.ACTIVE, SkillEffect.BOLT, 8, 18, 1.6, 30, 0, List.of(), 0, "貫"),
                         skill("explosive_arrow", SkillKind.ACTIVE, SkillEffect.SHOT, 10, 20, 1.2, 3, 0, List.of(), 0, "爆")),

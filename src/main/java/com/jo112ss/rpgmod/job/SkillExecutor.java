@@ -484,15 +484,24 @@ public final class SkillExecutor {
         return true;
     }
 
+    /**
+     * Ranger scan: a pulse goes out to {@code radius} blocks (128) and every hostile monster it finds
+     * glows - visible through walls - for the duration. Reticles only on the nearer ones (cheap on the network).
+     */
     private static boolean huntersMark(Ctx c) {
-        List<LivingEntity> marked = cone(c, c.def.radius(), 45);
-        for (LivingEntity e : marked) {
-            apply(e, c.def, c.p);
-            ServerFx.of("mark", e.position()).follow(e).a(c.def.duration()).send(c.level);
+        double r = c.def.radius();
+        List<net.minecraft.world.entity.Mob> found = c.level.getEntitiesOfClass(net.minecraft.world.entity.Mob.class, c.p.getBoundingBox().inflate(r),
+                m -> m instanceof net.minecraft.world.entity.monster.Enemy && m.isAlive() && m.distanceToSqr(c.p) <= r * r);
+        found.sort(java.util.Comparator.comparingDouble(m -> m.distanceToSqr(c.p)));
+        for (int i = 0; i < found.size(); i++) {
+            var m = found.get(i);
+            apply(m, c.def, c.p);
+            if (i < 24) ServerFx.of("mark", m.position()).follow(m).a(c.def.duration()).send(c.level);
         }
-        ServerFx.of("hunters_mark", c.p.getEyePosition()).vec(c.flat()).a(c.def.radius()).points(marked).send(c.level);
-        sound(c, SoundEvents.ILLUSIONER_PREPARE_BLINDNESS, 1.4F);
-        if (!marked.isEmpty()) sound(c, SoundEvents.AMETHYST_CLUSTER_BREAK, 1.6F);
+        ServerFx.of("hunters_mark", c.p.position()).a(r).b(found.size()).points(found.subList(0, Math.min(32, found.size()))).send(c.level);
+        sound(c, SoundEvents.BEACON_POWER_SELECT, 1.8F);
+        sound(c, SoundEvents.AMETHYST_BLOCK_RESONATE, 0.6F);
+        c.p.sendSystemMessage(Component.translatable("rpgmod.scan.found", found.size()).withStyle(ChatFormatting.GOLD), true);
         return true;
     }
 

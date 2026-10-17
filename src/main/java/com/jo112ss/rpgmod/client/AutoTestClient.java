@@ -145,6 +145,7 @@ public final class AutoTestClient {
             case "earthshatter", "frost_nova", "flame_burst", "berserk", "holy_guard", "lay_on_hands", "heal", "arcane_shield", "shadow_dance" -> new int[] {6};
             case "snare", "time_warp", "weaken", "mana_link", "grand_enchant", "mana_surge", "blessing", "guardian_light" -> new int[] {10};
             case "arrow_rain" -> new int[] {16};
+            case "hunters_mark" -> new int[] {4, 14};
             case "smite" -> new int[] {4, 9};
             case "judgement" -> new int[] {12, 18};
             case "meteor" -> new int[] {18, 30};
@@ -197,7 +198,7 @@ public final class AutoTestClient {
             showSkills = new java.util.ArrayList<>();
             if ("all".equals(System.getProperty("rpgmod.showcase"))) showSkills.addAll(com.jo112ss.rpgmod.job.core.JobDefs.SKILLS.keySet());
             // enemy work: levels, plates and damage numbers (skills were checked in earlier runs)
-            showSkills.addAll(java.util.List.of("mob:levels", "mob:nether", "mob:pillar", "fp:mob:dig", "mob:creeper", "mob:archer",
+            showSkills.addAll(java.util.List.of("hunters_mark", "mob:levels", "mob:nether", "mob:pillar", "fp:mob:dig", "mob:creeper", "mob:archer",
                     "mob:items", "mob:spider", "mob:dragon"));
             mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK);
             mc.options.particles().set(net.minecraft.server.level.ParticleStatus.ALL);

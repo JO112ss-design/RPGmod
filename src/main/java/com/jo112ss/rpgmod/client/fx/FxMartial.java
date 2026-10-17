@@ -280,26 +280,29 @@ final class FxMartial {
         });
     }
 
+    /** Scan: sonar rings rolling out over the ground and a sweeping line, pings on the enemies found. */
     private static void huntersMark(P p) {
-        Vec3 eye = p.pos();
-        Vec3 dir = flatDir(p.vec());
-        float range = Math.max(4, p.a());
-        int steps = 8;
-        FxAnims.run(steps + 1, age -> {
-            double d = (age + 1) / (double) steps * range;
-            int n = Fx.n(14);
-            for (int i = 0; i < n; i++) {
-                double a = Math.toRadians(-45 + 90.0 * i / (n - 1));
-                Vec3 v = Fx.rotY(dir, a).scale(d);
-                Fx.p(S.GLOW, eye.add(v).add(0, -0.6 + Fx.r(-0.2, 0.2), 0)).color(GOLD, LEAF).size(0.2F, 0).alpha(0.8F, 0).life(6).spawn();
+        Vec3 o = p.pos();
+        Entity e = p.e();
+        float shown = 40; // the pulse is drawn out to 40 blocks; the scan itself reaches further
+        for (int k = 0; k < 3; k++) {
+            ground(S.RING, o, 1, GOLD, 26).size(1F, shown * 2).easeOut().color(0xFFFFFF, LEAF).alpha(0.8F, 0).delay(k * 6).spawn();
+        }
+        ground(S.WAVE, o, 1, GOLD, 16).size(1F, 10F).easeOut().color(0xFFFFFF, GOLD).alpha(0.8F, 0).spawn();
+        flash(o.add(0, 1.2, 0), GOLD, 1.2F, 6);
+        // a radar sweep line turning once around the ranger
+        FxAnims.run(20, age -> {
+            double a = age / 20.0 * Math.PI * 2;
+            Vec3 dir = new Vec3(Math.cos(a), 0, Math.sin(a));
+            for (int i = 1; i <= 8; i++) {
+                Fx.p(S.GLOW, o.add(dir.scale(i * 1.2)).add(0, 0.15, 0)).color(0xFFFFFF, LEAF).size(0.18F, 0).alpha(0.8F, 0).life(8).spawn();
             }
             return false;
         });
-        Fx.p(S.RING, eye.add(dir.scale(0.6))).fixed(Fx.across(dir)).size(0.2F, 1.0F).color(GOLD).alpha(0.9F, 0).life(8).spawn();
         for (Vec3 t : p.pts()) {
-            int delay = (int) (eye.distanceTo(t) / range * steps);
-            flash(t, GOLD, 0.8F, 5);
-            Fx.p(S.SPARK, t).color(0xFFFFFF, 0xFF5A3C).size(1.2F, 0.1F).life(8).delay(delay).spawn();
+            int delay = (int) Math.min(26, o.distanceTo(t) / shown * 26);
+            Fx.p(S.SPARK, t.add(0, 0.6, 0)).color(0xFFFFFF, 0xFF5A3C).size(1.2F, 0.1F).life(8).delay(delay).spawn();
+            Fx.p(S.RING, t.add(0, 0.6, 0)).size(0.3F, 1.4F).easeOut().color(GOLD).alpha(0.9F, 0).life(10).delay(delay).spawn();
         }
     }
 

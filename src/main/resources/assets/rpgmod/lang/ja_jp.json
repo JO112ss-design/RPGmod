@@ -194,8 +194,8 @@
   "rpgmod.skill.multishot.desc": "扇状に3本の矢を放つ。",
   "rpgmod.skill.backstep": "バックステップ",
   "rpgmod.skill.backstep.desc": "後ろへ跳んで距離をとり、一瞬速くなる。",
-  "rpgmod.skill.hunters_mark": "狩人の印",
-  "rpgmod.skill.hunters_mark.desc": "前方の敵（16ブロック）に印をつけ、発光させ弱体化させる。",
+  "rpgmod.skill.hunters_mark": "索敵スキャン",
+  "rpgmod.skill.hunters_mark.desc": "周囲128ブロックの敵をスキャンし、12秒間発光させる（壁越しにも見える）。",
   "rpgmod.skill.snare": "罠",
   "rpgmod.skill.snare.desc": "狙った場所に罠を投げる。踏み込んだ敵を大きく鈍らせる。",
   "rpgmod.skill.arrow_rain": "アローレイン",
@@ -446,5 +446,6 @@
   "rpgmod.stat.damage_reduction": "被ダメ軽減",
   "rpgmod.option.max_mana": "最大MP",
   "rpgmod.option.mana_regen": "MP回復",
-  "rpgmod.hud.resting": "MP回復 ×%s"
+  "rpgmod.hud.resting": "MP回復 ×%s",
+  "rpgmod.scan.found": "スキャン：敵 %s 体を発見"
 }
