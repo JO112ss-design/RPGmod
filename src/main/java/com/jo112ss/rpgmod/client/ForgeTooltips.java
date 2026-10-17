@@ -42,6 +42,11 @@ public final class ForgeTooltips {
             if (mat != null) tip.add(Math.min(1, tip.size()), Component.translatable("rpgmod.tooltip.staff_bonus",
                     String.format("%.0f", mat.staffMagic())).withStyle(ChatFormatting.LIGHT_PURPLE));
         }
+        double heavy = com.jo112ss.rpgmod.job.JobConfig.SPEC.isLoaded() ? com.jo112ss.rpgmod.job.JobEvents.heavyMultiplier(event.getItemStack()) : 1;
+        if (heavy != 1) {
+            tip.add(Math.min(1, tip.size()), Component.translatable("rpgmod.tooltip.heavy", String.format("%.2f", heavy).replaceAll("0+$", "").replaceAll("\\.$", ""))
+                    .withStyle(ChatFormatting.GOLD));
+        }
         ForgedData d = event.getItemStack().get(ModRegistries.FORGED_DATA.get());
         if (d == null) return;
         Quality q = d.qualityEnum();

@@ -67,6 +67,27 @@ public final class JobEvents {
      * forged weapon crit rate, multiplier 1.5 + forged crit damage. Applies to every hit a player
      * deals (melee, arrows, skills, spells) and stacks with a vanilla crit.
      */
+    /**
+     * Heavy weapons: a normal hit with a mace or hammer counts for more (the whole hit, so it keeps up
+     * at every level). Skills are not affected - their power is set by the skill ratios alone.
+     */
+    @SubscribeEvent
+    public static void onHeavyHit(net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent event) {
+        var src = event.getSource();
+        if (!(src.getEntity() instanceof ServerPlayer sp) || src.getDirectEntity() != sp || event.getEntity() == sp) return;
+        if (!src.is(net.minecraft.world.damagesource.DamageTypes.PLAYER_ATTACK)) return;
+        double mult = heavyMultiplier(sp.getMainHandItem());
+        if (mult != 1) event.setAmount((float) (event.getAmount() * mult));
+    }
+
+    /** Normal-attack multiplier of the held weapon (mace / hammer), 1 for everything else. */
+    public static double heavyMultiplier(net.minecraft.world.item.ItemStack held) {
+        var type = com.jo112ss.rpgmod.item.ModItems.typeOf(held.getItem());
+        if (type == com.jo112ss.rpgmod.item.WeaponType.MACE) return JobConfig.MACE_MULT.get();
+        if (type == com.jo112ss.rpgmod.item.WeaponType.HAMMER) return JobConfig.HAMMER_MULT.get();
+        return 1;
+    }
+
     @SubscribeEvent(priority = net.neoforged.bus.api.EventPriority.LOW)
     public static void onRpgCrit(net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent event) {
         if (!(event.getSource().getEntity() instanceof ServerPlayer sp) || event.getEntity() == sp || event.getAmount() <= 0) return;

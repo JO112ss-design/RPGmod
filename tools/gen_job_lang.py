@@ -164,6 +164,7 @@ UI = {  # key: (ja, en)
  'item.rpgmod.skill_book': ('スキルの書', 'Skill Book'),
  'rpgmod.skill_book.used': ('スキルポイント +%1$s（未使用 %2$s）', 'Skill points +%1$s (%2$s unspent)'),
  'rpgmod.job.starter_kit': ('初期装備として銅の武器と鍛冶台を受け取った', 'You received a copper weapon and a forging anvil to start with'),
+ 'rpgmod.tooltip.heavy': ('重量武器：通常攻撃のダメージ ×%s（スキルには影響なし）', 'Heavy weapon: normal hits x%s (skills unaffected)'),
  'rpgmod.day.title': ('%s日目', 'Day %s'),
  'rpgmod.bloodmoon.title': ('ブラッドムーン', 'Blood Moon'),
  'rpgmod.bloodmoon.subtitle': ('今夜は眠れない…', 'No one sleeps tonight...'),

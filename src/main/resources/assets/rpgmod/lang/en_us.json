@@ -464,5 +464,6 @@
   "rpgmod.boss.reward": "Reward: %s Skill Books (use for +1 skill point, sneak-use for all)",
   "rpgmod.boss.king_slime.absorb": "The King Slime is absorbing its small slimes - kill them first!",
   "rpgmod.boss.opening": "Opening!",
-  "rpgmod.job.starter_kit": "You received a copper weapon and a forging anvil to start with"
+  "rpgmod.job.starter_kit": "You received a copper weapon and a forging anvil to start with",
+  "rpgmod.tooltip.heavy": "Heavy weapon: normal hits x%s (skills unaffected)"
 }

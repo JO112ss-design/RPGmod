@@ -24,6 +24,9 @@ public final class JobConfig {
     public static final ModConfigSpec.DoubleValue ENCHANT_BUFF_MIN = B.comment("Shortest enchanter buff time, as a multiple of the listed time").defineInRange("enchanterBuffMinMultiplier", 0.5, 0.01, 100);
     public static final ModConfigSpec.DoubleValue ENCHANT_BUFF_MAX = B.comment("Longest enchanter buff time, as a multiple of the listed time").defineInRange("enchanterBuffMaxMultiplier", 3.0, 0.01, 100);
 
+    public static final ModConfigSpec.DoubleValue MACE_MULT = B.comment("Normal (non-skill) hits with a mace deal this much (heavy, slow weapon)").defineInRange("maceAttackMultiplier", 1.25, 0, 100);
+    public static final ModConfigSpec.DoubleValue HAMMER_MULT = B.comment("Normal (non-skill) hits with a hammer deal this much").defineInRange("hammerAttackMultiplier", 1.6, 0, 100);
+
     public static final ModConfigSpec SPEC = B.build();
 
     public static int maxLevel() {

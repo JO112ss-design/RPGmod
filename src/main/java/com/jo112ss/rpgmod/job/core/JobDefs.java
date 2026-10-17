@@ -162,14 +162,14 @@ public final class JobDefs {
         job("enchanter", 0xE67EB5, "付", List.of(JobStat.SKILL_POWER, JobStat.MAGIC_ATTACK, JobStat.COOLDOWN_REDUCTION, JobStat.MAX_MANA),
                 stats(JobStat.COOLDOWN_REDUCTION, 5, JobStat.MAX_MANA, 30, JobStat.MAGIC_ATTACK, 1), stats(JobStat.MAGIC_ATTACK, 0.07, JobStat.COOLDOWN_REDUCTION, 0.05, JobStat.MAX_HEALTH, hpTo(30, 0)),
                 List.of(
-                        skill("empower", SkillKind.ACTIVE, SkillEffect.BUFF, 18, 35, 0, 8, 10, List.of("minecraft:strength"), 0, "強"),
-                        skill("haste", SkillKind.ACTIVE, SkillEffect.BUFF, 18, 35, 0, 8, 10, List.of("minecraft:speed", "minecraft:haste"), 0, "速"),
+                        skill("empower", SkillKind.ACTIVE, SkillEffect.BUFF, 18, 35, 0, 8, 20, List.of("minecraft:strength"), 0, "強"),
+                        skill("haste", SkillKind.ACTIVE, SkillEffect.BUFF, 18, 35, 0, 8, 20, List.of("minecraft:speed", "minecraft:haste"), 0, "速"),
                         skill("weaken", SkillKind.ACTIVE, SkillEffect.DEBUFF, 15, 28, 0, 8, 8, List.of("minecraft:weakness"), 0, "弱"),
                         skill("mana_link", SkillKind.ACTIVE, SkillEffect.MANA, 25, 0, 20, 8, 0, List.of(), 0, "繋"),
-                        skill("fire_weapon", SkillKind.ACTIVE, SkillEffect.BUFF, 25, 42, 0.6, 8, 15, List.of("rpgmod:fire_weapon"), 0, "焔"),
+                        skill("fire_weapon", SkillKind.ACTIVE, SkillEffect.BUFF, 25, 42, 0.6, 8, 30, List.of("rpgmod:fire_weapon"), 0, "焔"),
                         skill("binding_field", SkillKind.ACTIVE, SkillEffect.DEBUFF, 18, 35, 0, 4, 5, List.of("rpgmod:attack_down"), 0, "陣")),
                 List.of(
-                        skill("grand_enchant", SkillKind.ULTIMATE, SkillEffect.BUFF, 100, 84, 0, 10, 15, List.of("minecraft:strength", "minecraft:resistance", "minecraft:speed"), 1, "極"),
+                        skill("grand_enchant", SkillKind.ULTIMATE, SkillEffect.BUFF, 100, 84, 0, 10, 30, List.of("minecraft:strength", "minecraft:resistance", "minecraft:speed"), 1, "極"),
                         skill("hex", SkillKind.ULTIMATE, SkillEffect.DEBUFF, 90, 84, 1.2, 10, 10, List.of("minecraft:weakness", "minecraft:slowness"), 1, "呪")),
                 List.of());
         // ---- Gambler: random results
