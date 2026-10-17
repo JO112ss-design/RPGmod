@@ -142,7 +142,7 @@ public final class NetherAi {
         if (!ready(mob, now)) return;
         double d = mob.distanceTo(p);
         var r = sl.getRandom();
-        if (blaze && d < 4.5 && mob.getSensing().hasLineOfSight(p)) {
+        if (blaze && d < 6.5 && mob.getSensing().hasLineOfSight(p)) {
             flameNova(sl, mob);
             NEXT.put(mob, now + 120 + r.nextInt(40));
         } else if (lunger && mob.onGround() && d > 3.5 && d < 10 && mob.getSensing().hasLineOfSight(p) && r.nextDouble() < 0.35) {
@@ -151,7 +151,7 @@ public final class NetherAi {
         } else if (charger && mob.onGround() && d > 4 && d < 14 && mob.getSensing().hasLineOfSight(p) && r.nextDouble() < 0.3) {
             charge(sl, mob, p);
             NEXT.put(mob, now + 140 + r.nextInt(60));
-        } else if (cube && mob.onGround() && d > 3.5 && d < 12 && ((MagmaCube) mob).getSize() >= 2 && r.nextDouble() < 0.3) {
+        } else if (cube && d > 3 && d < 14 && ((MagmaCube) mob).getSize() >= 2 && r.nextDouble() < 0.4) {
             leap(sl, (MagmaCube) mob, p);
             NEXT.put(mob, now + 120 + r.nextInt(60));
         }
@@ -159,7 +159,7 @@ public final class NetherAi {
 
     /** Blaze: a ring of fire bursts out after a short warning, burning and pushing away whoever is near. */
     private static void flameNova(ServerLevel sl, Mob blaze) {
-        double radius = 5;
+        double radius = 6;
         ServerFx.of("mob_warn", blaze.position()).follow(blaze).a(radius).b(14).color(0xFF8A30).send(sl);
         sl.playSound(null, blaze.getX(), blaze.getY(), blaze.getZ(), SoundEvents.BLAZE_BURN, SoundSource.HOSTILE, 1.5F, 0.6F);
         SkillTasks.later(14, () -> {
@@ -222,8 +222,10 @@ public final class NetherAi {
     /** Magma cube: crouches, leaps at you in an arc and lands in a burst of fire. */
     private static void leap(ServerLevel sl, MagmaCube cube, Player p) {
         ServerFx.of("mob_warn", cube.position()).follow(cube).a(cube.getSize() * 0.6).b(8).color(0xFF7A20).send(sl);
-        SkillTasks.later(8, () -> {
-            if (!cube.isAlive() || !cube.onGround()) return;
+        // magma cubes hop all the time: wait (briefly) until it is on the ground to take off
+        SkillTasks.run(wait -> {
+            if (!cube.isAlive() || wait > 30) return true;
+            if (wait < 8 || !cube.onGround()) return false;
             Vec3 to = p.position().subtract(cube.position());
             double t = 18; // ticks in the air
             cube.setDeltaMovement(to.x / t * 1.15, 0.9, to.z / t * 1.15);
@@ -242,6 +244,7 @@ public final class NetherAi {
                 }
                 return true;
             });
+            return true;
         });
     }
 }
