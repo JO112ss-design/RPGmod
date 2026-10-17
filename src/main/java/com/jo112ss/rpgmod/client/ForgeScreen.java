@@ -548,7 +548,8 @@ public class ForgeScreen extends AbstractContainerScreen<ForgeMenu> {
         Quality q = Quality.byOrdinal(Math.max(0, v.quality()));
         inset(g, x + 18, y + 28, x + 38, y + 48, 0xFF2E2622);
         g.item(result, x + 20, y + 30);
-        g.text(font, result.getHoverName(), x + 44, y + 29, q.color | 0xFF000000, true);
+        Component resultName = result.getCount() > 1 ? Component.literal(result.getHoverName().getString() + " ×" + result.getCount()) : result.getHoverName();
+        g.text(font, resultName, x + 44, y + 29, q.color | 0xFF000000, true);
         g.text(font, Component.translatable("rpgmod.tooltip.quality", Component.translatable("rpgmod.quality." + q.id)),
                 x + 44, y + 40, q.color | 0xFF000000, false);
         g.text(font, Component.translatable("rpgmod.gui.error", String.format("%.1f", v.errorRatio() * 100)), x + 170, y + 40, C_DIM, false);
