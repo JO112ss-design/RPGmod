@@ -62,6 +62,8 @@ public final class JobDefs {
     /** Mana every job starts with before job / level / panel bonuses. */
     public static final double BASE_MANA = 100;
     public static final double BASE_MANA_REGEN = 1.0;
+    /** Armour every job gains per level: +22 at Lv100, so late-game defence keeps up with monster damage. */
+    private static final double LEVEL_ARMOR = 22 / 99.0;
 
     // ------------------------------------------------------------------ definitions
 
@@ -209,9 +211,6 @@ public final class JobDefs {
     private static double hpTo(double total, double start) {
         return (total - 20 - start) / (LevelCurve.DEFAULT_MAX_LEVEL - 1);
     }
-
-    /** Armour every job gains per level: +22 at Lv100, so late-game defence keeps up with monster damage. */
-    private static final double LEVEL_ARMOR = 22 / 99.0;
 
     private static Map<JobStat, Double> stats(Object... kv) {
         Map<JobStat, Double> m = new EnumMap<>(JobStat.class);
