@@ -1071,7 +1071,7 @@ public final class SkillExecutor {
             }
             case 1 -> { // heal the party
                 allies = allies(c.p, r);
-                for (ServerPlayer a : allies) a.heal((float) (0.5 * bet * c.power));
+                for (ServerPlayer a : allies) a.heal((float) (0.25 * bet * c.power));
                 sound(c, o, SoundEvents.AMETHYST_BLOCK_CHIME, 1.0F, 1.5F);
             }
             case 2 -> { // buff the party
@@ -1092,11 +1092,11 @@ public final class SkillExecutor {
                 sound(c, o, SoundEvents.EVOKER_CAST_SPELL, 1.0F, 0.9F);
             }
             case 4 -> { // mana
-                JobManager.restoreMana(c.p, 15 * bet * c.boost);
+                JobManager.restoreMana(c.p, 7.5 * bet * c.boost);
                 sound(c, o, SoundEvents.AMETHYST_BLOCK_RESONATE, 1.0F, 1.2F);
             }
             default -> { // bust: hurts yourself a little
-                c.p.hurtServer(c.level, c.p.damageSources().magic(), (float) (1.5 * bet));
+                c.p.hurtServer(c.level, c.p.damageSources().magic(), (float) (0.75 * bet));
                 sound(c, o, SoundEvents.ITEM_BREAK, 1.0F, 0.7F);
             }
         }
@@ -1249,7 +1249,7 @@ public final class SkillExecutor {
                 double side = to.subtract(dir.scale(along)).multiply(1, 0, 1).length();
                 if (along < 0 || along > front || side > 1.8 || Math.abs(to.y) > 3 || !done.add(e.getId())) continue;
                 if (e instanceof Player ally) {
-                    ally.heal(c.dmg(0.5));
+                    ally.heal(c.dmg(0.25));
                     ServerFx.of("heal_burst", ally.position()).follow(ally).color(0xFFD95A).send(c.level);
                 } else if (isEnemy(c.p, e)) {
                     hurt(c, e, c.dmg(1), magic(c));
@@ -1548,7 +1548,7 @@ public final class SkillExecutor {
                     case 0 -> hurt(c, e, c.dmg(1.8), melee(c));
                     case 1 -> {
                         hurt(c, e, c.dmg(0.6), melee(c));
-                        c.p.heal(c.dmg(0.5));
+                        c.p.heal(c.dmg(0.25));
                     }
                     case 2 -> {
                         hurt(c, e, c.dmg(0.8), melee(c));

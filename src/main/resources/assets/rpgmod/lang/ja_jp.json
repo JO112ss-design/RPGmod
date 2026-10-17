@@ -412,7 +412,7 @@
   "rpgmod.skill.binding_field": "束縛の陣",
   "rpgmod.skill.binding_field.desc": "狙った場所に5秒間陣を張る。中の敵は大きく鈍り、攻撃力も下がる。",
   "rpgmod.skill.russian_roulette": "ロシアンルーレット",
-  "rpgmod.skill.russian_roulette.desc": "6発に1発の実弾。外れるたびに次が当たりやすくなり、当たれば攻撃力の500%。",
+  "rpgmod.skill.russian_roulette.desc": "6発に1発の実弾。外れるたびに次が当たりやすくなり、当たれば攻撃力の1000%。",
   "rpgmod.skill.card_throw": "トランプ投げ",
   "rpgmod.skill.card_throw.desc": "ランダムな3枚を投げる。♠大ダメージ ♥回復 ♦吸収ハート ♣毒と鈍化。",
   "rpgmod.coat.0": "攻撃低下",

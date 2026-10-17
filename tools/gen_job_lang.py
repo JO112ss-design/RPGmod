@@ -96,7 +96,7 @@ SKILLS = {  # id: (ja, ja desc, en, en desc)
  'shadow_bind': ('影縛り', '狙った敵を影で3秒間その場に縛りつけ、攻撃力も下げる。', 'Shadow Bind', 'Shadows pin the targeted enemy in place for 3s and lower its attack.'),
  'fire_weapon': ('炎の付与', '15秒間、近くの味方の武器に炎を宿す。攻撃が敵を燃やし、追加ダメージ。', 'Fire Weapon', 'For 15s the hits of nearby allies set enemies on fire and deal extra damage.'),
  'binding_field': ('束縛の陣', '狙った場所に5秒間陣を張る。中の敵は大きく鈍り、攻撃力も下がる。', 'Binding Circle', 'A circle on the aimed spot for 5s: enemies inside are heavily slowed and weakened.'),
- 'russian_roulette': ('ロシアンルーレット', '6発に1発の実弾。外れるたびに次が当たりやすくなり、当たれば攻撃力の500%。', 'Russian Roulette', 'One live round in six. Every click makes the next likelier; the bang deals 500% attack.'),
+ 'russian_roulette': ('ロシアンルーレット', '6発に1発の実弾。外れるたびに次が当たりやすくなり、当たれば攻撃力の1000%。', 'Russian Roulette', 'One live round in six. Every click makes the next likelier; the bang deals 1000% attack.'),
  'card_throw': ('トランプ投げ', 'ランダムな3枚を投げる。♠大ダメージ ♥回復 ♦吸収ハート ♣毒と鈍化。', 'Card Throw', 'Throws three random cards: spade big damage, heart heals, diamond absorption, club poison and slow.'),
 }
 UI = {  # key: (ja, en)

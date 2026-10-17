@@ -412,7 +412,7 @@
   "rpgmod.skill.binding_field": "Binding Circle",
   "rpgmod.skill.binding_field.desc": "A circle on the aimed spot for 5s: enemies inside are heavily slowed and weakened.",
   "rpgmod.skill.russian_roulette": "Russian Roulette",
-  "rpgmod.skill.russian_roulette.desc": "One live round in six. Every click makes the next likelier; the bang deals 500% attack.",
+  "rpgmod.skill.russian_roulette.desc": "One live round in six. Every click makes the next likelier; the bang deals 1000% attack.",
   "rpgmod.skill.card_throw": "Card Throw",
   "rpgmod.skill.card_throw.desc": "Throws three random cards: spade big damage, heart heals, diamond absorption, club poison and slow.",
   "rpgmod.coat.0": "Attack Down",
