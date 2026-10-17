@@ -229,8 +229,8 @@ final class MobScenes {
             default -> { }
         }
         if (t % 10 == 0) { // keep the stage to the boss: no wandering monsters, the player stays alive
-            for (var m : level.getEntitiesOfClass(net.minecraft.world.entity.monster.Monster.class, player.getBoundingBox().inflate(96),
-                    m -> !(m instanceof net.minecraft.world.entity.monster.cubemob.Slime) && m != dummy)) m.discard();
+            for (var m : level.getEntitiesOfClass(Mob.class, player.getBoundingBox().inflate(96),
+                    m -> m instanceof net.minecraft.world.entity.monster.Enemy && !(m instanceof net.minecraft.world.entity.monster.cubemob.Slime) && m != dummy)) m.discard();
             player.setHealth(player.getMaxHealth());
             player.getFoodData().setFoodLevel(20);
         }
