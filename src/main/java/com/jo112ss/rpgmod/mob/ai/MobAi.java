@@ -104,6 +104,15 @@ public final class MobAi {
             mob.goalSelector.addGoal(1, new BuilderGoal(mob, lv));
             mob.goalSelector.addGoal(1, new ZombieItemGoal(mob));
         }
+        if (isBuilderZombie(mob) && mob.targetSelector.getAvailableGoals().stream().noneMatch(g -> g.getGoal() instanceof ZombieSenseGoal)) {
+            // zombies find players anywhere within their follow range, walls or not
+            mob.targetSelector.addGoal(1, new ZombieSenseGoal(mob));
+            // and keep re-pathing towards them while out of sight (vanilla only does so while it can see them)
+            if (mob instanceof net.minecraft.world.entity.monster.zombie.Zombie zombie) {
+                zombie.goalSelector.removeAllGoals(g -> g instanceof net.minecraft.world.entity.ai.goal.ZombieAttackGoal);
+                zombie.goalSelector.addGoal(3, new net.minecraft.world.entity.ai.goal.ZombieAttackGoal(zombie, 1.0, true));
+            }
+        }
         if (mob instanceof AbstractSkeleton sk) tuneBow(sk, lv);
         if (mob instanceof Creeper c && c.goalSelector.getAvailableGoals().stream().noneMatch(g -> g.getGoal() instanceof SmartSwellGoal)) {
             c.goalSelector.removeAllGoals(g -> g instanceof SwellGoal);

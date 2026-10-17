@@ -64,6 +64,7 @@ final class MobScenes {
             case "dragon" -> 6;
             case "nether" -> 7;
             case "king" -> 9;
+            case "sense" -> 8;
             default -> 5;
         };
         c = BlockPos.containing(arena).offset(40, 0, idx * 24 - 60);
@@ -95,6 +96,17 @@ final class MobScenes {
                 }
                 tp(player, Vec3.atBottomCenterOf(c), -90, 10);
                 spawn(level, EntityTypes.HUSK, c.offset(6, 0, 0), 25);
+            }
+            case "sense" -> {
+                // the player sealed in a stone hut: zombies far outside can never see them
+                for (int x = -2; x <= 2; x++) for (int z = -2; z <= 2; z++) for (int y = 0; y <= 3; y++) {
+                    boolean wall = Math.abs(x) == 2 || Math.abs(z) == 2 || y == 3;
+                    if (wall) level.setBlockAndUpdate(c.offset(x, y, z), Blocks.STONE.defaultBlockState());
+                }
+                tp(player, Vec3.atBottomCenterOf(c), -90, 10);
+                spawn(level, EntityTypes.HUSK, c.offset(28, 0, 0), 25);
+                spawn(level, EntityTypes.ZOMBIE, c.offset(-20, 0, 18), 25);
+                for (Mob m : mobs) m.setTarget(null);
             }
             case "creeper" -> {
                 for (int z = -4; z <= 4; z++) for (int y = 0; y <= 2; y++) level.setBlockAndUpdate(c.offset(2, y, z), Blocks.STONE.defaultBlockState());
@@ -307,7 +319,8 @@ final class MobScenes {
     static void tick(ServerLevel level, ServerPlayer player) {
         if (scene == null) return;
         t++;
-        for (Mob m : mobs) if (m.isAlive() && m.getTarget() == null) m.setTarget(player);
+        // (the sense scene checks that zombies find the player on their own)
+        if (!"sense".equals(scene)) for (Mob m : mobs) if (m.isAlive() && m.getTarget() == null) m.setTarget(player);
         switch (scene) {
             case "king" -> kingTick(level, player);
             case "dragon" -> {
@@ -379,6 +392,18 @@ final class MobScenes {
                     Mob cr = mobs.isEmpty() ? null : mobs.get(0);
                     RpgMod.LOGGER.info("[AUTOTEST] creeper t={} alive={} swell={} wall broken={} health lost={}", t, cr != null && cr.isAlive(),
                             cr instanceof Creeper k ? k.getSwellDir() : 0, broken, String.format("%.1f", lostHealth));
+                }
+            }
+            case "sense" -> {
+                if (t % 20 == 0) {
+                    int broken = 0;
+                    for (int x = -2; x <= 2; x++) for (int zz = -2; zz <= 2; zz++) for (int y = 0; y <= 3; y++) {
+                        boolean wall = Math.abs(x) == 2 || Math.abs(zz) == 2 || y == 3;
+                        if (wall && level.getBlockState(c.offset(x, y, zz)).isAir()) broken++;
+                    }
+                    RpgMod.LOGGER.info("[AUTOTEST] sense t={} {} wall broken={} health lost={}", t,
+                            mobs.stream().map(m -> (m.getTarget() == player ? "target" : "none") + " sees=" + m.getSensing().hasLineOfSight(player)
+                                    + " dist=" + String.format("%.1f", m.distanceTo(player))).toList(), broken, String.format("%.1f", lostHealth));
                 }
             }
             case "items" -> {
