@@ -106,9 +106,12 @@ final class MobScenes {
                 }
                 for (int x = 11; x <= 16; x++) for (int z = -1; z <= 1; z++) for (int y = 1; y <= 2; y++) level.setBlock(c.offset(x, y, z), Blocks.AIR.defaultBlockState(), 2);
                 BlockPos top = c.above(12);
+                // lit, so no other monster spawns in the dark cave during the test
+                level.setBlock(c.offset(16, 1, 1), Blocks.TORCH.defaultBlockState(), 2);
                 if (name.equals("exit")) {
                     // a walkable ramp up to the open air at the far end of the cave...
                     for (int i = 0; i <= 11; i++) for (int y = 1; y <= 3; y++) level.setBlock(c.offset(17 + i, i + y, 0), Blocks.AIR.defaultBlockState(), 2);
+                    for (int i = 2; i <= 11; i += 3) level.setBlock(c.offset(17 + i, i + 1, 0), Blocks.TORCH.defaultBlockState(), 2);
                     // ...and the player shut in a hut on top, so nobody can walk right up to them
                     for (int x = -2; x <= 2; x++) for (int z = -2; z <= 2; z++) for (int y = 0; y <= 3; y++) {
                         boolean wall = Math.abs(x) == 2 || Math.abs(z) == 2 || y == 3;
@@ -421,7 +424,7 @@ final class MobScenes {
             case "stairs", "exit" -> {
                 if (t % 20 == 0 && !mobs.isEmpty()) {
                     Mob z = mobs.get(0);
-                    RpgMod.LOGGER.info("[AUTOTEST] {} t={} zombie at {} (relative x={} y={}) target={} mode={} dug={} dist={} health lost={}", scene, t,
+                    RpgMod.LOGGER.info("[AUTOTEST] {} t={} zombie #{} at {} (relative x={} y={}) target={} mode={} dug={} dist={} health lost={}", scene, t, z.getId(),
                             z.blockPosition(), z.getBlockX() - c.getX(), z.getBlockY() - c.getY(), z.getTarget() == player,
                             com.jo112ss.rpgmod.mob.ai.SurfaceGoal.lastMode, com.jo112ss.rpgmod.mob.ai.BuilderGoal.dugBlocks,
                             String.format("%.1f", z.distanceTo(player)), String.format("%.1f", lostHealth));

@@ -34,7 +34,9 @@ public final class SurfaceGoal extends Goal {
     private Mode mode;
     private Path exitPath;
     private Direction dir;
-    private int runTicks, cool, hops, nextExitCheck, lastY;
+    private int runTicks, cool, hops, nextExitCheck;
+    /** The block the zombie stands in on its staircase, and the next step once it has hopped. */
+    private BlockPos stand, next;
     private boolean running, failed;
     /** Dev test: the last mode chosen by any zombie ("exit" / "stairs"). */
     public static String lastMode = "-";
@@ -70,7 +72,7 @@ public final class SurfaceGoal extends Goal {
     public boolean canUse() {
         if (!(mob.level() instanceof ServerLevel sl)) return false;
         LivingEntity t = target();
-        if (t == null || !below(sl, t)) return false;
+        if (t == null || !mob.onGround() || !below(sl, t)) return false;
         // the attack goal already has a full path to them: just let it walk
         Path cur = mob.getNavigation().getPath();
         if (cur != null && !cur.isDone() && cur.canReach()) return false;
@@ -121,7 +123,8 @@ public final class SurfaceGoal extends Goal {
         cool = 0;
         hops = 0;
         failed = false;
-        lastY = mob.getBlockY();
+        stand = mob.blockPosition();
+        next = null;
         builder.cancelDig();
         lastMode = mode == Mode.EXIT ? "exit" : "stairs";
         if (mode == Mode.EXIT) {
@@ -131,7 +134,7 @@ public final class SurfaceGoal extends Goal {
             dir = null;
         }
         if (com.jo112ss.rpgmod.devtest.AutoTestServer.ENABLED) {
-            com.jo112ss.rpgmod.RpgMod.LOGGER.info("[AUTOTEST] surface goal {} from {}", lastMode, mob.blockPosition());
+            com.jo112ss.rpgmod.RpgMod.LOGGER.info("[AUTOTEST] surface goal {} from {} (#{})", lastMode, mob.blockPosition(), mob.getId());
         }
     }
 
@@ -160,27 +163,54 @@ public final class SurfaceGoal extends Goal {
 
     @Override
     public void tick() {
-        if (mode != Mode.STAIRS || !(mob.level() instanceof ServerLevel sl)) return;
+        if (!(mob.level() instanceof ServerLevel sl)) return;
         LivingEntity t = target();
-        if (com.jo112ss.rpgmod.devtest.AutoTestServer.ENABLED && runTicks % 20 == 0) {
-            com.jo112ss.rpgmod.RpgMod.LOGGER.info("[AUTOTEST] stairs state at {} digging={} cool={} hops={} dir={} ground={} move={}", mob.position(),
-                    builder.digging(), cool, hops, dir, mob.onGround(), mob.getMoveControl().hasWanted());
+        if (t == null) return;
+        if (mode == Mode.STAIRS && runTicks > 0 && runTicks % 100 == 0) {
+            // a way out may have opened up (or been missed while the zombie was still landing)
+            Path out = exitPath(sl, t);
+            if (out != null) {
+                builder.cancelDig();
+                mode = Mode.EXIT;
+                lastMode = "exit";
+                mob.getNavigation().moveTo(out, 1.0);
+                return;
+            }
         }
-        if (t == null || builder.digging()) return;
+        if (mode != Mode.STAIRS || builder.digging()) return;
         if (cool > 0) {
             cool--;
             return;
         }
         mob.getNavigation().stop();
+        if (!mob.onGround()) return;
+        if (next != null) {
+            // did the last hop land on the step?
+            if (mob.getY() >= next.getY() - 0.2) {
+                stand = next;
+                hops = 0;
+            } else if (++hops > 6) {
+                failed = true; // something keeps it from climbing: leave it to the other goals
+                return;
+            }
+            next = null;
+        }
+        if (mob.getY() < stand.getY() - 0.5) stand = mob.blockPosition(); // fell down somewhere
         double hx = t.getX() - mob.getX(), hz = t.getZ() - mob.getZ();
         // keep one heading for the staircase; turn only while still well off to the side
         if (dir == null || hx * hx + hz * hz >= 9 && Direction.getApproximateNearest(hx, 0, hz) != dir) {
             dir = hx * hx + hz * hz < 1 ? mob.getDirection() : Direction.getApproximateNearest(hx, 0, hz);
         }
-        BlockPos feet = mob.blockPosition();
-        BlockPos front = feet.relative(dir);
+        // stand in the middle of the step first
+        double cx = stand.getX() + 0.5 - mob.getX(), cz = stand.getZ() + 0.5 - mob.getZ();
+        if (cx * cx + cz * cz > 0.04) {
+            mob.setDeltaMovement(Math.max(-0.15, Math.min(0.15, cx * 0.5)), mob.getDeltaMovement().y, Math.max(-0.15, Math.min(0.15, cz * 0.5)));
+            cool = 1;
+            return;
+        }
+        BlockPos front = stand.relative(dir);
         // headroom to jump, then the two blocks the zombie steps into
-        for (BlockPos p : new BlockPos[] {feet.above(2), front.above(2), front.above()}) {
+        for (BlockPos p : new BlockPos[] {stand.above(2), front.above(2), front.above()}) {
             if (BuilderGoal.solid(sl, p)) {
                 if (!builder.tryDig(sl, p)) failed = true;
                 return;
@@ -191,15 +221,9 @@ public final class SurfaceGoal extends Goal {
             if (!builder.place(sl, front)) cool = 10;
             return;
         }
-        if (mob.getBlockY() > lastY) { // made it up a step
-            lastY = mob.getBlockY();
-            hops = 0;
-        } else if (++hops > 10) {
-            failed = true; // something keeps it from climbing: leave it to the other goals
-            return;
-        }
-        if (mob.onGround()) mob.getJumpControl().jump();
-        mob.getMoveControl().setWantedPosition(front.getX() + 0.5, front.getY() + 1, front.getZ() + 0.5, 1.0);
-        cool = 6;
+        mob.getLookControl().setLookAt(front.getX() + 0.5, front.getY() + 1.5, front.getZ() + 0.5);
+        mob.setDeltaMovement(dir.getStepX() * 0.2, 0.52, dir.getStepZ() * 0.2);
+        next = front.above();
+        cool = 8;
     }
 }
