@@ -42,7 +42,13 @@ public final class AutoTestClient {
             }
             case 45 -> AutoTestServer.requestJobSetup();
             case 70 -> mc.gui.setScreen(new com.jo112ss.rpgmod.client.job.JobScreen(com.jo112ss.rpgmod.client.job.JobScreen.Tab.STATUS));
-            case 80 -> shot(mc, "12_status");
+            case 80 -> {
+                var sp = mc.getSingleplayerServer() == null ? null : mc.getSingleplayerServer().getPlayerList().getPlayer(mc.player.getUUID());
+                RpgMod.LOGGER.info("[AUTOTEST] status client atk={} armor={} | server atk={} armor={}",
+                        com.jo112ss.rpgmod.job.JobManager.physicalAttack(mc.player), com.jo112ss.rpgmod.mob.Defense.armor(mc.player),
+                        sp == null ? -1 : com.jo112ss.rpgmod.job.JobManager.physicalAttack(sp), sp == null ? -1 : com.jo112ss.rpgmod.mob.Defense.armor(sp));
+                shot(mc, "12_status");
+            }
             case 82 -> mc.gui.setScreen(new com.jo112ss.rpgmod.client.job.JobScreen(com.jo112ss.rpgmod.client.job.JobScreen.Tab.PANEL));
             case 92 -> {
                 com.jo112ss.rpgmod.RpgMod.LOGGER.info("[AUTOTEST] panel build={}us fps={}", com.jo112ss.rpgmod.client.job.JobScreen.lastPanelNanos / 1000, mc.getFps());

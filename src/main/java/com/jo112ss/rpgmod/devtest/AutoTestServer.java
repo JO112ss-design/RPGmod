@@ -327,6 +327,9 @@ public final class AutoTestServer {
         if (jobSetup) {
             jobSetup = false;
             com.jo112ss.rpgmod.job.JobManager.grantExp(player, 3000);
+            // some armour on, for the status screen check (client values must match the server's)
+            player.setItemSlot(net.minecraft.world.entity.EquipmentSlot.CHEST, new ItemStack(net.minecraft.world.item.Items.IRON_CHESTPLATE));
+            player.setItemSlot(net.minecraft.world.entity.EquipmentSlot.HEAD, new ItemStack(net.minecraft.world.item.Items.DIAMOND_HELMET));
             com.jo112ss.rpgmod.job.JobData jd = com.jo112ss.rpgmod.job.JobManager.data(player);
             // unlock a path towards the outer ring so the panel shows every state
             for (int id : new int[] {1, 2, 7, 8, 9, 19, 20}) com.jo112ss.rpgmod.job.JobManager.unlockNode(player, id);
