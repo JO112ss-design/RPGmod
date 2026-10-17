@@ -95,8 +95,10 @@ public final class AutoTestClient {
         if (t >= 0) {
             t++;
             switch (t) {
+                case 15 -> { if (screen instanceof ForgeScreen fs) fs.testChoose(com.jo112ss.rpgmod.item.WeaponType.ARROW); }
                 case 20 -> shot(mc, "01_select");
-                case 25 -> send(ForgeActionPayload.START, 1);
+                // this run forges arrows (iron + stick, count by quality)
+                case 25 -> send(ForgeActionPayload.START, com.jo112ss.rpgmod.smithing.ForgeableWeapons.indexOf(com.jo112ss.rpgmod.item.WeaponType.ARROW, com.jo112ss.rpgmod.item.WeaponMaterial.IRON));
                 case 50 -> shot(mc, "02_heating");
                 case 52 -> stop();
                 case 65 -> send(ForgeActionPayload.SELECT_PART, 2);
@@ -116,6 +118,8 @@ public final class AutoTestClient {
                 case 225 -> {
                     ForgeSyncPayload v = ClientForgeView.get();
                     ItemStack result = v.result();
+                    RpgMod.LOGGER.info("[AUTOTEST] result {} x{} (arrows in inventory: {})", result.getItem(), result.getCount(),
+                            mc.player == null ? -1 : mc.player.getInventory().countItem(net.minecraft.world.item.Items.ARROW));
                     RpgMod.LOGGER.info("[AUTOTEST] result stage={} quality={} error={} values={} targets={}", v.stage(), v.quality(),
                             v.errorRatio(), Arrays.toString(v.values()), Arrays.toString(v.targets()));
                     for (Component line : Screen.getTooltipFromItem(mc, result)) {

@@ -22,7 +22,10 @@ public final class ForgeableWeapons {
         MATERIALS = List.copyOf(mats);
         List<ForgeableWeapon> all = new ArrayList<>();
         for (WeaponType type : TYPES) {
-            for (WeaponMaterial mat : MATERIALS) all.add(create(type, mat));
+            for (WeaponMaterial mat : MATERIALS) {
+                if (type == WeaponType.ARROW && mat != WeaponMaterial.IRON) continue; // arrows: iron heads only
+                all.add(create(type, mat));
+            }
         }
         ALL = List.copyOf(all);
     }
@@ -44,6 +47,11 @@ public final class ForgeableWeapons {
 
     public static int indexOf(ForgeableWeapon w) {
         return ALL.indexOf(w);
+    }
+
+    /** Materials a type can be forged in (arrows: iron only). */
+    public static boolean available(WeaponType type, WeaponMaterial mat) {
+        return indexOf(type, mat) >= 0;
     }
 
     public static int indexOf(WeaponType type, WeaponMaterial mat) {

@@ -56,7 +56,11 @@ public class ForgeScreen extends AbstractContainerScreen<ForgeMenu> {
     private static final int MAT_X = 10, MAT_Y = 78, MAT_W = 56, MAT_H = 18, MAT_STEP = 60;
     private static final int PREVIEW_Y = 102;
 
-    /** Weapons on the first row, armor on the second. */
+    /** Weapons on the first row, armor on the second; arrows sit at the end of the armor row. */
+    private static int slot(int i) {
+        return ForgeableWeapons.TYPES.get(i) == com.jo112ss.rpgmod.item.WeaponType.ARROW ? 11 : i;
+    }
+
     private static int tabX(int i) {
         return TYPE_X + (i % TYPES_PER_ROW) * TYPE_STEP;
     }
@@ -141,7 +145,7 @@ public class ForgeScreen extends AbstractContainerScreen<ForgeMenu> {
             switch (v.stage()) {
                 case ForgeSyncPayload.STAGE_SELECT -> {
                     for (int i = 0; i < ForgeableWeapons.TYPES.size(); i++) {
-                        int tx = tabX(i), ty = tabY(i);
+                        int tx = tabX(slot(i)), ty = tabY(slot(i));
                         if (mx >= tx && mx < tx + TYPE_W && my >= ty && my < ty + TYPE_H) {
                             chosenType = i;
                             updateChoice();
@@ -150,6 +154,7 @@ public class ForgeScreen extends AbstractContainerScreen<ForgeMenu> {
                     }
                     for (int i = 0; i < ForgeableWeapons.MATERIALS.size(); i++) {
                         int tx = MAT_X + i * MAT_STEP;
+                        if (!ForgeableWeapons.available(ForgeableWeapons.TYPES.get(chosenType), ForgeableWeapons.MATERIALS.get(i))) continue;
                         if (mx >= tx && mx < tx + MAT_W && my >= MAT_Y && my < MAT_Y + MAT_H) {
                             chosenMat = i;
                             updateChoice();
@@ -200,8 +205,24 @@ public class ForgeScreen extends AbstractContainerScreen<ForgeMenu> {
         return super.keyPressed(event);
     }
 
+    /** Dev test: pick a weapon type on the select screen. */
+    public void testChoose(com.jo112ss.rpgmod.item.WeaponType type) {
+        chosenType = ForgeableWeapons.TYPES.indexOf(type);
+        updateChoice();
+    }
+
     private void updateChoice() {
-        chosenWeapon = ForgeableWeapons.indexOf(ForgeableWeapons.TYPES.get(chosenType), ForgeableWeapons.MATERIALS.get(chosenMat));
+        var type = ForgeableWeapons.TYPES.get(chosenType);
+        if (!ForgeableWeapons.available(type, ForgeableWeapons.MATERIALS.get(chosenMat))) {
+            // e.g. arrows: iron only - jump to the first material the type can be made of
+            for (int i = 0; i < ForgeableWeapons.MATERIALS.size(); i++) {
+                if (ForgeableWeapons.available(type, ForgeableWeapons.MATERIALS.get(i))) {
+                    chosenMat = i;
+                    break;
+                }
+            }
+        }
+        chosenWeapon = ForgeableWeapons.indexOf(type, ForgeableWeapons.MATERIALS.get(chosenMat));
     }
 
     private static boolean inBar(double mx, double my) {
@@ -299,7 +320,7 @@ public class ForgeScreen extends AbstractContainerScreen<ForgeMenu> {
     private void drawSelect(GuiGraphicsExtractor g, int x, int y, int mouseX, int mouseY) {
         int rx = mouseX - x, ry = mouseY - y;
         for (int i = 0; i < ForgeableWeapons.TYPES.size(); i++) {
-            int tx = tabX(i), ty = tabY(i);
+            int tx = tabX(slot(i)), ty = tabY(slot(i));
             boolean chosen = i == chosenType;
             boolean hover = rx >= tx && rx < tx + TYPE_W && ry >= ty && ry < ty + TYPE_H;
             inset(g, x + tx, y + ty, x + tx + TYPE_W, y + ty + TYPE_H, chosen ? 0xFF3D2E22 : hover ? 0xFF2F2621 : C_BG_INNER);
@@ -316,14 +337,19 @@ public class ForgeScreen extends AbstractContainerScreen<ForgeMenu> {
             inset(g, x + tx, y + MAT_Y, x + tx + MAT_W, y + MAT_Y + MAT_H, chosen ? 0xFF3D2E22 : hover ? 0xFF2F2621 : C_BG_INNER);
             if (chosen) g.outline(x + tx, y + MAT_Y, MAT_W, MAT_H, C_EMBER);
             com.jo112ss.rpgmod.item.WeaponMaterial m = ForgeableWeapons.MATERIALS.get(i);
+            boolean usable = ForgeableWeapons.available(ForgeableWeapons.TYPES.get(chosenType), m);
             g.item(new ItemStack(m.ingot.get()), x + tx + 3, y + MAT_Y + 1);
-            g.text(font, Component.translatable("rpgmod.material." + m.id), x + tx + 21, y + MAT_Y + 5, chosen ? C_TEXT : C_DIM, false);
+            g.text(font, Component.translatable("rpgmod.material." + m.id), x + tx + 21, y + MAT_Y + 5, !usable ? 0xFF4A4038 : chosen ? C_TEXT : C_DIM, false);
+            if (!usable) g.fill(x + tx + 1, y + MAT_Y + 1, x + tx + MAT_W - 1, y + MAT_Y + MAT_H - 1, 0xA0101010);
         }
         ForgeableWeapon w = ForgeableWeapons.byIndex(chosenWeapon);
         if (w == null) return;
         inset(g, x + SWORD_X - 2, y + PREVIEW_Y - 2, x + SWORD_X + SWORD_W + 2, y + PREVIEW_Y + SWORD_H + 2, C_BG_INNER);
         g.blit(RenderPipelines.GUI_TEXTURED, w.guiTexture(), x + SWORD_X, y + PREVIEW_Y, 0, 0, SWORD_W, SWORD_H, SWORD_W, SWORD_H);
         ItemStack result = new ItemStack(w.result().get());
+        if (w.type() == com.jo112ss.rpgmod.item.WeaponType.ARROW) {
+            g.centeredText(font, Component.translatable("rpgmod.gui.arrow_count"), x + SWORD_X + SWORD_W / 2, y + PREVIEW_Y + SWORD_H - 9, C_DIM);
+        }
         int ly = y + PREVIEW_Y + SWORD_H + 6;
         g.text(font, result.getHoverName(), x + 12, ly + 4, C_TEXT, false);
         int mx = x + 112;

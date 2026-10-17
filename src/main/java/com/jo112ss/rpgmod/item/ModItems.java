@@ -46,6 +46,7 @@ public final class ModItems {
             case CHESTPLATE -> pick(mat, Items.COPPER_CHESTPLATE, Items.IRON_CHESTPLATE, Items.GOLDEN_CHESTPLATE, Items.DIAMOND_CHESTPLATE, Items.NETHERITE_CHESTPLATE);
             case LEGGINGS -> pick(mat, Items.COPPER_LEGGINGS, Items.IRON_LEGGINGS, Items.GOLDEN_LEGGINGS, Items.DIAMOND_LEGGINGS, Items.NETHERITE_LEGGINGS);
             case BOOTS -> pick(mat, Items.COPPER_BOOTS, Items.IRON_BOOTS, Items.GOLDEN_BOOTS, Items.DIAMOND_BOOTS, Items.NETHERITE_BOOTS);
+            case ARROW -> Items.ARROW;
             default -> ITEMS.get(type).get(mat).get();
         };
     }
@@ -67,7 +68,7 @@ public final class ModItems {
         if (reverse == null) {
             Map<Item, WeaponType> m = new java.util.HashMap<>();
             for (WeaponType t : WeaponType.values()) {
-                if (t.isArmor()) continue;
+                if (t.isArmor() || t == WeaponType.ARROW) continue; // arrows are ammunition, not a weapon
                 for (WeaponMaterial mat : WeaponMaterial.values()) m.put(get(t, mat), t);
             }
             reverse = m;

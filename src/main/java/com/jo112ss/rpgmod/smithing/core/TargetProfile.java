@@ -42,5 +42,7 @@ public record TargetProfile(double[] partWeights) {
     /** Leggings: left hem / left thigh / waist / right thigh / right hem. */
     public static final TargetProfile LEGGINGS = new TargetProfile(new double[] {0.6, 1.2, 1.5, 1.2, 0.6});
     /** Boots: left toe / left heel / right heel / right toe. */
+    /** Arrows: head / shaft / fletching. The iron head takes the work. */
+    public static final TargetProfile ARROW = new TargetProfile(new double[] {1.5, 0.7, 0.5});
     public static final TargetProfile BOOTS = new TargetProfile(new double[] {0.9, 1.4, 1.4, 0.9});
 }

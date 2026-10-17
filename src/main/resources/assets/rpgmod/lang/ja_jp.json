@@ -466,5 +466,10 @@
   "rpgmod.boss.opening": "チャンス！",
   "rpgmod.job.starter_kit": "初期装備として銅の武器と鍛冶台を受け取った",
   "rpgmod.tooltip.heavy": "重量武器：通常攻撃のダメージ ×%s（スキルには影響なし）",
-  "rpgmod.jobscreen.toughness_short": "強度%s"
+  "rpgmod.jobscreen.toughness_short": "強度%s",
+  "rpgmod.type.arrow": "矢",
+  "rpgmod.part.arrow.0": "矢じり",
+  "rpgmod.part.arrow.1": "矢柄",
+  "rpgmod.part.arrow.2": "矢羽根",
+  "rpgmod.gui.arrow_count": "品質で 4／8／16／32本"
 }

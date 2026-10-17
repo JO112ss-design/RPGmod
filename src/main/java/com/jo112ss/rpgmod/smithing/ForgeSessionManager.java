@@ -248,6 +248,10 @@ public final class ForgeSessionManager {
         s.escrow.clear(); // consumed
 
         Quality quality = s.state.quality();
+        if (s.weapon.type() == com.jo112ss.rpgmod.item.WeaponType.ARROW) {
+            deliverArrows(player, s, quality);
+            return;
+        }
         Random rnd = new Random(player.getRandom().nextLong());
         List<RolledOption> options = OptionRoller.roll(quality.optionCount, s.weapon.type().isArmor(), s.weapon.type() == com.jo112ss.rpgmod.item.WeaponType.STAFF, rnd);
         ItemStack stack = new ItemStack(s.weapon.result().get());
@@ -264,6 +268,23 @@ public final class ForgeSessionManager {
                 quality == Quality.LEGENDARY ? SoundEvents.PLAYER_LEVELUP : SoundEvents.ANVIL_LAND, SoundSource.BLOCKS, 0.6F, 1.0F);
         give(player, stack, true);
         RpgMod.LOGGER.debug("{} forged {} ({}, error {})", player.getGameProfile().name(), s.weapon.id(), quality, s.state.errorRatio());
+    }
+
+    /** Arrows: plain vanilla arrows, more of them the better the work (4 / 8 / 16 / 32). */
+    public static int arrowCount(Quality quality) {
+        return 4 << quality.ordinal();
+    }
+
+    private static void deliverArrows(ServerPlayer player, Session s, Quality quality) {
+        ItemStack stack = new ItemStack(net.minecraft.world.item.Items.ARROW, arrowCount(quality));
+        s.quality = quality;
+        s.result = stack.copy();
+        Component name = Component.literal(stack.getHoverName().getString() + " ×" + stack.getCount()).withColor(quality.color);
+        Component q = Component.translatable("rpgmod.quality." + quality.id).withColor(quality.color);
+        player.sendSystemMessage(Component.translatable("rpgmod.message.forged", name, q));
+        player.level().playSound(null, player.blockPosition(),
+                quality == Quality.LEGENDARY ? SoundEvents.PLAYER_LEVELUP : SoundEvents.ANVIL_LAND, SoundSource.BLOCKS, 0.6F, 1.0F);
+        give(player, stack, true);
     }
 
     /** Sets the item's max durability from its default and the durability option. */

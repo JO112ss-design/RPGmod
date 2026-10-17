@@ -466,5 +466,10 @@
   "rpgmod.boss.opening": "Opening!",
   "rpgmod.job.starter_kit": "You received a copper weapon and a forging anvil to start with",
   "rpgmod.tooltip.heavy": "Heavy weapon: normal hits x%s (skills unaffected)",
-  "rpgmod.jobscreen.toughness_short": "T%s"
+  "rpgmod.jobscreen.toughness_short": "T%s",
+  "rpgmod.type.arrow": "Arrows",
+  "rpgmod.part.arrow.0": "Head",
+  "rpgmod.part.arrow.1": "Shaft",
+  "rpgmod.part.arrow.2": "Fletching",
+  "rpgmod.gui.arrow_count": "Quality: 4/8/16/32 arrows"
 }

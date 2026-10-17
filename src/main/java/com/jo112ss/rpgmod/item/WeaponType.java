@@ -21,7 +21,9 @@ public enum WeaponType {
     HELMET("helmet", 0, 0, 5, List.of(), TargetProfile.HELMET, 10, 140),
     CHESTPLATE("chestplate", 0, 0, 8, List.of(), TargetProfile.CHESTPLATE, 10, 140),
     LEGGINGS("leggings", 0, 0, 7, List.of(), TargetProfile.LEGGINGS, 10, 140),
-    BOOTS("boots", 0, 0, 4, List.of(), TargetProfile.BOOTS, 10, 140);
+    BOOTS("boots", 0, 0, 4, List.of(), TargetProfile.BOOTS, 10, 140),
+    /** Vanilla arrows, forged in a batch (iron only): 1 iron + 1 stick, 4 to 32 arrows by quality. */
+    ARROW("arrow", 0, 0, 1, List.of(new Extra(() -> Items.STICK, 1)), TargetProfile.ARROW, 6, 148);
 
     public record Extra(Supplier<Item> item, int count) {}
 
@@ -56,6 +58,6 @@ public enum WeaponType {
 
     /** Vanilla items (swords and armor) are not registered by this mod. */
     public boolean isVanilla() {
-        return this == SWORD || isArmor();
+        return this == SWORD || isArmor() || this == ARROW;
     }
 }

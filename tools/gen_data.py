@@ -60,28 +60,28 @@ write(f'{D}/minecraft/tags/item/enchantable/vanishing.json', {'replace': False, 
 # ---- lang
 JA_M = {'copper': '銅', 'iron': '鉄', 'gold': '金', 'diamond': 'ダイヤモンド', 'netherite': 'ネザライト'}
 EN_M = {'copper': 'Copper', 'iron': 'Iron', 'gold': 'Golden', 'diamond': 'Diamond', 'netherite': 'Netherite'}
-JA_T = {'sword': '剣', 'dagger': '短剣', 'mace': 'メイス', 'hammer': 'ハンマー', 'staff': '魔法の杖', 'bow': '弓'}
-EN_T = {'sword': 'Sword', 'dagger': 'Dagger', 'mace': 'Mace', 'hammer': 'Hammer', 'staff': 'Magic Staff', 'bow': 'Bow'}
+JA_T = {'sword': '剣', 'dagger': '短剣', 'mace': 'メイス', 'hammer': 'ハンマー', 'staff': '魔法の杖', 'bow': '弓', 'arrow': '矢'}
+EN_T = {'sword': 'Sword', 'dagger': 'Dagger', 'mace': 'Mace', 'hammer': 'Hammer', 'staff': 'Magic Staff', 'bow': 'Bow', 'arrow': 'Arrows'}
 JA_ARMOR = {'helmet': 'ヘルメット', 'chestplate': 'チェストプレート', 'leggings': 'レギンス', 'boots': 'ブーツ'}
 EN_ARMOR = {'helmet': 'Helmet', 'chestplate': 'Chestplate', 'leggings': 'Leggings', 'boots': 'Boots'}
 PARTS_JA = {'sword': ['切先', '前部', '中央', '後部', '根元'], 'dagger': ['切先', '刃', '根元'],
             'mace': ['先端', '頭部', '首', '柄上', '柄下'], 'hammer': ['打面', '頭部', '首', '柄'],
             'staff': ['杖頭', '飾り', '柄上', '柄中', '柄下'], 'bow': ['上弭', '上リム', '握り', '下リム', '下弭'],
             'helmet': ['左頬', '左側面', '頭頂', '右側面', '右頬'], 'chestplate': ['左肩', '左胸', '胸中央', '右胸', '右肩'],
-            'leggings': ['左裾', '左腿', '腰', '右腿', '右裾'], 'boots': ['左つま先', '左かかと', '右かかと', '右つま先']}
+            'leggings': ['左裾', '左腿', '腰', '右腿', '右裾'], 'boots': ['左つま先', '左かかと', '右かかと', '右つま先'], 'arrow': ['矢じり', '矢柄', '矢羽根']}
 PARTS_EN = {'sword': ['Tip', 'Fore', 'Middle', 'Rear', 'Base'], 'dagger': ['Tip', 'Blade', 'Base'],
             'mace': ['Tip', 'Head', 'Neck', 'Upper shaft', 'Lower shaft'], 'hammer': ['Face', 'Head', 'Neck', 'Handle'],
             'staff': ['Head', 'Ornament', 'Upper shaft', 'Middle shaft', 'Lower shaft'], 'bow': ['Upper tip', 'Upper limb', 'Grip', 'Lower limb', 'Lower tip'],
             'helmet': ['Left cheek', 'Left side', 'Crown', 'Right side', 'Right cheek'], 'chestplate': ['Left shoulder', 'Left chest', 'Centre', 'Right chest', 'Right shoulder'],
-            'leggings': ['Left hem', 'Left thigh', 'Waist', 'Right thigh', 'Right hem'], 'boots': ['Left toe', 'Left heel', 'Right heel', 'Right toe']}
+            'leggings': ['Left hem', 'Left thigh', 'Waist', 'Right thigh', 'Right hem'], 'boots': ['Left toe', 'Left heel', 'Right heel', 'Right toe'], 'arrow': ['Head', 'Shaft', 'Fletching']}
 JA_MAT_SHORT = {'copper': '銅', 'iron': '鉄', 'gold': '金', 'diamond': 'ダイヤ'}
 EN_MAT_SHORT = {'copper': 'Copper', 'iron': 'Iron', 'gold': 'Gold', 'diamond': 'Diamond'}
 for lang, M, T, P, MS, extra in (
-        ('ja_jp', JA_M, {**JA_T, **JA_ARMOR}, PARTS_JA, JA_MAT_SHORT, {'rpgmod.gui.armor_row': '← 防具', 'rpgmod.gui.difficulty': '難易度 ×%s',
+        ('ja_jp', JA_M, {**JA_T, **JA_ARMOR}, PARTS_JA, JA_MAT_SHORT, {'rpgmod.gui.armor_row': '← 防具', 'rpgmod.gui.arrow_count': '品質で 4／8／16／32本', 'rpgmod.gui.difficulty': '難易度 ×%s',
             'rpgmod.option.armor_toughness': '防具強度', 'rpgmod.option.damage_reduction': '被ダメージ軽減', 'rpgmod.option.boss_resistance': 'ボス耐性','rpgmod.gui.type': '武器の種類', 'rpgmod.gui.material': '素材',
             'rpgmod.gui.power_label': '威力', 'rpgmod.gui.adjacent_label': '隣接', 'rpgmod.gui.strikes_label': '打撃 %s',
             'rpgmod.tooltip.bow_bonus': '矢の攻撃力 +%s（普通の弓より）'}),
-        ('en_us', EN_M, {**EN_T, **EN_ARMOR}, PARTS_EN, EN_MAT_SHORT, {'rpgmod.gui.armor_row': '< Armor', 'rpgmod.gui.difficulty': 'Difficulty x%s',
+        ('en_us', EN_M, {**EN_T, **EN_ARMOR}, PARTS_EN, EN_MAT_SHORT, {'rpgmod.gui.armor_row': '< Armor', 'rpgmod.gui.arrow_count': 'Quality: 4/8/16/32 arrows', 'rpgmod.gui.difficulty': 'Difficulty x%s',
             'rpgmod.option.armor_toughness': 'Armor Toughness', 'rpgmod.option.damage_reduction': 'Damage Reduction', 'rpgmod.option.boss_resistance': 'Boss Resistance','rpgmod.gui.type': 'Weapon', 'rpgmod.gui.material': 'Material',
             'rpgmod.gui.power_label': 'Power', 'rpgmod.gui.adjacent_label': 'Sides', 'rpgmod.gui.strikes_label': 'Hits %s',
             'rpgmod.tooltip.bow_bonus': 'Arrow damage +%s (vs. a normal bow)'})):
