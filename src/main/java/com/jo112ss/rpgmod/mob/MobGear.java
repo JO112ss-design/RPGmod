@@ -70,11 +70,20 @@ public final class MobGear {
 
     private static final net.minecraft.resources.Identifier DAMPEN = net.minecraft.resources.Identifier.fromNamespaceAndPath(com.jo112ss.rpgmod.RpgMod.MODID, "gear_weapon_share");
 
-    /** Only part of a monster weapon's attack counts (monsterWeaponShare, half by default). */
+    /** Re-applies the weapon share to a monster loaded from disk (the setting or the weapons may have changed). */
+    public static void refreshWeapon(Mob mob) {
+        dampenWeapon(mob, mob.getMainHandItem());
+    }
+
+    /** Only part of a monster weapon's attack counts (monsterWeaponEffect, a quarter by default). */
     private static void dampenWeapon(Mob mob, ItemStack weapon) {
         var inst = mob.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE);
         var mods = weapon.get(net.minecraft.core.component.DataComponents.ATTRIBUTE_MODIFIERS);
-        if (inst == null || mods == null) return;
+        if (inst == null) return;
+        if (mods == null) {
+            inst.removeModifier(DAMPEN);
+            return;
+        }
         double bonus = 0;
         for (var e : mods.modifiers()) {
             if (e.attribute().value() == net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE.value()

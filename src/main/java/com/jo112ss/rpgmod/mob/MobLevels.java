@@ -65,6 +65,7 @@ public final class MobLevels {
         }
         if (level(mob) > 0) { // already levelled (loaded from disk): refresh the modifiers in case the settings changed
             apply(mob, mob instanceof EnderDragon ? DRAGON_LEVEL : level(mob));
+            MobGear.refreshWeapon(mob);
             return;
         }
         ServerLevel sl = (ServerLevel) event.getLevel();
