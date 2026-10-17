@@ -52,7 +52,7 @@ public final class JobManager {
             player.sendSystemMessage(Component.translatable("rpgmod.job.panel_migrated").withStyle(ChatFormatting.GOLD));
         }
         JobStats.apply(player, d);
-        d.setMana(Math.min(d.mana(), maxMana(d)));
+        d.setMana(Math.min(d.mana(), maxMana(player)));
         sync(player);
         if (!d.hasJob()) PacketDistributor.sendToPlayer(player, new OpenJobSelectPayload());
     }
@@ -60,7 +60,7 @@ public final class JobManager {
     public static void onRespawn(ServerPlayer player) {
         JobData d = data(player);
         JobStats.apply(player, d);
-        d.setMana(maxMana(d));
+        d.setMana(maxMana(player));
         player.setHealth(player.getMaxHealth());
         sync(player);
     }
@@ -81,7 +81,7 @@ public final class JobManager {
     public static void setJob(ServerPlayer player, String jobId) {
         JobData d = data(player);
         d.setJob(jobId);
-        d.setMana(maxMana(d));
+        d.setMana(maxMana(player));
         JobStats.apply(player, d);
         sync(player);
     }
@@ -110,7 +110,7 @@ public final class JobManager {
         int gained = d.addExp(amount, JobConfig.maxLevel());
         if (gained > 0) {
             JobStats.apply(player, d);
-            d.setMana(maxMana(d));
+            d.setMana(maxMana(player));
             player.sendSystemMessage(Component.translatable("rpgmod.job.level_up", d.level(), d.freePoints())
                     .withStyle(ChatFormatting.GOLD));
             player.level().playSound(null, player.blockPosition(), SoundEvents.PLAYER_LEVELUP, SoundSource.PLAYERS, 0.7F, 1.0F);
@@ -219,13 +219,26 @@ public final class JobManager {
         return JobStats.compute(d).get(JobStat.MAX_MANA);
     }
 
+    /** Max mana including forged gear (max mana option on the held weapon and worn armour). */
+    public static double maxMana(Player player) {
+        return maxMana(data(player)) + gearOption(player, com.jo112ss.rpgmod.smithing.core.OptionType.MAX_MANA);
+    }
+
+    /** Mana per second: the job stat, raised by the gear's mana regeneration option (%). */
+    public static double manaRegen(Player player) {
+        double base = JobStats.compute(data(player)).get(JobStat.MANA_REGEN);
+        return base * (1 + gearOption(player, com.jo112ss.rpgmod.smithing.core.OptionType.MANA_REGEN) / 100.0);
+    }
+
     public static void tickMana(ServerPlayer player) {
         JobData d = data(player);
         if (!d.hasJob()) return;
-        Map<JobStat, Double> st = JobStats.compute(d);
-        double max = st.get(JobStat.MAX_MANA);
-        if (d.mana() < max) {
-            d.setMana(Math.min(max, d.mana() + st.get(JobStat.MANA_REGEN)));
+        double max = maxMana(player);
+        if (d.mana() > max) { // took off gear with max mana
+            d.setMana(max);
+            sync(player);
+        } else if (d.mana() < max) {
+            d.setMana(Math.min(max, d.mana() + manaRegen(player)));
             sync(player);
         }
     }
@@ -233,7 +246,7 @@ public final class JobManager {
     public static void restoreMana(ServerPlayer player, double amount) {
         JobData d = data(player);
         if (!d.hasJob()) return;
-        d.setMana(Math.min(maxMana(d), d.mana() + amount));
+        d.setMana(Math.min(maxMana(player), d.mana() + amount));
         sync(player);
     }
 

@@ -153,7 +153,7 @@ public final class ForgeOptionEffects {
         if (d == null) return;
 
         double pen = d.get(OptionType.ARMOR_PENETRATION) / 100.0;
-        if (pen > 0) {
+        if (pen > 0 && !com.jo112ss.rpgmod.mob.MobConfig.rpgArmor()) { // with RPG armour, Defense applies it
             float keep = (float) Math.max(0, 1 - pen);
             event.addReductionModifier(DamageContainer.Reduction.ARMOR, (container, reduction) -> reduction * keep);
         }
@@ -161,6 +161,16 @@ public final class ForgeOptionEffects {
         if (boss > 0 && event.getEntity().is(Tags.EntityTypes.BOSSES)) {
             event.setAmount((float) (event.getAmount() * (1 + boss)));
         }
+    }
+
+    /** Armour penetration (0..1) of the forged weapon behind a player's hit: melee weapon or the bow of an arrow. */
+    public static double armorPenetration(net.minecraft.world.damagesource.DamageSource source) {
+        if (!(source.getEntity() instanceof Player player)) return 0;
+        ForgedData d;
+        if (source.getDirectEntity() == player) d = mainHandData(player);
+        else if (source.getDirectEntity() instanceof AbstractArrow arrow && arrow.getWeaponItem() != null) d = data(arrow.getWeaponItem());
+        else return 0;
+        return d == null ? 0 : Math.min(1, d.get(OptionType.ARMOR_PENETRATION) / 100.0);
     }
 
     /**

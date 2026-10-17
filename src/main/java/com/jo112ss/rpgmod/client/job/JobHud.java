@@ -47,7 +47,7 @@ public final class JobHud {
         g.fill(x0, y0 - 13, x0 + bw, y0 - 11, 0xFF20242C);
         g.fill(x0, y0 - 13, x0 + Math.round(bw * expFrac), y0 - 11, Ui.EXP);
         // mana
-        double max = st.get(JobStat.MAX_MANA);
+        double max = com.jo112ss.rpgmod.job.JobManager.maxMana(mc.player);
         float mf = (float) (d.mana() / Math.max(1, max));
         g.fill(x0, y0 - 9, x0 + bw, y0 - 4, 0xFF20242C);
         g.fillGradient(x0, y0 - 9, x0 + Math.round(bw * mf), y0 - 4, 0xFF8AB4FF, Ui.MANA);

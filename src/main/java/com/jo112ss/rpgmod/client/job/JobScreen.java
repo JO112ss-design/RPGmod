@@ -296,7 +296,7 @@ public class JobScreen extends Screen {
         Ui.bar(g, font, cx + 6, cy + 90, cw - 12, 10, frac, Ui.EXP, d.exp() + " / " + d.expToNext());
         g.text(font, Component.translatable("rpgmod.jobscreen.exp"), cx + 6, cy + 102, Ui.DIM, false);
         Map<JobStat, Double> st = JobStats.compute(d);
-        double maxMana = st.get(JobStat.MAX_MANA);
+        double maxMana = com.jo112ss.rpgmod.job.JobManager.maxMana(p);
         Ui.bar(g, font, cx + 6, cy + 116, cw - 12, 10, (float) (d.mana() / maxMana), Ui.MANA, Math.round(d.mana()) + " / " + Math.round(maxMana));
         g.text(font, Component.translatable("rpgmod.jobscreen.mana"), cx + 6, cy + 128, Ui.DIM, false);
         g.text(font, Component.translatable("rpgmod.jobscreen.weapons"), cx + 6, cy + 144, Ui.DIM, false);
@@ -324,7 +324,7 @@ public class JobScreen extends Screen {
         rows.add(row("attack_speed", String.format("%.2f", p.getAttributeValue(Attributes.ATTACK_SPEED))));
         rows.add(row("crit_chance", String.format("%.1f%% ×%.2f", com.jo112ss.rpgmod.job.JobManager.critChance(p, null), com.jo112ss.rpgmod.job.JobManager.critMultiplier(p, null))));
         rows.add(row("max_mana", fmt(maxMana)));
-        rows.add(row("mana_regen", String.format("%.1f/s", st.get(JobStat.MANA_REGEN))));
+        rows.add(row("mana_regen", String.format("%.1f/s", com.jo112ss.rpgmod.job.JobManager.manaRegen(p))));
         rows.add(row("skill_power", String.format("+%.0f%%", st.get(JobStat.SKILL_POWER))));
         rows.add(row("cooldown_reduction", String.format("%.0f%%", st.get(JobStat.COOLDOWN_REDUCTION))));
         rows.add(row("luck", fmt(p.getAttributeValue(Attributes.LUCK))));

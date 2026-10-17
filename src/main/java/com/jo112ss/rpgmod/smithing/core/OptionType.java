@@ -24,7 +24,10 @@ public enum OptionType {
     BOSS_RESISTANCE("boss_resistance", 0.1, true, NaN(), NaN(), 3, 8),
     // magic options: weapons only roll them on magic staffs (see OptionRoller)
     MAGIC_POWER("magic_power", 0.1, true, 5, 12, 2, 5),
-    CAST_SPEED("cast_speed", 0.1, true, 5, 12, 2, 5);
+    CAST_SPEED("cast_speed", 0.1, true, 5, 12, 2, 5),
+    // mana: every weapon and armour piece can roll them
+    MAX_MANA("max_mana", 1, false, 10, 25, 5, 12),
+    MANA_REGEN("mana_regen", 0.1, true, 8, 20, 4, 10);
 
     public final String id;
     public final double step;

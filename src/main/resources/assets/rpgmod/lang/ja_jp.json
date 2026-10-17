@@ -443,5 +443,7 @@
   "rpgmod.dragon.stage2.sub": "翼の突風・虚空の弾・眷属に注意",
   "rpgmod.dragon.stage3": "最終形態",
   "rpgmod.dragon.stage3.sub": "狂乱 ― 突進とブレスの雨に注意",
-  "rpgmod.stat.damage_reduction": "被ダメ軽減"
+  "rpgmod.stat.damage_reduction": "被ダメ軽減",
+  "rpgmod.option.max_mana": "最大MP",
+  "rpgmod.option.mana_regen": "MP回復"
 }
