@@ -94,6 +94,11 @@ public class KingSlime extends Slime {
     private int lastLand = -100;
     private int onlineSeen = -1;
     private double healthTarget;
+    /**
+     * Vanilla caps max health at 1024: past that the king keeps a capped health bar and takes damage
+     * divided by this, so it still lasts as long as its full health would.
+     */
+    private float toughness = 1;
     private final Set<UUID> participants = new HashSet<>();
     private final Map<UUID, Integer> touchCooldown = new HashMap<>();
     private final List<Wave> waves = new ArrayList<>();
@@ -222,8 +227,10 @@ public class KingSlime extends Slime {
         double hp = MobConfig.kingHealth() * MobLevelMath.healthMultiplier(MobConfig.rules(), bossLevel())
                 * (1 + MobConfig.bossPerPlayer() * (online - 1));
         float ratio = this.getMaxHealth() > 0 ? this.getHealth() / this.getMaxHealth() : 1;
-        healthTarget = hp;
-        this.getAttribute(Attributes.MAX_HEALTH).setBaseValue(hp);
+        double applied = Math.min(hp, 1000);
+        toughness = (float) (hp / applied);
+        healthTarget = applied;
+        this.getAttribute(Attributes.MAX_HEALTH).setBaseValue(applied);
         this.setHealth(fill ? this.getMaxHealth() : Math.max(1, ratio * this.getMaxHealth()));
     }
 
@@ -832,7 +839,7 @@ public class KingSlime extends Slime {
         if (source.getEntity() instanceof ServerPlayer p) participants.add(p.getUUID());
         // the openings: after a slam, dazed against a wall, exhausted after a combo, absorbing
         if (state == State.STUN || state == State.TIRED || state == State.ABSORB) damage *= damageTakenMult;
-        return super.hurtServer(level, source, damage);
+        return super.hurtServer(level, source, damage / toughness);
     }
 
     /** Opening multiplier right now (for the overlay / tests): 1 when not open. */
@@ -992,6 +999,11 @@ public class KingSlime extends Slime {
             case "combo" -> nextMove = 0;
             default -> start(sl, Move.valueOf(move.toUpperCase(java.util.Locale.ROOT)), t);
         }
+    }
+
+    /** Health the fight is really worth (max health x toughness past the vanilla cap). */
+    public float effectiveMaxHealth() {
+        return this.getMaxHealth() * toughness;
     }
 
     public int splits() {

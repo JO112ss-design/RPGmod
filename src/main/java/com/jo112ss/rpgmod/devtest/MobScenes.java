@@ -173,7 +173,7 @@ final class MobScenes {
                 RpgMod.LOGGER.info("[AUTOTEST] king natural spawn={} bloodMoon={} day={} dist={} level={} hp={}", k != null,
                         com.jo112ss.rpgmod.mob.boss.BloodMoon.active(), com.jo112ss.rpgmod.mob.boss.BloodMoon.day(level),
                         k == null ? -1 : String.format("%.1f", k.distanceTo(player)), k == null ? -1 : MobLevels.level(k),
-                        k == null ? -1 : String.format("%.0f", k.getMaxHealth()));
+                        k == null ? -1 : String.format("%.0f", k.effectiveMaxHealth()));
                 if (k == null) k = king = com.jo112ss.rpgmod.mob.boss.BloodMoon.spawnNear(level, player);
                 if (k != null) {
                     com.jo112ss.rpgmod.mob.boss.BloodMoon.testKeep = true;
@@ -192,7 +192,8 @@ final class MobScenes {
                 net.neoforged.neoforge.common.NeoForge.EVENT_BUS.post(ev);
                 RpgMod.LOGGER.info("[AUTOTEST] king sleep blocked={}", ev.getProblem() != null);
             }
-            case 52, 100, 168, 285, 430, 548 -> portrait(player, k);
+            case 52, 100, 168, 285, 430 -> portrait(player, k, -1);
+            case 548 -> portrait(player, k, 1); // from the open side of the wall
             case 58, 106, 174, 292, 436 -> tp(player, Vec3.atBottomCenterOf(c), -90, -6);
             case 60 -> move(k, "bounce");
             case 110 -> move(k, "dash");
@@ -267,10 +268,10 @@ final class MobScenes {
     }
 
     /** Puts the camera beside the king, looking at it (the moves themselves are filmed from behind the player). */
-    private static void portrait(ServerPlayer player, com.jo112ss.rpgmod.mob.boss.KingSlime k) {
+    private static void portrait(ServerPlayer player, com.jo112ss.rpgmod.mob.boss.KingSlime k, int side) {
         if (k == null || !k.isAlive()) return;
         double d = k.getBbWidth() * 1.3 + 5;
-        Vec3 at = k.position().add(-d * 0.7, 0, -d * 0.7);
+        Vec3 at = k.position().add(side * d * 0.7, 0, side * d * 0.7);
         Vec3 look = k.position().add(0, k.getBbHeight() * 0.5, 0).subtract(at.add(0, 1.6, 0));
         float yaw = (float) Math.toDegrees(Math.atan2(-look.x, look.z));
         float pitch = (float) -Math.toDegrees(Math.atan2(look.y, Math.hypot(look.x, look.z)));
