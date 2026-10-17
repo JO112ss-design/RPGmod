@@ -20,6 +20,8 @@ public class RpgMod {
 
     public RpgMod(IEventBus modBus, ModContainer container) {
         com.jo112ss.rpgmod.item.ModItems.init();
+        // vanilla keeps attack damage on the server only; the job screen and skill tooltips show it
+        net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE.value().setSyncable(true);
         ModRegistries.register(modBus);
         container.registerConfig(ModConfig.Type.SYNCED, SmithingConfig.SPEC);
         container.registerConfig(ModConfig.Type.SYNCED, com.jo112ss.rpgmod.job.JobConfig.SPEC, "rpgmod-jobs.toml");

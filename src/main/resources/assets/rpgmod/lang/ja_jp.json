@@ -465,5 +465,6 @@
   "rpgmod.boss.king_slime.absorb": "キングスライムが子スライムを吸収しようとしている！先に倒せ！",
   "rpgmod.boss.opening": "チャンス！",
   "rpgmod.job.starter_kit": "初期装備として銅の武器と鍛冶台を受け取った",
-  "rpgmod.tooltip.heavy": "重量武器：通常攻撃のダメージ ×%s（スキルには影響なし）"
+  "rpgmod.tooltip.heavy": "重量武器：通常攻撃のダメージ ×%s（スキルには影響なし）",
+  "rpgmod.jobscreen.toughness_short": "強度%s"
 }
