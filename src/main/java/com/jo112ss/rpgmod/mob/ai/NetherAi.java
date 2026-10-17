@@ -160,11 +160,11 @@ public final class NetherAi {
     /** Blaze: a ring of fire bursts out after a short warning, burning and pushing away whoever is near. */
     private static void flameNova(ServerLevel sl, Mob blaze) {
         double radius = 6;
-        ServerFx.of("mob_warn", blaze.position()).follow(blaze).a(radius).b(14).color(0xFF8A30).send(sl);
+        ServerFx.of("mob_warn", groundBelow(sl, blaze)).a(radius).b(14).color(0xFF8A30).send(sl);
         sl.playSound(null, blaze.getX(), blaze.getY(), blaze.getZ(), SoundEvents.BLAZE_BURN, SoundSource.HOSTILE, 1.5F, 0.6F);
         SkillTasks.later(14, () -> {
             if (!blaze.isAlive()) return;
-            ServerFx.of("fire_ring", blaze.position()).a(radius).color(0xFF8A30).send(sl);
+            ServerFx.of("fire_ring", groundBelow(sl, blaze)).a(radius).color(0xFF8A30).send(sl);
             sl.playSound(null, blaze.getX(), blaze.getY(), blaze.getZ(), SoundEvents.BLAZE_SHOOT, SoundSource.HOSTILE, 1.5F, 0.5F);
             for (Player p : sl.getEntitiesOfClass(Player.class, blaze.getBoundingBox().inflate(radius), x -> !x.isCreative() && !x.isSpectator())) {
                 if (p.distanceTo(blaze) > radius) continue;
@@ -175,6 +175,13 @@ public final class NetherAi {
             }
             novas++;
         });
+    }
+
+    /** The floor under a hovering monster (up to 8 blocks down), so ground effects lie on the ground. */
+    private static Vec3 groundBelow(ServerLevel sl, Entity e) {
+        net.minecraft.core.BlockPos.MutableBlockPos p = e.blockPosition().mutable();
+        for (int i = 0; i < 8 && sl.getBlockState(p.below()).getCollisionShape(sl, p.below()).isEmpty(); i++) p.move(0, -1, 0);
+        return new Vec3(e.getX(), p.getY(), e.getZ());
     }
 
     /** Wither skeleton / piglin brute: a red flash, then a leap that closes the gap. */
