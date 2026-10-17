@@ -99,7 +99,8 @@ public final class MobAi {
         if (!(e instanceof Mob mob)) return;
         int lv = MobLevels.level(mob);
         if (lv <= 0) return;
-        if (isBuilderZombie(mob) && mob.goalSelector.getAvailableGoals().stream().noneMatch(g -> g.getGoal() instanceof BuilderGoal)) {
+        if ((isBuilderZombie(mob) || mob instanceof ZombifiedPiglin) && mob.goalSelector.getAvailableGoals().stream().noneMatch(g -> g.getGoal() instanceof BuilderGoal)) {
+            // zombified piglins only ever have a target once angered, so they build and dig only then
             mob.goalSelector.addGoal(1, new BuilderGoal(mob, lv));
             mob.goalSelector.addGoal(1, new ZombieItemGoal(mob));
         }

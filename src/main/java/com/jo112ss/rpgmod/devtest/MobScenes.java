@@ -57,6 +57,7 @@ final class MobScenes {
             case "archer" -> 3;
             case "items" -> 4;
             case "dragon" -> 6;
+            case "nether" -> 7;
             default -> 5;
         };
         c = BlockPos.containing(arena).offset(40, 0, idx * 24 - 60);
@@ -108,6 +109,18 @@ final class MobScenes {
                 startPos = pearl.position();
                 Mob tnt = spawn(level, EntityTypes.HUSK, c.offset(11, 0, 6), 20);
                 tnt.setItemSlot(EquipmentSlot.OFFHAND, new ItemStack(Items.TNT, 1));
+            }
+            case "nether" -> {
+                tp(player, Vec3.atBottomCenterOf(c), -90, -5);
+                com.jo112ss.rpgmod.mob.ai.NetherAi.novas = com.jo112ss.rpgmod.mob.ai.NetherAi.lunges = com.jo112ss.rpgmod.mob.ai.NetherAi.charges = 0;
+                com.jo112ss.rpgmod.mob.ai.NetherAi.leaps = com.jo112ss.rpgmod.mob.ai.NetherAi.followUps = 0;
+                spawn(level, EntityTypes.BLAZE, c.offset(6, 2, 0), 60);
+                spawn(level, EntityTypes.WITHER_SKELETON, c.offset(8, 0, 3), 60);
+                Mob hog = spawn(level, EntityTypes.HOGLIN, c.offset(11, 0, -3), 60);
+                hog.getBrain().setMemory(net.minecraft.world.entity.ai.memory.MemoryModuleType.ATTACK_TARGET, player);
+                Mob cube = spawn(level, EntityTypes.MAGMA_CUBE, c.offset(8, 0, -7), 60);
+                ((net.minecraft.world.entity.monster.cubemob.MagmaCube) cube).setSize(3, true);
+                spawn(level, EntityTypes.GHAST, c.offset(24, 8, 0), 60);
             }
             case "dragon" -> {
                 tp(player, Vec3.atBottomCenterOf(c), -90, -12);
@@ -183,6 +196,15 @@ final class MobScenes {
                     RpgMod.LOGGER.info("[AUTOTEST] dragon t={} level={} health={}/{} stage={} phase={} health lost={}", t, MobLevels.level(d),
                             String.format("%.0f", d.getHealth()), String.format("%.0f", d.getMaxHealth()),
                             com.jo112ss.rpgmod.mob.dragon.DragonDirector.stage(d), d.getPhaseManager().getCurrentPhase().getPhase(), String.format("%.1f", lostHealth));
+                }
+            }
+            case "nether" -> {
+                if (t % 40 == 0) {
+                    RpgMod.LOGGER.info("[AUTOTEST] nether t={} novas={} lunges={} charges={} leaps={} followUps={} alive={} health lost={}", t,
+                            com.jo112ss.rpgmod.mob.ai.NetherAi.novas, com.jo112ss.rpgmod.mob.ai.NetherAi.lunges, com.jo112ss.rpgmod.mob.ai.NetherAi.charges,
+                            com.jo112ss.rpgmod.mob.ai.NetherAi.leaps, com.jo112ss.rpgmod.mob.ai.NetherAi.followUps,
+                            mobs.stream().filter(Mob::isAlive).map(m -> m.getType().getDescriptionId().replace("entity.minecraft.", "")).toList(),
+                            String.format("%.1f", lostHealth));
                 }
             }
             case "archer" -> {
