@@ -93,6 +93,14 @@ public final class BloodMoon {
         }
     }
 
+    /** A new world (or the same one reopened in single player) starts from scratch. */
+    @SubscribeEvent
+    public static void onServerStarted(net.neoforged.neoforge.event.server.ServerStartedEvent event) {
+        lastDay = -1;
+        active = false;
+        testKeep = false;
+    }
+
     @SubscribeEvent
     public static void onLogin(PlayerEvent.PlayerLoggedInEvent event) {
         if (event.getEntity() instanceof ServerPlayer sp) PacketDistributor.sendToPlayer(sp, new BloodMoonPayload(active));
