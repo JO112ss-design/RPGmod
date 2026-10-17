@@ -73,9 +73,30 @@ public final class JobManager {
         if (d.hasJob() || JobType.byId(jobId) == null) return;
         setJob(player, jobId);
         JobType type = JobType.byId(jobId);
+        giveStarterKit(player, type);
         player.sendSystemMessage(Component.translatable("rpgmod.job.chosen",
                 Component.translatable("rpgmod.job." + jobId).withColor(type.color())));
         player.level().playSound(null, player.blockPosition(), SoundEvents.PLAYER_LEVELUP, SoundSource.PLAYERS, 0.8F, 1.2F);
+    }
+
+    /**
+     * Starting gear when a job is chosen: a copper weapon of the job (wizards a staff, rangers a bow,
+     * everyone else their first melee weapon) and one forging anvil.
+     */
+    private static void giveStarterKit(ServerPlayer player, JobType type) {
+        WeaponType weapon = switch (type) {
+            case WIZARD -> WeaponType.STAFF;
+            case RANGER -> WeaponType.BOW;
+            default -> type.weapons.stream().filter(w -> w != WeaponType.STAFF && w != WeaponType.BOW).findFirst().orElse(type.weapons.get(0));
+        };
+        for (ItemStack stack : List.of(new ItemStack(ModItems.get(weapon, com.jo112ss.rpgmod.item.WeaponMaterial.COPPER)),
+                new ItemStack(com.jo112ss.rpgmod.registry.ModRegistries.FORGING_ANVIL_ITEM.get()))) {
+            if (!player.getInventory().add(stack)) player.drop(stack, false, net.minecraft.util.Prediction.SERVER_ONLY);
+        }
+        player.sendSystemMessage(Component.translatable("rpgmod.job.starter_kit").withStyle(ChatFormatting.GREEN));
+        if (com.jo112ss.rpgmod.devtest.AutoTestServer.ENABLED) {
+            com.jo112ss.rpgmod.RpgMod.LOGGER.info("[AUTOTEST] starter kit {}: {} + anvil", type.id, ModItems.get(weapon, com.jo112ss.rpgmod.item.WeaponMaterial.COPPER));
+        }
     }
 
     public static void setJob(ServerPlayer player, String jobId) {

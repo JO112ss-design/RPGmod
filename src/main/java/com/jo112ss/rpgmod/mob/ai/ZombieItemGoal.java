@@ -109,7 +109,14 @@ public final class ZombieItemGoal extends Goal {
             if (!mob.isAlive() || !t.isAlive() || mob.distanceTo(t) > 18 || !mob.getSensing().hasLineOfSight(t)) return;
             // exactly like reeling in a hooked mob with a vanilla rod: a tenth of the distance as velocity
             Vec3 pull = mob.position().subtract(t.position()).scale(0.1);
-            t.push(pull.x, pull.y, pull.z);
+            // a player standing on the ground would just scrape along it: lift them a little like a real tug
+            double lift = t.onGround() ? Math.max(pull.y, 0.25) : pull.y;
+            t.push(pull.x, lift, pull.z);
+            // players move themselves on their own computer: the new velocity has to be sent to them
+            t.needsSync = true;
+            if (com.jo112ss.rpgmod.devtest.AutoTestServer.ENABLED) {
+                com.jo112ss.rpgmod.RpgMod.LOGGER.info("[AUTOTEST] rod pull: distance {} velocity {}", String.format("%.1f", mob.distanceTo(t)), t.getDeltaMovement());
+            }
             sl.playSound(null, t.getX(), t.getY(), t.getZ(), SoundEvents.FISHING_BOBBER_RETRIEVE, SoundSource.HOSTILE, 1.0F, 0.8F);
             ServerFx.of("rod_pull", t.position().add(0, t.getBbHeight() * 0.6, 0)).follow(t).vec(mob.position()).send(sl);
         });

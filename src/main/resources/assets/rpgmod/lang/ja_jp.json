@@ -463,5 +463,6 @@
   "rpgmod.boss.king_slime.defeated": "キングスライムを倒した！（%s）",
   "rpgmod.boss.reward": "報酬：スキルの書 ×%s（右クリックでスキルポイント+1、しゃがみ右クリックでまとめて使用）",
   "rpgmod.boss.king_slime.absorb": "キングスライムが子スライムを吸収しようとしている！先に倒せ！",
-  "rpgmod.boss.opening": "チャンス！"
+  "rpgmod.boss.opening": "チャンス！",
+  "rpgmod.job.starter_kit": "初期装備として銅の武器と鍛冶台を受け取った"
 }
