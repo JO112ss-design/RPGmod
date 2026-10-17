@@ -422,8 +422,10 @@ final class MobScenes {
                 }
             }
             case "stairs", "exit" -> {
-                if (t % 20 == 0 && !mobs.isEmpty()) {
-                    Mob z = mobs.get(0);
+                // the zombie object in the list may be stale (its chunk reloaded): look up the live one
+                var live = level.getEntitiesOfClass(net.minecraft.world.entity.monster.zombie.Zombie.class, new net.minecraft.world.phys.AABB(c).inflate(40));
+                if (t % 20 == 0 && !live.isEmpty()) {
+                    Mob z = live.get(0);
                     RpgMod.LOGGER.info("[AUTOTEST] {} t={} zombie #{} at {} (relative x={} y={}) target={} mode={} dug={} dist={} health lost={}", scene, t, z.getId(),
                             z.blockPosition(), z.getBlockX() - c.getX(), z.getBlockY() - c.getY(), z.getTarget() == player,
                             com.jo112ss.rpgmod.mob.ai.SurfaceGoal.lastMode, com.jo112ss.rpgmod.mob.ai.BuilderGoal.dugBlocks,
