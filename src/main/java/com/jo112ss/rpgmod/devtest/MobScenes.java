@@ -190,7 +190,11 @@ final class MobScenes {
                 net.neoforged.neoforge.common.NeoForge.EVENT_BUS.post(ev);
                 RpgMod.LOGGER.info("[AUTOTEST] king sleep blocked={}", ev.getProblem() != null);
             }
-            case 60 -> { if (k != null) k.testMove("slam"); }
+            case 52, 108, 200, 296 -> portrait(player, k);
+            case 60, 120, 208, 304 -> {
+                tp(player, Vec3.atBottomCenterOf(c), -90, -6);
+                if (t == 60 && k != null) k.testMove("slam");
+            }
             case 150 -> { if (k != null) k.testMove("spit"); }
             case 190 -> { if (k != null) k.setHealth(k.getMaxHealth() * 0.74F); }
             case 230 -> { if (k != null) k.setHealth(k.getMaxHealth() * 0.49F); }
@@ -224,7 +228,7 @@ final class MobScenes {
                 com.jo112ss.rpgmod.mob.boss.BloodMoon.testKeep = false;
                 setTime(level, 9 * 24000L + 23300); // dawn
             }
-            case 460 -> RpgMod.LOGGER.info("[AUTOTEST] king left at dawn={} bloodMoon={}", k == null || k.isRemoved(), com.jo112ss.rpgmod.mob.boss.BloodMoon.active());
+            case 480 -> RpgMod.LOGGER.info("[AUTOTEST] king left at dawn={} bloodMoon={}", k == null || k.isRemoved(), com.jo112ss.rpgmod.mob.boss.BloodMoon.active());
             case 470 -> setTime(level, 10 * 24000L + 300); // morning of day 11: the day title
             default -> { }
         }
@@ -240,6 +244,17 @@ final class MobScenes {
                     String.format("%.0f", k.getHealth()), String.format("%.0f", k.getMaxHealth()), String.format("%.1f", k.distanceTo(player)),
                     String.format("%.1f", maxHit), String.format("%.1f", lostHealth));
         }
+    }
+
+    /** Puts the camera beside the king, looking at it (the moves themselves are filmed from behind the player). */
+    private static void portrait(ServerPlayer player, com.jo112ss.rpgmod.mob.boss.KingSlime k) {
+        if (k == null || !k.isAlive()) return;
+        double d = k.getBbWidth() * 1.3 + 5;
+        Vec3 at = k.position().add(-d * 0.7, 0, -d * 0.7);
+        Vec3 look = k.position().add(0, k.getBbHeight() * 0.5, 0).subtract(at.add(0, 1.6, 0));
+        float yaw = (float) Math.toDegrees(Math.atan2(-look.x, look.z));
+        float pitch = (float) -Math.toDegrees(Math.atan2(look.y, Math.hypot(look.x, look.z)));
+        tp(player, at, yaw, pitch);
     }
 
     private static void tp(ServerPlayer p, Vec3 at, float yaw, float pitch) {
