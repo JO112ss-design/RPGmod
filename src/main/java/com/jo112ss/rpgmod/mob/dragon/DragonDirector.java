@@ -211,9 +211,16 @@ public final class DragonDirector {
                 amount = room;
                 guard(sl, dragon, s);
             }
-            s.windowDamage += amount;
         }
         event.setAmount(amount);
+    }
+
+    /** Counts the health really lost (after invulnerability frames) towards the window. */
+    @SubscribeEvent
+    public static void onDamaged(net.neoforged.neoforge.event.entity.living.LivingDamageEvent.Post event) {
+        if (!(event.getEntity() instanceof EnderDragon dragon) || dragon.level().isClientSide()) return;
+        State s = STATES.get(dragon);
+        if (s != null) s.windowDamage += event.getNewDamage();
     }
 
     private static void guard(ServerLevel sl, EnderDragon dragon, State s) {
