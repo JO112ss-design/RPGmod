@@ -63,6 +63,7 @@ final class MobScenes {
             case "items" -> 4;
             case "dragon" -> 6;
             case "nether" -> 7;
+            case "dragonhp" -> 12;
             case "king" -> 9;
             case "sense" -> 8;
             case "stairs" -> 10;
@@ -169,6 +170,17 @@ final class MobScenes {
                 spawn(level, EntityTypes.GHAST, c.offset(24, 8, 0), 60);
             }
             case "dragon" -> {
+                tp(player, Vec3.atBottomCenterOf(c), -90, -12);
+                var d = EntityTypes.ENDER_DRAGON.create(level, EntitySpawnReason.COMMAND);
+                d.snapTo(c.getX() + 22, c.getY() + 9, c.getZ() + 0.5, 90F, 0F);
+                d.setFightOrigin(c);
+                level.addFreshEntity(d);
+                d.getPhaseManager().setPhase(net.minecraft.world.entity.boss.enderdragon.phases.EnderDragonPhase.HOVERING);
+                dragon = d;
+            }
+            case "dragonhp" -> {
+                // six players' worth of dragon: health scaling and the per-window damage limit
+                com.jo112ss.rpgmod.mob.dragon.DragonDirector.testPlayers = 6;
                 tp(player, Vec3.atBottomCenterOf(c), -90, -12);
                 var d = EntityTypes.ENDER_DRAGON.create(level, EntitySpawnReason.COMMAND);
                 d.snapTo(c.getX() + 22, c.getY() + 9, c.getZ() + 0.5, 90F, 0F);
@@ -350,6 +362,32 @@ final class MobScenes {
         if (!java.util.Set.of("sense", "stairs", "exit").contains(scene)) for (Mob m : mobs) if (m.isAlive() && m.getTarget() == null) m.setTarget(player);
         switch (scene) {
             case "king" -> kingTick(level, player);
+            case "dragonhp" -> {
+                var d = dragon;
+                if (d == null || !d.isAlive()) break;
+                var src = level.damageSources().playerAttack(player);
+                var pm = d.getPhaseManager();
+                switch (t) {
+                    case 25 -> RpgMod.LOGGER.info("[AUTOTEST] dragonhp max={} health={} toughness={}", d.getMaxHealth(), d.getHealth(),
+                            com.jo112ss.rpgmod.mob.dragon.DragonDirector.toughness(d));
+                    case 30, 33 -> {
+                        float before = d.getHealth();
+                        d.hurt(level, d.head, src, t == 30 ? 2000F : 100F);
+                        RpgMod.LOGGER.info("[AUTOTEST] dragonhp flying hit at t={}: {} -> {} phase={}", t, before, d.getHealth(), pm.getCurrentPhase().getPhase());
+                    }
+                    case 40 -> pm.setPhase(net.minecraft.world.entity.boss.enderdragon.phases.EnderDragonPhase.SITTING_SCANNING);
+                    case 44 -> {
+                        float before = d.getHealth();
+                        d.hurt(level, d.head, src, 2000F);
+                        RpgMod.LOGGER.info("[AUTOTEST] dragonhp perched hit: {} -> {} phase={}", before, d.getHealth(), pm.getCurrentPhase().getPhase());
+                    }
+                    case 50 -> RpgMod.LOGGER.info("[AUTOTEST] dragonhp after perched hit: phase={} health={}", pm.getCurrentPhase().getPhase(), d.getHealth());
+                    default -> { }
+                }
+                if (t < 40 && pm.getCurrentPhase().getPhase() != net.minecraft.world.entity.boss.enderdragon.phases.EnderDragonPhase.HOVERING) {
+                    pm.setPhase(net.minecraft.world.entity.boss.enderdragon.phases.EnderDragonPhase.HOVERING);
+                }
+            }
             case "dragon" -> {
                 var d = dragon;
                 if (d == null || !d.isAlive()) break;
@@ -473,6 +511,7 @@ final class MobScenes {
         if (savedTime >= 0) setTime(level, savedTime);
         savedTime = -1;
         if (dragon != null) dragon.discard();
+        com.jo112ss.rpgmod.mob.dragon.DragonDirector.testPlayers = 0;
         dragon = null;
         for (Mob m : mobs) m.discard();
         mobs.clear();

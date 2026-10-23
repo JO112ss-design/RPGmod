@@ -471,5 +471,7 @@
   "rpgmod.part.arrow.0": "Head",
   "rpgmod.part.arrow.1": "Shaft",
   "rpgmod.part.arrow.2": "Fletching",
-  "rpgmod.gui.arrow_count": "Quality: 4/8/16/32 arrows"
+  "rpgmod.gui.arrow_count": "Quality: 4/8/16/32 arrows",
+  "rpgmod.dragon.guard_takeoff": "The dragon shields itself and takes off!",
+  "rpgmod.dragon.guard_flight": "The dragon is guarding itself - attacks won't get through until it lands"
 }

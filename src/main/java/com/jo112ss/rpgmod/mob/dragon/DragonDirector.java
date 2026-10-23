@@ -53,10 +53,31 @@ public final class DragonDirector {
         int stage = 1;
         int volley = 160, gust = 100, orbs = 260, minions = 400, charge = 200, rain = 200;
         boolean announced;
+        /** Health past the 1024 cap: hits are divided by this (6 players: about x2.4). */
+        float toughness = 1;
+        int playersSeen = -1;
+        /** Damage taken in the current perch / flight, the kind of window and how long it has lasted. */
+        float windowDamage;
+        boolean windowSitting;
+        int windowTicks;
+        boolean guardShown;
     }
+
+    private static final net.minecraft.resources.Identifier PLAYERS_HP =
+            net.minecraft.resources.Identifier.fromNamespaceAndPath(RpgMod.MODID, "dragon_players");
+    /** Dev test: pretend this many players are in the End (0 = count them). */
+    public static int testPlayers;
+    /** A flight with no perch also ends a damage window after this long. */
+    private static final int FLIGHT_WINDOW = 600;
 
     private static final Map<EnderDragon, State> STATES = new WeakHashMap<>();
     private static final int PURPLE = 0xB040FF, RED = 0xFF3050;
+
+    /** Health the fight is really worth (max health x toughness past the vanilla cap). */
+    public static float toughness(EnderDragon d) {
+        State s = STATES.get(d);
+        return s == null ? 1 : s.toughness;
+    }
 
     public static int stage(EnderDragon d) {
         State s = STATES.get(d);
@@ -72,6 +93,8 @@ public final class DragonDirector {
             if (p.isAlive() && !p.isCreative() && !p.isSpectator() && p.distanceTo(dragon) < 160) players.add(p);
         }
         State s = STATES.computeIfAbsent(dragon, k -> new State());
+        if (s.playersSeen < 0 || dragon.tickCount % 20 == 0) scaleHealth(sl, dragon, s);
+        tickWindow(sl, dragon, s);
         if (!s.announced) {
             s.announced = true;
             updateBar(dragon, s.stage);
@@ -119,6 +142,91 @@ public final class DragonDirector {
         if (s.stage >= 3 && dragon.tickCount % 100 == 0) {
             ServerFx.of("dragon_enrage", dragon.position()).follow(dragon).a(100).send(sl, 200);
         }
+    }
+
+    // ------------------------------------------------------------------ health by player count
+
+    /**
+     * Max health = the configured health x (1 + share per extra player in the End, spectators not
+     * counted). Past the vanilla cap the extra is kept as toughness, like the King Slime's. The current
+     * share of health is kept when people arrive or leave.
+     */
+    private static void scaleHealth(ServerLevel sl, EnderDragon dragon, State s) {
+        int n = 0;
+        for (ServerPlayer p : sl.players()) if (!p.isSpectator()) n++;
+        n = Math.max(1, testPlayers > 0 ? testPlayers : n);
+        if (n == s.playersSeen) return;
+        s.playersSeen = n;
+        var inst = dragon.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.MAX_HEALTH);
+        if (inst == null) return;
+        var old = inst.getModifier(PLAYERS_HP);
+        double without = dragon.getMaxHealth() / (1 + (old == null ? 0 : old.amount()));
+        double wanted = without * (1 + MobConfig.dragonPerPlayer() * (n - 1));
+        double applied = Math.min(wanted, 1000);
+        s.toughness = (float) (wanted / applied);
+        float ratio = dragon.getHealth() / dragon.getMaxHealth();
+        inst.removeModifier(PLAYERS_HP);
+        if (applied / without - 1 > 1e-4) {
+            inst.addPermanentModifier(new net.minecraft.world.entity.ai.attributes.AttributeModifier(PLAYERS_HP, applied / without - 1,
+                    net.minecraft.world.entity.ai.attributes.AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL));
+        }
+        if (dragon.isAlive()) dragon.setHealth(Math.max(1, ratio * dragon.getMaxHealth()));
+        RpgMod.LOGGER.info("Ender Dragon scaled for {} players: {} health (x{} toughness), now {}", n,
+                String.format("%.0f", wanted), String.format("%.2f", s.toughness), String.format("%.0f", dragon.getHealth() * s.toughness));
+    }
+
+    // ------------------------------------------------------------------ damage windows
+
+    /** A new window begins whenever the dragon lands or takes off (or after a long flight). */
+    private static void tickWindow(ServerLevel sl, EnderDragon dragon, State s) {
+        boolean sitting = dragon.getPhaseManager().getCurrentPhase().isSitting();
+        s.windowTicks++;
+        if (sitting != s.windowSitting || (!sitting && s.windowTicks > FLIGHT_WINDOW)) {
+            s.windowSitting = sitting;
+            s.windowTicks = 0;
+            s.windowDamage = 0;
+            s.guardShown = false;
+        }
+    }
+
+    /**
+     * Hits on the dragon: divided by its toughness, and no more than a share of its health per
+     * window, so even six players see every stage. A full window on its perch makes it take off.
+     */
+    @SubscribeEvent(priority = net.neoforged.bus.api.EventPriority.LOWEST)
+    public static void onHurt(net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent event) {
+        if (!(event.getEntity() instanceof EnderDragon dragon) || !(dragon.level() instanceof ServerLevel sl) || !MobConfig.dragon()) return;
+        if (event.getSource().is(net.minecraft.tags.DamageTypeTags.BYPASSES_INVULNERABILITY)) return;
+        State s = STATES.computeIfAbsent(dragon, k -> new State());
+        float amount = event.getAmount() / s.toughness;
+        double share = MobConfig.dragonWindow();
+        if (share > 0) {
+            float room = (float) (share * dragon.getMaxHealth()) - s.windowDamage;
+            if (room <= 0.01F) {
+                event.setCanceled(true);
+                guard(sl, dragon, s);
+                return;
+            }
+            if (amount >= room) {
+                amount = room;
+                guard(sl, dragon, s);
+            }
+            s.windowDamage += amount;
+        }
+        event.setAmount(amount);
+    }
+
+    private static void guard(ServerLevel sl, EnderDragon dragon, State s) {
+        if (s.guardShown) return;
+        s.guardShown = true;
+        boolean sitting = dragon.getPhaseManager().getCurrentPhase().isSitting();
+        // enough for one perch: it takes off again (vanilla does the same past 25%)
+        if (sitting) SkillTasks.later(1, () -> {
+            if (dragon.isAlive() && dragon.getPhaseManager().getCurrentPhase().isSitting()) dragon.getPhaseManager().setPhase(EnderDragonPhase.TAKEOFF);
+        });
+        sl.playSound(null, dragon.getX(), dragon.getY(), dragon.getZ(), SoundEvents.SHIELD_BLOCK.value(), SoundSource.HOSTILE, 4.0F, 0.6F);
+        Component msg = Component.translatable(sitting ? "rpgmod.dragon.guard_takeoff" : "rpgmod.dragon.guard_flight").withStyle(net.minecraft.ChatFormatting.LIGHT_PURPLE);
+        for (ServerPlayer p : sl.players()) if (p.distanceTo(dragon) < 200) p.sendOverlayMessage(msg);
     }
 
     /** Development test hook: performs one attack right away. */
