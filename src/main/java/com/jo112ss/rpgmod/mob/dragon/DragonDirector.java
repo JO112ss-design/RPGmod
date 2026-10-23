@@ -65,7 +65,7 @@ public final class DragonDirector {
 
     private static final net.minecraft.resources.Identifier PLAYERS_HP =
             net.minecraft.resources.Identifier.fromNamespaceAndPath(RpgMod.MODID, "dragon_players");
-    /** Dev test: pretend this many players are in the End (0 = count them). */
+    /** Dev test: pretend this many players are online (0 = count them). */
     public static int testPlayers;
     /** A flight with no perch also ends a damage window after this long. */
     private static final int FLIGHT_WINDOW = 600;
@@ -147,13 +147,13 @@ public final class DragonDirector {
     // ------------------------------------------------------------------ health by player count
 
     /**
-     * Max health = the configured health x (1 + share per extra player in the End, spectators not
+     * Max health = the configured health x (1 + share per extra player online, spectators not
      * counted). Past the vanilla cap the extra is kept as toughness, like the King Slime's. The current
      * share of health is kept when people arrive or leave.
      */
     private static void scaleHealth(ServerLevel sl, EnderDragon dragon, State s) {
         int n = 0;
-        for (ServerPlayer p : sl.players()) if (!p.isSpectator()) n++;
+        for (ServerPlayer p : sl.getServer().getPlayerList().getPlayers()) if (!p.isSpectator()) n++;
         n = Math.max(1, testPlayers > 0 ? testPlayers : n);
         if (n == s.playersSeen) return;
         s.playersSeen = n;

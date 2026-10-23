@@ -58,7 +58,7 @@ public final class MobConfig {
     public static final ModConfigSpec.BooleanValue DRAGON = B.comment("Three-stage Ender Dragon").define("dragon", true);
     public static final ModConfigSpec.DoubleValue DRAGON_HEALTH = B.comment("Ender Dragon health multiplier (vanilla 200)").defineInRange("dragonHealth", 3.0, 0.1, 100);
     public static final ModConfigSpec.DoubleValue DRAGON_DAMAGE = B.comment("Ender Dragon damage multiplier (all its attacks, breath included)").defineInRange("dragonDamage", 1.5, 0, 100);
-    public static final ModConfigSpec.DoubleValue DRAGON_PER_PLAYER = B.comment("Extra Ender Dragon health per additional player in the End (0.6 = +60%; 6 players: x4)").defineInRange("dragonHealthPerPlayer", 0.6, 0, 10);
+    public static final ModConfigSpec.DoubleValue DRAGON_PER_PLAYER = B.comment("Extra Ender Dragon health per additional player online, spectators not counted (0.6 = +60%; 6 players: x4)").defineInRange("dragonHealthPerPlayer", 0.6, 0, 10);
     public static final ModConfigSpec.DoubleValue DRAGON_WINDOW = B.comment("Most of its health the dragon can lose per perch, or per flight between perches (0.2 = 20%; 0 = no limit)").defineInRange("dragonMaxShare", 0.2, 0, 1);
     static {
         B.pop().push("bloodMoon");
