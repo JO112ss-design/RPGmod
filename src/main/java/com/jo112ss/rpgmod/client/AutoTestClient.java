@@ -188,7 +188,7 @@ public final class AutoTestClient {
             case "mob:archer" -> new int[] {40, 100, 160};
             case "mob:items" -> new int[] {30, 60, 120, 190};
             case "mob:sense" -> new int[] {40, 200, 380};
-            case "mob:dragonhp" -> new int[] {31, 45};
+            case "mob:dragonhp" -> new int[] {100, 140};
             case "mob:stairs" -> new int[] {60, 300, 550, 700};
             case "mob:exit" -> new int[] {60, 200, 340, 480};
             case "mob:spider" -> new int[] {40, 80};
@@ -208,7 +208,7 @@ public final class AutoTestClient {
             case "mob:nether" -> 280;
             case "mob:king" -> 960;
             case "mob:sense" -> 400;
-            case "mob:dragonhp" -> 70;
+            case "mob:dragonhp" -> 220;
             case "mob:stairs" -> 720;
             case "mob:exit" -> 520;
             default -> SLOT;

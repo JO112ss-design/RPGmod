@@ -368,23 +368,23 @@ final class MobScenes {
                 var src = level.damageSources().playerAttack(player);
                 var pm = d.getPhaseManager();
                 switch (t) {
-                    case 25 -> RpgMod.LOGGER.info("[AUTOTEST] dragonhp max={} health={} toughness={}", d.getMaxHealth(), d.getHealth(),
+                    case 60 -> RpgMod.LOGGER.info("[AUTOTEST] dragonhp max={} health={} toughness={}", d.getMaxHealth(), d.getHealth(),
                             com.jo112ss.rpgmod.mob.dragon.DragonDirector.toughness(d));
-                    case 30, 33 -> {
+                    case 65, 68 -> {
                         float before = d.getHealth();
-                        d.hurt(level, d.head, src, t == 30 ? 2000F : 100F);
+                        d.hurt(level, d.head, src, t == 65 ? 2000F : 100F);
                         RpgMod.LOGGER.info("[AUTOTEST] dragonhp flying hit at t={}: {} -> {} phase={}", t, before, d.getHealth(), pm.getCurrentPhase().getPhase());
                     }
-                    case 40 -> pm.setPhase(net.minecraft.world.entity.boss.enderdragon.phases.EnderDragonPhase.SITTING_SCANNING);
-                    case 44 -> {
+                    case 75 -> pm.setPhase(net.minecraft.world.entity.boss.enderdragon.phases.EnderDragonPhase.SITTING_SCANNING);
+                    case 79 -> {
                         float before = d.getHealth();
                         d.hurt(level, d.head, src, 2000F);
                         RpgMod.LOGGER.info("[AUTOTEST] dragonhp perched hit: {} -> {} phase={}", before, d.getHealth(), pm.getCurrentPhase().getPhase());
                     }
-                    case 50 -> RpgMod.LOGGER.info("[AUTOTEST] dragonhp after perched hit: phase={} health={}", pm.getCurrentPhase().getPhase(), d.getHealth());
+                    case 85 -> RpgMod.LOGGER.info("[AUTOTEST] dragonhp after perched hit: phase={} health={}", pm.getCurrentPhase().getPhase(), d.getHealth());
                     default -> { }
                 }
-                if (t < 40 && pm.getCurrentPhase().getPhase() != net.minecraft.world.entity.boss.enderdragon.phases.EnderDragonPhase.HOVERING) {
+                if (t < 75 && pm.getCurrentPhase().getPhase() != net.minecraft.world.entity.boss.enderdragon.phases.EnderDragonPhase.HOVERING) {
                     pm.setPhase(net.minecraft.world.entity.boss.enderdragon.phases.EnderDragonPhase.HOVERING);
                 }
             }
