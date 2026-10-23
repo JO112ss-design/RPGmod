@@ -220,7 +220,7 @@ public final class DragonDirector {
     public static void onDamaged(net.neoforged.neoforge.event.entity.living.LivingDamageEvent.Post event) {
         if (!(event.getEntity() instanceof EnderDragon dragon) || dragon.level().isClientSide()) return;
         State s = STATES.get(dragon);
-        if (s != null) s.windowDamage += event.getNewDamage();
+        if (s != null) s.windowDamage += event.getHealthDamage();
     }
 
     private static void guard(ServerLevel sl, EnderDragon dragon, State s) {
