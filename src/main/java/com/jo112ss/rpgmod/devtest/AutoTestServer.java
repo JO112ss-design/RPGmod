@@ -467,6 +467,21 @@ public final class AutoTestServer {
                     com.jo112ss.rpgmod.item.Shields.downSeconds(held), com.jo112ss.rpgmod.item.Shields.isDown(held), held.getDamageValue(), player.getCooldowns().isOnCooldown(held));
         }
         player.setItemSlot(net.minecraft.world.entity.EquipmentSlot.OFFHAND, before);
+        // everything else the forge makes never breaks; durability is only rolled for shields
+        StringBuilder sb = new StringBuilder();
+        for (com.jo112ss.rpgmod.item.WeaponType t : com.jo112ss.rpgmod.item.WeaponType.values()) {
+            for (com.jo112ss.rpgmod.item.WeaponMaterial m : new com.jo112ss.rpgmod.item.WeaponMaterial[] {com.jo112ss.rpgmod.item.WeaponMaterial.COPPER, com.jo112ss.rpgmod.item.WeaponMaterial.NETHERITE}) {
+                ItemStack s = new ItemStack(com.jo112ss.rpgmod.item.ModItems.get(t, m));
+                sb.append(t.id).append('/').append(m.id).append('=').append(s.has(net.minecraft.core.component.DataComponents.UNBREAKABLE) ? "U" : (s.isDamageableItem() ? "wears" : "-")).append(' ');
+            }
+        }
+        java.util.Random rr = new java.util.Random(1);
+        int weaponDur = 0, shieldDur = 0;
+        for (int i = 0; i < 300; i++) {
+            for (var o : com.jo112ss.rpgmod.smithing.core.OptionRoller.roll(4, false, false, false, rr)) if (o.type() == com.jo112ss.rpgmod.smithing.core.OptionType.DURABILITY) weaponDur++;
+            for (var o : com.jo112ss.rpgmod.smithing.core.OptionRoller.roll(4, true, false, true, rr)) if (o.type() == com.jo112ss.rpgmod.smithing.core.OptionType.DURABILITY) shieldDur++;
+        }
+        RpgMod.LOGGER.info("[AUTOTEST] unbreakable gear: {}| durability rolls in 300: gear {} shield {}", sb, weaponDur, shieldDur);
     }
     private static boolean advancedSetupPending;
 

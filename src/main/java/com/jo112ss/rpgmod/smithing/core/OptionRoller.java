@@ -13,12 +13,20 @@ public final class OptionRoller {
         return roll(count, armor, false, random);
     }
 
-    /** {@code staff}: magic options (magic power, cast speed) are only in a weapon's pool for staffs. */
     public static List<RolledOption> roll(int count, boolean armor, boolean staff, RandomGenerator random) {
+        return roll(count, armor, staff, true, random);
+    }
+
+    /**
+     * {@code staff}: magic options (magic power, cast speed) are only in a weapon's pool for staffs.
+     * {@code wears}: durability is only rolled for gear that can wear out (shields; the rest never breaks).
+     */
+    public static List<RolledOption> roll(int count, boolean armor, boolean staff, boolean wears, RandomGenerator random) {
         List<OptionType> pool = new ArrayList<>();
         for (OptionType t : OptionType.values()) {
             if (!t.inPool(armor)) continue;
             if (t.isMagic() && !armor && !staff) continue;
+            if (t == OptionType.DURABILITY && !wears) continue;
             pool.add(t);
         }
         for (int i = pool.size() - 1; i > 0; i--) Collections.swap(pool, i, random.nextInt(i + 1));
