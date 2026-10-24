@@ -235,18 +235,18 @@ public final class JobData {
     public boolean ensureAdvanced() {
         if (!isAdvanced() || advUnlocked.contains(0)) return false;
         advUnlocked.add(0);
-        advPanelVersion = SkillPanel.ADV_VERSION;
+        advPanelVersion = SkillPanel.advVersion(job);
         return true;
     }
 
     public boolean advPanelOutdated() {
-        return isAdvanced() && advPanelVersion != SkillPanel.ADV_VERSION;
+        return isAdvanced() && advPanelVersion != SkillPanel.advVersion(job);
     }
 
     /** Back to only the advanced centre cell (advanced points refunded). */
     public void resetAdvPanel() {
         advUnlocked.clear();
-        advPanelVersion = SkillPanel.ADV_VERSION;
+        advPanelVersion = SkillPanel.advVersion(job);
         if (isAdvanced()) advUnlocked.add(0);
         dropUnknownSlots();
     }
@@ -342,7 +342,7 @@ public final class JobData {
         advUnlocked.clear();
         cooldowns.clear();
         panelVersion = SkillPanel.version(job);
-        advPanelVersion = SkillPanel.ADV_VERSION;
+        advPanelVersion = SkillPanel.advVersion(job);
         slots[0] = slots[1] = slots[2] = slots[3] = "";
         if (hasJob()) {
             unlocked.add(0);

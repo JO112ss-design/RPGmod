@@ -309,7 +309,7 @@ public final class JobDefs {
                         skill("yaksha", U, SkillEffect.BUFF, 100, 35, 0, 0, 12, List.of("minecraft:speed"), 0, "叉")),
                 List.of());
         // ---- Bishop: holy magic from the staff, and miracles
-        advanced("healer", "bishop", 0x3A8FD0, "聖", List.of(JobStat.MAGIC_ATTACK, JobStat.MAX_MANA, JobStat.SKILL_POWER, JobStat.MAX_HEALTH),
+        advanced("healer", "bishop", 0x3A8FD0, "聖", List.of(JobStat.MAGIC_ATTACK, JobStat.MAX_MANA, JobStat.SKILL_POWER, JobStat.MANA_REGEN),
                 stats(JobStat.MAGIC_ATTACK, 0.04, JobStat.MAX_MANA, 0.75),
                 List.of(
                         skill("revive_prayer", A, SkillEffect.HEAL, 120, 60, 1.0, 12, 0, List.of(), 0, "蘇"),

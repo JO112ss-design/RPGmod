@@ -115,6 +115,11 @@ public final class SkillPanel {
      * Layout version of one job's base panel: {@link #VERSION}, or higher for a job whose cells changed
      * on their own (only that job's players get their points back).
      */
+    /** Layout version of the advanced panel of a base job ({@link #ADV_VERSION}, or higher where it changed alone). */
+    public static int advVersion(String baseJob) {
+        return "healer".equals(baseJob) ? ADV_VERSION + 1 : ADV_VERSION; // bishop: health cells became mana regeneration
+    }
+
     public static int version(String job) {
         return "healer".equals(job) ? VERSION + 1 : VERSION; // healer: heals moved to the staff, three new skills
     }
