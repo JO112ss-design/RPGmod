@@ -116,7 +116,7 @@ public final class JobManager {
      */
     private static void giveStarterKit(ServerPlayer player, JobType type) {
         WeaponType weapon = switch (type) {
-            case WIZARD -> WeaponType.STAFF;
+            case WIZARD, HEALER -> WeaponType.STAFF; // the healer's heals are cast from the staff
             case RANGER -> WeaponType.BOW;
             default -> type.weapons.stream().filter(w -> w != WeaponType.STAFF && w != WeaponType.BOW).findFirst().orElse(type.weapons.get(0));
         };
@@ -643,7 +643,8 @@ public final class JobManager {
             case "absolute_zero" -> 0x9FE8FF;
             case "thunderstorm" -> 0xFFF07A;
             case "stone_spikes" -> 0xC09060;
-            case "radiant_lance", "holy_bolt", "holy_nova", "light_pillar" -> 0xFFE89A;
+            case "radiant_lance", "holy_bolt", "holy_nova", "light_pillar", "purify" -> 0xFFE89A;
+            case "heal", "group_heal" -> 0x7CFF9A;
             case "dark_orb" -> 0x8A4CFF;
             case "tornado" -> 0xA8F0D0;
             case "starfall" -> 0xC8B8FF;

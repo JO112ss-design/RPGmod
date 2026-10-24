@@ -11,7 +11,7 @@ JOBS = {  # id: (ja name, ja role, ja desc, en name, en role, en desc)
  'runemaster': ('ルーンマスター', '上級・範囲支援', 'エンチャンターの上級職。ルーンで広い範囲の味方を強め、敵を弱らせる。', 'Runemaster', 'Advanced: area support', 'Advanced enchanter: runes that empower allies and weaken foes over a wide area.'),
  'joker': ('ジョーカー', '上級・トリッキー', 'ギャンブラーの上級職。奇術と運で戦場をかき回す道化師。', 'Joker', 'Advanced: trickster', 'Advanced gambler: tricks and luck that turn a fight upside down.'),
  'nightblade': ('ナイトブレード', '上級・二刀流', 'アサシンの上級職。オフハンドに短剣を持つと右クリックでも斬れる二刀流の剣士。', 'Nightblade', 'Advanced: dual blades', 'Advanced assassin: with a dagger in the off hand, right click strikes with it too.'),
- 'bishop': ('ビショップ', '上級・回復魔法', 'ヒーラーの上級職。杖で聖なる攻撃魔法を唱え、ヒール・グループヒール・浄化も杖にセットして詠唱できる。', 'Bishop', 'Advanced: holy magic', 'Advanced healer: casts holy attack spells from the staff, and can set Heal, Group Heal and Purify on it too.'),
+ 'bishop': ('ビショップ', '上級・回復魔法', 'ヒーラーの上級職。回復の呪文に加えて、聖なる攻撃魔法も杖で唱える高位の聖職者。', 'Bishop', 'Advanced: holy magic', 'Advanced healer: high priest who casts holy attack spells from the staff as well as the heals.'),
  'fighter': ('ファイター', '近接火力', '剣とハンマーで最前線を切り開く戦士。体力と攻撃力が高く、範囲攻撃と突進が得意。',
              'Fighter', 'Melee damage', 'A front-line warrior with swords and hammers. High health and attack, strong area attacks and charges.'),
  'ranger': ('レンジャー', '遠距離火力', '弓の名手。素早く動き回りながら連射や罠で敵を仕留める。',
@@ -20,7 +20,7 @@ JOBS = {  # id: (ja name, ja role, ja desc, en name, en role, en desc)
              'Paladin', 'Tank / support', 'A holy knight with mace and sword. Very sturdy; protects and heals allies.'),
  'wizard': ('ウィザード', '魔法火力', '杖に呪文をセットして戦う魔法使い。Vキー長押しで呪文を切り替え、右クリック長押しで詠唱して離すと発動。',
             'Wizard', 'Magic damage', 'Sets spells on a staff. Hold V to switch spells, right-click to cast.'),
- 'healer': ('ヒーラー', '回復・強化', '杖とメイスで仲間を支える癒し手。回復と持続回復、MPの譲渡が得意。',
+ 'healer': ('ヒーラー', '回復・強化', '杖とメイスで仲間を支える癒し手。回復は杖で詠唱する呪文（ヒール・グループヒール・浄化）。持続回復や盾、MPの譲渡も得意。',
             'Healer', 'Healing / buffs', 'Supports the party with staff and mace: healing, regeneration and mana gifts.'),
  'assassin': ('アサシン', '高速・会心', '短剣を操る暗殺者。会心率が高く、影歩きと隠密で一気に仕留める。',
               'Assassin', 'Speed / crits', 'A dagger fighter with high critical chance, blinking and stealth.'),
@@ -64,8 +64,8 @@ SKILLS = {  # id: (ja, ja desc, en, en desc)
  'frost_nova': ('フロストノヴァ', '氷の波を周囲に広げ、敵を凍えさせ鈍らせる。', 'Frost Nova', 'An icy wave spreads out, freezing and slowing enemies.'),
  'thunder': ('サンダー', '狙った場所に雷を落とし、近くの敵へ連鎖させる。', 'Thunder', 'Call lightning where you aim; it arcs to nearby enemies.'),
  'arcane_shield': ('アーケインシールド', '吸収ハートと耐性を得る。', 'Arcane Shield', 'Gain absorption and resistance.'),
- 'heal': ('ヒール', '自分と近くの味方を回復する。ビショップは杖にセットして詠唱もできる。', 'Heal', 'Heal yourself and nearby allies. The bishop can also set it on the staff and cast it.'),
- 'group_heal': ('グループヒール', '広い範囲（10ブロック）の味方を回復する。ビショップは杖にセットして詠唱もできる。', 'Group Heal', 'Heal allies in a wide area (10 blocks). The bishop can also set it on the staff and cast it.'),
+ 'heal': ('ヒール', '呪文（杖で詠唱）：自分と近くの味方を回復する。', 'Heal', 'Spell (cast from the staff): heal yourself and nearby allies.'),
+ 'group_heal': ('グループヒール', '呪文（杖で詠唱）：広い範囲（10ブロック）の味方を回復する。', 'Group Heal', 'Spell (cast from the staff): heal allies in a wide area (10 blocks).'),
  'blessing': ('祝福', '味方に再生効果を与える。', 'Blessing', 'Give allies regeneration.'),
  'mana_gift': ('マナの恵み', '近くの味方のMPを回復する。', 'Mana Gift', 'Restore mana to nearby allies.'),
  'sanctuary': ('聖域', '足元に聖域を作り、8秒間中の味方を回復し続け、中の敵を鈍らせて焼く（アンデッドに1.5倍）。', 'Sanctuary', 'Create a holy zone for 8 seconds: allies inside heal, enemies inside are slowed and burned (x1.5 on undead).'),
@@ -99,7 +99,7 @@ SKILLS = {  # id: (ja, ja desc, en, en desc)
  'blizzard': ('ブリザード', '狙った場所に4秒間吹雪を起こし、中の敵を凍えさせ続ける。', 'Blizzard', 'A 4-second snowstorm on the aimed spot that keeps hurting and slowing.'),
  'gravity': ('グラビティ', '狙った場所に重力の渦を作って敵を引き寄せ、まとめて押しつぶす。', 'Gravity Well', 'Pulls enemies into a gravity well, then crushes them together.'),
  'nourish': ('恵みの糧', '近くの味方の満腹度と隠し満腹度を回復する。', 'Nourish', 'Restores hunger and saturation to nearby allies.'),
- 'purify': ('浄化', '近くの味方の悪い効果・炎・凍えをすべて消して少し回復し、周りの敵を聖なる光で撃つ（アンデッドに1.5倍）。ビショップは杖にセットして詠唱もできる。', 'Purify', 'Removes all harmful effects, fire and freezing from nearby allies, heals a little and smites the enemies around (x1.5 on undead). The bishop can also set it on the staff and cast it.'),
+ 'purify': ('浄化', '近くの味方の悪い効果・炎・凍えをすべて消して少し回復し、周りの敵を聖なる光で撃つ（アンデッドに1.5倍）。杖で詠唱する呪文。', 'Purify', 'Removes all harmful effects, fire and freezing from nearby allies, heals a little and smites the enemies around (x1.5 on undead). A spell cast from the staff.'),
  'poison_coat': ('毒塗り', '30秒間、武器に毒を塗る。攻撃した敵に効果。しゃがみ＋キーで種類を切替（塗っている最中でもすぐ切り替わる）：攻撃低下／防御低下／毒。', 'Weapon Coating', 'Coats your weapon for 30s; hits apply it. Sneak + key switches it at once: attack down / armour break / poison.'),
  'throwing_knives': ('投げナイフ', '扇状に5本のナイフを投げる。毒塗り中は毒も乗る。', 'Throwing Knives', 'Throws five knives in a fan; they carry your coating.'),
  'shadow_bind': ('影縛り', '狙った敵を影で3秒間その場に縛りつけ、攻撃力も下げる。', 'Shadow Bind', 'Shadows pin the targeted enemy in place for 3s and lower its attack.'),
@@ -167,6 +167,9 @@ SKILLS = {  # id: (ja, ja desc, en, en desc)
  'steam_burst': ('水蒸気爆発', '融合魔法（炎＋氷）：狙った場所で蒸気が爆発し、周りの敵を吹き飛ばして目くらまし・鈍化。', 'Steam Burst', 'Fusion (fire + ice): steam explodes on the aimed spot, throwing enemies back, blinding and slowing them.'),
  'plasma_ray': ('プラズマレイ', '融合魔法（炎＋雷）：一直線上の敵をすべて焼き貫くプラズマの光線。当たった敵から周りへ放電する。', 'Plasma Ray', 'Fusion (fire + thunder): a plasma ray through every enemy in a line; each one hit arcs to others nearby.'),
  'frost_tempest': ('凍てつく嵐', '融合魔法（氷＋雷）：狙った一帯に凍える嵐。中の敵は凍えて鈍り、雷が落ち続ける。', 'Frost Tempest', 'Fusion (ice + thunder): a freezing storm over the aimed area; enemies inside freeze and lightning keeps falling.'),
+ 'holy_light': ('聖なる光', '狙った敵に光を落とす（周りに少し飛び散る）。', 'Holy Light', 'A shaft of light falls on the targeted enemy (a little splash around it).'),
+ 'holy_barrier': ('聖なる盾', '周りの味方に衝撃吸収の盾。魔法攻撃力が高いほど厚くなる（魔法攻撃8ごとに+4、最大20）。', 'Holy Barrier', 'A shield of absorption for nearby allies, thicker the higher your magic attack (+4 per 8 magic attack, up to 20).'),
+ 'guardian_angel': ('守護天使', '周り12ブロックで一番HPが減っている味方（自分も含む）が、5秒間倒れなくなり再生IIを得る。', 'Guardian Angel', 'The most wounded ally within 12 blocks (you included) cannot fall for 5s and gets Regeneration II.'),
 }
 UI = {  # key: (ja, en)
  'rpgmod.jobselect.title': ('職業を選ぶ', 'Choose your job'),
@@ -336,6 +339,7 @@ UI = {  # key: (ja, en)
  'rpgmod.wheel.right_hand': ('右手 [%s]', 'Right hand [%s]'),
  'key.rpgmod.left_spell': ('左手の呪文（スペルマスター）', 'Left-hand spell (spellmaster)'),
  'rpgmod.wheel.hint_hands': ('左の輪＝左手、右の輪＝右手', 'Left ring: left hand, right ring: right hand'),
+ 'rpgmod.healer.angel': ('%sの守護天使があなたを守っている', '%s\'s guardian angel watches over you'),
 }
 for lang, idx in (('ja_jp', 0), ('en_us', 1)):
     p = f'{A}/{lang}.json'

@@ -42,7 +42,7 @@ public final class JobDefs {
             // spellmaster: stronger spells that take longer to charge
             Map.entry("inferno", 2.0), Map.entry("absolute_zero", 2.2), Map.entry("thunderstorm", 2.4), Map.entry("stone_spikes", 1.6),
             Map.entry("radiant_lance", 1.8), Map.entry("dark_orb", 2.0), Map.entry("tornado", 2.0), Map.entry("starfall", 2.6),
-            // bishop (and the healer's heals, which the bishop casts from the staff)
+            // healer (heals) and bishop
             Map.entry("heal", 0.8), Map.entry("group_heal", 1.4), Map.entry("purify", 1.0),
             Map.entry("holy_bolt", 0.8), Map.entry("holy_nova", 1.4), Map.entry("light_pillar", 1.8));
     public static final Map<String, Job> JOBS = new LinkedHashMap<>();
@@ -142,20 +142,23 @@ public final class JobDefs {
                         skill("arcane_missiles", SkillKind.SPELL, SkillEffect.BOLT, 5, 26, 0.75, 24, 0, List.of(), 0, "矢"),
                         skill("blizzard", SkillKind.SPELL, SkillEffect.DEBUFF, 14, 49, 0.525, 4, 2, List.of("minecraft:slowness"), 1, "嵐"),
                         skill("gravity", SkillKind.SPELL, SkillEffect.WHIRL, 12, 42, 2.4, 5, 0, List.of(), 0, "重")));
-        // ---- Healer: heals and buffs
+        // ---- Healer: heals (spells charged on the staff) and buffs
         job("healer", 0x5BC0DE, "癒", List.of(JobStat.MAX_MANA, JobStat.MAGIC_ATTACK, JobStat.SKILL_POWER, JobStat.MAX_HEALTH),
                 stats(JobStat.MAX_MANA, 40, JobStat.SKILL_POWER, 10, JobStat.MAGIC_ATTACK, 1), stats(JobStat.MAGIC_ATTACK, 0.07 + 4 / 99.0, JobStat.ATTACK_DAMAGE, 0.05 + 4 / 99.0, JobStat.MAX_MANA, 0.75, JobStat.MAX_HEALTH, hpTo(30, 0), JobStat.ARMOR, LEVEL_ARMOR),
                 List.of(
-                        skill("heal", SkillKind.ACTIVE, SkillEffect.HEAL, 6, 21, 0.9, 4, 0, List.of(), 0, "癒"),
-                        skill("group_heal", SkillKind.ACTIVE, SkillEffect.HEAL, 12, 42, 0.6, 10, 0, List.of(), 0, "群"),
+                        skill("holy_light", SkillKind.ACTIVE, SkillEffect.BOLT, 6, 14, 1.8, 24, 0, List.of(), 0, "照"),
                         skill("blessing", SkillKind.ACTIVE, SkillEffect.BUFF, 20, 35, 0, 8, 8, List.of("minecraft:regeneration"), 0, "祝"),
                         skill("mana_gift", SkillKind.ACTIVE, SkillEffect.MANA, 25, 0, 30, 8, 0, List.of(), 0, "恵"),
                         skill("nourish", SkillKind.ACTIVE, SkillEffect.BUFF, 30, 35, 6, 8, 0, List.of(), 0, "糧"),
-                        skill("purify", SkillKind.ACTIVE, SkillEffect.HEAL, 18, 28, 0.4, 8, 0, List.of(), 0, "浄")),
+                        skill("holy_barrier", SkillKind.ACTIVE, SkillEffect.BUFF, 20, 28, 0, 8, 15, List.of(), 0, "盾"),
+                        skill("guardian_angel", SkillKind.ACTIVE, SkillEffect.BUFF, 60, 35, 0, 12, 5, List.of(), 0, "天")),
                 List.of(
                         skill("sanctuary", SkillKind.ULTIMATE, SkillEffect.HEAL, 100, 84, 2.8, 6, 0, List.of(), 0, "域"),
                         skill("guardian_light", SkillKind.ULTIMATE, SkillEffect.BUFF, 100, 84, 0, 10, 15, List.of("minecraft:absorption", "minecraft:resistance", "minecraft:regeneration"), 1, "光")),
-                List.of());
+                List.of(
+                        skill("heal", SkillKind.SPELL, SkillEffect.HEAL, 6, 21, 0.9, 4, 0, List.of(), 0, "癒"),
+                        skill("group_heal", SkillKind.SPELL, SkillEffect.HEAL, 12, 42, 0.6, 10, 0, List.of(), 0, "群"),
+                        skill("purify", SkillKind.SPELL, SkillEffect.HEAL, 18, 28, 0.4, 8, 0, List.of(), 0, "浄")));
         // ---- Assassin: daggers, burst and stealth
         job("assassin", 0x8E44AD, "影", List.of(JobStat.CRIT_CHANCE, JobStat.ATTACK_DAMAGE, JobStat.ATTACK_SPEED, JobStat.MOVEMENT_SPEED),
                 stats(JobStat.CRIT_CHANCE, 5, JobStat.MOVEMENT_SPEED, 5, JobStat.ATTACK_DAMAGE, 1), stats(JobStat.CRIT_CHANCE, 0.075, JobStat.ATTACK_DAMAGE, 0.08 + 4 / 99.0, JobStat.MAX_HEALTH, hpTo(30, 0), JobStat.ARMOR, LEVEL_ARMOR),
@@ -201,9 +204,6 @@ public final class JobDefs {
     }
 
     // ------------------------------------------------------------------ advanced jobs (level 100+)
-
-    /** The healer's skills the bishop sets on the staff and casts by charging (heals and the cleanse). */
-    public static final java.util.Set<String> BISHOP_CASTS = java.util.Set.of("heal", "group_heal", "purify");
 
     /** Base job id -> its advanced job id, and back. */
     public static final Map<String, String> ADVANCED = new LinkedHashMap<>();

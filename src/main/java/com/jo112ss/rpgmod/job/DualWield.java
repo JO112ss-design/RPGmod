@@ -40,11 +40,23 @@ public final class DualWield {
 
     public static boolean canDualWield(Player p) {
         JobData d = JobManager.data(p);
-        return (testAllow || d.isAdvancedAs("nightblade")) && isBlade(p.getOffhandItem());
+        return (testAllow || d.isAdvancedAs("nightblade")) && isBlade(p.getOffhandItem()) && mainHandLetsGo(p.getMainHandItem());
     }
 
     public static boolean isBlade(ItemStack s) {
-        return JobType.ASSASSIN.weapons.contains(ModItems.typeOf(s.getItem()));
+        WeaponType t = ModItems.typeOf(s.getItem());
+        return t != null && JobType.ASSASSIN.weapons.contains(t);
+    }
+
+    /**
+     * Right click goes to the off-hand blade only when the main hand has nothing of its own to do
+     * with it: empty, or a melee weapon. Food, potions, bows, blocks, pearls... keep their right click.
+     */
+    public static boolean mainHandLetsGo(ItemStack main) {
+        if (main.isEmpty()) return true;
+        WeaponType t = ModItems.typeOf(main.getItem());
+        if (t != null) return t == WeaponType.SWORD || t == WeaponType.DAGGER || t == WeaponType.MACE || t == WeaponType.HAMMER;
+        return main.is(net.minecraft.tags.ItemTags.SWORDS) || main.is(net.minecraft.tags.ItemTags.AXES);
     }
 
     /** Flat bonus of an item's own modifiers to an attribute when held in the main hand. */

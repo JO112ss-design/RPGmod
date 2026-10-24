@@ -263,6 +263,8 @@ public final class AutoTestClient {
             }
             // spellmaster: fusions and the left-click charge
             showSkills.addAll(java.util.List.of("steam_burst", "plasma_ray", "frost_tempest", "lcharge"));
+            // healer: the new actives and the heals as spells
+            showSkills.addAll(java.util.List.of("holy_light", "holy_barrier", "guardian_angel", "heal", "group_heal", "purify"));
             mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK);
             com.jo112ss.rpgmod.client.mob.MobOverlay.testSelf = true;
             mc.options.particles().set(net.minecraft.server.level.ParticleStatus.ALL);

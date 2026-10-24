@@ -670,10 +670,7 @@ public class JobScreen extends Screen {
 
     private List<String> spellList(JobData d) {
         boolean adv = d.isAdvanced() && d.advancedDef().usesSpells() && (advView || !d.jobDef().usesSpells());
-        List<String> out = new ArrayList<>((adv ? d.advancedDef() : d.jobDef()).spells());
-        // the bishop casts the healer's heals from the staff too
-        if (adv && d.isAdvancedAs("bishop")) out.addAll(List.of("heal", "group_heal", "purify"));
-        return out;
+        return new ArrayList<>((adv ? d.advancedDef() : d.jobDef()).spells());
     }
 
     private static final int LIST_TOGGLE_H = 13;

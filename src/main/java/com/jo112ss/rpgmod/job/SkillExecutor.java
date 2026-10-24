@@ -108,6 +108,9 @@ public final class SkillExecutor {
             case "arcane_shield" -> selfBuff(c, "arcane_shield", SoundEvents.ENCHANTMENT_TABLE_USE, 0.8F);
             // healer
             case "heal" -> heal(c, "heal", false);
+            case "holy_light" -> holyLight(c);
+            case "holy_barrier" -> holyBarrier(c);
+            case "guardian_angel" -> guardianAngel(c);
             case "group_heal" -> heal(c, "group_heal", false);
             case "blessing" -> partyBuff(c, "blessing", SoundEvents.AMETHYST_BLOCK_CHIME, 1.0F);
             case "mana_gift" -> mana(c, "mana_gift");
@@ -1397,6 +1400,56 @@ public final class SkillExecutor {
             sound(c, at, SoundEvents.WARDEN_SONIC_BOOM, 0.6F, 1.6F);
             return true;
         });
+        return true;
+    }
+
+    /** Healer: a shaft of light falls on the targeted enemy (a little splash around it). */
+    static boolean holyLight(Ctx c) {
+        LivingEntity target = lookTarget(c, c.def.radius(), 14);
+        Vec3 start = target != null ? target.position() : aimPoint(c, c.def.radius());
+        ServerFx.of("smite", start).follow(target).a(2).send(c.level);
+        sound(c, SoundEvents.AMETHYST_BLOCK_CHIME, 1.9F);
+        SkillTasks.later(5, () -> {
+            Vec3 at = target != null && target.isAlive() ? target.position() : start;
+            List<LivingEntity> hit = enemies(c.p, at, 2);
+            for (LivingEntity e : hit) hurt(c, e, c.dmg(e == target || target == null ? 1 : 0.5), magic(c));
+            ServerFx.of("smite_hit", at).a(2).points(hit).send(c.level);
+            sound(c, at, SoundEvents.BELL_BLOCK, 0.8F, 1.7F);
+        });
+        return true;
+    }
+
+    /** Healer: a shield of light on the party - absorption that grows with magic attack (4 per 8 magic attack, up to 20). */
+    static boolean holyBarrier(Ctx c) {
+        int amp = Mth.clamp((int) (JobManager.magicAttack(c.p) / 8), 0, 4);
+        List<ServerPlayer> allies = allies(c.p, c.def.radius());
+        for (ServerPlayer a : allies) a.addEffect(new MobEffectInstance(MobEffects.ABSORPTION, ticks(c.def.duration()), amp), c.p);
+        ServerFx.of("x_aura", c.p.position()).follow(c.p).a(3).b(2).color(0xFFE070).points(others(c.p, allies)).send(c.level);
+        sound(c, SoundEvents.BEACON_POWER_SELECT, 1.5F);
+        sound(c, c.p.position(), SoundEvents.AMETHYST_BLOCK_RESONATE, 1.0F, 1.3F);
+        return true;
+    }
+
+    /** Healer: the most wounded ally nearby (or you) cannot fall for a few seconds and regenerates. */
+    static boolean guardianAngel(Ctx c) {
+        ServerPlayer best = null;
+        float lowest = 2;
+        for (ServerPlayer a : allies(c.p, c.def.radius())) {
+            float f = a.getHealth() / Math.max(1, a.getMaxHealth());
+            if (f < lowest) {
+                lowest = f;
+                best = a;
+            }
+        }
+        if (best == null) best = c.p;
+        int t = ticks(c.def.duration());
+        best.addEffect(new MobEffectInstance(com.jo112ss.rpgmod.registry.ModEffects.UNDYING, t, 0), c.p);
+        best.addEffect(new MobEffectInstance(MobEffects.REGENERATION, t, 1), c.p);
+        ServerFx.of("x_pillar", best.position()).a(1.2).b(t).color(0xFFF4C0).send(c.level);
+        ServerFx.of("heal_burst", best.position()).follow(best).color(0xFFF4C0).send(c.level);
+        sound(c, best.position(), SoundEvents.BEACON_ACTIVATE, 1.0F, 1.8F);
+        sound(c, best.position(), SoundEvents.AMETHYST_BLOCK_CHIME, 1.0F, 1.2F);
+        if (best != c.p) best.sendSystemMessage(Component.translatable("rpgmod.healer.angel", c.p.getDisplayName()).withStyle(ChatFormatting.YELLOW), true);
         return true;
     }
 

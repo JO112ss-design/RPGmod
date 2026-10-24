@@ -824,6 +824,17 @@ public final class AutoTestServer {
                 jd.spellSlots(), wizard.spellSlots(), bishop.spellSlots(), bishop.castable(com.jo112ss.rpgmod.job.core.JobDefs.skill("heal")),
                 bishop.castable(com.jo112ss.rpgmod.job.core.JobDefs.skill("purify")), bishop.castable(com.jo112ss.rpgmod.job.core.JobDefs.skill("power_slash")),
                 bishop.castsSpells(), healer.castable(com.jo112ss.rpgmod.job.core.JobDefs.skill("heal")));
+        // the off-hand blade leaves right click to the main hand when it has a use of its own (no crash on food)
+        RpgMod.LOGGER.info("[AUTOTEST] p3 main hand first: apple={} sword={} empty={} dagger={} bow={}; blade apple={} dagger={}",
+                com.jo112ss.rpgmod.job.DualWield.mainHandLetsGo(new ItemStack(Items.GOLDEN_APPLE)), com.jo112ss.rpgmod.job.DualWield.mainHandLetsGo(new ItemStack(Items.IRON_SWORD)),
+                com.jo112ss.rpgmod.job.DualWield.mainHandLetsGo(ItemStack.EMPTY),
+                com.jo112ss.rpgmod.job.DualWield.mainHandLetsGo(new ItemStack(com.jo112ss.rpgmod.item.ModItems.get(com.jo112ss.rpgmod.item.WeaponType.DAGGER, com.jo112ss.rpgmod.item.WeaponMaterial.IRON))),
+                com.jo112ss.rpgmod.job.DualWield.mainHandLetsGo(new ItemStack(Items.BOW)),
+                com.jo112ss.rpgmod.job.DualWield.isBlade(new ItemStack(Items.GOLDEN_APPLE)),
+                com.jo112ss.rpgmod.job.DualWield.isBlade(new ItemStack(com.jo112ss.rpgmod.item.ModItems.get(com.jo112ss.rpgmod.item.WeaponType.DAGGER, com.jo112ss.rpgmod.item.WeaponMaterial.IRON))));
+        // healer: heals are spells now, three new actives
+        RpgMod.LOGGER.info("[AUTOTEST] p3 healer: actives {} spells {} casts={} start skills {}",
+                com.jo112ss.rpgmod.job.core.JobDefs.job("healer").actives(), com.jo112ss.rpgmod.job.core.JobDefs.job("healer").spells(), healer.castsSpells(), healer.knownSkills());
         // the fusion pairs
         RpgMod.LOGGER.info("[AUTOTEST] p3 fusion pairs: fire+ice={} fire+thunder={} ice+thunder={} fire+fire={} bolt+star={}",
                 com.jo112ss.rpgmod.job.SpellCasting.fusionOf("inferno", "frost_nova"), com.jo112ss.rpgmod.job.SpellCasting.fusionOf("thunder", "flame_burst"),

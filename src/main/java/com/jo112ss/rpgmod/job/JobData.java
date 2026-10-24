@@ -181,11 +181,9 @@ public final class JobData {
         return isAdvancedAs("spellmaster") ? SpellLoadout.SLOTS : SpellLoadout.BASE_SLOTS;
     }
 
-    /** Can this skill be set on the staff and charged? Spells, and for the bishop the healer's heals. */
+    /** Can this skill be set on the staff and charged? (spells) */
     public boolean castable(SkillDef def) {
-        if (def == null) return false;
-        if (def.kind() == SkillKind.SPELL) return true;
-        return isAdvancedAs("bishop") && JobDefs.BISHOP_CASTS.contains(def.id());
+        return def != null && def.kind() == SkillKind.SPELL;
     }
 
     /** Casts spells from a staff: the wizard, and advanced jobs with spells of their own (bishop). */
@@ -260,7 +258,12 @@ public final class JobData {
     /** Empties slots holding skills that are no longer learnt (after a reset). */
     public void dropUnknownSlots() {
         List<String> known = knownSkills();
-        for (int k = 0; k < SLOTS; k++) if (!slots[k].isEmpty() && !known.contains(slots[k])) slots[k] = "";
+        for (int k = 0; k < SLOTS; k++) {
+            if (slots[k].isEmpty()) continue;
+            SkillDef def = JobDefs.skill(slots[k]);
+            // spells live on the staff, not in skill slots
+            if (!known.contains(slots[k]) || def == null || def.kind() == SkillKind.SPELL) slots[k] = "";
+        }
         if (!isAdvanced()) slots[3] = "";
     }
 
@@ -338,7 +341,7 @@ public final class JobData {
         unlocked.clear();
         advUnlocked.clear();
         cooldowns.clear();
-        panelVersion = SkillPanel.VERSION;
+        panelVersion = SkillPanel.version(job);
         advPanelVersion = SkillPanel.ADV_VERSION;
         slots[0] = slots[1] = slots[2] = slots[3] = "";
         if (hasJob()) {
@@ -401,13 +404,13 @@ public final class JobData {
 
     /** True if the saved unlocked cells belong to an older panel layout. */
     public boolean panelOutdated() {
-        return hasJob() && panelVersion != SkillPanel.VERSION;
+        return hasJob() && panelVersion != SkillPanel.version(job);
     }
 
     /** Back to only the centre cell (all points refunded); the first skill stays equipped. */
     public void resetPanel() {
         unlocked.clear();
-        panelVersion = SkillPanel.VERSION;
+        panelVersion = SkillPanel.version(job);
         if (hasJob()) unlocked.add(0);
         // skills from the advanced panel stay equipped; the base ones that are gone come off
         dropUnknownSlots();

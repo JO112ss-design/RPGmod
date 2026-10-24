@@ -110,6 +110,14 @@ public final class SkillPanel {
     public static final int VERSION = 5;
     /** Layout version of the advanced panels (bump when their cells change). */
     public static final int ADV_VERSION = 2;
+
+    /**
+     * Layout version of one job's base panel: {@link #VERSION}, or higher for a job whose cells changed
+     * on their own (only that job's players get their points back).
+     */
+    public static int version(String job) {
+        return "healer".equals(job) ? VERSION + 1 : VERSION; // healer: heals moved to the staff, three new skills
+    }
     public static final int RADIUS = 7;
 
     /** Stat strength by ring: inner rings x1, middle x1.5, outer x2. */
