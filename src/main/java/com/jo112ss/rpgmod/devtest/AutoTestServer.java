@@ -534,12 +534,17 @@ public final class AutoTestServer {
             boolean guarding = com.jo112ss.rpgmod.item.Shields.guarding(player);
             boolean blocking = player.isBlocking();
             player.setHealth(player.getMaxHealth());
+            player.removeAllEffects();
+            player.invulnerableTime = 0;
             float before = player.getHealth();
+            RpgMod.LOGGER.info("[AUTOTEST] shield hit check: invulnerableTo={} abilities={} mode={} health={}",
+                    player.isInvulnerableTo(level, level.damageSources().mobAttack(z)), player.getAbilities().invulnerable, player.gameMode(), player.getHealth());
             player.hurtServer(level, level.damageSources().mobAttack(z), 10F);
             float up = before - player.getHealth();
             player.stopUsingItem();
             com.jo112ss.rpgmod.job.SkillTasks.later(25, () -> {
                 player.setHealth(player.getMaxHealth());
+                player.invulnerableTime = 0;
                 float b2 = player.getHealth();
                 player.hurtServer(level, level.damageSources().mobAttack(z), 10F);
                 float down = b2 - player.getHealth();
