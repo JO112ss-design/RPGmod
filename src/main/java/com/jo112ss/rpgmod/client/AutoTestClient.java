@@ -189,6 +189,7 @@ public final class AutoTestClient {
             case "mob:items" -> new int[] {30, 60, 120, 190};
             case "mob:sense" -> new int[] {40, 200, 380};
             case "mob:dragonhp" -> new int[] {100, 140};
+            case "mob:downed" -> new int[] {50, 120, 200};
             case "mob:stairs" -> new int[] {60, 300, 550, 700};
             case "mob:exit" -> new int[] {60, 200, 340, 480};
             case "mob:spider" -> new int[] {40, 80};
@@ -209,6 +210,7 @@ public final class AutoTestClient {
             case "mob:king" -> 960;
             case "mob:sense" -> 400;
             case "mob:dragonhp" -> 220;
+            case "mob:downed" -> 260;
             case "mob:stairs" -> 720;
             case "mob:exit" -> 520;
             default -> SLOT;
@@ -224,7 +226,7 @@ public final class AutoTestClient {
             if ("all".equals(System.getProperty("rpgmod.showcase"))) showSkills.addAll(com.jo112ss.rpgmod.job.core.JobDefs.SKILLS.keySet());
             // enemy work: levels, plates and damage numbers (skills were checked in earlier runs)
             // blood moon boss (the monster scenes and skills were checked in earlier runs)
-            showSkills.addAll(java.util.List.of("mob:dragonhp"));
+            showSkills.addAll(java.util.List.of("mob:downed"));
             mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK);
             mc.options.particles().set(net.minecraft.server.level.ParticleStatus.ALL);
             AutoTestServer.requestShowcase();

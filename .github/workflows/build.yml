@@ -70,6 +70,17 @@ jobs:
           done
           grep -q 'Done (' server.log
 
+      # The Resurrection mod (downed players) is played together with this one: test them side by side.
+      - name: Build Resurrection for the client test
+        if: steps.server.outcome == 'success'
+        continue-on-error: true
+        run: |
+          git clone --depth 1 https://github.com/JO112ss-design/Resurrection.git ../resurrection
+          (cd ../resurrection && chmod +x gradlew && ./gradlew build --console=plain -q)
+          mkdir -p run/mods
+          find ../resurrection/build/libs -name '*.jar' ! -name '*sources*' -exec cp {} run/mods/ \;
+          ls -la run/mods
+
       - name: Client end-to-end test
         if: steps.server.outcome == 'success'
         continue-on-error: true

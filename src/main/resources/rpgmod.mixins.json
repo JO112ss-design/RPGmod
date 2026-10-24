@@ -2,7 +2,9 @@
   "required": true,
   "minVersion": "0.8",
   "package": "com.jo112ss.rpgmod.mixin",
-  "mixins": [],
+  "mixins": [
+    "PlayerTargetMixin"
+  ],
   "client": [
     "SkyRendererMixin"
   ],

@@ -151,7 +151,7 @@ public final class BloodMoon {
     /** Summons the King Slime near a random player in the overworld; null if nobody is there or no room. */
     public static KingSlime summon(ServerLevel ow) {
         List<ServerPlayer> pool = new ArrayList<>();
-        for (ServerPlayer p : ow.players()) if (p.isAlive() && !p.isSpectator()) pool.add(p);
+        for (ServerPlayer p : ow.players()) if (p.isAlive() && !p.isSpectator() && !com.jo112ss.rpgmod.compat.Downed.is(p)) pool.add(p);
         java.util.Collections.shuffle(pool, new java.util.Random(ow.getRandom().nextLong()));
         for (ServerPlayer p : pool) {
             KingSlime king = spawnNear(ow, p);

@@ -90,7 +90,7 @@ public final class DragonDirector {
         if (dragon.isDeadOrDying() || dragon.isNoAi() || dragon.getPhaseManager().getCurrentPhase().getPhase() == EnderDragonPhase.DYING) return;
         List<ServerPlayer> players = new ArrayList<>();
         for (ServerPlayer p : sl.players()) {
-            if (p.isAlive() && !p.isCreative() && !p.isSpectator() && p.distanceTo(dragon) < 160) players.add(p);
+            if (p.isAlive() && !p.isCreative() && !p.isSpectator() && !com.jo112ss.rpgmod.compat.Downed.is(p) && p.distanceTo(dragon) < 160) players.add(p);
         }
         State s = STATES.computeIfAbsent(dragon, k -> new State());
         if (s.playersSeen < 0 || dragon.tickCount % 20 == 0) scaleHealth(sl, dragon, s);
@@ -266,7 +266,7 @@ public final class DragonDirector {
             p.connection.send(new ClientboundSetTitlesAnimationPacket(5, 40, 15));
             p.connection.send(new ClientboundSetSubtitleTextPacket(sub));
             p.connection.send(new ClientboundSetTitleTextPacket(title));
-            if (stage == 3 && p.distanceTo(dragon) < 20) { // the rage bursts out
+            if (stage == 3 && p.distanceTo(dragon) < 20 && !com.jo112ss.rpgmod.compat.Downed.is(p)) { // the rage bursts out
                 Vec3 away = p.position().subtract(dragon.position()).multiply(1, 0, 1).normalize();
                 p.push(away.x * 1.6, 0.6, away.z * 1.6);
                 p.syncVelocity = true;
@@ -338,7 +338,8 @@ public final class DragonDirector {
             if (!dragon.isAlive()) return;
             sl.playSound(null, dragon.getX(), dragon.getY(), dragon.getZ(), SoundEvents.ENDER_DRAGON_FLAP, SoundSource.HOSTILE, 6.0F, 0.5F);
             for (ServerPlayer p : sl.players()) {
-                if (p.isCreative() || p.isSpectator() || p.position().distanceTo(at) > radius) continue;
+                // a downed player is left where they lie (blown off the island they could not be revived)
+                if (p.isCreative() || p.isSpectator() || com.jo112ss.rpgmod.compat.Downed.is(p) || p.position().distanceTo(at) > radius) continue;
                 Vec3 away = p.position().subtract(at).multiply(1, 0, 1);
                 away = away.lengthSqr() < 1e-4 ? new Vec3(1, 0, 0) : away.normalize();
                 p.push(away.x * 2.0, 0.75, away.z * 2.0);

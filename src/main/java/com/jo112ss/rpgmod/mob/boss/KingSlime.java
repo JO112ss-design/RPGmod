@@ -315,13 +315,13 @@ public class KingSlime extends Slime {
 
     private LivingEntity target(ServerLevel sl) {
         LivingEntity t = this.getTarget();
-        if (t instanceof Player p && (!p.isAlive() || p.isSpectator() || p.isCreative())) t = null;
+        if (t instanceof Player p && (!p.isAlive() || p.isSpectator() || p.isCreative() || com.jo112ss.rpgmod.compat.Downed.is(p))) t = null;
         if (t != null && !t.isAlive()) t = null;
         if (t == null || t.distanceToSqr(this) > 48 * 48) {
             Player best = null;
             double bd = 48 * 48;
             for (ServerPlayer p : sl.players()) {
-                if (!p.isAlive() || p.isSpectator() || p.isCreative()) continue;
+                if (!p.isAlive() || p.isSpectator() || p.isCreative() || com.jo112ss.rpgmod.compat.Downed.is(p)) continue;
                 double d = p.distanceToSqr(this);
                 if (d < bd) {
                     bd = d;

@@ -64,6 +64,7 @@ final class MobScenes {
             case "dragon" -> 6;
             case "nether" -> 7;
             case "dragonhp" -> 12;
+            case "downed" -> 13;
             case "king" -> 9;
             case "sense" -> 8;
             case "stairs" -> 10;
@@ -177,6 +178,11 @@ final class MobScenes {
                 level.addFreshEntity(d);
                 d.getPhaseManager().setPhase(net.minecraft.world.entity.boss.enderdragon.phases.EnderDragonPhase.HOVERING);
                 dragon = d;
+            }
+            case "downed" -> {
+                tp(player, Vec3.atBottomCenterOf(c), -90, 10);
+                spawn(level, EntityTypes.ZOMBIE, c.offset(5, 0, 0), 20);
+                spawn(level, EntityTypes.SKELETON, c.offset(8, 0, 3), 20);
             }
             case "dragonhp" -> {
                 // six players' worth of dragon: health scaling and the per-window damage limit
@@ -359,9 +365,20 @@ final class MobScenes {
         if (scene == null) return;
         t++;
         // (the sense scene checks that zombies find the player on their own)
-        if (!java.util.Set.of("sense", "stairs", "exit").contains(scene)) for (Mob m : mobs) if (m.isAlive() && m.getTarget() == null) m.setTarget(player);
+        if (!java.util.Set.of("sense", "stairs", "exit", "downed").contains(scene)) for (Mob m : mobs) if (m.isAlive() && m.getTarget() == null) m.setTarget(player);
         switch (scene) {
             case "king" -> kingTick(level, player);
+            case "downed" -> {
+                // with the Resurrection mod: monsters leave a downed player alone, and come back once revived
+                var cmd = level.getServer().createCommandSourceStack().withSuppressedOutput();
+                String name = player.getGameProfile().name();
+                if (t == 60) level.getServer().getCommands().performPrefixedCommand(cmd, "resurrection down " + name);
+                if (t == 160) level.getServer().getCommands().performPrefixedCommand(cmd, "resurrection revive " + name);
+                if (t % 20 == 0) {
+                    RpgMod.LOGGER.info("[AUTOTEST] downed t={} downed={} targets={} health={}", t, com.jo112ss.rpgmod.compat.Downed.is(player),
+                            mobs.stream().map(m -> m.getType().toShortString() + "=" + (m.getTarget() == player)).toList(), player.getHealth());
+                }
+            }
             case "dragonhp" -> {
                 var d = dragon;
                 if (d == null || !d.isAlive()) break;
