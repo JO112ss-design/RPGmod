@@ -69,7 +69,7 @@ final class MobScenes {
             case "sense" -> 8;
             case "stairs" -> 10;
             case "exit" -> 11;
-            case "leap" -> 14;
+            case "leap" -> 8; // the sense scene's spot (that scene is not in the current showcase)
             default -> 5;
         };
         c = BlockPos.containing(arena).offset(40, 0, idx * 24 - 60);
@@ -134,6 +134,8 @@ final class MobScenes {
                     if (Math.abs(x) == 2 || Math.abs(z) == 2) level.setBlockAndUpdate(c.offset(x, y, z), Blocks.STONE.defaultBlockState());
                 }
                 tp(player, Vec3.atBottomCenterOf(c), -90, 10);
+                level.getChunkAt(c.offset(8, 0, 0));
+                level.getChunkAt(c.offset(-9, 0, 9));
                 var leaper = EntityTypes.CREEPER.create(level, EntitySpawnReason.COMMAND);
                 leaper.snapTo(c.getX() + 8.5, c.getY(), c.getZ() + 0.5, 90F, 0F);
                 MobLevels.apply(leaper, 30);
@@ -144,7 +146,7 @@ final class MobScenes {
                 mobs.add(leaper);
                 Mob sk = spawn(level, EntityTypes.SKELETON, c.offset(-9, 0, 9), 30);
                 sk.setTarget(null);
-                RpgMod.LOGGER.info("[AUTOTEST] leap scene: creeper follow range {} armour slots empty={} skeleton follow range {}",
+                RpgMod.LOGGER.info("[AUTOTEST] leap scene: alive {} {}, creeper follow range {} armour slots empty={} skeleton follow range {}", leaper.isAlive(), sk.isAlive(),
                         leaper.getAttributeValue(net.minecraft.world.entity.ai.attributes.Attributes.FOLLOW_RANGE),
                         leaper.getItemBySlot(EquipmentSlot.CHEST).isEmpty() && leaper.getItemBySlot(EquipmentSlot.HEAD).isEmpty(),
                         sk.getAttributeValue(net.minecraft.world.entity.ai.attributes.Attributes.FOLLOW_RANGE));
