@@ -97,10 +97,10 @@ public final class AutoTestClient {
         if (t >= 0) {
             t++;
             switch (t) {
-                case 15 -> { if (screen instanceof ForgeScreen fs) fs.testChoose(com.jo112ss.rpgmod.item.WeaponType.ARROW); }
+                case 15 -> { if (screen instanceof ForgeScreen fs) fs.testChoose(com.jo112ss.rpgmod.item.WeaponType.SHIELD); }
                 case 20 -> shot(mc, "01_select");
-                // this run forges arrows (iron + stick, count by quality)
-                case 25 -> send(ForgeActionPayload.START, com.jo112ss.rpgmod.smithing.ForgeableWeapons.indexOf(com.jo112ss.rpgmod.item.WeaponType.ARROW, com.jo112ss.rpgmod.item.WeaponMaterial.IRON));
+                // this run forges an iron shield (vanilla shield + 3 iron)
+                case 25 -> send(ForgeActionPayload.START, com.jo112ss.rpgmod.smithing.ForgeableWeapons.indexOf(com.jo112ss.rpgmod.item.WeaponType.SHIELD, com.jo112ss.rpgmod.item.WeaponMaterial.IRON));
                 case 50 -> shot(mc, "02_heating");
                 case 52 -> stop();
                 case 65 -> send(ForgeActionPayload.SELECT_PART, 2);

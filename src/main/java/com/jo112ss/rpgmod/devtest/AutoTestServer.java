@@ -381,6 +381,7 @@ public final class AutoTestServer {
             player.level().setBlockAndUpdate(pos, ModRegistries.FORGING_ANVIL.get().defaultBlockState());
             player.getInventory().add(new ItemStack(Items.IRON_INGOT, 6));
             player.getInventory().add(new ItemStack(Items.STICK, 3));
+            player.getInventory().add(new ItemStack(Items.SHIELD, 1));
             player.getInventory().setSelectedSlot(8);
             player.openMenu(new SimpleMenuProvider(
                     (id, inv, p) -> new ForgeMenu(id, inv, ContainerLevelAccess.create(player.level(), pos)),
@@ -515,15 +516,18 @@ public final class AutoTestServer {
     /** A zombie hit taken with the shield up and down: the shield should take its share off. */
     private static void shieldCheck(net.minecraft.world.item.Item shieldItem, int round) {
         var level = (net.minecraft.server.level.ServerLevel) player.level();
+        var mode = player.gameMode();
+        player.setGameMode(net.minecraft.world.level.GameType.SURVIVAL);
         player.setItemSlot(net.minecraft.world.entity.EquipmentSlot.OFFHAND, new ItemStack(shieldItem));
-        player.startUsingItem(net.minecraft.world.InteractionHand.OFF_HAND);
-        com.jo112ss.rpgmod.job.SkillTasks.later(12, () -> {
+        com.jo112ss.rpgmod.job.SkillTasks.later(2, () -> player.startUsingItem(net.minecraft.world.InteractionHand.OFF_HAND));
+        com.jo112ss.rpgmod.job.SkillTasks.later(14, () -> {
             var z = net.minecraft.world.entity.EntityTypes.ZOMBIE.create(level, net.minecraft.world.entity.EntitySpawnReason.COMMAND);
             var look = player.getLookAngle().multiply(1, 0, 1).normalize();
             z.snapTo(player.getX() + look.x * 2, player.getY(), player.getZ() + look.z * 2, 0, 0);
             z.setNoAi(true);
             level.addFreshEntity(z);
             boolean guarding = com.jo112ss.rpgmod.item.Shields.guarding(player);
+            boolean blocking = player.isBlocking();
             player.setHealth(player.getMaxHealth());
             float before = player.getHealth();
             player.hurtServer(level, level.damageSources().mobAttack(z), 10F);
@@ -535,11 +539,12 @@ public final class AutoTestServer {
                 player.hurtServer(level, level.damageSources().mobAttack(z), 10F);
                 float down = b2 - player.getHealth();
                 RpgMod.LOGGER.info("[AUTOTEST] shield {}: guarding={} blocking={} damage with shield up {} / down {} -> {}% let through (expected {}%)",
-                        net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(shieldItem), guarding, player.isBlocking(),
+                        net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(shieldItem), guarding, blocking,
                         String.format("%.2f", up), String.format("%.2f", down), String.format("%.0f", down > 0 ? up / down * 100 : -1),
                         String.format("%.0f", (1 - com.jo112ss.rpgmod.item.Shields.block(player, new ItemStack(shieldItem))) * 100));
                 z.discard();
                 player.setHealth(player.getMaxHealth());
+                player.setGameMode(mode);
                 if (round == 0) shieldCheck(net.minecraft.world.item.Items.SHIELD, 1);
                 else player.setItemSlot(net.minecraft.world.entity.EquipmentSlot.OFFHAND, ItemStack.EMPTY);
             });
