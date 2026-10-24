@@ -121,7 +121,7 @@ public final class JobDefs {
                         skill("quick_cast", SkillKind.ACTIVE, SkillEffect.BUFF, 30, 28, 0, 0, 12, List.of("rpgmod:quick_cast"), 0, "速"),
                         skill("chrono", SkillKind.ACTIVE, SkillEffect.BUFF, 45, 42, 0.5, 0, 0, List.of(), 0, "時")),
                 List.of(
-                        skill("meteor", SkillKind.ULTIMATE, SkillEffect.WHIRL, 100, 112, 4.5, 5.5, 5, List.of(), 0, "隕"),
+                        skill("meteor", SkillKind.ULTIMATE, SkillEffect.WHIRL, 100, 112, 9.0, 5.5, 5, List.of(), 0, "隕"),
                         skill("time_warp", SkillKind.ULTIMATE, SkillEffect.DEBUFF, 90, 84, 0, 10, 8, List.of("minecraft:slowness", "minecraft:weakness"), 2, "遅")),
                 List.of(
                         skill("magic_bolt", SkillKind.SPELL, SkillEffect.BOLT, 0.3, 5, 1.4, 28, 0, List.of(), 0, "弾"),

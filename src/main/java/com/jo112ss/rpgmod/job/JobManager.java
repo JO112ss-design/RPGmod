@@ -525,6 +525,17 @@ public final class JobManager {
         return Math.max(lo, Math.min(Math.max(lo, hi), magicAttack(player) / ref));
     }
 
+    /** Chance (0 to 50%) that luck lets a gamble be rolled again, keeping the better result. */
+    public static double luckChance(Player player) {
+        double per = JobConfig.SPEC.isLoaded() ? JobConfig.LUCK_PER_POINT.get() : 0.05;
+        return Math.max(0, Math.min(0.5, player.getAttributeValue(net.minecraft.world.entity.ai.attributes.Attributes.LUCK) * per));
+    }
+
+    /** True when luck grants a second roll this time. */
+    public static boolean luckyReroll(Player player) {
+        return player.getRandom().nextDouble() < luckChance(player);
+    }
+
     /** The attack a skill scales with. */
     public static double skillAttack(Player player, SkillDef def) {
         return JobDefs.isMagic(def) ? magicAttack(player) : physicalAttack(player);

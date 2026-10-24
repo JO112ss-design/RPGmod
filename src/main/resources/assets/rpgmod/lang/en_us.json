@@ -474,5 +474,10 @@
   "rpgmod.gui.arrow_count": "Quality: 4/8/16/32 arrows",
   "rpgmod.dragon.guard_takeoff": "The dragon shields itself and takes off!",
   "rpgmod.dragon.guard_flight": "The dragon is guarding itself - attacks won't get through until it lands",
-  "rpgmod.jobscreen.duration_level": "Lasts %1$ss (now %2$ss, longer with level)"
+  "rpgmod.jobscreen.duration_level": "Lasts %1$ss (now %2$ss, longer with level)",
+  "item.rpgmod.hp_potion": "HP Potion",
+  "item.rpgmod.mp_potion": "MP Potion",
+  "rpgmod.potion.hp_used": "HP +%1$s",
+  "rpgmod.potion.mp_used": "MP +%1$s",
+  "rpgmod.jobscreen.luck_reroll": "reroll %1$s%%"
 }

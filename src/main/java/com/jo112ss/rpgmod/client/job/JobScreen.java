@@ -339,7 +339,9 @@ public class JobScreen extends Screen {
         rows.add(row("mana_regen", String.format("%.1f/s", com.jo112ss.rpgmod.job.JobManager.manaRegen(p))));
         rows.add(row("skill_power", String.format("+%.0f%%", st.get(JobStat.SKILL_POWER))));
         rows.add(row("cooldown_reduction", String.format("%.0f%%", st.get(JobStat.COOLDOWN_REDUCTION))));
-        rows.add(row("luck", fmt(p.getAttributeValue(Attributes.LUCK))));
+        double reroll = com.jo112ss.rpgmod.job.JobManager.luckChance(p) * 100;
+        rows.add(row("luck", fmt(p.getAttributeValue(Attributes.LUCK))
+                + (reroll >= 0.5 ? "  " + Component.translatable("rpgmod.jobscreen.luck_reroll", String.format("%.0f", reroll)).getString() : "")));
         rows.add(row("magic_attack", fmt(com.jo112ss.rpgmod.job.JobManager.magicAttack(p))));
         rows.add(row("cast_speed", String.format("-%.0f%%", Math.min(60, com.jo112ss.rpgmod.job.JobManager.castSpeedPercent(p)))));
         for (int i = 0; i < rows.size(); i++) {

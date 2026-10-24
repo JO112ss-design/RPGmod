@@ -39,6 +39,10 @@ public final class ModRegistries {
 
     public static final net.neoforged.neoforge.registries.DeferredItem<com.jo112ss.rpgmod.item.SkillBookItem> SKILL_BOOK =
             ITEMS.registerItem("skill_book", com.jo112ss.rpgmod.item.SkillBookItem::new, p -> p.stacksTo(64).rarity(net.minecraft.world.item.Rarity.RARE));
+    public static final net.neoforged.neoforge.registries.DeferredItem<com.jo112ss.rpgmod.item.RecoveryPotionItem> HP_POTION =
+            ITEMS.registerItem("hp_potion", p -> new com.jo112ss.rpgmod.item.RecoveryPotionItem(p, false), com.jo112ss.rpgmod.item.RecoveryPotionItem::props);
+    public static final net.neoforged.neoforge.registries.DeferredItem<com.jo112ss.rpgmod.item.RecoveryPotionItem> MP_POTION =
+            ITEMS.registerItem("mp_potion", p -> new com.jo112ss.rpgmod.item.RecoveryPotionItem(p, true), com.jo112ss.rpgmod.item.RecoveryPotionItem::props);
 
     public static final DeferredRegister.Entities ENTITIES = DeferredRegister.createEntities(RpgMod.MODID);
 
@@ -88,6 +92,8 @@ public final class ModRegistries {
             .displayItems((params, output) -> {
                 output.accept(FORGING_ANVIL_ITEM.get());
                 output.accept(SKILL_BOOK.get());
+                output.accept(HP_POTION.get());
+                output.accept(MP_POTION.get());
                 for (com.jo112ss.rpgmod.item.WeaponType t : com.jo112ss.rpgmod.item.WeaponType.values()) {
                     if (t.isVanilla()) continue;
                     for (com.jo112ss.rpgmod.item.WeaponMaterial m : com.jo112ss.rpgmod.item.WeaponMaterial.values()) {

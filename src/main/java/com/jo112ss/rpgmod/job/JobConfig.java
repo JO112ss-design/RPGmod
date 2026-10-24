@@ -26,6 +26,9 @@ public final class JobConfig {
 
     public static final ModConfigSpec.DoubleValue SWAP_COOLDOWN = B.comment("Seconds a skill or spell cannot be used after it is put into a slot (stops swapping in fresh skills mid-fight)").defineInRange("skillSwapCooldown", 10.0, 0, 600);
     public static final ModConfigSpec.DoubleValue DURATION_AT_MAX = B.comment("Extra effect time of non-ultimate skills at the highest level (0.5 = +50%), growing evenly from level 1; enchanter buffs follow magic attack instead").defineInRange("skillDurationBonusAtMax", 0.5, 0, 10);
+    public static final ModConfigSpec.DoubleValue LUCK_PER_POINT = B.comment("Per point of luck: chance that a gamble is rolled twice, keeping the better result (0.05 = 5%, up to 50%)").defineInRange("luckRerollPerPoint", 0.05, 0, 1);
+    public static final ModConfigSpec.DoubleValue POTION_DROP = B.comment("Chance for a monster killed by a player to drop an HP potion, and separately an MP potion").defineInRange("potionDropChance", 0.03, 0, 1);
+    public static final ModConfigSpec.DoubleValue POTION_DROP_LUCK = B.comment("Extra potion drop chance per point of the killer's luck").defineInRange("potionDropPerLuck", 0.005, 0, 1);
     public static final ModConfigSpec.DoubleValue MACE_MULT = B.comment("Normal (non-skill) hits with a mace deal this much (heavy, slow weapon)").defineInRange("maceAttackMultiplier", 1.25, 0, 100);
     public static final ModConfigSpec.DoubleValue HAMMER_MULT = B.comment("Normal (non-skill) hits with a hammer deal this much").defineInRange("hammerAttackMultiplier", 1.6, 0, 100);
 

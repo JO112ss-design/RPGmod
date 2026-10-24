@@ -1025,6 +1025,7 @@ public final class SkillExecutor {
 
     private static boolean luckyShot(Ctx c) {
         boolean lucky = c.p.getRandom().nextDouble() < 0.35;
+        if (!lucky && JobManager.luckyReroll(c.p)) lucky = c.p.getRandom().nextDouble() < 0.35; // luck: a second try
         arrow(c, 0, c.dmg(lucky ? 2.5 : 1), lucky, "arrow_trail", lucky ? 0xFFD54A : 0x5FE8C8);
         ServerFx.of("lucky_shot", c.hand()).vec(c.look()).b(lucky ? 1 : 0).send(c.level);
         sound(c, SoundEvents.ARROW_SHOOT, 1.1F);
@@ -1048,17 +1049,24 @@ public final class SkillExecutor {
     }
 
     static final String[] OUTCOMES = {"jackpot", "heal", "buff", "curse", "mana", "bust"};
+    /** How good each outcome is for the gambler (lower = better), for luck's second roll. */
+    private static final int[] OUTCOME_RANK = {0, 2, 1, 4, 3, 5};
     static final int[] OUTCOME_COLORS = {0xFFD54A, 0x7CFF9A, 0xFF9A3C, 0xB86BFF, 0x6FB8FF, 0x8A8A8A};
 
     /** Gambler skills: a random outcome scaled by the bet (the skill's power). */
     private static boolean gamble(Ctx c) {
         int roll = c.p.getRandom().nextInt(6);
+        if (JobManager.luckyReroll(c.p)) { // luck: roll again and keep the better outcome
+            int again = c.p.getRandom().nextInt(6);
+            if (OUTCOME_RANK[again] < OUTCOME_RANK[roll]) roll = again;
+        }
+        final int result = roll;
         int wait = rollTicks(c.def.id());
-        ServerFx.of(c.def.id(), c.p.position()).follow(c.p).a(roll).b(wait).send(c.level);
+        ServerFx.of(c.def.id(), c.p.position()).follow(c.p).a(result).b(wait).send(c.level);
         sound(c, SoundEvents.EXPERIENCE_ORB_PICKUP, 0.5F);
         SkillTasks.later(wait, () -> {
             if (!c.p.isAlive()) return;
-            gambleOutcome(c, roll);
+            gambleOutcome(c, result);
         });
         return true;
     }
@@ -1523,6 +1531,7 @@ public final class SkillExecutor {
     private static boolean russianRoulette(Ctx c) {
         int fired = CHAMBER.getOrDefault(c.p.getUUID(), 0);
         boolean bang = c.p.getRandom().nextInt(6 - fired) == 0;
+        if (!bang && JobManager.luckyReroll(c.p)) bang = c.p.getRandom().nextInt(6 - fired) == 0; // luck: a second pull
         LivingEntity target = lookTarget(c, c.def.radius(), 10);
         if (!bang) {
             CHAMBER.put(c.p.getUUID(), fired + 1);
@@ -1551,7 +1560,9 @@ public final class SkillExecutor {
     private static boolean cardThrow(Ctx c) {
         Vec3 look = c.look();
         for (int i = 0; i < 3; i++) {
-            int suit = c.p.getRandom().nextInt(4);
+            int rolled = c.p.getRandom().nextInt(4);
+            if (rolled != 0 && JobManager.luckyReroll(c.p)) rolled = c.p.getRandom().nextInt(4); // luck: another go at a spade
+            final int suit = rolled;
             Vec3 dir = Fx3.rotY(look, Math.toRadians((i - 1) * 10));
             Vec3 start = c.hand();
             ServerFx.of("card", start).vec(dir.scale(1.4)).a(c.def.radius()).b(suit).send(c.level);
