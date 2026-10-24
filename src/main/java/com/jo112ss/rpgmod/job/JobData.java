@@ -171,6 +171,13 @@ public final class JobData {
         return hasJob() ? JobDefs.advancedOf(job) : null;
     }
 
+    /** Casts spells from a staff: the wizard, and advanced jobs with spells of their own (bishop). */
+    public boolean castsSpells() {
+        if (!hasJob()) return false;
+        if (jobDef().usesSpells()) return true;
+        return isAdvanced() && advancedDef().usesSpells();
+    }
+
     /** Advanced job level, 1-100 (0 before the advanced job). */
     public int advLevel() {
         return isAdvanced() ? LevelCurve.advancedLevel(level) : 0;

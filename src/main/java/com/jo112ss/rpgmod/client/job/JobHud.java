@@ -105,7 +105,7 @@ public final class JobHud {
         }
 
         // wizard: active spell on the held staff
-        if (d.jobDef().usesSpells() && JobClient.holdingStaff()) {
+        if (d.castsSpells() && JobClient.holdingStaff()) {
             SpellLoadout l = mc.player.getMainHandItem().getOrDefault(ModRegistries.SPELL_LOADOUT.get(), SpellLoadout.EMPTY);
             SkillDef spell = JobDefs.skill(l.selectedSpell());
             int x = x0 - SLOT - 12, y = y0;

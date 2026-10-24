@@ -15,6 +15,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public abstract class PlayerTargetMixin {
     @Inject(method = "canBeSeenAsEnemy", at = @At("HEAD"), cancellable = true)
     private void rpgmod$downedIsNoEnemy(CallbackInfoReturnable<Boolean> cir) {
-        if (Downed.is((Player) (Object) this)) cir.setReturnValue(false);
+        Player self = (Player) (Object) this;
+        // downed (Resurrection mod), or vanished (joker): not an enemy to anyone
+        if (Downed.is(self) || self.hasEffect(com.jo112ss.rpgmod.registry.ModEffects.VANISH)) cir.setReturnValue(false);
     }
 }

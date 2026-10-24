@@ -17,6 +17,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -449,7 +450,7 @@ public final class JobManager {
     /** The staff's selected spell if the player is a wizard who knows it, else null. */
     public static SkillDef selectedSpell(Player player, ItemStack staff) {
         JobData d = data(player);
-        if (!d.hasJob() || !d.jobDef().usesSpells()) return null;
+        if (!d.hasJob() || !d.castsSpells()) return null;
         SpellLoadout loadout = staff.getOrDefault(ModRegistries.SPELL_LOADOUT.get(), SpellLoadout.EMPTY);
         SkillDef def = JobDefs.skill(loadout.selectedSpell());
         return def != null && d.knows(def.id()) ? def : null;
@@ -458,7 +459,7 @@ public final class JobManager {
     /** Can a charge start? (spell set, off cooldown, enough mana). Messages only when {@code notify}. */
     public static boolean canStartCast(Player player, ItemStack staff, boolean notify) {
         JobData d = data(player);
-        if (!d.hasJob() || !d.jobDef().usesSpells()) return false;
+        if (!d.hasJob() || !d.castsSpells()) return false;
         if (com.jo112ss.rpgmod.item.Shields.guarding(player)) return false;
         SkillDef def = selectedSpell(player, staff);
         ServerPlayer sp = notify && player instanceof ServerPlayer s ? s : null;
@@ -471,7 +472,7 @@ public final class JobManager {
             if (sp != null) tell(sp, "rpgmod.job.cooldown", String.format("%.1f", ready / 20.0));
             return false;
         }
-        if (d.mana() < def.mana()) {
+        if (d.mana() < manaCost(player, def)) {
             if (sp != null) tell(sp, "rpgmod.job.no_mana");
             return false;
         }
@@ -494,6 +495,8 @@ public final class JobManager {
         if (testForceCrit != null) return testForceCrit ? 100 : 0;
         if (player.hasEffect(com.jo112ss.rpgmod.registry.ModEffects.FORTUNE)) return 100; // roulette: every hit a crit
         double rate = JobStats.compute(data(player)).get(JobStat.CRIT_CHANCE);
+        var keen = player.getEffect(com.jo112ss.rpgmod.registry.ModEffects.KEEN); // berserker's roar
+        if (keen != null) rate += 25 * (keen.getAmplifier() + 1);
         var fd = weaponData(player, source);
         if (fd != null) rate += fd.get(com.jo112ss.rpgmod.smithing.core.OptionType.CRIT_CHANCE);
         return Math.min(100, rate);
@@ -569,7 +572,8 @@ public final class JobManager {
     public static double magicAttack(Player player) {
         double own = JobStats.compute(data(player)).get(JobStat.MAGIC_ATTACK);
         double gear = gearOption(player, com.jo112ss.rpgmod.smithing.core.OptionType.MAGIC_POWER);
-        return (1 + staffMagic(player) + own) * (1 + gear / 100.0);
+        double overload = player.hasEffect(com.jo112ss.rpgmod.registry.ModEffects.OVERLOAD) ? 1.5 : 1; // spellmaster
+        return (1 + staffMagic(player) + own) * (1 + gear / 100.0) * overload;
     }
 
     /**
@@ -620,6 +624,14 @@ public final class JobManager {
             case "frost_nova" -> 0x8FE6FF;
             case "thunder" -> 0xFFF07A;
             case "arcane_shield" -> 0x7FD8FF;
+            case "inferno" -> 0xFF5A1A;
+            case "absolute_zero" -> 0x9FE8FF;
+            case "thunderstorm" -> 0xFFF07A;
+            case "stone_spikes" -> 0xC09060;
+            case "radiant_lance", "holy_bolt", "holy_nova", "light_pillar" -> 0xFFE89A;
+            case "dark_orb" -> 0x8A4CFF;
+            case "tornado" -> 0xA8F0D0;
+            case "starfall" -> 0xC8B8FF;
             default -> 0xA98BFF;
         };
     }
@@ -655,19 +667,42 @@ public final class JobManager {
             tell(player, "rpgmod.job.cooldown", String.format("%.1f", (ready - now) / 20.0));
             return false;
         }
-        if (d.mana() < def.mana()) {
+        double cost = manaCost(player, def);
+        if (d.mana() < cost) {
             tell(player, "rpgmod.job.no_mana");
             return false;
         }
         Map<JobStat, Double> st = JobStats.compute(d);
         double power = powerMultiplier(player, def);
         if (!SkillExecutor.execute(player, def, power)) return false;
+        if (def.kind() == SkillKind.SPELL) echo(player, def, power);
         double cdr = st.get(JobStat.COOLDOWN_REDUCTION) / 100.0;
-        d.setMana(d.mana() - def.mana());
+        d.setMana(d.mana() - cost);
         d.pruneCooldowns(now);
         d.setCooldown(def.id(), now + Math.round(def.cooldown() * 20 * (1 - cdr)));
         sync(player);
         return true;
+    }
+
+    /** Mana a skill costs right now (the spellmaster's overload makes spells 50% dearer). */
+    public static double manaCost(Player player, SkillDef def) {
+        boolean overload = def.kind() == SkillKind.SPELL && player.hasEffect(com.jo112ss.rpgmod.registry.ModEffects.OVERLOAD);
+        return overload ? Math.ceil(def.mana() * 1.5) : def.mana();
+    }
+
+    /** Spellmaster's double cast: the spell goes off a second time (free), using up one charge. */
+    private static void echo(ServerPlayer player, SkillDef def, double power) {
+        var holder = com.jo112ss.rpgmod.registry.ModEffects.DOUBLE_CAST;
+        MobEffectInstance dc = player.getEffect(holder);
+        if (dc == null) return;
+        player.removeEffect(holder);
+        if (dc.getAmplifier() > 0) player.addEffect(new MobEffectInstance(holder, dc.getDuration(), dc.getAmplifier() - 1), player);
+        SkillTasks.later(8, () -> {
+            if (!player.isAlive()) return;
+            SkillExecutor.execute(player, def, power);
+            player.level().playSound(null, player.blockPosition(), SoundEvents.AMETHYST_BLOCK_RESONATE, SoundSource.PLAYERS, 0.8F, 1.9F);
+        });
+        if (com.jo112ss.rpgmod.devtest.AutoTestServer.ENABLED) com.jo112ss.rpgmod.RpgMod.LOGGER.info("[AUTOTEST] double cast echo {} (charges left {})", def.id(), dc.getAmplifier());
     }
 
     // ------------------------------------------------------------------ wizard spell loadout
@@ -680,7 +715,7 @@ public final class JobManager {
     public static void setSpell(ServerPlayer player, int slot, String spellId) {
         JobData d = data(player);
         ItemStack staff = heldStaff(player);
-        if (staff.isEmpty() || !d.hasJob() || !d.jobDef().usesSpells() || slot < 0 || slot >= SpellLoadout.SLOTS) return;
+        if (staff.isEmpty() || !d.hasJob() || !d.castsSpells() || slot < 0 || slot >= SpellLoadout.SLOTS) return;
         if (!spellId.isEmpty()) {
             SkillDef def = JobDefs.skill(spellId);
             if (def == null || def.kind() != SkillKind.SPELL || !d.knows(spellId)) return;

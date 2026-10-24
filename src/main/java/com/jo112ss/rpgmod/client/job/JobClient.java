@@ -63,7 +63,7 @@ public final class JobClient {
         }
         while (JobKeys.SPELL_WHEEL.consumeClick()) {
             JobData d = data();
-            if (d.hasJob() && d.jobDef().usesSpells() && holdingStaff()) {
+            if (d.castsSpells() && holdingStaff()) {
                 mc.gui.setScreen(new SpellWheelScreen());
                 return;
             }

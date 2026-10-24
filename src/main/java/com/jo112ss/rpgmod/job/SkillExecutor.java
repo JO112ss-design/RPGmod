@@ -139,7 +139,7 @@ public final class SkillExecutor {
             case "card_throw" -> cardThrow(c);
             case "coin_toss", "dice_roll", "all_in", "jackpot" -> gamble(c);
             case "roulette" -> roulette(c);
-            default -> generic(c);
+            default -> AdvSkills.has(def.id()) ? AdvSkills.run(c) : generic(c);
         };
     }
 
@@ -148,7 +148,7 @@ public final class SkillExecutor {
      * with times the skill power stat (see {@link JobManager#powerMultiplier}); {@code boost} is the
      * skill power stat alone, for amounts that do not depend on attack (mana).
      */
-    private record Ctx(ServerPlayer p, ServerLevel level, SkillDef def, double power, double boost) {
+    record Ctx(ServerPlayer p, ServerLevel level, SkillDef def, double power, double boost) {
         /** The skill's ratio x attack x skill power, times {@code scale}. */
         float dmg(double scale) {
             return (float) (def.power() * power * scale);
@@ -174,24 +174,24 @@ public final class SkillExecutor {
 
     // ------------------------------------------------------------------ targeting helpers
 
-    private static boolean isEnemy(ServerPlayer p, Entity e) {
+    static boolean isEnemy(ServerPlayer p, Entity e) {
         if (!(e instanceof LivingEntity le) || e == p || !le.isAlive() || e instanceof Player || e instanceof ArmorStand) return false;
         if (e instanceof TamableAnimal t && t.isOwnedBy(p)) return false;
         return !e.isInvulnerable();
     }
 
-    private static List<LivingEntity> enemies(ServerPlayer p, Vec3 c, double r) {
+    static List<LivingEntity> enemies(ServerPlayer p, Vec3 c, double r) {
         return p.level().getEntitiesOfClass(LivingEntity.class, new AABB(c, c).inflate(r + 1),
                 e -> isEnemy(p, e) && horizontal(e.position(), c) <= r + e.getBbWidth() / 2 && Math.abs(e.getY() - c.y) < Math.max(3, r));
     }
 
-    private static double horizontal(Vec3 a, Vec3 b) {
+    static double horizontal(Vec3 a, Vec3 b) {
         double dx = a.x - b.x, dz = a.z - b.z;
         return Math.sqrt(dx * dx + dz * dz);
     }
 
     /** Enemies within {@code range} whose direction from the player is within {@code halfAngle} degrees of {@code dir} (horizontal). */
-    private static List<LivingEntity> cone(Ctx c, double range, double halfAngle) {
+    static List<LivingEntity> cone(Ctx c, double range, double halfAngle) {
         Vec3 dir = c.flat();
         double cos = Math.cos(Math.toRadians(halfAngle));
         List<LivingEntity> out = new ArrayList<>();
@@ -203,12 +203,12 @@ public final class SkillExecutor {
         return out;
     }
 
-    private static boolean canSee(ServerLevel level, Vec3 from, Vec3 to, Entity p) {
+    static boolean canSee(ServerLevel level, Vec3 from, Vec3 to, Entity p) {
         return level.clip(new ClipContext(from, to, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, p)).getType() == HitResult.Type.MISS;
     }
 
     /** The enemy closest to the crosshair within {@code range} and {@code halfAngle} degrees, in line of sight. */
-    private static LivingEntity lookTarget(Ctx c, double range, double halfAngle) {
+    static LivingEntity lookTarget(Ctx c, double range, double halfAngle) {
         Vec3 eye = c.p.getEyePosition();
         Vec3 look = c.look();
         double cos = Math.cos(Math.toRadians(halfAngle));
@@ -233,7 +233,7 @@ public final class SkillExecutor {
     }
 
     /** Where the player is aiming, dropped onto the ground (for area spells). */
-    private static Vec3 aimPoint(Ctx c, double range) {
+    static Vec3 aimPoint(Ctx c, double range) {
         Vec3 eye = c.p.getEyePosition();
         Vec3 look = c.look();
         BlockHitResult hit = c.level.clip(new ClipContext(eye, eye.add(look.scale(range)), ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, c.p));
@@ -242,33 +242,33 @@ public final class SkillExecutor {
         return down.getType() == HitResult.Type.MISS ? at : down.getLocation();
     }
 
-    private static List<ServerPlayer> allies(ServerPlayer p, double r) {
+    static List<ServerPlayer> allies(ServerPlayer p, double r) {
         if (r <= 0) return List.of(p);
         return p.level().getEntitiesOfClass(ServerPlayer.class, p.getBoundingBox().inflate(r),
                 e -> e.isAlive() && !e.isSpectator() && e.distanceTo(p) <= r);
     }
 
-    private static List<ServerPlayer> others(ServerPlayer p, List<ServerPlayer> all) {
+    static List<ServerPlayer> others(ServerPlayer p, List<ServerPlayer> all) {
         List<ServerPlayer> out = new ArrayList<>(all);
         out.remove(p);
         return out;
     }
 
-    private static List<Holder<MobEffect>> effects(SkillDef def) {
+    static List<Holder<MobEffect>> effects(SkillDef def) {
         List<Holder<MobEffect>> out = new ArrayList<>();
         for (String id : def.effects()) BuiltInRegistries.MOB_EFFECT.get(Identifier.parse(id)).ifPresent(out::add);
         return out;
     }
 
-    private static int ticks(double seconds) {
+    static int ticks(double seconds) {
         return (int) Math.round(seconds * 20);
     }
 
-    private static void apply(LivingEntity e, SkillDef def, ServerPlayer source) {
+    static void apply(LivingEntity e, SkillDef def, ServerPlayer source) {
         apply(e, def, source, 1);
     }
 
-    private static void apply(LivingEntity e, SkillDef def, ServerPlayer source, double timeScale) {
+    static void apply(LivingEntity e, SkillDef def, ServerPlayer source, double timeScale) {
         for (Holder<MobEffect> h : effects(def)) e.addEffect(new MobEffectInstance(h, ticks(def.duration() * timeScale), def.amplifier()), source);
     }
 
@@ -279,30 +279,30 @@ public final class SkillExecutor {
      * landing right after a sword swing, or several hits of one skill, all count. Magic also ignores
      * armour.
      */
-    private static final net.minecraft.resources.ResourceKey<net.minecraft.world.damagesource.DamageType> SKILL_DAMAGE =
+    static final net.minecraft.resources.ResourceKey<net.minecraft.world.damagesource.DamageType> SKILL_DAMAGE =
             net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.DAMAGE_TYPE, Identifier.fromNamespaceAndPath("rpgmod", "skill"));
-    private static final net.minecraft.resources.ResourceKey<net.minecraft.world.damagesource.DamageType> SKILL_MAGIC_DAMAGE =
+    static final net.minecraft.resources.ResourceKey<net.minecraft.world.damagesource.DamageType> SKILL_MAGIC_DAMAGE =
             net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.DAMAGE_TYPE, Identifier.fromNamespaceAndPath("rpgmod", "skill_magic"));
 
-    private static DamageSource melee(Ctx c) {
+    static DamageSource melee(Ctx c) {
         return c.p.damageSources().source(SKILL_DAMAGE, c.p, c.p);
     }
 
-    private static DamageSource magic(Ctx c) {
+    static DamageSource magic(Ctx c) {
         return c.p.damageSources().source(SKILL_MAGIC_DAMAGE, c.p, c.p);
     }
 
     /** Magic for the caster jobs and spells, physical for the rest. */
-    private static DamageSource skillSource(Ctx c) {
+    static DamageSource skillSource(Ctx c) {
         return com.jo112ss.rpgmod.job.core.JobDefs.isMagic(c.def) ? magic(c) : melee(c);
     }
 
-    private static void hurt(Ctx c, LivingEntity e, float amount, DamageSource source) {
+    static void hurt(Ctx c, LivingEntity e, float amount, DamageSource source) {
         if (amount > 0) e.hurtServer(c.level, source, amount);
     }
 
     /** Adds velocity to an entity (scaled by its knockback resistance). */
-    private static void push(LivingEntity e, Vec3 horizontalDir, double strength, double up) {
+    static void push(LivingEntity e, Vec3 horizontalDir, double strength, double up) {
         double resist = 1 - e.getAttributeValue(Attributes.KNOCKBACK_RESISTANCE);
         if (resist <= 0) return;
         Vec3 d = horizontalDir.multiply(1, 0, 1);
@@ -311,44 +311,44 @@ public final class SkillExecutor {
         e.needsSync = true;
     }
 
-    private static void pushAway(LivingEntity e, Vec3 from, double strength, double up) {
+    static void pushAway(LivingEntity e, Vec3 from, double strength, double up) {
         push(e, e.position().subtract(from), strength, up);
     }
 
-    private static void launch(ServerPlayer p, Vec3 v) {
+    static void launch(ServerPlayer p, Vec3 v) {
         p.setDeltaMovement(v);
         p.connection.send(new ClientboundSetEntityMotionPacket(p));
         p.resetFallDistance();
     }
 
-    private static void sound(Ctx c, Vec3 at, SoundEvent s, float volume, float pitch) {
+    static void sound(Ctx c, Vec3 at, SoundEvent s, float volume, float pitch) {
         c.level.playSound(null, at.x, at.y, at.z, s, SoundSource.PLAYERS, volume, pitch);
     }
 
-    private static void sound(Ctx c, Vec3 at, Holder<SoundEvent> s, float volume, float pitch) {
+    static void sound(Ctx c, Vec3 at, Holder<SoundEvent> s, float volume, float pitch) {
         c.level.playSound(null, at.x, at.y, at.z, s, SoundSource.PLAYERS, volume, pitch);
     }
 
-    private static void sound(Ctx c, SoundEvent s, float pitch) {
+    static void sound(Ctx c, SoundEvent s, float pitch) {
         sound(c, c.p.position(), s, 1.0F, pitch);
     }
 
-    private static void sound(Ctx c, Holder<SoundEvent> s, float pitch) {
+    static void sound(Ctx c, Holder<SoundEvent> s, float pitch) {
         sound(c, c.p.position(), s, 1.0F, pitch);
     }
 
-    private static boolean isUndead(LivingEntity e) {
+    static boolean isUndead(LivingEntity e) {
         return e.is(EntityTypeTags.UNDEAD);
     }
 
-    private static void fail(ServerPlayer p, String key) {
+    static void fail(ServerPlayer p, String key) {
         p.sendSystemMessage(Component.translatable(key).withStyle(ChatFormatting.GRAY), true);
     }
 
     // ================================================================== fighter
 
     /** Wide forward cleave. */
-    private static boolean powerSlash(Ctx c) {
+    static boolean powerSlash(Ctx c) {
         List<LivingEntity> hit = cone(c, c.def.radius(), 65);
         for (LivingEntity e : hit) {
             hurt(c, e, c.dmg(1), melee(c));
@@ -361,10 +361,10 @@ public final class SkillExecutor {
         return true;
     }
 
-    private static final double CHARGE_SPEED = 1.8;
+    static final double CHARGE_SPEED = 1.8;
 
     /** Dash forward; enemies in the way are hit and thrown aside. */
-    private static boolean charge(Ctx c) {
+    static boolean charge(Ctx c) {
         Vec3 dir = c.flat();
         launch(c.p, dir.scale(CHARGE_SPEED).add(0, 0.2, 0));
         ServerFx.of("charge", c.p.position()).vec(dir).follow(c.p).send(c.level);
@@ -390,7 +390,7 @@ public final class SkillExecutor {
         return true;
     }
 
-    private static boolean warCry(Ctx c) {
+    static boolean warCry(Ctx c) {
         List<ServerPlayer> allies = allies(c.p, c.def.radius());
         for (ServerPlayer a : allies) apply(a, c.def, c.p);
         List<LivingEntity> foes = enemies(c.p, c.p.position(), c.def.radius() * 0.75);
@@ -402,7 +402,7 @@ public final class SkillExecutor {
     }
 
     /** Two spins around the player, 10 ticks apart (damage immunity frames last 10 ticks). */
-    private static boolean whirlwind(Ctx c) {
+    static boolean whirlwind(Ctx c) {
         double r = c.def.radius();
         ServerFx.of("whirlwind", c.p.position()).follow(c.p).a(r).send(c.level);
         SkillTasks.run(age -> {
@@ -423,7 +423,7 @@ public final class SkillExecutor {
     }
 
     /** Ground slam: a shockwave spreads out and hits each enemy as it passes. */
-    private static boolean earthshatter(Ctx c) {
+    static boolean earthshatter(Ctx c) {
         double r = c.def.radius();
         Vec3 o = c.p.position();
         ServerFx.of("earthshatter", o).a(r).send(c.level);
@@ -445,7 +445,7 @@ public final class SkillExecutor {
     }
 
     /** Self buff whose look is all in the effect (berserk, eagle eye, barriers, shadow dance). */
-    private static boolean selfBuff(Ctx c, String fx, SoundEvent s, float pitch) {
+    static boolean selfBuff(Ctx c, String fx, SoundEvent s, float pitch) {
         apply(c.p, c.def, c.p);
         if (fx.equals("shadow_dance")) c.p.addEffect(new MobEffectInstance(MobEffects.INVISIBILITY, ticks(c.def.duration()), 0), c.p);
         ServerFx.of(fx, c.p.position()).follow(c.p).a(c.def.duration()).send(c.level);
@@ -461,7 +461,7 @@ public final class SkillExecutor {
      * A skill arrow that hits for about {@code damage} (arrow damage is base x speed, ~3 at launch).
      * It is not tied to the bow, so the bow's own bonuses are not added a second time.
      */
-    private static Arrow arrow(Ctx c, float yawOffset, double damage, boolean crit, String trail, int color) {
+    static Arrow arrow(Ctx c, float yawOffset, double damage, boolean crit, String trail, int color) {
         Arrow arrow = new Arrow(c.level, c.p, new ItemStack(Items.ARROW), null);
         arrow.pickup = AbstractArrow.Pickup.CREATIVE_ONLY;
         arrow.setBaseDamage(damage / 3.0);
@@ -472,7 +472,7 @@ public final class SkillExecutor {
         return arrow;
     }
 
-    private static boolean multishot(Ctx c) {
+    static boolean multishot(Ctx c) {
         int n = 3;
         float spread = 9;
         for (int i = 0; i < n; i++) arrow(c, -spread * (n - 1) / 2f + spread * i, c.dmg(1), false, "arrow_trail", 0x8CFF6A);
@@ -482,7 +482,7 @@ public final class SkillExecutor {
         return true;
     }
 
-    private static boolean backstep(Ctx c) {
+    static boolean backstep(Ctx c) {
         Vec3 dir = c.flat();
         ServerFx.of("backstep", c.p.position()).vec(dir.scale(-1)).follow(c.p).send(c.level);
         launch(c.p, dir.scale(-c.def.power()).add(0, 0.45, 0));
@@ -496,7 +496,7 @@ public final class SkillExecutor {
      * Ranger scan: a pulse goes out to {@code radius} blocks (128) and every hostile monster it finds
      * glows - visible through walls - for the duration. Reticles only on the nearer ones (cheap on the network).
      */
-    private static boolean huntersMark(Ctx c) {
+    static boolean huntersMark(Ctx c) {
         double r = c.def.radius();
         List<net.minecraft.world.entity.Mob> found = c.level.getEntitiesOfClass(net.minecraft.world.entity.Mob.class, c.p.getBoundingBox().inflate(r),
                 m -> m instanceof net.minecraft.world.entity.monster.Enemy && m.isAlive() && m.distanceToSqr(c.p) <= r * r);
@@ -514,7 +514,7 @@ public final class SkillExecutor {
     }
 
     /** Throws a snare to the aimed spot; it springs shut and keeps rooting enemies that walk in. */
-    private static boolean snare(Ctx c) {
+    static boolean snare(Ctx c) {
         Vec3 at = aimPoint(c, 14);
         double r = c.def.radius();
         int life = ticks(4);
@@ -547,7 +547,7 @@ public final class SkillExecutor {
     }
 
     /** Arrows fall on the aimed area for two seconds. */
-    private static boolean arrowRain(Ctx c) {
+    static boolean arrowRain(Ctx c) {
         Vec3 at = aimPoint(c, 32);
         double r = c.def.radius();
         int life = 40;
@@ -566,7 +566,7 @@ public final class SkillExecutor {
 
     // ================================================================== paladin
 
-    private static boolean shieldBash(Ctx c) {
+    static boolean shieldBash(Ctx c) {
         List<LivingEntity> hit = cone(c, c.def.radius(), 55);
         for (LivingEntity e : hit) {
             hurt(c, e, c.dmg(1), melee(c));
@@ -580,7 +580,7 @@ public final class SkillExecutor {
     }
 
     /** Buff for the party around the caster (the effect shows on each of them). */
-    private static boolean partyBuff(Ctx c, String fx, SoundEvent s, float pitch) {
+    static boolean partyBuff(Ctx c, String fx, SoundEvent s, float pitch) {
         List<ServerPlayer> allies = allies(c.p, c.def.radius());
         double scale = JobManager.buffDurationScale(c.p, c.def); // enchanter: magic attack stretches the buff
         for (ServerPlayer a : allies) apply(a, c.def, c.p, scale);
@@ -595,7 +595,7 @@ public final class SkillExecutor {
     }
 
     /** A pillar of light falls on the targeted enemy, splashing around it. */
-    private static boolean smite(Ctx c) {
+    static boolean smite(Ctx c) {
         LivingEntity target = lookTarget(c, c.def.radius(), 14);
         Vec3 start = target != null ? target.position() : aimPoint(c, c.def.radius());
         ServerFx.of("smite", start).follow(target).a(2.5).send(c.level);
@@ -616,7 +616,7 @@ public final class SkillExecutor {
     }
 
     /** Holy circle forms, then light comes down on everything in it. */
-    private static boolean judgement(Ctx c) {
+    static boolean judgement(Ctx c) {
         double r = c.def.radius();
         Vec3 o = c.p.position();
         ServerFx.of("judgement", o).a(r).send(c.level);
@@ -637,7 +637,7 @@ public final class SkillExecutor {
 
     // ================================================================== healing / mana
 
-    private static boolean heal(Ctx c, String fx, boolean cleanse) {
+    static boolean heal(Ctx c, String fx, boolean cleanse) {
         List<ServerPlayer> allies = allies(c.p, c.def.radius());
         for (ServerPlayer a : allies) {
             a.heal(c.dmg(1));
@@ -652,7 +652,7 @@ public final class SkillExecutor {
         return true;
     }
 
-    private static boolean mana(Ctx c, String fx) {
+    static boolean mana(Ctx c, String fx) {
         List<ServerPlayer> allies = allies(c.p, c.def.radius());
         for (ServerPlayer a : allies) JobManager.restoreMana(a, c.def.power() * c.boost);
         ServerFx.of(fx, c.p.position()).follow(c.p).a(Math.max(1, c.def.radius())).points(others(c.p, allies)).send(c.level);
@@ -662,7 +662,7 @@ public final class SkillExecutor {
     }
 
     /** A holy zone that heals allies inside every second and slows enemies. */
-    private static boolean sanctuary(Ctx c) {
+    static boolean sanctuary(Ctx c) {
         double r = c.def.radius();
         Vec3 o = c.p.position();
         int pulses = 8;
@@ -692,7 +692,7 @@ public final class SkillExecutor {
      * Where to put the player's feet for a teleport along the look direction: the furthest point
      * up to {@code distance} where the player fits (standing on the ground if the ray hit it).
      */
-    private static Vec3 safeTeleport(Ctx c, Vec3 dir, double distance) {
+    static Vec3 safeTeleport(Ctx c, Vec3 dir, double distance) {
         Vec3 eye = c.p.getEyePosition();
         BlockHitResult hit = c.level.clip(new ClipContext(eye, eye.add(dir.scale(distance)), ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, c.p));
         double reach = hit.getType() == HitResult.Type.MISS ? distance : Math.max(0, eye.distanceTo(hit.getLocation()) - 0.5);
@@ -708,7 +708,7 @@ public final class SkillExecutor {
         return from;
     }
 
-    private static boolean blink(Ctx c) {
+    static boolean blink(Ctx c) {
         Vec3 from = c.p.position();
         Vec3 to = safeTeleport(c, c.look(), c.def.radius());
         c.p.teleportTo(to.x, to.y, to.z);
@@ -720,7 +720,7 @@ public final class SkillExecutor {
     }
 
     /** A meteor falls on the aimed spot. */
-    private static boolean meteor(Ctx c) {
+    static boolean meteor(Ctx c) {
         Vec3 at = aimPoint(c, 36);
         double r = c.def.radius();
         int fall = 28;
@@ -743,7 +743,7 @@ public final class SkillExecutor {
         return true;
     }
 
-    private static boolean timeWarp(Ctx c) {
+    static boolean timeWarp(Ctx c) {
         double r = c.def.radius();
         Vec3 o = c.p.position();
         List<LivingEntity> hit = enemies(c.p, o, r);
@@ -754,10 +754,10 @@ public final class SkillExecutor {
         return true;
     }
 
-    private static final double BOLT_SPEED = 1.8;
+    static final double BOLT_SPEED = 1.8;
 
     /** A homing bolt that travels to the target (or the first thing in the way). */
-    private static boolean magicBolt(Ctx c) {
+    static boolean magicBolt(Ctx c) {
         double range = c.def.radius();
         LivingEntity target = lookTarget(c, range, 15);
         Vec3 start = c.hand();
@@ -839,7 +839,7 @@ public final class SkillExecutor {
     }
 
     /** A cone of fire; enemies burn as the flames reach them. */
-    private static boolean flameBurst(Ctx c) {
+    static boolean flameBurst(Ctx c) {
         double range = c.def.radius();
         double half = 35;
         Vec3 origin = c.p.position();
@@ -860,7 +860,7 @@ public final class SkillExecutor {
     }
 
     /** A ring of ice bursts out from the caster, freezing what it passes. */
-    private static boolean frostNova(Ctx c) {
+    static boolean frostNova(Ctx c) {
         double r = c.def.radius();
         Vec3 o = c.p.position();
         ServerFx.of("frost_nova", o).a(r).send(c.level);
@@ -881,7 +881,7 @@ public final class SkillExecutor {
     }
 
     /** Marks the aimed spot, then lightning strikes it and arcs to nearby enemies. */
-    private static boolean thunder(Ctx c) {
+    static boolean thunder(Ctx c) {
         double range = c.def.radius();
         LivingEntity target = lookTarget(c, range, 6);
         Vec3 at0 = target != null ? target.position() : aimPoint(c, range);
@@ -913,7 +913,7 @@ public final class SkillExecutor {
     // ================================================================== assassin
 
     /** Teleports behind the targeted enemy, or forward if there is none. */
-    private static boolean shadowStep(Ctx c) {
+    static boolean shadowStep(Ctx c) {
         Vec3 from = c.p.position();
         LivingEntity target = lookTarget(c, c.def.radius(), 12);
         Vec3 to;
@@ -936,14 +936,14 @@ public final class SkillExecutor {
         return true;
     }
 
-    private static boolean isBehind(LivingEntity target, Vec3 attacker) {
+    static boolean isBehind(LivingEntity target, Vec3 attacker) {
         Vec3 facing = Vec3.directionFromRotation(0, target.getYRot());
         Vec3 toAttacker = attacker.subtract(target.position()).multiply(1, 0, 1).normalize();
         return facing.dot(toAttacker) < -0.3;
     }
 
     /** A precise strike on one enemy; much stronger from behind. */
-    private static boolean backstab(Ctx c) {
+    static boolean backstab(Ctx c) {
         LivingEntity target = null;
         double best = Double.MAX_VALUE;
         for (LivingEntity e : cone(c, c.def.radius(), 50)) {
@@ -965,7 +965,7 @@ public final class SkillExecutor {
         return true;
     }
 
-    private static boolean smokeBomb(Ctx c) {
+    static boolean smokeBomb(Ctx c) {
         double r = 5;
         c.p.addEffect(new MobEffectInstance(MobEffects.INVISIBILITY, ticks(c.def.duration()), 0), c.p);
         apply(c.p, c.def, c.p);
@@ -981,7 +981,7 @@ public final class SkillExecutor {
     }
 
     /** Appears behind the targeted enemy with a flurry; executes enemies on low health. */
-    private static boolean assassinate(Ctx c) {
+    static boolean assassinate(Ctx c) {
         LivingEntity target = lookTarget(c, c.def.radius(), 10);
         if (target == null) {
             fail(c.p, "rpgmod.job.no_target");
@@ -1010,7 +1010,7 @@ public final class SkillExecutor {
 
     // ================================================================== enchanter
 
-    private static boolean curse(Ctx c, String fx) {
+    static boolean curse(Ctx c, String fx) {
         double r = c.def.radius();
         List<LivingEntity> hit = enemies(c.p, c.p.position(), r);
         for (LivingEntity e : hit) {
@@ -1028,8 +1028,8 @@ public final class SkillExecutor {
 
     // ================================================================== gambler
 
-    private static boolean luckyShot(Ctx c) {
-        boolean lucky = c.p.getRandom().nextDouble() < 0.35;
+    static boolean luckyShot(Ctx c) {
+        boolean lucky = AdvSkills.loaded(c.p) || c.p.getRandom().nextDouble() < 0.35; // joker's loaded die: always
         if (!lucky && JobManager.luckyReroll(c.p)) lucky = c.p.getRandom().nextDouble() < 0.35; // luck: a second try
         arrow(c, 0, c.dmg(lucky ? 2.5 : 1), lucky, "arrow_trail", lucky ? 0xFFD54A : 0x5FE8C8);
         ServerFx.of("lucky_shot", c.hand()).vec(c.look()).b(lucky ? 1 : 0).send(c.level);
@@ -1042,7 +1042,7 @@ public final class SkillExecutor {
     }
 
     /** How long each gamble's roll animation runs before the result lands. */
-    private static int rollTicks(String id) {
+    static int rollTicks(String id) {
         return switch (id) {
             case "coin_toss" -> 16;
             case "dice_roll" -> 18;
@@ -1055,13 +1055,13 @@ public final class SkillExecutor {
 
     static final String[] OUTCOMES = {"jackpot", "heal", "buff", "curse", "mana", "bust"};
     /** How good each outcome is for the gambler (lower = better), for luck's second roll. */
-    private static final int[] OUTCOME_RANK = {0, 2, 1, 4, 3, 5};
+    static final int[] OUTCOME_RANK = {0, 2, 1, 4, 3, 5};
     static final int[] OUTCOME_COLORS = {0xFFD54A, 0x7CFF9A, 0xFF9A3C, 0xB86BFF, 0x6FB8FF, 0x8A8A8A};
 
     /** Gambler skills: a random outcome scaled by the bet (the skill's power). */
-    private static boolean gamble(Ctx c) {
-        int roll = c.p.getRandom().nextInt(6);
-        if (JobManager.luckyReroll(c.p)) { // luck: roll again and keep the better outcome
+    static boolean gamble(Ctx c) {
+        int roll = AdvSkills.loaded(c.p) ? 0 : c.p.getRandom().nextInt(6); // joker's loaded die: jackpot
+        if (roll != 0 && JobManager.luckyReroll(c.p)) { // luck: roll again and keep the better outcome
             int again = c.p.getRandom().nextInt(6);
             if (OUTCOME_RANK[again] < OUTCOME_RANK[roll]) roll = again;
         }
@@ -1081,8 +1081,8 @@ public final class SkillExecutor {
      * while every hit is a critical hit with +10% crit damage per number, and every gamble gets a
      * second roll.
      */
-    private static boolean roulette(Ctx c) {
-        int roll = c.p.getRandom().nextInt(6);
+    static boolean roulette(Ctx c) {
+        int roll = AdvSkills.loaded(c.p) ? 5 : c.p.getRandom().nextInt(6); // joker's loaded die: the top number
         if (JobManager.luckyReroll(c.p)) roll = Math.max(roll, c.p.getRandom().nextInt(6));
         final int number = roll;
         int wait = rollTicks("roulette");
@@ -1100,7 +1100,7 @@ public final class SkillExecutor {
         return true;
     }
 
-    private static void gambleOutcome(Ctx c, int roll) {
+    static void gambleOutcome(Ctx c, int roll) {
         SkillDef def = c.def;
         double bet = def.power();
         double r = def.radius();
@@ -1158,7 +1158,7 @@ public final class SkillExecutor {
     // ================================================================== added skills
 
     /** Fighter: a heavy-handed slash that saps the enemies' strength (little damage). */
-    private static boolean intimidate(Ctx c) {
+    static boolean intimidate(Ctx c) {
         List<LivingEntity> hit = cone(c, c.def.radius(), 70);
         for (LivingEntity e : hit) {
             hurt(c, e, c.dmg(1), melee(c));
@@ -1172,7 +1172,7 @@ public final class SkillExecutor {
     }
 
     /** Fighter: every monster around turns on you; you brace yourself. */
-    private static boolean taunt(Ctx c) {
+    static boolean taunt(Ctx c) {
         List<LivingEntity> foes = enemies(c.p, c.p.position(), c.def.radius());
         for (LivingEntity e : foes) {
             if (e instanceof Mob m) m.setTarget(c.p);
@@ -1185,7 +1185,7 @@ public final class SkillExecutor {
     }
 
     /** Ranger: a shot that goes straight through every enemy in a line. */
-    private static boolean piercingShot(Ctx c) {
+    static boolean piercingShot(Ctx c) {
         Vec3 eye = c.p.getEyePosition();
         Vec3 look = c.look();
         BlockHitResult block = c.level.clip(new ClipContext(eye, eye.add(look.scale(c.def.radius())), ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, c.p));
@@ -1211,7 +1211,7 @@ public final class SkillExecutor {
     }
 
     /** Ranger: an arrow that blows up where it lands (no block damage). */
-    private static boolean explosiveArrow(Ctx c) {
+    static boolean explosiveArrow(Ctx c) {
         Arrow arrow = arrow(c, 0, c.dmg(0.3), false, "arrow_trail", 0xFF8A3D);
         sound(c, SoundEvents.ARROW_SHOOT, 0.8F);
         sound(c, c.p.position(), SoundEvents.FIRECHARGE_USE, 0.6F, 1.5F);
@@ -1241,7 +1241,7 @@ public final class SkillExecutor {
      * Paladin: a dome of light around the caster. Monsters cannot get in (they are pushed out) and
      * enemy projectiles that reach it are stopped. Allies move in and out freely.
      */
-    private static boolean guardianDome(Ctx c) {
+    static boolean guardianDome(Ctx c) {
         Vec3 o = c.p.position();
         double r = c.def.radius();
         int life = ticks(c.def.duration());
@@ -1281,7 +1281,7 @@ public final class SkillExecutor {
     }
 
     /** Paladin: a wave of light rolls forward, hurting enemies and healing allies it passes. */
-    private static boolean holyWave(Ctx c) {
+    static boolean holyWave(Ctx c) {
         Vec3 o = c.p.position();
         Vec3 dir = c.flat();
         double len = c.def.radius();
@@ -1310,7 +1310,7 @@ public final class SkillExecutor {
     }
 
     /** Wizard: winds time forward - every other skill's remaining cooldown is cut. */
-    private static boolean chrono(Ctx c) {
+    static boolean chrono(Ctx c) {
         JobData d = JobManager.data(c.p);
         d.scaleCooldowns(c.level.getGameTime(), 1 - c.def.power(), c.def.id());
         ServerFx.of("chrono", c.p.position()).follow(c.p).send(c.level);
@@ -1320,7 +1320,7 @@ public final class SkillExecutor {
     }
 
     /** Wizard spell: five homing missiles spread over the enemies in front. */
-    private static boolean arcaneMissiles(Ctx c) {
+    static boolean arcaneMissiles(Ctx c) {
         double range = c.def.radius();
         Vec3 look = c.look();
         List<LivingEntity> targets = new ArrayList<>();
@@ -1349,7 +1349,7 @@ public final class SkillExecutor {
     }
 
     /** Wizard spell: a snowstorm over the aimed spot, hurting and slowing for four seconds. */
-    private static boolean blizzard(Ctx c) {
+    static boolean blizzard(Ctx c) {
         Vec3 at = aimPoint(c, 24);
         double r = c.def.radius();
         int life = 80;
@@ -1370,7 +1370,7 @@ public final class SkillExecutor {
     }
 
     /** Wizard spell: a gravity well pulls enemies together, then collapses on them. */
-    private static boolean gravity(Ctx c) {
+    static boolean gravity(Ctx c) {
         Vec3 at = aimPoint(c, 24).add(0, 0.8, 0);
         double r = c.def.radius();
         int pull = 24;
@@ -1401,7 +1401,7 @@ public final class SkillExecutor {
     }
 
     /** Healer: fills the party's hunger and saturation. */
-    private static boolean nourish(Ctx c) {
+    static boolean nourish(Ctx c) {
         List<ServerPlayer> allies = allies(c.p, c.def.radius());
         int food = (int) Math.round(c.def.power());
         for (ServerPlayer a : allies) a.getFoodData().eat(food, 0.8F);
@@ -1412,7 +1412,7 @@ public final class SkillExecutor {
     }
 
     /** Healer: removes every harmful effect and fire from the party, with a little healing. */
-    private static boolean purify(Ctx c) {
+    static boolean purify(Ctx c) {
         List<ServerPlayer> allies = allies(c.p, c.def.radius());
         for (ServerPlayer a : allies) {
             for (MobEffectInstance inst : new ArrayList<>(a.getActiveEffects())) {
@@ -1471,7 +1471,7 @@ public final class SkillExecutor {
     }
 
     /** Assassin: coats the weapon; hits apply the chosen coating. Sneak + key switches the coating. */
-    private static boolean poisonCoat(Ctx c) {
+    static boolean poisonCoat(Ctx c) {
         int mode = JobManager.data(c.p).coatMode();
         c.p.removeEffect(com.jo112ss.rpgmod.registry.ModEffects.POISON_COAT); // a fresh coat replaces the old one outright
         c.p.addEffect(new MobEffectInstance(com.jo112ss.rpgmod.registry.ModEffects.POISON_COAT, ticks(c.def.duration()), mode), c.p);
@@ -1484,7 +1484,7 @@ public final class SkillExecutor {
     }
 
     /** Assassin: a fan of five knives; coated knives carry the coating. */
-    private static boolean throwingKnives(Ctx c) {
+    static boolean throwingKnives(Ctx c) {
         Vec3 look = c.look();
         int coat = activeCoat(c.p);
         for (int i = 0; i < 5; i++) {
@@ -1503,7 +1503,7 @@ public final class SkillExecutor {
     }
 
     /** Assassin: shadows pin the targeted enemy in place. */
-    private static boolean shadowBind(Ctx c) {
+    static boolean shadowBind(Ctx c) {
         LivingEntity target = lookTarget(c, c.def.radius(), 12);
         if (target == null) {
             fail(c.p, "rpgmod.job.no_target");
@@ -1522,7 +1522,7 @@ public final class SkillExecutor {
     }
 
     /** Enchanter: allies' weapons burn - hits set enemies on fire and deal extra damage. */
-    private static boolean fireWeapon(Ctx c) {
+    static boolean fireWeapon(Ctx c) {
         List<ServerPlayer> allies = allies(c.p, c.def.radius());
         int bonus = Math.max(1, (int) Math.round(c.dmg(1)));
         double scale = JobManager.buffDurationScale(c.p, c.def);
@@ -1536,7 +1536,7 @@ public final class SkillExecutor {
     }
 
     /** Enchanter: a binding circle on the aimed spot; enemies inside are slowed and weakened. */
-    private static boolean bindingField(Ctx c) {
+    static boolean bindingField(Ctx c) {
         Vec3 at = aimPoint(c, 20);
         double r = c.def.radius();
         int life = ticks(c.def.duration());
@@ -1555,15 +1555,15 @@ public final class SkillExecutor {
     }
 
     /** Russian roulette chambers fired so far, per player (6 chambers, one live round). */
-    private static final java.util.Map<java.util.UUID, Integer> CHAMBER = new java.util.HashMap<>();
+    static final java.util.Map<java.util.UUID, Integer> CHAMBER = new java.util.HashMap<>();
 
     /**
      * Gambler: six chambers, one live round. Each pull that clicks makes the next one likelier; the
      * bang hits the targeted enemy for five times your attack.
      */
-    private static boolean russianRoulette(Ctx c) {
+    static boolean russianRoulette(Ctx c) {
         int fired = CHAMBER.getOrDefault(c.p.getUUID(), 0);
-        boolean bang = c.p.getRandom().nextInt(6 - fired) == 0;
+        boolean bang = AdvSkills.loaded(c.p) || c.p.getRandom().nextInt(6 - fired) == 0; // loaded die: the live round
         if (!bang && JobManager.luckyReroll(c.p)) bang = c.p.getRandom().nextInt(6 - fired) == 0; // luck: a second pull
         LivingEntity target = lookTarget(c, c.def.radius(), 10);
         if (!bang) {
@@ -1590,10 +1590,11 @@ public final class SkillExecutor {
      * Gambler: throws three cards; each suit does something different on a hit: spade = big damage,
      * heart = damage and heals you, diamond = damage and absorption for you, club = poison and slow.
      */
-    private static boolean cardThrow(Ctx c) {
+    static boolean cardThrow(Ctx c) {
         Vec3 look = c.look();
+        boolean loaded = AdvSkills.loaded(c.p); // joker's loaded die: all spades
         for (int i = 0; i < 3; i++) {
-            int rolled = c.p.getRandom().nextInt(4);
+            int rolled = loaded ? 0 : c.p.getRandom().nextInt(4);
             if (rolled != 0 && JobManager.luckyReroll(c.p)) rolled = c.p.getRandom().nextInt(4); // luck: another go at a spade
             final int suit = rolled;
             Vec3 dir = Fx3.rotY(look, Math.toRadians((i - 1) * 10));
@@ -1625,7 +1626,7 @@ public final class SkillExecutor {
     }
 
     /** Small vector helpers shared with the client maths. */
-    private static final class Fx3 {
+    static final class Fx3 {
         static Vec3 right(Vec3 dir) {
             Vec3 f = new Vec3(dir.x, 0, dir.z);
             if (f.lengthSqr() < 1e-6) return new Vec3(1, 0, 0);
@@ -1641,7 +1642,7 @@ public final class SkillExecutor {
 
     // ================================================================== fallback for skills without their own effect
 
-    private static boolean generic(Ctx c) {
+    static boolean generic(Ctx c) {
         SkillDef def = c.def;
         switch (def.effect()) {
             case SWEEP, WHIRL -> {

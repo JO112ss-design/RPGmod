@@ -43,7 +43,7 @@ public final class SkillFx {
         Entity e = payload.entity() >= 0 ? level.getEntity(payload.entity()) : null;
         P p = new P(payload.fx(), payload.pos(), payload.vec(), payload.a(), payload.b(), payload.color(), e, payload.points());
         try {
-            if (!FxMartial.play(p) && !FxArcane.play(p) && !FxExtra.play(p) && !FxMobs.play(p) && !FxBoss.play(p)) FxMisc.play(p);
+            if (!FxAdvanced.play(p) && !FxMartial.play(p) && !FxArcane.play(p) && !FxExtra.play(p) && !FxMobs.play(p) && !FxBoss.play(p)) FxMisc.play(p);
         } catch (RuntimeException ex) {
             com.jo112ss.rpgmod.RpgMod.LOGGER.error("Skill effect {} failed", p.fx(), ex);
         }

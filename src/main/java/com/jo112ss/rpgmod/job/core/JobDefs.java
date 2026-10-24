@@ -36,13 +36,18 @@ public final class JobDefs {
 
     public static final Map<String, SkillDef> SKILLS = new LinkedHashMap<>();
     /** Charge (hold) time in seconds for spells cast from a staff. */
-    private static final Map<String, Double> CAST_TIMES = Map.of(
-            "magic_bolt", 0.6, "flame_burst", 1.2, "frost_nova", 1.0, "thunder", 1.6, "arcane_shield", 0.8,
-            "arcane_missiles", 0.8, "blizzard", 1.4, "gravity", 1.2);
+    private static final Map<String, Double> CAST_TIMES = Map.ofEntries(
+            Map.entry("magic_bolt", 0.6), Map.entry("flame_burst", 1.2), Map.entry("frost_nova", 1.0), Map.entry("thunder", 1.6),
+            Map.entry("arcane_shield", 0.8), Map.entry("arcane_missiles", 0.8), Map.entry("blizzard", 1.4), Map.entry("gravity", 1.2),
+            // spellmaster: stronger spells that take longer to charge
+            Map.entry("inferno", 2.0), Map.entry("absolute_zero", 2.2), Map.entry("thunderstorm", 2.4), Map.entry("stone_spikes", 1.6),
+            Map.entry("radiant_lance", 1.8), Map.entry("dark_orb", 2.0), Map.entry("tornado", 2.0), Map.entry("starfall", 2.6),
+            // bishop
+            Map.entry("holy_bolt", 0.8), Map.entry("holy_nova", 1.4), Map.entry("light_pillar", 1.8));
     public static final Map<String, Job> JOBS = new LinkedHashMap<>();
 
     /** Jobs whose skills scale with magic attack (staff + own magic) instead of attack (weapon + own). */
-    public static final java.util.Set<String> MAGIC_JOBS = java.util.Set.of("wizard", "healer", "enchanter");
+    public static final java.util.Set<String> MAGIC_JOBS = java.util.Set.of("wizard", "healer", "enchanter", "spellmaster", "runemaster", "bishop");
 
     /** Spells, and every skill of the caster jobs, use magic attack. */
     public static boolean isMagic(SkillDef def) {
@@ -54,10 +59,14 @@ public final class JobDefs {
         if (def.power() <= 0) return null;
         return switch (def.effect()) {
             case HEAL -> "heal";
-            case SWEEP, WHIRL, DASH, SHOT, DEBUFF, BOLT, LIGHTNING -> "damage";
-            default -> null;
+            case SWEEP, WHIRL, DASH, SHOT, DEBUFF, BOLT, LIGHTNING -> NO_POWER_LINE.contains(def.id()) ? null : "damage";
+            default -> DAMAGE_TOO.contains(def.id()) ? "damage" : null;
         };
     }
+
+    /** Skills whose power is not a damage ratio although their effect type usually is (and the reverse). */
+    private static final java.util.Set<String> NO_POWER_LINE = java.util.Set.of();
+    private static final java.util.Set<String> DAMAGE_TOO = java.util.Set.of("decoy", "reprisal", "grand_rune");
 
     /** Mana every job starts with before job / level / panel bonuses. */
     public static final double BASE_MANA = 100;
@@ -197,27 +206,119 @@ public final class JobDefs {
     public static final Map<String, String> BASE_OF = new LinkedHashMap<>();
 
     static {
-        // growth per advanced level comes on top of the base job's own growth, which keeps going
+        // growth per advanced level comes on top of the base job's own growth, which keeps going.
+        // Each advanced job learns five skills and one ultimate on its own panel (the spellmaster
+        // also eight spells, the bishop's attacks are spells cast from the staff).
+        SkillKind A = SkillKind.ACTIVE, U = SkillKind.ULTIMATE, S = SkillKind.SPELL;
+        // ---- Berserker: all-out damage, paid for with health
         advanced("fighter", "berserker", 0xB0201C, "狂", List.of(JobStat.ATTACK_DAMAGE, JobStat.CRIT_CHANCE, JobStat.ATTACK_SPEED, JobStat.MAX_HEALTH),
-                stats(JobStat.ATTACK_DAMAGE, 0.05, JobStat.CRIT_CHANCE, 0.05));
+                stats(JobStat.ATTACK_DAMAGE, 0.05, JobStat.CRIT_CHANCE, 0.05),
+                List.of(
+                        skill("blood_frenzy", A, SkillEffect.BUFF, 25, 15, 0.15, 0, 12, List.of("minecraft:strength", "minecraft:haste"), 1, "血"),
+                        skill("decapitate", A, SkillEffect.SWEEP, 8, 18, 4.0, 4, 0, List.of(), 0, "断"),
+                        skill("triple_whirl", A, SkillEffect.WHIRL, 12, 22, 1.8, 5, 0, List.of(), 0, "渦"),
+                        skill("reckless_charge", A, SkillEffect.DASH, 10, 15, 3.0, 0, 4, List.of(), 0, "捨"),
+                        skill("terror_roar", A, SkillEffect.DEBUFF, 20, 20, 0, 8, 10, List.of("rpgmod:attack_down", "minecraft:slowness"), 1, "咆")),
+                List.of(
+                        skill("asura", U, SkillEffect.BUFF, 100, 40, 0, 0, 15, List.of(), 0, "修")),
+                List.of());
+        // ---- Guardian: stands in front and takes the blows for everyone
         advanced("paladin", "guardian", 0xC8A030, "護", List.of(JobStat.ARMOR, JobStat.MAX_HEALTH, JobStat.ATTACK_DAMAGE),
-                stats(JobStat.ARMOR, 0.1, JobStat.MAX_HEALTH, 0.1));
+                stats(JobStat.ARMOR, 0.1, JobStat.MAX_HEALTH, 0.1),
+                List.of(
+                        skill("iron_wall", A, SkillEffect.BUFF, 30, 20, 0, 0, 8, List.of(), 0, "壁"),
+                        skill("provoke_shield", A, SkillEffect.BUFF, 18, 15, 0, 12, 10, List.of(), 1, "挑"),
+                        skill("cover", A, SkillEffect.BUFF, 25, 20, 0, 10, 10, List.of(), 0, "庇"),
+                        skill("shield_wall", A, SkillEffect.BUFF, 25, 22, 0, 4, 8, List.of(), 0, "垣"),
+                        skill("reprisal", A, SkillEffect.BUFF, 20, 15, 1.5, 0, 8, List.of(), 0, "返")),
+                List.of(
+                        skill("bastion", U, SkillEffect.BUFF, 120, 42, 0, 10, 12, List.of("minecraft:resistance", "minecraft:absorption"), 2, "塞")),
+                List.of());
+        // ---- Sharpshooter: long range, heavy single shots
         advanced("ranger", "sharpshooter", 0x3E9E4A, "狙", List.of(JobStat.ATTACK_DAMAGE, JobStat.CRIT_CHANCE, JobStat.MOVEMENT_SPEED),
-                stats(JobStat.ATTACK_DAMAGE, 0.05, JobStat.CRIT_CHANCE, 0.05));
+                stats(JobStat.ATTACK_DAMAGE, 0.05, JobStat.CRIT_CHANCE, 0.05),
+                List.of(
+                        skill("snipe", A, SkillEffect.SHOT, 10, 18, 6.0, 64, 0, List.of(), 0, "狙"),
+                        skill("rapid_fire", A, SkillEffect.SHOT, 9, 15, 0.9, 0, 0, List.of(), 0, "速"),
+                        skill("weak_point", A, SkillEffect.DEBUFF, 18, 15, 0, 32, 10, List.of("minecraft:glowing"), 0, "看"),
+                        skill("ricochet", A, SkillEffect.BOLT, 8, 15, 2.2, 28, 0, List.of(), 0, "跳"),
+                        skill("roll", A, SkillEffect.BACKSTEP, 8, 10, 1.6, 0, 6, List.of(), 0, "転")),
+                List.of(
+                        skill("dead_eye", U, SkillEffect.SHOT, 100, 35, 3.5, 40, 0, List.of(), 0, "眼")),
+                List.of());
+        // ---- Spellmaster: the strongest spells, slow to charge; two at once
         advanced("wizard", "spellmaster", 0x5A3FD8, "極", List.of(JobStat.MAGIC_ATTACK, JobStat.CAST_SPEED, JobStat.MAX_MANA, JobStat.MANA_REGEN),
-                stats(JobStat.MAGIC_ATTACK, 0.05, JobStat.MAX_MANA, 1));
+                stats(JobStat.MAGIC_ATTACK, 0.05, JobStat.MAX_MANA, 1),
+                List.of(
+                        skill("double_cast", A, SkillEffect.BUFF, 30, 30, 0, 0, 15, List.of(), 1, "重"),
+                        skill("mana_overload", A, SkillEffect.BUFF, 45, 0, 0, 0, 12, List.of(), 0, "暴"),
+                        skill("mana_well", A, SkillEffect.MANA, 40, 0, 6, 5, 8, List.of(), 0, "泉"),
+                        skill("phase_shift", A, SkillEffect.BLINK, 12, 20, 0, 14, 0, List.of(), 0, "位"),
+                        skill("arcane_seal", A, SkillEffect.DEBUFF, 22, 30, 0, 6, 8, List.of("minecraft:slowness", "rpgmod:exposed"), 0, "封")),
+                List.of(
+                        skill("armageddon", U, SkillEffect.WHIRL, 120, 140, 4.0, 12, 5, List.of(), 0, "滅")),
+                List.of(
+                        skill("inferno", S, SkillEffect.WHIRL, 12, 50, 2.5, 4.5, 4, List.of(), 0, "獄"),
+                        skill("absolute_zero", S, SkillEffect.DEBUFF, 16, 55, 3.5, 7, 3, List.of(), 0, "零"),
+                        skill("thunderstorm", S, SkillEffect.LIGHTNING, 18, 60, 2.0, 8, 0, List.of(), 0, "霆"),
+                        skill("stone_spikes", S, SkillEffect.SWEEP, 10, 40, 3.5, 14, 0, List.of(), 0, "岩"),
+                        skill("radiant_lance", S, SkillEffect.BOLT, 10, 45, 4.5, 32, 0, List.of(), 0, "槍"),
+                        skill("dark_orb", S, SkillEffect.BOLT, 14, 50, 1.0, 20, 0, List.of(), 0, "闇"),
+                        skill("tornado", S, SkillEffect.WHIRL, 15, 50, 0.6, 4, 4, List.of(), 0, "竜"),
+                        skill("starfall", S, SkillEffect.WHIRL, 20, 70, 0.9, 6, 3, List.of(), 0, "星")));
+        // ---- Runemaster: runes on the ground, wide buffs and debuffs, handy blessings
         advanced("enchanter", "runemaster", 0xC0508A, "刻", List.of(JobStat.MAGIC_ATTACK, JobStat.COOLDOWN_REDUCTION, JobStat.MAX_MANA, JobStat.SKILL_POWER),
-                stats(JobStat.MAGIC_ATTACK, 0.04, JobStat.MAX_MANA, 0.5));
+                stats(JobStat.MAGIC_ATTACK, 0.04, JobStat.MAX_MANA, 0.5),
+                List.of(
+                        skill("earth_rune", A, SkillEffect.DEBUFF, 20, 35, 0.3, 6, 8, List.of(), 1, "地"),
+                        skill("ward_rune", A, SkillEffect.BUFF, 30, 40, 0, 5, 10, List.of(), 0, "守"),
+                        skill("gale_rune", A, SkillEffect.BUFF, 25, 30, 0, 10, 20, List.of("minecraft:speed", "minecraft:jump_boost"), 1, "疾"),
+                        skill("night_sight", A, SkillEffect.BUFF, 60, 30, 0, 12, 300, List.of("minecraft:night_vision", "minecraft:water_breathing"), 0, "視"),
+                        skill("feather_rune", A, SkillEffect.BUFF, 60, 30, 0, 12, 120, List.of("rpgmod:feather"), 0, "羽")),
+                List.of(
+                        skill("grand_rune", U, SkillEffect.BUFF, 120, 100, 0.6, 12, 15, List.of(), 0, "環")),
+                List.of());
+        // ---- Joker: tricks - swaps, decoys and a loaded die
         advanced("gambler", "joker", 0x7A3FB0, "奇", List.of(JobStat.LUCK, JobStat.CRIT_CHANCE, JobStat.COOLDOWN_REDUCTION, JobStat.ATTACK_DAMAGE),
-                stats(JobStat.LUCK, 0.02, JobStat.CRIT_CHANCE, 0.05, JobStat.ATTACK_DAMAGE, 0.03));
+                stats(JobStat.LUCK, 0.02, JobStat.CRIT_CHANCE, 0.05, JobStat.ATTACK_DAMAGE, 0.03),
+                List.of(
+                        skill("switcheroo", A, SkillEffect.BLINK, 12, 15, 0, 24, 3, List.of(), 0, "換"),
+                        skill("decoy", A, SkillEffect.BUFF, 25, 25, 3.0, 4, 5, List.of(), 0, "分"),
+                        skill("loaded_dice", A, SkillEffect.BUFF, 40, 20, 0, 0, 30, List.of(), 0, "詐"),
+                        skill("card_storm", A, SkillEffect.WHIRL, 14, 25, 0.7, 5, 3, List.of(), 0, "嵐"),
+                        skill("vanish", A, SkillEffect.STEALTH, 18, 20, 0, 16, 3, List.of(), 0, "消")),
+                List.of(
+                        skill("wildcard", U, SkillEffect.GAMBLE, 90, 40, 0, 0, 0, List.of(), 0, "J")),
+                List.of());
+        // ---- Nightblade: two blades and the dark
         advanced("assassin", "nightblade", 0x2E3A6E, "夜", List.of(JobStat.ATTACK_DAMAGE, JobStat.CRIT_CHANCE, JobStat.MOVEMENT_SPEED, JobStat.ATTACK_SPEED),
-                stats(JobStat.ATTACK_DAMAGE, 0.04, JobStat.CRIT_CHANCE, 0.05));
+                stats(JobStat.ATTACK_DAMAGE, 0.04, JobStat.CRIT_CHANCE, 0.05),
+                List.of(
+                        skill("shadow_run", A, SkillEffect.DASH, 8, 15, 2.5, 9, 0, List.of(), 0, "走"),
+                        skill("flurry", A, SkillEffect.SWEEP, 10, 18, 0.8, 4, 0, List.of(), 0, "乱"),
+                        skill("twin_venom", A, SkillEffect.BUFF, 25, 15, 0, 0, 15, List.of(), 0, "双"),
+                        skill("shadow_stitch", A, SkillEffect.DEBUFF, 16, 20, 1.5, 20, 3, List.of(), 0, "縫"),
+                        skill("moon_shadow", A, SkillEffect.SWEEP, 12, 22, 3.5, 16, 0, List.of(), 0, "月")),
+                List.of(
+                        skill("yaksha", U, SkillEffect.BUFF, 100, 35, 0, 0, 12, List.of("minecraft:speed"), 0, "叉")),
+                List.of());
+        // ---- Bishop: holy magic from the staff, and miracles
         advanced("healer", "bishop", 0x3A8FD0, "聖", List.of(JobStat.MAGIC_ATTACK, JobStat.MAX_MANA, JobStat.SKILL_POWER, JobStat.MAX_HEALTH),
-                stats(JobStat.MAGIC_ATTACK, 0.04, JobStat.MAX_MANA, 0.75));
+                stats(JobStat.MAGIC_ATTACK, 0.04, JobStat.MAX_MANA, 0.75),
+                List.of(
+                        skill("revive_prayer", A, SkillEffect.HEAL, 120, 60, 1.0, 12, 0, List.of(), 0, "蘇"),
+                        skill("divine_domain", A, SkillEffect.BUFF, 45, 50, 0, 6, 10, List.of(), 0, "神")),
+                List.of(
+                        skill("great_miracle", U, SkillEffect.HEAL, 150, 120, 0, 30, 10, List.of("minecraft:resistance", "minecraft:regeneration"), 1, "跡")),
+                List.of(
+                        skill("holy_bolt", S, SkillEffect.BOLT, 0.8, 8, 1.6, 28, 0, List.of(), 0, "聖"),
+                        skill("holy_nova", S, SkillEffect.WHIRL, 10, 40, 3.0, 7, 0, List.of(), 0, "輝"),
+                        skill("light_pillar", S, SkillEffect.WHIRL, 14, 50, 1.2, 3, 0, List.of(), 0, "柱")));
     }
 
-    private static void advanced(String base, String id, int color, String glyph, List<JobStat> panelStats, Map<JobStat, Double> perLevel) {
-        job(id, color, glyph, panelStats, Map.of(), perLevel, List.of(), List.of(), List.of());
+    private static void advanced(String base, String id, int color, String glyph, List<JobStat> panelStats, Map<JobStat, Double> perLevel,
+                                 List<SkillDef> actives, List<SkillDef> ultimates, List<SkillDef> spells) {
+        job(id, color, glyph, panelStats, Map.of(), perLevel, actives, ultimates, spells);
         ADVANCED.put(base, id);
         BASE_OF.put(id, base);
     }

@@ -109,7 +109,7 @@ public final class SkillPanel {
     /** Panel layout version; bump when node ids change so saved progress is refunded. */
     public static final int VERSION = 5;
     /** Layout version of the advanced panels (bump when their cells change). */
-    public static final int ADV_VERSION = 1;
+    public static final int ADV_VERSION = 2;
     public static final int RADIUS = 7;
 
     /** Stat strength by ring: inner rings x1, middle x1.5, outer x2. */

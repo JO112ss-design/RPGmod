@@ -90,7 +90,7 @@ public class JobScreen extends Screen {
     private List<Tab> tabs() {
         List<Tab> t = new ArrayList<>(List.of(Tab.STATUS, Tab.PANEL, Tab.SKILLS));
         JobData d = JobClient.data();
-        if (d.hasJob() && d.jobDef().usesSpells()) t.add(Tab.SPELLS);
+        if (d.castsSpells()) t.add(Tab.SPELLS);
         return t;
     }
 
@@ -219,6 +219,7 @@ public class JobScreen extends Screen {
                 }
             }
             case SKILLS -> {
+                if (clickListToggle(d, mx, my)) return true;
                 int[] order = slotOrder(d);
                 for (int i = 0; i < order.length; i++) {
                     if (in(mx, my, slotX(i), top + 50, 34, 34)) {
@@ -235,6 +236,7 @@ public class JobScreen extends Screen {
                 }
             }
             case SPELLS -> {
+                if (clickListToggle(d, mx, my)) return true;
                 for (int s = 0; s < SpellLoadout.SLOTS; s++) {
                     if (in(mx, my, spellSlotX(s), top + 50, 34, 34)) {
                         selectedSpellSlot = s;
@@ -658,19 +660,45 @@ public class JobScreen extends Screen {
         return d.isAdvanced() ? new int[] {0, 1, 3, 2} : new int[] {0, 1, 2};
     }
 
-    /** Every skill of the job (actives then ultimates), learnt or not. */
+    /** Every skill of the job shown (actives then ultimates), learnt or not: the base or the advanced job's. */
     private List<String> skillList(JobData d) {
-        List<String> out = new ArrayList<>(d.jobDef().actives());
-        out.addAll(d.jobDef().ultimates());
-        if (d.isAdvanced()) {
-            out.addAll(d.advancedDef().actives());
-            out.addAll(d.advancedDef().ultimates());
-        }
+        JobDefs.Job j = d.isAdvanced() && advView ? d.advancedDef() : d.jobDef();
+        List<String> out = new ArrayList<>(j.actives());
+        out.addAll(j.ultimates());
         return out;
     }
 
     private List<String> spellList(JobData d) {
-        return new ArrayList<>(d.jobDef().spells());
+        boolean adv = d.isAdvanced() && d.advancedDef().usesSpells() && (advView || !d.jobDef().usesSpells());
+        return new ArrayList<>((adv ? d.advancedDef() : d.jobDef()).spells());
+    }
+
+    private static final int LIST_TOGGLE_H = 13;
+
+    /** Whether the cards list can switch between the base and the advanced job (both have some). */
+    private boolean listToggles(JobData d) {
+        if (!d.isAdvanced()) return false;
+        return tab != Tab.SPELLS || (d.jobDef().usesSpells() && d.advancedDef().usesSpells());
+    }
+
+    private boolean clickListToggle(JobData d, double mx, double my) {
+        if (!listToggles(d) || !in(mx, my, left + 216, top + 84, W - 224, LIST_TOGGLE_H)) return false;
+        advView = !advView;
+        lastUnlocked = new HashSet<>(d.unlocked(advView));
+        unlockAnim.clear();
+        return true;
+    }
+
+    /** "Showing: <job>  (switch)" above the detail column. */
+    private void drawListToggle(GuiGraphicsExtractor g, JobData d, int mouseX, int mouseY) {
+        if (!listToggles(d)) return;
+        int x = left + 216, y = top + 84, w = W - 224;
+        boolean hov = in(mouseX, mouseY, x, y, w, LIST_TOGGLE_H);
+        JobDefs.Job shown = advView ? d.advancedDef() : d.jobDef();
+        g.fill(x, y, x + w, y + LIST_TOGGLE_H, hov ? Ui.EDGE_LIGHT : Ui.EDGE);
+        g.fill(x + 1, y + 1, x + w - 1, y + LIST_TOGGLE_H - 1, 0xFF181C26);
+        Component label = Component.translatable("rpgmod.jobscreen.list_showing", Component.translatable("rpgmod.job." + shown.id()).withColor(shown.color()));
+        g.centeredText(font, font.substrByWidth(label, w - 6).getString(), x + w / 2, y + 3, Ui.TEXT);
     }
 
     private int cardX(int i) {
@@ -703,6 +731,7 @@ public class JobScreen extends Screen {
             if (in(mouseX, mouseY, x, y, 34, 34) && def != null) hoveredSkill = def.id();
         }
         g.textWithWordWrap(font, Component.translatable("rpgmod.jobscreen.loadout_hint"), left + 222, top + 40, W - 230, Ui.DIM, false);
+        drawListToggle(g, d, mouseX, mouseY);
         drawCards(g, d, skillList(d), mouseX, mouseY, true);
         drawDetailColumn(g, d);
     }
@@ -767,6 +796,7 @@ public class JobScreen extends Screen {
         }
         g.textWithWordWrap(font, Component.translatable("rpgmod.jobscreen.spell_hint", JobKeys.SPELL_WHEEL.getTranslatedKeyMessage()),
                 left + 222, top + 40, W - 230, Ui.DIM, false);
+        drawListToggle(g, d, mouseX, mouseY);
         drawCards(g, d, spellList(d), mouseX, mouseY, false);
         drawDetailColumn(g, d);
     }
