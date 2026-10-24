@@ -72,15 +72,17 @@ public final class CreeperLeapGoal extends Goal {
     public void start() {
         LivingEntity t = target();
         if (t == null || !(creeper.level() instanceof ServerLevel sl)) return;
-        // a ballistic arc whose top clears both ends by 4 blocks, landing at the player's feet
+        // an arc whose top clears both ends by 4 blocks, landing at the player's feet. Worked out with
+        // the game's own air physics (gravity 0.08 then x0.98 vertically, x0.91 horizontally per tick)
         Vec3 from = creeper.position(), to = t.position();
-        double apex = Math.max(from.y, to.y) + 4;
-        double vy = Math.sqrt(2 * G * (apex - from.y));
-        double tUp = vy / G, tDown = Math.sqrt(2 * (apex - to.y) / G);
-        double flight = tUp + tDown;
-        double vx = (to.x - from.x) / flight * 1.1, vz = (to.z - from.z) / flight * 1.1; // a little for air drag
+        double rise = Math.max(0, to.y - from.y) + 4;
+        double vy = 0.5;
+        while (vy < 3 && apexOf(vy) < rise) vy += 0.02;
+        int flight = landingTick(vy, to.y - from.y);
+        double carry = (1 - Math.pow(0.91, flight)) / (1 - 0.91); // blocks covered per unit of starting speed
+        double vx = (to.x - from.x) / carry, vz = (to.z - from.z) / carry;
         creeper.getNavigation().stop();
-        creeper.setDeltaMovement(vx, vy * 1.04, vz);
+        creeper.setDeltaMovement(vx, vy, vz);
         creeper.needsSync = true;
         creeper.resetFallDistance();
         airborne = 0;
@@ -90,6 +92,28 @@ public final class CreeperLeapGoal extends Goal {
         if (com.jo112ss.rpgmod.devtest.AutoTestServer.ENABLED) {
             com.jo112ss.rpgmod.RpgMod.LOGGER.info("[AUTOTEST] creeper leap: from {} to {} ({} blocks up)", from, to, String.format("%.1f", to.y - from.y));
         }
+    }
+
+    /** Highest point reached with a starting upward speed {@code vy}. */
+    private static double apexOf(double vy) {
+        double y = 0, best = 0;
+        for (int i = 0; i < 200 && vy > 0; i++) {
+            y += vy;
+            best = Math.max(best, y);
+            vy = (vy - G) * 0.98;
+        }
+        return best;
+    }
+
+    /** Tick at which the arc comes back down to height {@code dy}. */
+    private static int landingTick(double vy, double dy) {
+        double y = 0;
+        for (int i = 1; i < 200; i++) {
+            y += vy;
+            vy = (vy - G) * 0.98;
+            if (vy < 0 && y <= dy) return i;
+        }
+        return 200;
     }
 
     @Override
