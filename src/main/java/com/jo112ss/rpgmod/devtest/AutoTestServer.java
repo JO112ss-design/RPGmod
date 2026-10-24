@@ -337,6 +337,11 @@ public final class AutoTestServer {
         if (swapCheckIn > 0 && --swapCheckIn == 0) {
             swapCheck();
             potionCheck();
+            // iron chest (+3) + diamond helmet (+6) tier bonus, K 80
+            RpgMod.LOGGER.info("[AUTOTEST] player armour: level {} armour {} toughness {} defence {} reduction {}",
+                    com.jo112ss.rpgmod.job.JobManager.data(player).level(), com.jo112ss.rpgmod.mob.Defense.armor(player),
+                    com.jo112ss.rpgmod.mob.Defense.toughness(player), com.jo112ss.rpgmod.mob.Defense.defence(player),
+                    String.format("%.3f", com.jo112ss.rpgmod.mob.Defense.reduction(player)));
         }
         if (jobSetup) {
             jobSetup = false;

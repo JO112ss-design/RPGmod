@@ -30,7 +30,7 @@ public final class ModItems {
                     });
                 } else {
                     item = ModRegistries.ITEMS.registerItem(name, type == WeaponType.STAFF ? RpgStaffItem::new : Item::new, p -> {
-                        // the material's own steps (copper +1, then +2 a tier) instead of vanilla's tool bonus
+                        // the material's own steps (see WeaponMaterial.meleeBonus) instead of vanilla's tool bonus
                         p = p.sword(mat.tool, type.attackDamage + mat.meleeBonus() - mat.tool.attackDamageBonus(), type.attackSpeed);
                         return mat == WeaponMaterial.NETHERITE ? p.fireResistant() : p;
                     });
