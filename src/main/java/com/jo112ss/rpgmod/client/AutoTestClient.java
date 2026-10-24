@@ -226,7 +226,7 @@ public final class AutoTestClient {
             if ("all".equals(System.getProperty("rpgmod.showcase"))) showSkills.addAll(com.jo112ss.rpgmod.job.core.JobDefs.SKILLS.keySet());
             // enemy work: levels, plates and damage numbers (skills were checked in earlier runs)
             // blood moon boss (the monster scenes and skills were checked in earlier runs)
-            showSkills.addAll(java.util.List.of("mob:downed"));
+            showSkills.addAll(java.util.List.of("purify", "sanctuary", "judgement"));
             mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK);
             com.jo112ss.rpgmod.client.mob.MobOverlay.testSelf = true;
             mc.options.particles().set(net.minecraft.server.level.ParticleStatus.ALL);
