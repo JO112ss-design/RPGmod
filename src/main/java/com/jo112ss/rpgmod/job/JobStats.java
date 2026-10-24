@@ -26,7 +26,8 @@ public final class JobStats {
         JobDefs.Job job = data.jobDef();
         if (job == null) return m;
         job.base().forEach((s, v) -> m.merge(s, v, Double::sum));
-        job.perLevel().forEach((s, v) -> m.merge(s, v * (data.level() - 1), Double::sum));
+        // health grows with the base job only up to Lv100; past it the advanced job's own growth takes over
+        job.perLevel().forEach((s, v) -> m.merge(s, v * ((s == JobStat.MAX_HEALTH ? Math.min(data.level(), 100) : data.level()) - 1), Double::sum));
         SkillPanel panel = data.panel();
         for (int id : data.unlocked()) {
             SkillPanel.Node n = panel.node(id);

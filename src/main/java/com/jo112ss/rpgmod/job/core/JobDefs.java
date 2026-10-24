@@ -80,7 +80,7 @@ public final class JobDefs {
     static {
         // ---- Fighter: heavy melee
         job("fighter", 0xD9534F, "闘", List.of(JobStat.MAX_HEALTH, JobStat.ATTACK_DAMAGE, JobStat.ARMOR),
-                stats(JobStat.MAX_HEALTH, 4, JobStat.ATTACK_DAMAGE, 2), stats(JobStat.MAX_HEALTH, hpTo(40, 4), JobStat.ATTACK_DAMAGE, 0.08 + 4 / 99.0, JobStat.ARMOR, LEVEL_ARMOR),
+                stats(JobStat.MAX_HEALTH, 4, JobStat.ATTACK_DAMAGE, 2), stats(JobStat.MAX_HEALTH, hpTo(60, 4), JobStat.ATTACK_DAMAGE, 0.08 + 4 / 99.0, JobStat.ARMOR, LEVEL_ARMOR),
                 List.of(
                         skill("power_slash", SkillKind.ACTIVE, SkillEffect.SWEEP, 6, 11, 3.0, 4.5, 0, List.of(), 0, "斬"),
                         skill("charge", SkillKind.ACTIVE, SkillEffect.DASH, 8, 7, 2.0, 0, 0, List.of(), 0, "突"),
@@ -189,7 +189,7 @@ public final class JobDefs {
                 List.of());
         // ---- Gambler: random results
         job("gambler", 0x1ABC9C, "賭", List.of(JobStat.CRIT_CHANCE, JobStat.ATTACK_DAMAGE, JobStat.LUCK, JobStat.COOLDOWN_REDUCTION),
-                stats(JobStat.LUCK, 2, JobStat.CRIT_CHANCE, 5), stats(JobStat.LUCK, 0.025, JobStat.CRIT_CHANCE, 0.05, JobStat.ATTACK_DAMAGE, 0.06 + 4 / 99.0, JobStat.MAX_HEALTH, hpTo(40, 0), JobStat.ARMOR, LEVEL_ARMOR),
+                stats(JobStat.LUCK, 2, JobStat.CRIT_CHANCE, 5), stats(JobStat.LUCK, 0.025, JobStat.CRIT_CHANCE, 0.05, JobStat.ATTACK_DAMAGE, 0.06 + 4 / 99.0, JobStat.MAX_HEALTH, hpTo(60, 0), JobStat.ARMOR, LEVEL_ARMOR),
                 List.of(
                         skill("coin_toss", SkillKind.ACTIVE, SkillEffect.GAMBLE, 8, 7, 2, 6, 6, List.of(), 0, "銭"),
                         skill("lucky_shot", SkillKind.ACTIVE, SkillEffect.SHOT, 6, 7, 2.0, 0, 0, List.of(), 0, "幸"),
@@ -210,13 +210,15 @@ public final class JobDefs {
     public static final Map<String, String> BASE_OF = new LinkedHashMap<>();
 
     static {
-        // growth per advanced level comes on top of the base job's own growth, which keeps going.
+        // growth per advanced level comes on top of the base job's own growth, which keeps going
+        // (except health: the base job's stops at Lv100, then only the advanced job's below adds -
+        // Lv199: guardian 100, berserker 80, spellmaster 50, the others stay at 60).
         // Each advanced job learns five skills and one ultimate on its own panel (the spellmaster
         // also eight spells, the bishop's attacks are spells cast from the staff).
         SkillKind A = SkillKind.ACTIVE, U = SkillKind.ULTIMATE, S = SkillKind.SPELL;
         // ---- Berserker: all-out damage, paid for with health
         advanced("fighter", "berserker", 0xB0201C, "狂", List.of(JobStat.ATTACK_DAMAGE, JobStat.CRIT_CHANCE, JobStat.ATTACK_SPEED, JobStat.MAX_HEALTH),
-                stats(JobStat.ATTACK_DAMAGE, 0.05, JobStat.CRIT_CHANCE, 0.05),
+                stats(JobStat.ATTACK_DAMAGE, 0.05, JobStat.CRIT_CHANCE, 0.05, JobStat.MAX_HEALTH, 0.2),
                 List.of(
                         skill("blood_frenzy", A, SkillEffect.BUFF, 25, 15, 0.15, 0, 12, List.of("minecraft:strength", "minecraft:haste"), 1, "血"),
                         skill("decapitate", A, SkillEffect.SWEEP, 8, 18, 4.0, 4, 0, List.of(), 0, "断"),
@@ -228,7 +230,7 @@ public final class JobDefs {
                 List.of());
         // ---- Guardian: stands in front and takes the blows for everyone
         advanced("paladin", "guardian", 0xC8A030, "護", List.of(JobStat.ARMOR, JobStat.MAX_HEALTH, JobStat.ATTACK_DAMAGE),
-                stats(JobStat.ARMOR, 0.1, JobStat.MAX_HEALTH, 0.1),
+                stats(JobStat.ARMOR, 0.1, JobStat.MAX_HEALTH, 0.4),
                 List.of(
                         skill("iron_wall", A, SkillEffect.BUFF, 30, 20, 0, 0, 8, List.of(), 0, "壁"),
                         skill("provoke_shield", A, SkillEffect.BUFF, 18, 15, 0, 12, 10, List.of(), 1, "挑"),
@@ -252,7 +254,7 @@ public final class JobDefs {
                 List.of());
         // ---- Spellmaster: the strongest spells, slow to charge; two at once
         advanced("wizard", "spellmaster", 0x5A3FD8, "極", List.of(JobStat.MAGIC_ATTACK, JobStat.CAST_SPEED, JobStat.MAX_MANA, JobStat.MANA_REGEN),
-                stats(JobStat.MAGIC_ATTACK, 0.05, JobStat.MAX_MANA, 1),
+                stats(JobStat.MAGIC_ATTACK, 0.05, JobStat.MAX_MANA, 1, JobStat.MAX_HEALTH, 0.1),
                 List.of(
                         skill("double_cast", A, SkillEffect.BUFF, 30, 30, 0, 0, 15, List.of(), 1, "重"),
                         skill("mana_overload", A, SkillEffect.BUFF, 45, 0, 0, 0, 12, List.of(), 0, "暴"),
