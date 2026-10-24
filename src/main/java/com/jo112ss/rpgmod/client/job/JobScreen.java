@@ -237,8 +237,8 @@ public class JobScreen extends Screen {
             }
             case SPELLS -> {
                 if (clickListToggle(d, mx, my)) return true;
-                for (int s = 0; s < SpellLoadout.SLOTS; s++) {
-                    if (in(mx, my, spellSlotX(s), top + 50, 34, 34)) {
+                for (int s = 0; s < d.spellSlots(); s++) {
+                    if (in(mx, my, spellSlotX(s), top + 50, spellSlotSize(), spellSlotSize())) {
                         selectedSpellSlot = s;
                         return true;
                     }
@@ -246,7 +246,7 @@ public class JobScreen extends Screen {
                 String clicked = skillCardAt(mx, my, spellList(d));
                 if (clicked != null && d.knows(clicked) && JobClient.holdingStaff()) {
                     JobClient.send(JobActionPayload.SET_SPELL, selectedSpellSlot, clicked);
-                    selectedSpellSlot = (selectedSpellSlot + 1) % SpellLoadout.SLOTS;
+                    selectedSpellSlot = (selectedSpellSlot + 1) % d.spellSlots();
                     return true;
                 }
             }
@@ -630,7 +630,7 @@ public class JobScreen extends Screen {
         g.text(font, Component.translatable("rpgmod.jobscreen.cd", fmt(def.cooldown())), x, y, Ui.DIM, false);
         g.text(font, Component.translatable("rpgmod.jobscreen.mp", fmt(def.mana())), x + w / 2, y, Ui.MANA, false);
         y += 12;
-        if (def.castTime() > 0) {
+        if (def.castTime() > 0 && JobClient.data().castable(def)) {
             g.text(font, Component.translatable("rpgmod.jobscreen.cast", fmt(def.castTime())), x, y, 0xFFB09CFF, false);
             y += 12;
         }
@@ -670,7 +670,10 @@ public class JobScreen extends Screen {
 
     private List<String> spellList(JobData d) {
         boolean adv = d.isAdvanced() && d.advancedDef().usesSpells() && (advView || !d.jobDef().usesSpells());
-        return new ArrayList<>((adv ? d.advancedDef() : d.jobDef()).spells());
+        List<String> out = new ArrayList<>((adv ? d.advancedDef() : d.jobDef()).spells());
+        // the bishop casts the healer's heals from the staff too
+        if (adv && d.isAdvancedAs("bishop")) out.addAll(List.of("heal", "group_heal", "purify"));
+        return out;
     }
 
     private static final int LIST_TOGGLE_H = 13;
@@ -774,7 +777,11 @@ public class JobScreen extends Screen {
     // ---- spells
 
     private int spellSlotX(int s) {
-        return left + 16 + s * 50;
+        return left + 16 + s * (JobClient.data().spellSlots() > SpellLoadout.BASE_SLOTS ? 22 : 50);
+    }
+
+    private int spellSlotSize() {
+        return JobClient.data().spellSlots() > SpellLoadout.BASE_SLOTS ? 20 : 34;
     }
 
     private void drawSpells(GuiGraphicsExtractor g, JobData d, int mouseX, int mouseY) {
@@ -784,14 +791,22 @@ public class JobScreen extends Screen {
         } else {
             ItemStack staff = minecraft.player.getMainHandItem();
             SpellLoadout l = staff.getOrDefault(ModRegistries.SPELL_LOADOUT.get(), SpellLoadout.EMPTY);
-            for (int s = 0; s < SpellLoadout.SLOTS; s++) {
+            int size = spellSlotSize();
+            boolean twoHands = d.isAdvancedAs("spellmaster");
+            for (int s = 0; s < d.spellSlots(); s++) {
                 int x = spellSlotX(s), y = top + 50;
                 boolean sel = s == selectedSpellSlot;
-                g.fill(x - 2, y - 2, x + 36, y + 36, sel ? Ui.GOLD : Ui.EDGE);
+                g.fill(x - 2, y - 2, x + size + 2, y + size + 2, sel ? Ui.GOLD : Ui.EDGE);
                 SkillDef def = JobDefs.skill(l.spell(s));
-                Ui.skillIcon(g, font, x, y, 34, def, false);
-                g.text(font, (s + 1) + (l.selected() == s ? " ●" : ""), x, y + 38, l.selected() == s ? Ui.argb(0xB09CFF) : Ui.DIM, false);
-                if (in(mouseX, mouseY, x, y, 34, 34) && def != null) hoveredSkill = def.id();
+                Ui.skillIcon(g, font, x, y, size, def, false);
+                // right-click spell (purple dot) and, for the spellmaster, left-click spell (blue diamond)
+                String mark = (l.selected() == s ? "●" : "") + (twoHands && l.selectedLeft() == s ? "◆" : "");
+                int col = l.selected() == s ? Ui.argb(0xB09CFF) : twoHands && l.selectedLeft() == s ? Ui.argb(0x7FD8FF) : Ui.DIM;
+                g.text(font, (s + 1) + mark, x, y + size + 4, col, false);
+                if (in(mouseX, mouseY, x, y, size, size) && def != null) hoveredSkill = def.id();
+            }
+            if (twoHands) {
+                g.text(font, Component.translatable("rpgmod.jobscreen.hands_legend"), left + 10, top + 86, Ui.DIM, false);
             }
         }
         g.textWithWordWrap(font, Component.translatable("rpgmod.jobscreen.spell_hint", JobKeys.SPELL_WHEEL.getTranslatedKeyMessage()),

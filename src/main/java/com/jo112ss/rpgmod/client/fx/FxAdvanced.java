@@ -316,6 +316,13 @@ final class FxAdvanced {
                 }
                 Fx.p(S.CIRCLE_HOLY, at.add(0, 0.08, 0)).flat().size(r * 0.5F, r * 1.2F).easeOut().color(0xFFFFFF, c).alpha(1, 0).life(14).spawn();
             }
+            case 5 -> { // steam: a big white cloud rolling out
+                for (int i = 0, n = Fx.n((int) (r * 8)); i < n; i++) {
+                    Vec3 v = Fx.randomUnit().multiply(1, 0.5, 1);
+                    smoke(at.add(v.scale(r * 0.3)).add(0, 0.8, 0), 0xE8EEF2, 1.0F, 2.6F, 40).vel(v.scale(Fx.r(0.15, 0.35)).add(0, 0.04, 0)).alpha(0.75F, 0).spawn();
+                }
+                FxAnims.shake(at, 0.5F, 8, 16);
+            }
             case 4 -> {
                 for (int i = 0, n = Fx.n(10); i < n; i++) {
                     Fx.p(S.CARD, at.add(0, 0.6, 0)).vel(Fx.randomUnit().scale(Fx.r(0.2, 0.5)).add(0, 0.15, 0)).gravity(0.3F).friction(0.92F)

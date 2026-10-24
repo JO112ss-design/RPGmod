@@ -205,6 +205,9 @@ public final class AutoTestClient {
             case "stone_spikes", "shadow_stitch", "great_miracle", "bastion", "yaksha", "asura" -> new int[] {8};
             case "triple_whirl" -> new int[] {2, 12, 22};
             case "decoy" -> new int[] {10, 102};
+            case "steam_burst" -> new int[] {6, 13};
+            case "plasma_ray" -> new int[] {3};
+            case "frost_tempest" -> new int[] {14, 40};
             case "wildcard" -> new int[] {10, 30};
             case "radiant_lance", "switcheroo", "vanish", "shadow_run", "decapitate", "phase_shift", "holy_nova" -> new int[] {3};
             case "mob:dragonhp" -> new int[] {100, 140};
@@ -229,6 +232,8 @@ public final class AutoTestClient {
             case "mob:king" -> 960;
             case "mob:sense" -> 400;
             case "decoy" -> 120;
+            case "lcharge" -> 100;
+            case "frost_tempest" -> 110;
             // lingering areas: let them run out before the next skill so its numbers are its own
             case "armageddon", "thunderstorm", "inferno", "starfall", "tornado", "earth_rune", "ward_rune", "grand_rune",
                  "shield_wall", "divine_domain", "mana_well", "arcane_seal", "dark_orb", "card_storm" -> 110;
@@ -256,6 +261,8 @@ public final class AutoTestClient {
                 showSkills.addAll(j.ultimates());
                 showSkills.addAll(j.spells());
             }
+            // spellmaster: fusions and the left-click charge
+            showSkills.addAll(java.util.List.of("steam_burst", "plasma_ray", "frost_tempest", "lcharge"));
             mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK);
             com.jo112ss.rpgmod.client.mob.MobOverlay.testSelf = true;
             mc.options.particles().set(net.minecraft.server.level.ParticleStatus.ALL);
@@ -293,6 +300,24 @@ public final class AutoTestClient {
                 case 24 -> shot(mc, String.format("c%02d_charged", i));
                 case 26 -> mc.options.keyUse.setDown(false);
                 case 29 -> shot(mc, String.format("c%02d_released", i));
+                default -> { }
+            }
+            return;
+        }
+        if (entry.equals("lcharge")) { // spellmaster: hold left click with the staff for the left-hand spell
+            switch (k) {
+                case 0 -> {
+                    mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK);
+                    AutoTestServer.requestCast("!reset");
+                }
+                case 4 -> {
+                    mc.player.getInventory().setSelectedSlot(0);
+                    mc.options.keyAttack.setDown(true);
+                }
+                case 20 -> shot(mc, String.format("c%02d_left_charging", i));
+                case 78 -> shot(mc, String.format("c%02d_left_charged", i));
+                case 80 -> mc.options.keyAttack.setDown(false);
+                case 86 -> shot(mc, String.format("c%02d_left_released", i));
                 default -> { }
             }
             return;

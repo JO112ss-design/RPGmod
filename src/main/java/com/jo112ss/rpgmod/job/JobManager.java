@@ -447,21 +447,36 @@ public final class JobManager {
         cast(player, d, def);
     }
 
-    /** The staff's selected spell if the player is a wizard who knows it, else null. */
+    /** The staff's right-click spell if the player can cast it, else null. */
     public static SkillDef selectedSpell(Player player, ItemStack staff) {
         JobData d = data(player);
         if (!d.hasJob() || !d.castsSpells()) return null;
         SpellLoadout loadout = staff.getOrDefault(ModRegistries.SPELL_LOADOUT.get(), SpellLoadout.EMPTY);
-        SkillDef def = JobDefs.skill(loadout.selectedSpell());
-        return def != null && d.knows(def.id()) ? def : null;
+        return usable(d, JobDefs.skill(loadout.selectedSpell(d.spellSlots())));
+    }
+
+    /** The spellmaster's left-click spell on the staff, else null. */
+    public static SkillDef leftSpell(Player player, ItemStack staff) {
+        JobData d = data(player);
+        if (!d.isAdvancedAs("spellmaster")) return null;
+        SpellLoadout loadout = staff.getOrDefault(ModRegistries.SPELL_LOADOUT.get(), SpellLoadout.EMPTY);
+        return usable(d, JobDefs.skill(loadout.leftSpell()));
+    }
+
+    private static SkillDef usable(JobData d, SkillDef def) {
+        return def != null && d.castable(def) && d.knows(def.id()) ? def : null;
     }
 
     /** Can a charge start? (spell set, off cooldown, enough mana). Messages only when {@code notify}. */
     public static boolean canStartCast(Player player, ItemStack staff, boolean notify) {
+        return canCharge(player, selectedSpell(player, staff), notify);
+    }
+
+    /** Can a charge of this spell start? Messages only when {@code notify}. */
+    public static boolean canCharge(Player player, SkillDef def, boolean notify) {
         JobData d = data(player);
         if (!d.hasJob() || !d.castsSpells()) return false;
         if (com.jo112ss.rpgmod.item.Shields.guarding(player)) return false;
-        SkillDef def = selectedSpell(player, staff);
         ServerPlayer sp = notify && player instanceof ServerPlayer s ? s : null;
         if (def == null) {
             if (sp != null) tell(sp, "rpgmod.job.no_spell");
@@ -657,10 +672,15 @@ public final class JobManager {
             player.sendSystemMessage(Component.translatable("rpgmod.job.fizzle").withStyle(ChatFormatting.GRAY), true);
             return false;
         }
+        // the spellmaster holding a charged left-click spell too: the two fuse
+        if (SpellCasting.tryFusion(player, def, SpellCasting.readyLeft(player))) {
+            SpellCasting.clearLeft(player);
+            return true;
+        }
         return cast(player, data(player), def);
     }
 
-    private static boolean cast(ServerPlayer player, JobData d, SkillDef def) {
+    static boolean cast(ServerPlayer player, JobData d, SkillDef def) {
         long now = player.level().getGameTime();
         long ready = d.cooldownEnd(def.id());
         if (ready > now) {
@@ -715,10 +735,10 @@ public final class JobManager {
     public static void setSpell(ServerPlayer player, int slot, String spellId) {
         JobData d = data(player);
         ItemStack staff = heldStaff(player);
-        if (staff.isEmpty() || !d.hasJob() || !d.castsSpells() || slot < 0 || slot >= SpellLoadout.SLOTS) return;
+        if (staff.isEmpty() || !d.hasJob() || !d.castsSpells() || slot < 0 || slot >= d.spellSlots()) return;
         if (!spellId.isEmpty()) {
             SkillDef def = JobDefs.skill(spellId);
-            if (def == null || def.kind() != SkillKind.SPELL || !d.knows(spellId)) return;
+            if (!d.castable(def) || !d.knows(spellId)) return;
         }
         SpellLoadout l = staff.getOrDefault(ModRegistries.SPELL_LOADOUT.get(), SpellLoadout.EMPTY);
         boolean fresh = !spellId.isEmpty();
@@ -732,7 +752,7 @@ public final class JobManager {
 
     public static void selectSpell(ServerPlayer player, int slot) {
         ItemStack staff = heldStaff(player);
-        if (staff.isEmpty() || slot < 0 || slot >= SpellLoadout.SLOTS) return;
+        if (staff.isEmpty() || slot < 0 || slot >= data(player).spellSlots()) return;
         SpellLoadout l = staff.getOrDefault(ModRegistries.SPELL_LOADOUT.get(), SpellLoadout.EMPTY);
         staff.set(ModRegistries.SPELL_LOADOUT.get(), l.withSelected(slot));
         String spell = l.spell(slot);
@@ -742,7 +762,24 @@ public final class JobManager {
         }
     }
 
+    /** Spellmaster: the spell cast with left click. */
+    public static void selectLeftSpell(ServerPlayer player, int slot) {
+        ItemStack staff = heldStaff(player);
+        JobData d = data(player);
+        if (staff.isEmpty() || !d.isAdvancedAs("spellmaster") || slot < 0 || slot >= d.spellSlots()) return;
+        SpellLoadout l = staff.getOrDefault(ModRegistries.SPELL_LOADOUT.get(), SpellLoadout.EMPTY);
+        staff.set(ModRegistries.SPELL_LOADOUT.get(), l.withSelectedLeft(slot));
+        String spell = l.spell(slot);
+        if (!spell.isEmpty()) {
+            player.sendSystemMessage(Component.translatable("rpgmod.job.left_spell_selected", Component.translatable("rpgmod.skill." + spell))
+                    .withStyle(ChatFormatting.AQUA), true);
+        }
+    }
+
+    /** Everything this player can set on a staff (spells, and the bishop's heals). */
     public static List<String> knownSpells(JobData d) {
-        return d.knownSkills(SkillKind.SPELL);
+        List<String> out = new java.util.ArrayList<>();
+        for (String s : d.knownSkills()) if (d.castable(JobDefs.skill(s))) out.add(s);
+        return out;
     }
 }

@@ -42,7 +42,8 @@ public final class JobDefs {
             // spellmaster: stronger spells that take longer to charge
             Map.entry("inferno", 2.0), Map.entry("absolute_zero", 2.2), Map.entry("thunderstorm", 2.4), Map.entry("stone_spikes", 1.6),
             Map.entry("radiant_lance", 1.8), Map.entry("dark_orb", 2.0), Map.entry("tornado", 2.0), Map.entry("starfall", 2.6),
-            // bishop
+            // bishop (and the healer's heals, which the bishop casts from the staff)
+            Map.entry("heal", 0.8), Map.entry("group_heal", 1.4), Map.entry("purify", 1.0),
             Map.entry("holy_bolt", 0.8), Map.entry("holy_nova", 1.4), Map.entry("light_pillar", 1.8));
     public static final Map<String, Job> JOBS = new LinkedHashMap<>();
 
@@ -201,6 +202,9 @@ public final class JobDefs {
 
     // ------------------------------------------------------------------ advanced jobs (level 100+)
 
+    /** The healer's skills the bishop sets on the staff and casts by charging (heals and the cleanse). */
+    public static final java.util.Set<String> BISHOP_CASTS = java.util.Set.of("heal", "group_heal", "purify");
+
     /** Base job id -> its advanced job id, and back. */
     public static final Map<String, String> ADVANCED = new LinkedHashMap<>();
     public static final Map<String, String> BASE_OF = new LinkedHashMap<>();
@@ -314,6 +318,11 @@ public final class JobDefs {
                         skill("holy_bolt", S, SkillEffect.BOLT, 0.8, 8, 1.6, 28, 0, List.of(), 0, "聖"),
                         skill("holy_nova", S, SkillEffect.WHIRL, 10, 40, 3.0, 7, 0, List.of(), 0, "輝"),
                         skill("light_pillar", S, SkillEffect.WHIRL, 14, 50, 1.0, 3, 0, List.of(), 0, "柱")));
+        // fusion spells (spellmaster, a charged spell in each hand): never learnt, the power listed
+        // here is replaced by 1.2 x the two fused spells' worth (see SpellCasting)
+        skill("steam_burst", S, SkillEffect.WHIRL, 0, 0, 6.0, 6, 3, List.of(), 0, "蒸");
+        skill("plasma_ray", S, SkillEffect.BOLT, 0, 0, 7.0, 40, 6, List.of(), 0, "電");
+        skill("frost_tempest", S, SkillEffect.WHIRL, 0, 0, 6.0, 7, 5, List.of(), 0, "凍");
     }
 
     private static void advanced(String base, String id, int color, String glyph, List<JobStat> panelStats, Map<JobStat, Double> perLevel,

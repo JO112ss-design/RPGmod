@@ -171,6 +171,23 @@ public final class JobData {
         return hasJob() ? JobDefs.advancedOf(job) : null;
     }
 
+    /** True for the advanced job with this id. */
+    public boolean isAdvancedAs(String advancedId) {
+        return isAdvanced() && advancedDef().id().equals(advancedId);
+    }
+
+    /** Staff slots this caster can fill: four, nine for the spellmaster. */
+    public int spellSlots() {
+        return isAdvancedAs("spellmaster") ? SpellLoadout.SLOTS : SpellLoadout.BASE_SLOTS;
+    }
+
+    /** Can this skill be set on the staff and charged? Spells, and for the bishop the healer's heals. */
+    public boolean castable(SkillDef def) {
+        if (def == null) return false;
+        if (def.kind() == SkillKind.SPELL) return true;
+        return isAdvancedAs("bishop") && JobDefs.BISHOP_CASTS.contains(def.id());
+    }
+
     /** Casts spells from a staff: the wizard, and advanced jobs with spells of their own (bishop). */
     public boolean castsSpells() {
         if (!hasJob()) return false;

@@ -53,7 +53,8 @@ public final class AdvSkills {
             "earth_rune", "ward_rune", "gale_rune", "night_sight", "feather_rune", "grand_rune",
             "switcheroo", "decoy", "loaded_dice", "card_storm", "vanish", "wildcard",
             "shadow_run", "flurry", "twin_venom", "shadow_stitch", "moon_shadow", "yaksha",
-            "revive_prayer", "divine_domain", "great_miracle", "holy_bolt", "holy_nova", "light_pillar");
+            "revive_prayer", "divine_domain", "great_miracle", "holy_bolt", "holy_nova", "light_pillar",
+            "steam_burst", "plasma_ray", "frost_tempest");
 
     static boolean has(String id) {
         return IDS.contains(id);
@@ -125,6 +126,10 @@ public final class AdvSkills {
             case "holy_bolt" -> holyBolt(c);
             case "holy_nova" -> holyNova(c);
             case "light_pillar" -> lightPillar(c);
+            // spellmaster fusions
+            case "steam_burst" -> steamBurst(c);
+            case "plasma_ray" -> plasmaRay(c);
+            case "frost_tempest" -> frostTempest(c);
             default -> false;
         };
     }
@@ -1202,6 +1207,99 @@ public final class AdvSkills {
         ServerFx.of("x_aura", c.p().position()).follow(c.p()).a(c.def().duration()).b(1).color(NIGHT).send(c.level());
         sound(c, SoundEvents.WARDEN_HEARTBEAT, 0.6F);
         sound(c, c.p().position(), SoundEvents.ILLUSIONER_CAST_SPELL, 1.0F, 0.6F);
+        return true;
+    }
+
+    // ================================================================== spellmaster fusions
+
+    /** Fire + ice: a ball of steam gathers on the aimed spot and explodes, blinding and slowing. */
+    private static boolean steamBurst(Ctx c) {
+        Vec3 at = aimPoint(c, 30);
+        double r = c.def().radius();
+        int t = ticks(c.def().duration());
+        ServerFx.of("x_zone", at).vec(new Vec3(3, 2, 0)).a(r).b(10).color(0xE8F4FF).send(c.level());
+        ServerFx.of("x_orb", at.add(0, 6, 0)).vec(new Vec3(0, -0.6, 0)).a(6).b(1.6).color(0xFFB080).send(c.level());
+        sound(c, SoundEvents.FIRE_EXTINGUISH, 0.5F);
+        sound(c, at, SoundEvents.BREWING_STAND_BREW, 1.5F, 0.5F);
+        SkillTasks.later(10, () -> {
+            List<LivingEntity> hit = enemies(c.p(), at, r);
+            for (LivingEntity e : hit) {
+                double off = 1 - 0.4 * Math.min(1, horizontal(e.position(), at) / r);
+                hurt(c, e, c.dmg(off), magic(c));
+                effect(e, MobEffects.BLINDNESS, t, 0, c.p());
+                effect(e, MobEffects.SLOWNESS, t, 1, c.p());
+                pushAway(e, at, 1.0, 0.6);
+            }
+            ServerFx.of("x_burst", at).a(r).b(5).color(0xFFFFFF).points(hit).send(c.level());
+            ServerFx.of("x_burst", at).a(r * 0.6).b(0).color(0xFF8040).send(c.level());
+            sound(c, at, SoundEvents.GENERIC_EXPLODE, 2.0F, 0.9F);
+            sound(c, at, SoundEvents.FIRE_EXTINGUISH, 2.0F, 0.6F);
+        });
+        return true;
+    }
+
+    /** Fire + thunder: a ray of plasma through everything in a line; each enemy hit arcs to others. */
+    private static boolean plasmaRay(Ctx c) {
+        Vec3 eye = c.p().getEyePosition();
+        Vec3 look = c.look();
+        double range = c.def().radius();
+        BlockHitResult block = c.level().clip(new ClipContext(eye, eye.add(look.scale(range)), ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, c.p()));
+        Vec3 end = block.getType() == HitResult.Type.MISS ? eye.add(look.scale(range)) : block.getLocation();
+        List<LivingEntity> hit = new ArrayList<>();
+        for (LivingEntity e : c.level().getEntitiesOfClass(LivingEntity.class, new AABB(eye, end).inflate(1.6), e -> isEnemy(c.p(), e))) {
+            if (e.getBoundingBox().inflate(1.0).clip(eye, end).isPresent()) hit.add(e);
+        }
+        Set<Integer> arced = new HashSet<>();
+        for (LivingEntity e : hit) {
+            hurt(c, e, c.dmg(1), magic(c));
+            e.igniteForSeconds((float) c.def().duration());
+            arced.add(e.getId());
+        }
+        for (LivingEntity e : hit) {
+            int n = 0;
+            for (LivingEntity o : enemies(c.p(), e.position(), 6)) {
+                if (n >= 2 || !arced.add(o.getId())) continue;
+                hurt(c, o, c.dmg(0.3), magic(c));
+                ServerFx.of("x_link", mid(e)).vec(mid(o)).color(0xFF80FF).send(c.level());
+                n++;
+            }
+        }
+        ServerFx.of("x_beam", c.hand()).vec(end).a(1.1).color(0xFF60E0).points(hit).send(c.level());
+        ServerFx.of("x_beam", c.hand()).vec(end).a(0.4).color(0xFFE0A0).send(c.level());
+        ServerFx.of("x_strike", end).a(2).color(0xFF80FF).send(c.level());
+        sound(c, SoundEvents.TRIDENT_THUNDER.value(), 1.4F);
+        sound(c, c.p().position(), SoundEvents.BLAZE_SHOOT, 1.0F, 0.6F);
+        return true;
+    }
+
+    /** Ice + thunder: a freezing storm over the aimed area; enemies freeze and lightning keeps falling. */
+    private static boolean frostTempest(Ctx c) {
+        Vec3 at = aimPoint(c, 28);
+        double r = c.def().radius();
+        int life = ticks(c.def().duration());
+        int pulses = Math.max(1, life / 10);
+        ServerFx.of("x_zone", at).vec(new Vec3(3, 2, 0)).a(r).b(life).color(ICE).send(c.level());
+        ServerFx.of("x_tornado", at).vec(Vec3.ZERO).a(r * 0.7).b(life).color(ICE).send(c.level());
+        sound(c, SoundEvents.POWDER_SNOW_BREAK, 0.5F);
+        SkillTasks.run(age -> {
+            if (age % 10 == 5) {
+                for (LivingEntity e : enemies(c.p(), at, r)) {
+                    hurt(c, e, c.dmg(0.8 / pulses), magic(c));
+                    effect(e, MobEffects.SLOWNESS, 30, 2, c.p());
+                    e.setTicksFrozen(Math.min(e.getTicksRequiredToFreeze() + 60, e.getTicksFrozen() + 40));
+                }
+            }
+            if (age % 20 == 10) {
+                List<LivingEntity> in = enemies(c.p(), at, r);
+                if (!in.isEmpty()) {
+                    LivingEntity t = in.get(c.p().getRandom().nextInt(in.size()));
+                    hurt(c, t, c.dmg(0.2 * 20 / Math.max(20, life)), magic(c));
+                    ServerFx.of("x_strike", t.position()).a(1.5).color(VOLT).point(mid(t)).send(c.level());
+                    sound(c, t.position(), SoundEvents.LIGHTNING_BOLT_IMPACT, 0.8F, 1.5F);
+                }
+            }
+            return age >= life;
+        });
         return true;
     }
 

@@ -494,7 +494,10 @@ public final class AutoTestServer {
         for (String s : learnt) {
             var sd = com.jo112ss.rpgmod.job.core.JobDefs.skill(s);
             if (sd != null && sd.kind() == com.jo112ss.rpgmod.job.core.SkillKind.ACTIVE) com.jo112ss.rpgmod.job.JobManager.equipSkill(player, 3, s);
-            if (sd != null && sd.kind() == com.jo112ss.rpgmod.job.core.SkillKind.SPELL) com.jo112ss.rpgmod.job.JobManager.setSpell(player, 3, s);
+            if (sd != null && sd.kind() == com.jo112ss.rpgmod.job.core.SkillKind.SPELL) {
+                com.jo112ss.rpgmod.job.JobManager.setSpell(player, 3, s);
+                com.jo112ss.rpgmod.job.JobManager.selectLeftSpell(player, 3); // spellmaster: on left click
+            }
         }
         RpgMod.LOGGER.info("[AUTOTEST] advanced skills learnt {} (known now {}), slot 3 = {}", learnt, d.knownSkills(), d.slot(3));
         com.jo112ss.rpgmod.job.SkillTasks.later(320, AutoTestServer::advCheck);
@@ -796,13 +799,89 @@ public final class AutoTestServer {
             boolean revived = com.jo112ss.rpgmod.job.AdvSkills.revive(player);
             RpgMod.LOGGER.info("[AUTOTEST] adv revive: forced down={} downed={} -> revived={} downed now={} health={}", downed, isDown, revived,
                     com.jo112ss.rpgmod.compat.Downed.is(player), f(player.getHealth()));
-            z.discard();
+            phase3Check(level, z);
             player.setHealth(player.getMaxHealth());
             player.setGameMode(mode);
             player.getAbilities().invulnerable = wasInv;
             player.onUpdateAbilities();
             level.getServer().setDifficulty(diff, true);
             player.getInventory().setSelectedSlot(0);
+        });
+    }
+
+    /** Phase 3: off-hand blade, nine staff slots and the bishop's heals, left-click casting and fusion. */
+    private static void phase3Check(net.minecraft.server.level.ServerLevel level, net.minecraft.world.entity.LivingEntity z) {
+        var jd = com.jo112ss.rpgmod.job.JobManager.data(player);
+        // nine slots for the spellmaster, four otherwise; the bishop casts heals from the staff
+        var bishop = new com.jo112ss.rpgmod.job.JobData();
+        bishop.setJob("healer");
+        bishop.setLevel(120);
+        var wizard = new com.jo112ss.rpgmod.job.JobData();
+        wizard.setJob("wizard");
+        var healer = new com.jo112ss.rpgmod.job.JobData();
+        healer.setJob("healer");
+        RpgMod.LOGGER.info("[AUTOTEST] p3 slots: spellmaster {} wizard Lv1 {} bishop {}; bishop castable heal={} purify={} power_slash={} casts={}; healer Lv1 castable heal={}",
+                jd.spellSlots(), wizard.spellSlots(), bishop.spellSlots(), bishop.castable(com.jo112ss.rpgmod.job.core.JobDefs.skill("heal")),
+                bishop.castable(com.jo112ss.rpgmod.job.core.JobDefs.skill("purify")), bishop.castable(com.jo112ss.rpgmod.job.core.JobDefs.skill("power_slash")),
+                bishop.castsSpells(), healer.castable(com.jo112ss.rpgmod.job.core.JobDefs.skill("heal")));
+        // the fusion pairs
+        RpgMod.LOGGER.info("[AUTOTEST] p3 fusion pairs: fire+ice={} fire+thunder={} ice+thunder={} fire+fire={} bolt+star={}",
+                com.jo112ss.rpgmod.job.SpellCasting.fusionOf("inferno", "frost_nova"), com.jo112ss.rpgmod.job.SpellCasting.fusionOf("thunder", "flame_burst"),
+                com.jo112ss.rpgmod.job.SpellCasting.fusionOf("blizzard", "thunderstorm"), com.jo112ss.rpgmod.job.SpellCasting.fusionOf("inferno", "flame_burst"),
+                com.jo112ss.rpgmod.job.SpellCasting.fusionOf("magic_bolt", "starfall"));
+        // off-hand dagger
+        com.jo112ss.rpgmod.job.DualWield.testAllow = true;
+        com.jo112ss.rpgmod.job.JobManager.testForceCrit = false;
+        ItemStack dagger = new ItemStack(com.jo112ss.rpgmod.item.ModItems.get(com.jo112ss.rpgmod.item.WeaponType.DAGGER, com.jo112ss.rpgmod.item.WeaponMaterial.IRON));
+        player.getInventory().setItem(7, new ItemStack(Items.IRON_SWORD));
+        player.getInventory().setSelectedSlot(7);
+        player.setItemSlot(net.minecraft.world.entity.EquipmentSlot.OFFHAND, dagger.copy());
+        com.jo112ss.rpgmod.job.SkillTasks.later(3, () -> {
+            float h0 = z.getHealth();
+            boolean first = com.jo112ss.rpgmod.job.DualWield.strike(player, z.getId());
+            float d1 = h0 - z.getHealth();
+            boolean again = com.jo112ss.rpgmod.job.DualWield.strike(player, z.getId());
+            RpgMod.LOGGER.info("[AUTOTEST] p3 off-hand: computed {} (main-hand attack {}), first hit={} dealt {}, at once again={} (expected false), interval {}",
+                    f(com.jo112ss.rpgmod.job.DualWield.damage(player)), f(player.getAttributeValue(Attributes.ATTACK_DAMAGE)), first, f(d1), again,
+                    com.jo112ss.rpgmod.job.DualWield.interval(player));
+            com.jo112ss.rpgmod.job.SkillTasks.later(25, () -> {
+                boolean third = com.jo112ss.rpgmod.job.DualWield.strike(player, z.getId());
+                RpgMod.LOGGER.info("[AUTOTEST] p3 off-hand after the interval: hit={}", third);
+                com.jo112ss.rpgmod.job.DualWield.testAllow = false;
+                player.setItemSlot(net.minecraft.world.entity.EquipmentSlot.OFFHAND, ItemStack.EMPTY);
+                // left-click spell: charge, then release once ready
+                ItemStack staff = new ItemStack(com.jo112ss.rpgmod.item.ModItems.get(com.jo112ss.rpgmod.item.WeaponType.STAFF, com.jo112ss.rpgmod.item.WeaponMaterial.IRON));
+                player.getInventory().setItem(7, staff);
+                com.jo112ss.rpgmod.job.SkillTasks.later(2, () -> {
+                    com.jo112ss.rpgmod.job.JobManager.setSpell(player, 0, "magic_bolt");
+                    com.jo112ss.rpgmod.job.JobManager.setSpell(player, 5, "starfall");
+                    com.jo112ss.rpgmod.job.JobManager.selectLeftSpell(player, 5);
+                    var loadout = player.getMainHandItem().get(com.jo112ss.rpgmod.registry.ModRegistries.SPELL_LOADOUT.get());
+                    jd.setMana(500);
+                    jd.setCooldown("starfall", 0);
+                    var star = com.jo112ss.rpgmod.job.core.JobDefs.skill("starfall");
+                    int need = com.jo112ss.rpgmod.job.JobManager.castTicks(player, star);
+                    RpgMod.LOGGER.info("[AUTOTEST] p3 staff loadout {} left spell {} (slot 6 of 9), charge {} ticks", loadout,
+                            com.jo112ss.rpgmod.job.JobManager.leftSpell(player, player.getMainHandItem()), need);
+                    com.jo112ss.rpgmod.job.SpellCasting.leftPress(player);
+                    com.jo112ss.rpgmod.job.SkillTasks.later(5, () -> com.jo112ss.rpgmod.job.SpellCasting.leftRelease(player)); // too early: fizzle
+                    com.jo112ss.rpgmod.job.SkillTasks.later(8, () -> com.jo112ss.rpgmod.job.SpellCasting.leftPress(player));
+                    com.jo112ss.rpgmod.job.SkillTasks.later(10 + need, () -> {
+                        com.jo112ss.rpgmod.job.SpellCasting.leftRelease(player);
+                        // fusions straight from two spells
+                        jd.setMana(1000);
+                        for (String[] pair : new String[][] {{"flame_burst", "frost_nova"}, {"inferno", "thunder"}, {"absolute_zero", "thunderstorm"}, {"magic_bolt", "starfall"}}) {
+                            for (String s : pair) jd.setCooldown(s, 0);
+                            boolean ok = com.jo112ss.rpgmod.job.SpellCasting.tryFusion(player, com.jo112ss.rpgmod.job.core.JobDefs.skill(pair[0]), com.jo112ss.rpgmod.job.core.JobDefs.skill(pair[1]));
+                            RpgMod.LOGGER.info("[AUTOTEST] p3 fusion {} + {}: {} (cooldowns {} / {})", pair[0], pair[1], ok,
+                                    jd.cooldownEnd(pair[0]) - level.getGameTime(), jd.cooldownEnd(pair[1]) - level.getGameTime());
+                        }
+                        z.discard();
+                        com.jo112ss.rpgmod.job.JobManager.testForceCrit = null;
+                        player.getInventory().setSelectedSlot(0);
+                    });
+                });
+            });
         });
     }
 

@@ -39,9 +39,60 @@ public final class JobClient {
         return mc.player != null && ModItems.typeOf(mc.player.getMainHandItem().getItem()) == WeaponType.STAFF;
     }
 
+    // ---- spellmaster: the left-click spell
+
+    /** Ticks the left button has been held for the left-hand spell (-1 = not charging). */
+    public static int leftCharge = -1;
+
+    /** Spellmaster holding a staff with a left-click spell set. */
+    public static boolean leftCasting() {
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.player == null || !holdingStaff() || !data().isAdvancedAs("spellmaster")) return false;
+        var l = mc.player.getMainHandItem().getOrDefault(ModRegistries.SPELL_LOADOUT.get(), com.jo112ss.rpgmod.job.SpellLoadout.EMPTY);
+        return !l.leftSpell().isEmpty();
+    }
+
+    private static void tickLeftCast(Minecraft mc) {
+        boolean want = mc.player != null && mc.gui.screen() == null && leftCasting() && mc.options.keyAttack.isDown();
+        if (want && leftCharge < 0) {
+            leftCharge = 0;
+            send(JobActionPayload.LEFT_CAST, 1, "");
+        } else if (want) {
+            leftCharge++;
+        } else if (leftCharge >= 0) {
+            leftCharge = -1;
+            send(JobActionPayload.LEFT_CAST, 0, "");
+        }
+    }
+
+    /**
+     * Left click with the spellmaster's staff charges the left-hand spell instead of attacking; right
+     * click with the nightblade's off-hand dagger strikes with it.
+     */
+    @SubscribeEvent
+    public static void onClickInput(net.neoforged.neoforge.client.event.InputEvent.InteractionKeyMappingTriggered event) {
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.player == null) return;
+        if (event.isAttack() && leftCasting()) {
+            event.setCanceled(true);
+            event.setSwingHand(false);
+            return;
+        }
+        if (event.isUseItem() && event.getHand() == net.minecraft.world.InteractionHand.MAIN_HAND && com.jo112ss.rpgmod.job.DualWield.canDualWield(mc.player)) {
+            var hit = mc.hitResult;
+            if (hit != null && hit.getType() == net.minecraft.world.phys.HitResult.Type.BLOCK) return; // doors, chests... as usual
+            int id = hit instanceof net.minecraft.world.phys.EntityHitResult eh ? eh.getEntity().getId() : -1;
+            event.setCanceled(true);
+            event.setSwingHand(false);
+            mc.player.swing(net.minecraft.world.InteractionHand.OFF_HAND);
+            send(JobActionPayload.OFFHAND_ATTACK, id, "");
+        }
+    }
+
     @SubscribeEvent
     public static void onTick(ClientTickEvent.Post event) {
         Minecraft mc = Minecraft.getInstance();
+        tickLeftCast(mc);
         if (pendingSelect && mc.player != null && mc.gui.screen() == null && mc.player.tickCount > 20) {
             pendingSelect = false;
             if (!data().hasJob()) mc.gui.setScreen(new JobSelectScreen());

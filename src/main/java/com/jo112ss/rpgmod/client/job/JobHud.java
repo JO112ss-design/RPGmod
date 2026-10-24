@@ -121,6 +121,33 @@ public final class JobHud {
             }
             String hint = font.substrByWidth(JobKeys.SPELL_WHEEL.getTranslatedKeyMessage(), SLOT).getString();
             g.text(font, hint, x + (SLOT - font.width(hint)) / 2, y + SLOT + 2, 0xFFB09CFF, true);
+            // spellmaster: the left-click spell next to it
+            if (d.isAdvancedAs("spellmaster")) {
+                SkillDef left = JobDefs.skill(l.leftSpell());
+                int lx = x - SLOT - 6;
+                g.fill(lx - 2, y - 2, lx + SLOT + 2, y + SLOT + 2, 0xFF7FD8FF);
+                Ui.skillIcon(g, font, lx, y, SLOT, left, false);
+                if (left != null) {
+                    long remain = d.cooldownEnd(left.id()) - now;
+                    if (remain > 0) {
+                        double total = Math.max(1, left.cooldown() * 20 * (1 - cdr));
+                        int h = (int) Math.round(SLOT * Math.min(1, remain / total));
+                        g.fill(lx + 1, y + SLOT - 1 - h, lx + SLOT - 1, y + SLOT - 1, 0xB0000000);
+                    }
+                }
+                g.text(font, "L", lx + (SLOT - font.width("L")) / 2, y + SLOT + 2, 0xFF7FD8FF, true);
+                // left-click charge gauge, under the right-click one
+                if (JobClient.leftCharge >= 0 && left != null) {
+                    int need = Math.max(1, com.jo112ss.rpgmod.job.JobManager.castTicks(mc.player, left));
+                    float f = Math.min(1f, JobClient.leftCharge / (float) need);
+                    int cw = 60, cx = sw / 2 - cw / 2, cy = sh / 2 + 32;
+                    g.fill(cx - 1, cy - 1, cx + cw + 1, cy + 5, 0xC0000000);
+                    int col = f >= 1 ? 0xFFFFE07A : 0xFF7FD8FF;
+                    g.fill(cx, cy, cx + Math.round(cw * f), cy + 4, col);
+                    Component t = f >= 1 ? Component.translatable("rpgmod.hud.charged") : Ui.skillName(left.id());
+                    g.centeredText(font, t, sw / 2, cy + 8, col);
+                }
+            }
         }
     }
 }
