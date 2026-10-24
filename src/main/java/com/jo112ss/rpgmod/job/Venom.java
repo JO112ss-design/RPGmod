@@ -20,8 +20,8 @@ import net.minecraft.world.entity.LivingEntity;
 /**
  * The assassin's and nightblade's poison. Vanilla poison does nothing to the undead (most monsters)
  * and only a point of damage now and then, so this one takes a share of the target's max health
- * every second instead: 5% (7.5% at level II), a fifth of that on bosses. It works on the undead,
- * can kill, ignores armour, and the kill counts for the player who poisoned it.
+ * every second instead: 5% (7.5% at level II). Bosses are immune. It works on the undead, can
+ * kill, ignores armour, and the kill counts for the player who poisoned it.
  */
 public final class Venom {
     private Venom() {}
@@ -29,13 +29,13 @@ public final class Venom {
     public static final ResourceKey<DamageType> DAMAGE = ResourceKey.create(Registries.DAMAGE_TYPE, Identifier.fromNamespaceAndPath(RpgMod.MODID, "venom"));
     /** Share of max health per second at level I; +50% per extra level. */
     public static final double PER_SECOND = 0.05;
-    public static final double BOSS_FACTOR = 0.2;
 
     /** Who poisoned whom (for kill credit and experience). */
     private static final Map<LivingEntity, UUID> SOURCE = new WeakHashMap<>();
 
     /** Poisons {@code target} for {@code ticks} at {@code amp} (0 = level I). */
     public static void apply(LivingEntity target, int ticks, int amp, ServerPlayer by) {
+        if (isBoss(target)) return; // bosses shrug poison off
         MobEffectInstance cur = target.getEffect(ModEffects.VENOM);
         if (cur != null && cur.getAmplifier() > amp) amp = cur.getAmplifier(); // a weaker coat does not cut a stronger poison short
         target.addEffect(new MobEffectInstance(ModEffects.VENOM, ticks, amp), by);
@@ -48,7 +48,7 @@ public final class Venom {
 
     /** Damage of one tick (once a second). */
     public static float tickDamage(LivingEntity e, int amp) {
-        double share = PER_SECOND * (1 + 0.5 * amp) * (isBoss(e) ? BOSS_FACTOR : 1);
+        double share = PER_SECOND * (1 + 0.5 * amp);
         return (float) Math.max(1, e.getMaxHealth() * share);
     }
 
@@ -64,6 +64,7 @@ public final class Venom {
 
         @Override
         public boolean applyEffectTick(ServerLevel level, LivingEntity mob, int amplification) {
+            if (isBoss(mob)) return false;
             UUID by = SOURCE.get(mob);
             ServerPlayer player = by == null ? null : level.getServer().getPlayerList().getPlayer(by);
             DamageSource src = level.damageSources().source(DAMAGE, null, player);
