@@ -108,7 +108,7 @@ public final class JobDefs {
                         skill("holy_wave", SkillKind.ACTIVE, SkillEffect.SWEEP, 10, 14, 2.0, 10, 0, List.of(), 0, "波")),
                 List.of(
                         skill("divine_aegis", SkillKind.ULTIMATE, SkillEffect.BUFF, 100, 42, 0, 8, 12, List.of("minecraft:resistance", "minecraft:absorption"), 1, "盾"),
-                        skill("judgement", SkillKind.ULTIMATE, SkillEffect.WHIRL, 90, 42, 3.5, 6.5, 0, List.of(), 0, "審")),
+                        skill("judgement", SkillKind.ULTIMATE, SkillEffect.WHIRL, 90, 42, 2.5, 6.5, 0, List.of(), 0, "審")),
                 List.of());
         // ---- Wizard: spells on the staff, skills 1/2 for mana and mobility
         job("wizard", 0x7B68EE, "魔", List.of(JobStat.MAX_MANA, JobStat.MAGIC_ATTACK, JobStat.SKILL_POWER, JobStat.CAST_SPEED, JobStat.MANA_REGEN),
