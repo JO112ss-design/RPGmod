@@ -13,7 +13,7 @@ import net.neoforged.neoforge.event.ModifyDefaultComponentsEvent;
 
 /**
  * Vanilla swords are the fighter's and paladin's swords: they follow the mod's material steps too
- * (copper as vanilla, then +2 attack per tier: iron, gold, diamond, netherite).
+ * (copper as vanilla, then iron +7, gold +11, diamond +15, netherite +17 - see {@link WeaponMaterial#meleeBonus()}).
  */
 @EventBusSubscriber(modid = RpgMod.MODID)
 public final class SwordTiers {
