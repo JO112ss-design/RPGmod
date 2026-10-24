@@ -22,6 +22,8 @@ public enum WeaponType {
     CHESTPLATE("chestplate", 0, 0, 8, List.of(), TargetProfile.CHESTPLATE, 10, 140),
     LEGGINGS("leggings", 0, 0, 7, List.of(), TargetProfile.LEGGINGS, 10, 140),
     BOOTS("boots", 0, 0, 4, List.of(), TargetProfile.BOOTS, 10, 140),
+    /** Shields (copper / iron / diamond, netherite by smithing): a vanilla shield + 3 ingots. */
+    SHIELD("shield", 0, 0, 3, List.of(new Extra(() -> Items.SHIELD, 1)), TargetProfile.SHIELD, 10, 140),
     /** Vanilla arrows, forged in a batch (iron only): 1 iron + 1 stick, 4 to 32 arrows by quality. */
     ARROW("arrow", 0, 0, 1, List.of(new Extra(() -> Items.STICK, 1)), TargetProfile.ARROW, 6, 148);
 
@@ -54,6 +56,11 @@ public enum WeaponType {
     /** Armor uses the vanilla items and the armor option pool. */
     public boolean isArmor() {
         return this == HELMET || this == CHESTPLATE || this == LEGGINGS || this == BOOTS;
+    }
+
+    /** Armor and shields roll from the armor option pool. */
+    public boolean defensive() {
+        return isArmor() || this == SHIELD;
     }
 
     /** Vanilla items (swords and armor) are not registered by this mod. */

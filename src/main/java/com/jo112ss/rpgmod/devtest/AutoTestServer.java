@@ -509,6 +509,41 @@ public final class AutoTestServer {
         RpgMod.LOGGER.info("[AUTOTEST] potion drops from 300 kills: hp={} mp={} (expected about 9 each); meteor ratio {}", hp, mp,
                 com.jo112ss.rpgmod.job.core.JobDefs.skill("meteor").power());
         player.setHealth(player.getMaxHealth());
+        shieldCheck(com.jo112ss.rpgmod.item.ModItems.get(com.jo112ss.rpgmod.item.WeaponType.SHIELD, com.jo112ss.rpgmod.item.WeaponMaterial.DIAMOND), 0);
+    }
+
+    /** A zombie hit taken with the shield up and down: the shield should take its share off. */
+    private static void shieldCheck(net.minecraft.world.item.Item shieldItem, int round) {
+        var level = (net.minecraft.server.level.ServerLevel) player.level();
+        player.setItemSlot(net.minecraft.world.entity.EquipmentSlot.OFFHAND, new ItemStack(shieldItem));
+        player.startUsingItem(net.minecraft.world.InteractionHand.OFF_HAND);
+        com.jo112ss.rpgmod.job.SkillTasks.later(12, () -> {
+            var z = net.minecraft.world.entity.EntityTypes.ZOMBIE.create(level, net.minecraft.world.entity.EntitySpawnReason.COMMAND);
+            var look = player.getLookAngle().multiply(1, 0, 1).normalize();
+            z.snapTo(player.getX() + look.x * 2, player.getY(), player.getZ() + look.z * 2, 0, 0);
+            z.setNoAi(true);
+            level.addFreshEntity(z);
+            boolean guarding = com.jo112ss.rpgmod.item.Shields.guarding(player);
+            player.setHealth(player.getMaxHealth());
+            float before = player.getHealth();
+            player.hurtServer(level, level.damageSources().mobAttack(z), 10F);
+            float up = before - player.getHealth();
+            player.stopUsingItem();
+            com.jo112ss.rpgmod.job.SkillTasks.later(25, () -> {
+                player.setHealth(player.getMaxHealth());
+                float b2 = player.getHealth();
+                player.hurtServer(level, level.damageSources().mobAttack(z), 10F);
+                float down = b2 - player.getHealth();
+                RpgMod.LOGGER.info("[AUTOTEST] shield {}: guarding={} blocking={} damage with shield up {} / down {} -> {}% let through (expected {}%)",
+                        net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(shieldItem), guarding, player.isBlocking(),
+                        String.format("%.2f", up), String.format("%.2f", down), String.format("%.0f", down > 0 ? up / down * 100 : -1),
+                        String.format("%.0f", (1 - com.jo112ss.rpgmod.item.Shields.block(player, new ItemStack(shieldItem))) * 100));
+                z.discard();
+                player.setHealth(player.getMaxHealth());
+                if (round == 0) shieldCheck(net.minecraft.world.item.Items.SHIELD, 1);
+                else player.setItemSlot(net.minecraft.world.entity.EquipmentSlot.OFFHAND, ItemStack.EMPTY);
+            });
+        });
     }
 
     private static void log(String when) {

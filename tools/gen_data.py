@@ -29,6 +29,15 @@ for m in MATS:
                                 {'threshold': 0.9, 'model': {'type': 'minecraft:model', 'model': f'rpgmod:item/{n}_pulling_2'}}],
                     'fallback': {'type': 'minecraft:model', 'model': f'rpgmod:item/{n}_pulling_0'}}}})
 
+# ---- shields: the vanilla shield model, coloured by the item's base colour
+SHIELD_MATS = ['copper', 'iron', 'diamond', 'netherite']
+for m in SHIELD_MATS:
+    n = f'{m}_shield'
+    write(f'{A}/items/{n}.json', {'model': {
+        'type': 'minecraft:condition', 'property': 'minecraft:using_item',
+        'on_false': {'type': 'minecraft:special', 'base': 'minecraft:item/shield', 'model': {'type': 'minecraft:shield'}},
+        'on_true': {'type': 'minecraft:special', 'base': 'minecraft:item/shield_blocking', 'model': {'type': 'minecraft:shield'}}}})
+
 # ---- recipes (normal crafting = plain weapons without forging options)
 PATTERNS = {
     'dagger': (['I', 'S'], {'I': None, 'S': 'minecraft:stick'}),
@@ -43,7 +52,11 @@ for m, ingot in INGOT.items():
                                                    'pattern': pat, 'key': k, 'result': {'id': f'rpgmod:{m}_{t}', 'count': 1}})
     write(f'{D}/rpgmod/recipe/{m}_bow.json', {'type': 'minecraft:crafting_shapeless', 'category': 'equipment',
                                                'ingredients': ['minecraft:bow', ingot, ingot], 'result': {'id': f'rpgmod:{m}_bow', 'count': 1}})
-for t in MELEE + ['bow']:
+for m, ingot in INGOT.items():
+    if m in SHIELD_MATS:
+        write(f'{D}/rpgmod/recipe/{m}_shield.json', {'type': 'minecraft:crafting_shapeless', 'category': 'equipment',
+                                                     'ingredients': ['minecraft:shield', ingot, ingot, ingot], 'result': {'id': f'rpgmod:{m}_shield', 'count': 1}})
+for t in MELEE + ['bow', 'shield']:
     write(f'{D}/rpgmod/recipe/netherite_{t}_smithing.json', {'type': 'minecraft:smithing_transform',
         'template': 'minecraft:netherite_upgrade_smithing_template', 'base': f'rpgmod:diamond_{t}',
         'addition': 'minecraft:netherite_ingot', 'result': {'id': f'rpgmod:netherite_{t}'}})
@@ -53,43 +66,48 @@ melee = [f'rpgmod:{m}_{t}' for t in MELEE for m in MATS]
 bows = [f'rpgmod:{m}_bow' for m in MATS]
 for tag in ['sharp_weapon', 'weapon', 'melee_weapon', 'fire_aspect']:
     write(f'{D}/minecraft/tags/item/enchantable/{tag}.json', {'replace': False, 'values': melee})
-write(f'{D}/minecraft/tags/item/enchantable/durability.json', {'replace': False, 'values': melee + bows})
+shields = [f'rpgmod:{m}_shield' for m in SHIELD_MATS]
+write(f'{D}/minecraft/tags/item/enchantable/durability.json', {'replace': False, 'values': melee + bows + shields})
 write(f'{D}/minecraft/tags/item/enchantable/bow.json', {'replace': False, 'values': bows})
-write(f'{D}/minecraft/tags/item/enchantable/vanishing.json', {'replace': False, 'values': melee + bows})
+write(f'{D}/minecraft/tags/item/enchantable/vanishing.json', {'replace': False, 'values': melee + bows + shields})
 
 # ---- lang
 JA_M = {'copper': '銅', 'iron': '鉄', 'gold': '金', 'diamond': 'ダイヤモンド', 'netherite': 'ネザライト'}
 EN_M = {'copper': 'Copper', 'iron': 'Iron', 'gold': 'Golden', 'diamond': 'Diamond', 'netherite': 'Netherite'}
-JA_T = {'sword': '剣', 'dagger': '短剣', 'mace': 'メイス', 'hammer': 'ハンマー', 'staff': '魔法の杖', 'bow': '弓', 'arrow': '矢'}
-EN_T = {'sword': 'Sword', 'dagger': 'Dagger', 'mace': 'Mace', 'hammer': 'Hammer', 'staff': 'Magic Staff', 'bow': 'Bow', 'arrow': 'Arrows'}
+JA_T = {'shield': '盾', 'sword': '剣', 'dagger': '短剣', 'mace': 'メイス', 'hammer': 'ハンマー', 'staff': '魔法の杖', 'bow': '弓', 'arrow': '矢'}
+EN_T = {'shield': 'Shield', 'sword': 'Sword', 'dagger': 'Dagger', 'mace': 'Mace', 'hammer': 'Hammer', 'staff': 'Magic Staff', 'bow': 'Bow', 'arrow': 'Arrows'}
 JA_ARMOR = {'helmet': 'ヘルメット', 'chestplate': 'チェストプレート', 'leggings': 'レギンス', 'boots': 'ブーツ'}
 EN_ARMOR = {'helmet': 'Helmet', 'chestplate': 'Chestplate', 'leggings': 'Leggings', 'boots': 'Boots'}
 PARTS_JA = {'sword': ['切先', '前部', '中央', '後部', '根元'], 'dagger': ['切先', '刃', '根元'],
             'mace': ['先端', '頭部', '首', '柄上', '柄下'], 'hammer': ['打面', '頭部', '首', '柄'],
             'staff': ['杖頭', '飾り', '柄上', '柄中', '柄下'], 'bow': ['上弭', '上リム', '握り', '下リム', '下弭'],
             'helmet': ['左頬', '左側面', '頭頂', '右側面', '右頬'], 'chestplate': ['左肩', '左胸', '胸中央', '右胸', '右肩'],
-            'leggings': ['左裾', '左腿', '腰', '右腿', '右裾'], 'boots': ['左つま先', '左かかと', '右かかと', '右つま先'], 'arrow': ['矢じり', '矢柄', '矢羽根']}
+            'leggings': ['左裾', '左腿', '腰', '右腿', '右裾'], 'boots': ['左つま先', '左かかと', '右かかと', '右つま先'], 'arrow': ['矢じり', '矢柄', '矢羽根'],
+            'shield': ['左縁', '左面', '中央', '右面', '右縁']}
 PARTS_EN = {'sword': ['Tip', 'Fore', 'Middle', 'Rear', 'Base'], 'dagger': ['Tip', 'Blade', 'Base'],
             'mace': ['Tip', 'Head', 'Neck', 'Upper shaft', 'Lower shaft'], 'hammer': ['Face', 'Head', 'Neck', 'Handle'],
             'staff': ['Head', 'Ornament', 'Upper shaft', 'Middle shaft', 'Lower shaft'], 'bow': ['Upper tip', 'Upper limb', 'Grip', 'Lower limb', 'Lower tip'],
             'helmet': ['Left cheek', 'Left side', 'Crown', 'Right side', 'Right cheek'], 'chestplate': ['Left shoulder', 'Left chest', 'Centre', 'Right chest', 'Right shoulder'],
-            'leggings': ['Left hem', 'Left thigh', 'Waist', 'Right thigh', 'Right hem'], 'boots': ['Left toe', 'Left heel', 'Right heel', 'Right toe'], 'arrow': ['Head', 'Shaft', 'Fletching']}
+            'leggings': ['Left hem', 'Left thigh', 'Waist', 'Right thigh', 'Right hem'], 'boots': ['Left toe', 'Left heel', 'Right heel', 'Right toe'], 'arrow': ['Head', 'Shaft', 'Fletching'],
+            'shield': ['Left rim', 'Left face', 'Boss', 'Right face', 'Right rim']}
 JA_MAT_SHORT = {'copper': '銅', 'iron': '鉄', 'gold': '金', 'diamond': 'ダイヤ'}
 EN_MAT_SHORT = {'copper': 'Copper', 'iron': 'Iron', 'gold': 'Gold', 'diamond': 'Diamond'}
 for lang, M, T, P, MS, extra in (
         ('ja_jp', JA_M, {**JA_T, **JA_ARMOR}, PARTS_JA, JA_MAT_SHORT, {'rpgmod.gui.armor_row': '← 防具', 'rpgmod.gui.arrow_count': '品質で 4／8／16／32本', 'rpgmod.gui.difficulty': '難易度 ×%s',
             'rpgmod.option.armor_toughness': '防具強度', 'rpgmod.option.damage_reduction': '被ダメージ軽減', 'rpgmod.option.boss_resistance': 'ボス耐性','rpgmod.gui.type': '武器の種類', 'rpgmod.gui.material': '素材',
             'rpgmod.gui.power_label': '威力', 'rpgmod.gui.adjacent_label': '隣接', 'rpgmod.gui.strikes_label': '打撃 %s',
-            'rpgmod.tooltip.bow_bonus': '矢の攻撃力 +%s（普通の弓より）'}),
+            'rpgmod.tooltip.bow_bonus': '矢の攻撃力 +%s（普通の弓より）',
+            'rpgmod.tooltip.shield_block': 'ガード：ダメージの%1$s%%を防ぐ（パラディンは+20%%）'}),
         ('en_us', EN_M, {**EN_T, **EN_ARMOR}, PARTS_EN, EN_MAT_SHORT, {'rpgmod.gui.armor_row': '< Armor', 'rpgmod.gui.arrow_count': 'Quality: 4/8/16/32 arrows', 'rpgmod.gui.difficulty': 'Difficulty x%s',
             'rpgmod.option.armor_toughness': 'Armor Toughness', 'rpgmod.option.damage_reduction': 'Damage Reduction', 'rpgmod.option.boss_resistance': 'Boss Resistance','rpgmod.gui.type': 'Weapon', 'rpgmod.gui.material': 'Material',
             'rpgmod.gui.power_label': 'Power', 'rpgmod.gui.adjacent_label': 'Sides', 'rpgmod.gui.strikes_label': 'Hits %s',
-            'rpgmod.tooltip.bow_bonus': 'Arrow damage +%s (vs. a normal bow)'})):
+            'rpgmod.tooltip.bow_bonus': 'Arrow damage +%s (vs. a normal bow)',
+            'rpgmod.tooltip.shield_block': 'Guard: blocks %1$s%% of the damage (paladins +20%%)'})):
     p = f'{A}/lang/{lang}.json'
     d = json.load(open(p, encoding='utf-8'))
     for k in [k for k in d if k.startswith('rpgmod.part.')]: del d[k]
     for m in MATS:
-        for t in MELEE + ['bow']:
+        for t in MELEE + ['bow'] + (['shield'] if m in SHIELD_MATS else []):
             d[f'item.rpgmod.{m}_{t}'] = (f'{M[m]}の{T[t]}' if lang == 'ja_jp' else f'{M[m]} {T[t]}')
     for t, names in P.items():
         for i, n in enumerate(names): d[f'rpgmod.part.{t}.{i}'] = n

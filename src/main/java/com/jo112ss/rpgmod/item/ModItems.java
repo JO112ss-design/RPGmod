@@ -18,9 +18,12 @@ public final class ModItems {
             if (type.isVanilla()) continue;
             Map<WeaponMaterial, DeferredItem<? extends Item>> byMat = new EnumMap<>(WeaponMaterial.class);
             for (WeaponMaterial mat : WeaponMaterial.values()) {
+                if (type == WeaponType.SHIELD && mat == WeaponMaterial.GOLD) continue; // no golden shield
                 String name = mat.id + "_" + type.id;
                 DeferredItem<? extends Item> item;
-                if (type.isBow()) {
+                if (type == WeaponType.SHIELD) {
+                    item = ModRegistries.ITEMS.registerItem(name, Item::new, p -> Shields.properties(p, mat));
+                } else if (type.isBow()) {
                     item = ModRegistries.ITEMS.registerItem(name, p -> new RpgBowItem(mat, p), p -> {
                         p = p.durability(mat.bowDurability).enchantable(Math.max(1, mat.tool.enchantmentValue() / 10)).repairable(mat.tool.repairItems());
                         return mat == WeaponMaterial.NETHERITE ? p.fireResistant() : p;
@@ -47,6 +50,7 @@ public final class ModItems {
             case LEGGINGS -> pick(mat, Items.COPPER_LEGGINGS, Items.IRON_LEGGINGS, Items.GOLDEN_LEGGINGS, Items.DIAMOND_LEGGINGS, Items.NETHERITE_LEGGINGS);
             case BOOTS -> pick(mat, Items.COPPER_BOOTS, Items.IRON_BOOTS, Items.GOLDEN_BOOTS, Items.DIAMOND_BOOTS, Items.NETHERITE_BOOTS);
             case ARROW -> Items.ARROW;
+            case SHIELD -> mat == WeaponMaterial.GOLD ? Items.SHIELD : ITEMS.get(type).get(mat).get();
             default -> ITEMS.get(type).get(mat).get();
         };
     }
@@ -79,7 +83,7 @@ public final class ModItems {
     /** Material of one of the RPG weapons, or null. */
     public static WeaponMaterial materialOf(Item item) {
         WeaponType t = typeOf(item);
-        if (t == null) return null;
+        if (t == null || item == Items.SHIELD) return null;
         for (WeaponMaterial m : WeaponMaterial.values()) if (get(t, m) == item) return m;
         return null;
     }

@@ -74,6 +74,7 @@ public final class ForgeOptionEffects {
     private static EquipmentSlotGroup slotGroup(ItemStack stack) {
         Equippable eq = stack.get(DataComponents.EQUIPPABLE);
         if (eq != null && eq.slot().getType() == EquipmentSlot.Type.HUMANOID_ARMOR) return EquipmentSlotGroup.bySlot(eq.slot());
+        if (eq != null && eq.slot() == EquipmentSlot.OFFHAND) return EquipmentSlotGroup.OFFHAND; // shields
         return EquipmentSlotGroup.MAINHAND;
     }
 
@@ -108,11 +109,16 @@ public final class ForgeOptionEffects {
         for (OptionType t : ATTRIBUTE_OPTIONS.keySet()) event.skipId(modifierId(t, group));
     }
 
-    /** Sum of an option over the worn armor pieces. */
+    /** Sum of an option over the worn armor pieces (and a forged shield in the off hand). */
     private static double armorTotal(LivingEntity entity, OptionType type) {
         double sum = 0;
         for (EquipmentSlot slot : ARMOR_SLOTS) {
             ForgedData d = data(entity.getItemBySlot(slot));
+            if (d != null) sum += d.get(type);
+        }
+        ItemStack off = entity.getOffhandItem();
+        if (com.jo112ss.rpgmod.item.ModItems.typeOf(off.getItem()) == com.jo112ss.rpgmod.item.WeaponType.SHIELD) {
+            ForgedData d = data(off);
             if (d != null) sum += d.get(type);
         }
         return sum;

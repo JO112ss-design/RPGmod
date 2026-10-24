@@ -25,6 +25,10 @@
     "rpgmod:iron_bow",
     "rpgmod:gold_bow",
     "rpgmod:diamond_bow",
-    "rpgmod:netherite_bow"
+    "rpgmod:netherite_bow",
+    "rpgmod:copper_shield",
+    "rpgmod:iron_shield",
+    "rpgmod:diamond_shield",
+    "rpgmod:netherite_shield"
   ]
 }

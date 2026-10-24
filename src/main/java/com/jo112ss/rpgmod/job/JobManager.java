@@ -373,6 +373,10 @@ public final class JobManager {
     public static void useSkill(ServerPlayer player, int slot) {
         JobData d = data(player);
         if (!d.hasJob() || slot < 0 || slot > 2 || !player.isAlive() || player.isSpectator()) return;
+        if (com.jo112ss.rpgmod.item.Shields.guarding(player)) { // guard or attack, not both at once
+            tell(player, "rpgmod.job.guarding");
+            return;
+        }
         String id = d.slot(slot);
         SkillDef def = JobDefs.skill(id);
         if (def == null || !d.knows(id)) {
@@ -411,6 +415,7 @@ public final class JobManager {
     public static boolean canStartCast(Player player, ItemStack staff, boolean notify) {
         JobData d = data(player);
         if (!d.hasJob() || !d.jobDef().usesSpells()) return false;
+        if (com.jo112ss.rpgmod.item.Shields.guarding(player)) return false;
         SkillDef def = selectedSpell(player, staff);
         ServerPlayer sp = notify && player instanceof ServerPlayer s ? s : null;
         if (def == null) {
@@ -472,6 +477,12 @@ public final class JobManager {
         double sum = 0;
         for (var slot : GEAR) {
             var fd = com.jo112ss.rpgmod.effects.ForgeOptionEffects.data(player.getItemBySlot(slot));
+            if (fd != null) sum += fd.get(type);
+        }
+        // a forged shield in the off hand counts like armour (other off-hand items do not)
+        ItemStack off = player.getOffhandItem();
+        if (ModItems.typeOf(off.getItem()) == WeaponType.SHIELD) {
+            var fd = com.jo112ss.rpgmod.effects.ForgeOptionEffects.data(off);
             if (fd != null) sum += fd.get(type);
         }
         return sum;

@@ -24,6 +24,7 @@ public final class ForgeableWeapons {
         for (WeaponType type : TYPES) {
             for (WeaponMaterial mat : MATERIALS) {
                 if (type == WeaponType.ARROW && mat != WeaponMaterial.IRON) continue; // arrows: iron heads only
+                if (type == WeaponType.SHIELD && mat == WeaponMaterial.GOLD) continue; // no golden shield
                 all.add(create(type, mat));
             }
         }

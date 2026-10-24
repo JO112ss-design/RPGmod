@@ -56,9 +56,10 @@ public class ForgeScreen extends AbstractContainerScreen<ForgeMenu> {
     private static final int MAT_X = 10, MAT_Y = 78, MAT_W = 56, MAT_H = 18, MAT_STEP = 60;
     private static final int PREVIEW_Y = 102;
 
-    /** Weapons on the first row, armor on the second; arrows sit at the end of the armor row. */
+    /** Weapons on the first row, armor on the second; the shield and the arrows end the armor row. */
     private static int slot(int i) {
-        return ForgeableWeapons.TYPES.get(i) == com.jo112ss.rpgmod.item.WeaponType.ARROW ? 11 : i;
+        var t = ForgeableWeapons.TYPES.get(i);
+        return t == com.jo112ss.rpgmod.item.WeaponType.ARROW ? 11 : t == com.jo112ss.rpgmod.item.WeaponType.SHIELD ? 10 : i;
     }
 
     private static int tabX(int i) {
@@ -329,7 +330,6 @@ public class ForgeScreen extends AbstractContainerScreen<ForgeMenu> {
             g.item(new ItemStack(com.jo112ss.rpgmod.item.ModItems.get(t, ForgeableWeapons.MATERIALS.get(chosenMat))), x + tx + 11, y + ty + 3);
             if (hover) g.setTooltipForNextFrame(font, Component.translatable("rpgmod.type." + t.id), mouseX, mouseY);
         }
-        g.text(font, Component.translatable("rpgmod.gui.armor_row"), x + tabX(9) + TYPE_W + 8, y + tabY(9) + 7, C_DIM, false);
         for (int i = 0; i < ForgeableWeapons.MATERIALS.size(); i++) {
             int tx = MAT_X + i * MAT_STEP;
             boolean chosen = i == chosenMat;

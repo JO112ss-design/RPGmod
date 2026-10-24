@@ -253,7 +253,7 @@ public final class ForgeSessionManager {
             return;
         }
         Random rnd = new Random(player.getRandom().nextLong());
-        List<RolledOption> options = OptionRoller.roll(quality.optionCount, s.weapon.type().isArmor(), s.weapon.type() == com.jo112ss.rpgmod.item.WeaponType.STAFF, rnd);
+        List<RolledOption> options = OptionRoller.roll(quality.optionCount, s.weapon.type().defensive(), s.weapon.type() == com.jo112ss.rpgmod.item.WeaponType.STAFF, rnd);
         ItemStack stack = new ItemStack(s.weapon.result().get());
         ForgedData data = ForgedData.of(quality, options, player.getGameProfile().name());
         stack.set(ModRegistries.FORGED_DATA.get(), data);

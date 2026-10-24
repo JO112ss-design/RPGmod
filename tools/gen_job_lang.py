@@ -164,6 +164,7 @@ UI = {  # key: (ja, en)
  'entity.rpgmod.king_slime': ('キングスライム', 'King Slime'),
  'item.rpgmod.skill_book': ('スキルの書', 'Skill Book'),
  'rpgmod.jobscreen.luck_reroll': ('振り直し%1$s%%', 'reroll %1$s%%'),
+ 'rpgmod.job.guarding': ('盾を構えている間はスキルを使えない', 'Lower your shield to use skills'),
  'item.rpgmod.hp_potion': ('HP回復ポーション', 'HP Potion'),
  'item.rpgmod.mp_potion': ('MP回復ポーション', 'MP Potion'),
  'rpgmod.potion.hp_used': ('HP +%1$s', 'HP +%1$s'),
