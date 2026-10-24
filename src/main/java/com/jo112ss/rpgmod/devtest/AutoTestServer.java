@@ -519,6 +519,8 @@ public final class AutoTestServer {
         var mode = player.gameMode();
         var diff = level.getDifficulty();
         player.setGameMode(net.minecraft.world.level.GameType.SURVIVAL);
+        boolean wasInvulnerable = player.getAbilities().invulnerable;
+        player.getAbilities().invulnerable = false;
         level.getServer().setDifficulty(net.minecraft.world.Difficulty.NORMAL, true);
         player.setItemSlot(net.minecraft.world.entity.EquipmentSlot.OFFHAND, new ItemStack(shieldItem));
         com.jo112ss.rpgmod.job.SkillTasks.later(2, () -> {
@@ -553,6 +555,8 @@ public final class AutoTestServer {
                 z.discard();
                 player.setHealth(player.getMaxHealth());
                 player.setGameMode(mode);
+                player.getAbilities().invulnerable = wasInvulnerable;
+                player.onUpdateAbilities();
                 level.getServer().setDifficulty(diff, true);
                 if (round == 0) shieldCheck(net.minecraft.world.item.Items.SHIELD, 1);
                 else player.setItemSlot(net.minecraft.world.entity.EquipmentSlot.OFFHAND, ItemStack.EMPTY);
