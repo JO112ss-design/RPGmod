@@ -108,6 +108,8 @@ public final class SkillPanel {
 
     /** Panel layout version; bump when node ids change so saved progress is refunded. */
     public static final int VERSION = 5;
+    /** Layout version of the advanced panels (bump when their cells change). */
+    public static final int ADV_VERSION = 1;
     public static final int RADIUS = 7;
 
     /** Stat strength by ring: inner rings x1, middle x1.5, outer x2. */
@@ -153,7 +155,9 @@ public final class SkillPanel {
     private static Map<Long, String[]> skillCells(JobDefs.Job job) {
         Map<Long, String> taken = new HashMap<>();
         Map<Long, String[]> out = new HashMap<>();
-        List<String> actives = job.actives().subList(1, job.actives().size()); // the first comes with the job
+        // a base job's first active comes with the job; an advanced job learns all of its skills here
+        boolean adv = JobDefs.isAdvanced(job.id());
+        List<String> actives = adv || job.actives().isEmpty() ? job.actives() : job.actives().subList(1, job.actives().size());
         for (int j = 0; j < actives.size(); j++) {
             int k = 2 + j % 5;
             double angle = 30 + j * (360.0 / Math.max(1, actives.size())) * 1.0 + (j / 5) * 37;
@@ -162,7 +166,7 @@ public final class SkillPanel {
             out.put(key(c[0], c[1]), new String[] {"skill", actives.get(j)});
         }
         if (job.usesSpells()) {
-            List<String> spells = job.spells().subList(1, job.spells().size());
+            List<String> spells = adv ? job.spells() : job.spells().subList(1, job.spells().size());
             for (int j = 0; j < spells.size(); j++) {
                 int k = 2 + (j * 2 + 1) % 5;
                 double angle = 75 + j * (360.0 / spells.size());

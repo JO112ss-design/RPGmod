@@ -30,17 +30,18 @@ public final class JobHud {
         if (!d.hasJob()) return;
         Font font = mc.font;
         int sw = g.guiWidth(), sh = g.guiHeight();
-        int x0 = sw - 3 * (SLOT + 4) - 6, y0 = sh - SLOT - 14;
+        int[] order = d.isAdvanced() ? new int[] {0, 1, 3, 2} : new int[] {0, 1, 2};
+        int x0 = sw - order.length * (SLOT + 4) - 6, y0 = sh - SLOT - 14;
         long now = mc.level.getGameTime();
         Map<JobStat, Double> st = JobStats.compute(d);
-        int color = d.jobType().color();
+        int color = JobDefs.job(d.displayJobId()).color();
 
         // background plate
         g.fill(x0 - 4, y0 - 26, sw - 2, sh - 2, 0x70000000);
         g.fill(x0 - 4, y0 - 26, sw - 2, y0 - 25, Ui.alpha(color, 0xC0));
 
         // level + exp
-        Component lv = Component.translatable("rpgmod.job." + d.jobId()).append(" Lv" + d.level());
+        Component lv = Component.translatable("rpgmod.job." + d.displayJobId()).append(" Lv" + d.displayLevel());
         g.text(font, lv, x0, y0 - 23, Ui.argb(color), true);
         float expFrac = d.expToNext() > 0 ? (float) d.exp() / d.expToNext() : 1f;
         int bw = sw - 6 - x0;
@@ -66,8 +67,9 @@ public final class JobHud {
 
         // skill slots
         double cdr = st.get(JobStat.COOLDOWN_REDUCTION) / 100.0;
-        for (int s = 0; s < 3; s++) {
-            int x = x0 + s * (SLOT + 4), y = y0;
+        for (int i = 0; i < order.length; i++) {
+            int s = order[i];
+            int x = x0 + i * (SLOT + 4), y = y0;
             SkillDef def = JobDefs.skill(d.slot(s));
             Ui.skillIcon(g, font, x, y, SLOT, def, false);
             if (def != null) {

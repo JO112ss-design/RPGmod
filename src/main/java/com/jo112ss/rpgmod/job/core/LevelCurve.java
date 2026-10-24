@@ -4,7 +4,17 @@ package com.jo112ss.rpgmod.job.core;
 public final class LevelCurve {
     private LevelCurve() {}
 
+    /** Top level of a base job; reaching it promotes the character to the advanced job. */
     public static final int DEFAULT_MAX_LEVEL = 100;
+    /** Level at which the advanced job begins (advanced level 1 = this level). */
+    public static final int ADVANCED_AT = 100;
+    /** Top level with the advanced job: advanced level 100. */
+    public static final int MAX_TOTAL_LEVEL = 199;
+
+    /** Advanced job level (1-100) for a total level, 0 below the advanced job. */
+    public static int advancedLevel(int level) {
+        return level >= ADVANCED_AT ? level - ADVANCED_AT + 1 : 0;
+    }
 
     /**
      * Experience to go from {@code level} to {@code level + 1}. Twice as many levels as the old

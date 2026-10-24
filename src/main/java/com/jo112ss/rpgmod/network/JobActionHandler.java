@@ -21,11 +21,12 @@ public final class JobActionHandler {
         switch (p.action()) {
             case JobActionPayload.CHOOSE_JOB -> JobManager.chooseJob(player, p.text());
             case JobActionPayload.USE_SKILL -> JobManager.useSkill(player, p.arg());
-            case JobActionPayload.UNLOCK_NODE -> JobManager.unlockNode(player, p.arg());
+            case JobActionPayload.UNLOCK_NODE -> JobManager.unlockNode(player, p.arg(), false);
+            case JobActionPayload.UNLOCK_ADV_NODE -> JobManager.unlockNode(player, p.arg(), true);
             case JobActionPayload.EQUIP_SKILL -> JobManager.equipSkill(player, p.arg(), p.text());
             case JobActionPayload.SET_SPELL -> JobManager.setSpell(player, p.arg(), p.text());
             case JobActionPayload.SELECT_SPELL -> JobManager.selectSpell(player, p.arg());
-            case JobActionPayload.RESET_PANEL -> JobManager.resetPanel(player);
+            case JobActionPayload.RESET_PANEL -> JobManager.resetPanel(player, p.arg() == 1);
             default -> { }
         }
     }

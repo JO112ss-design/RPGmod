@@ -45,6 +45,14 @@ public class JobScreen extends Screen {
     private int panelX0, panelY0, panelX1, panelY1;
 
     private Tab tab;
+    /** Panel tab: showing the advanced job's panel instead of the base one. */
+    private static boolean advView;
+    private int advBtnX, advBtnY, advBtnW;
+
+    /** Dev test: show the advanced panel. */
+    public static void testAdvView(boolean v) {
+        advView = v;
+    }
     private int left, top;
     private int selectedSlot = 0;      // skills tab: 0,1,2
     private int selectedSpellSlot = 0; // spells tab: 0..3
@@ -70,7 +78,8 @@ public class JobScreen extends Screen {
     protected void init() {
         left = (width - W) / 2;
         top = (height - H) / 2;
-        lastUnlocked = new HashSet<>(JobClient.data().unlocked());
+        if (!JobClient.data().isAdvanced()) advView = false;
+        lastUnlocked = new HashSet<>(JobClient.data().unlocked(advView));
     }
 
     @Override
@@ -121,8 +130,8 @@ public class JobScreen extends Screen {
             if (!panning) {
                 JobData d = JobClient.data();
                 SkillPanel.Node n = nodeAt(event.x(), event.y());
-                if (d.hasJob() && n != null && d.panel().isReachable(n, d.unlocked()) && d.freePoints() >= n.cost()) {
-                    JobClient.send(JobActionPayload.UNLOCK_NODE, n.id(), "");
+                if (d.hasJob() && n != null && d.panel(advView).isReachable(n, d.unlocked(advView)) && d.freePoints(advView) >= n.cost()) {
+                    JobClient.send(advView ? JobActionPayload.UNLOCK_ADV_NODE : JobActionPayload.UNLOCK_NODE, n.id(), "");
                 }
             }
             panning = false;
@@ -161,7 +170,7 @@ public class JobScreen extends Screen {
         JobData d = JobClient.data();
         if (!d.hasJob() || !in(mx, my, panelX0, panelY0, panelX1 - panelX0, panelY1 - panelY0)) return null;
         int ox = (panelX0 + panelX1) / 2 + (int) panX, oy = (panelY0 + panelY1) / 2 + (int) panY;
-        for (SkillPanel.Node n : d.panel().nodes()) {
+        for (SkillPanel.Node n : d.panel(advView).nodes()) {
             int px = ox + (int) Math.round(hexR * Math.sqrt(3) * (n.q() + n.r() / 2.0));
             int py = oy + (int) Math.round(hexR * 1.5 * n.r());
             if (Math.hypot(mx - px, my - py) < hexR * 0.85) return n;
@@ -184,9 +193,16 @@ public class JobScreen extends Screen {
         if (!d.hasJob()) return super.mouseClicked(event, doubleClick);
         switch (tab) {
             case PANEL -> {
+                if (advBtnW > 0 && d.isAdvanced() && in(mx, my, advBtnX, advBtnY, advBtnW, 14)) {
+                    advView = !advView;
+                    resetArmed = false;
+                    lastUnlocked = new HashSet<>(d.unlocked(advView));
+                    unlockAnim.clear();
+                    return true;
+                }
                 if (resetW > 0 && in(mx, my, resetX, resetY, resetW, 18)) {
                     if (resetArmed) {
-                        JobClient.send(JobActionPayload.RESET_PANEL, 0, "");
+                        JobClient.send(JobActionPayload.RESET_PANEL, advView ? 1 : 0, "");
                         resetArmed = false;
                     } else {
                         resetArmed = true;
@@ -203,16 +219,17 @@ public class JobScreen extends Screen {
                 }
             }
             case SKILLS -> {
-                for (int s = 0; s < 3; s++) {
-                    if (in(mx, my, slotX(s), top + 50, 34, 34)) {
-                        selectedSlot = s;
+                int[] order = slotOrder(d);
+                for (int i = 0; i < order.length; i++) {
+                    if (in(mx, my, slotX(i), top + 50, 34, 34)) {
+                        selectedSlot = order[i];
                         return true;
                     }
                 }
                 String clicked = skillCardAt(mx, my, skillList(d));
                 if (clicked != null && d.knows(clicked)) {
                     SkillDef def = JobDefs.skill(clicked);
-                    int slot = def.kind() == SkillKind.ULTIMATE ? 2 : (selectedSlot == 2 ? 0 : selectedSlot);
+                    int slot = def.kind() == SkillKind.ULTIMATE ? 2 : (selectedSlot == 2 || (selectedSlot == 3 && !d.isAdvanced()) ? 0 : selectedSlot);
                     JobClient.send(JobActionPayload.EQUIP_SKILL, slot, clicked);
                     return true;
                 }
@@ -249,10 +266,15 @@ public class JobScreen extends Screen {
         int accent = job != null ? job.color() : 0xC9A45C;
         Ui.panel(g, left, top, W, H, accent);
         MutableComponent header = Component.translatable("rpgmod.jobscreen.title");
-        if (job != null) header = Component.translatable("rpgmod.job." + job.id).withColor(job.color()).append(Component.literal("  Lv " + d.level()).withColor(Ui.TEXT));
+        if (job != null) {
+            JobDefs.Job shown = JobDefs.job(d.displayJobId());
+            header = Component.translatable("rpgmod.job." + shown.id()).withColor(shown.color()).append(Component.literal("  Lv " + d.displayLevel()).withColor(Ui.TEXT));
+        }
         g.text(font, header, left + 10, top + 6, Ui.TEXT, true);
-        Component pts = Component.translatable("rpgmod.jobscreen.points", d.freePoints());
-        g.text(font, pts, left + W - 10 - font.width(pts), top + 6, d.freePoints() > 0 ? Ui.GOLD : Ui.DIM, false);
+        boolean showAdv = d.isAdvanced() && (tab != Tab.PANEL || advView);
+        Component pts = showAdv ? Component.translatable("rpgmod.jobscreen.adv_points", d.freePoints(true)) : Component.translatable("rpgmod.jobscreen.points", d.freePoints());
+        int free = showAdv ? d.freePoints(true) : d.freePoints();
+        g.text(font, pts, left + W - 10 - font.width(pts), top + 6, free > 0 ? Ui.GOLD : Ui.DIM, false);
 
         List<Tab> tabs = tabs();
         for (int i = 0; i < tabs.size(); i++) {
@@ -295,9 +317,18 @@ public class JobScreen extends Screen {
         Ui.disc(g, ex, ey, 23, Ui.mix(Ui.argb(job.color()), 0xFF000000, 0.4f));
         Ui.circle(g, ex, ey, 23, Ui.argb(job.color()), 2);
         Ui.circle(g, ex, ey, 19, Ui.alpha(job.color(), 0x80), 1);
-        Ui.glyph(g, font, job.def().glyph(), ex + 1, ey + 1, 2.6f, Ui.TEXT);
-        g.centeredText(font, Component.translatable("rpgmod.job." + job.id), ex, cy + 60, Ui.argb(job.color()));
-        Ui.glyph(g, font, "Lv " + d.level(), ex, cy + 78, 1.5f, Ui.TEXT);
+        JobDefs.Job shown = JobDefs.job(d.displayJobId());
+        Ui.glyph(g, font, shown.glyph(), ex + 1, ey + 1, 2.6f, Ui.TEXT);
+        g.centeredText(font, Component.translatable("rpgmod.job." + shown.id()), ex, cy + 56, Ui.argb(shown.color()));
+        if (d.isAdvanced()) {
+            g.pose().pushMatrix();
+            g.pose().translate(ex, cy + 66);
+            g.pose().scale(0.75f, 0.75f);
+            Component from = Component.translatable("rpgmod.jobscreen.adv_from", Component.translatable("rpgmod.job." + job.id), d.level());
+            g.text(font, from, -font.width(from) / 2, 0, Ui.DIM, false);
+            g.pose().popMatrix();
+        }
+        Ui.glyph(g, font, "Lv " + d.displayLevel(), ex, cy + 80, 1.5f, Ui.TEXT);
         float frac = d.expToNext() > 0 ? (float) d.exp() / d.expToNext() : 1f;
         Ui.bar(g, font, cx + 6, cy + 90, cw - 12, 10, frac, Ui.EXP, d.exp() + " / " + d.expToNext());
         g.text(font, Component.translatable("rpgmod.jobscreen.exp"), cx + 6, cy + 102, Ui.DIM, false);
@@ -356,9 +387,11 @@ public class JobScreen extends Screen {
         int qy = sy + 124;
         Ui.inset(g, sx, qy, sw, H - (qy - top) - 8);
         g.text(font, Component.translatable("rpgmod.jobscreen.equipped"), sx + 6, qy + 5, Ui.GOLD, false);
-        int colW = (sw - 8) / 3;
-        for (int s = 0; s < 3; s++) {
-            int colX = sx + 4 + s * colW, iy = qy + 16;
+        int[] order = slotOrder(d);
+        int colW = (sw - 8) / order.length;
+        for (int i = 0; i < order.length; i++) {
+            int s = order[i];
+            int colX = sx + 4 + i * colW, iy = qy + 16;
             SkillDef def = JobDefs.skill(d.slot(s));
             int ix = colX + 4;
             Ui.skillIcon(g, font, ix, iy, 22, def, false);
@@ -382,10 +415,12 @@ public class JobScreen extends Screen {
     // ---- honeycomb panel
 
     private void drawPanel(GuiGraphicsExtractor g, JobData d, JobType job, int mouseX, int mouseY) {
-        SkillPanel panel = d.panel();
+        if (advView && !d.isAdvanced()) advView = false;
+        SkillPanel panel = d.panel(advView);
+        JobDefs.Job view = advView ? d.advancedDef() : d.jobDef();
         long now = System.currentTimeMillis();
-        for (int id : d.unlocked()) if (!lastUnlocked.contains(id)) unlockAnim.put(id, now);
-        lastUnlocked = new HashSet<>(d.unlocked());
+        for (int id : d.unlocked(advView)) if (!lastUnlocked.contains(id)) unlockAnim.put(id, now);
+        lastUnlocked = new HashSet<>(d.unlocked(advView));
 
         int ax = left + 8, ay = top + 40, aw = 252, ah = H - 48;
         Ui.inset(g, ax, ay, aw, ah);
@@ -400,11 +435,11 @@ public class JobScreen extends Screen {
         Ui.disc(g, ox, oy, rad, 0x0CFFFFFF);
         Ui.disc(g, ox, oy, rad * 2 / 3, 0x0CFFFFFF);
         Ui.disc(g, ox, oy, rad / 3, 0x0CFFFFFF);
-        int c = job.color();
+        int c = view.color();
         float pulse = (float) (0.5 + 0.5 * Math.sin(now / 220.0));
         // pass 1: soft glow behind owned cells so the unlocked area reads as one shape
         for (SkillPanel.Node n : panel.nodes()) {
-            if (!d.unlocked().contains(n.id())) continue;
+            if (!d.unlocked(advView).contains(n.id())) continue;
             int px = ox + (int) Math.round(hexR * Math.sqrt(3) * (n.q() + n.r() / 2.0));
             int py = oy + (int) Math.round(hexR * 1.5 * n.r());
             if (px < ax - hexR - 4 || px > ax + aw + hexR + 4 || py < ay - hexR - 4 || py > ay + ah + hexR + 4) continue; // off-screen
@@ -415,9 +450,9 @@ public class JobScreen extends Screen {
             int px = ox + (int) Math.round(hexR * Math.sqrt(3) * (n.q() + n.r() / 2.0));
             int py = oy + (int) Math.round(hexR * 1.5 * n.r());
             if (px < ax - hexR - 4 || px > ax + aw + hexR + 4 || py < ay - hexR - 4 || py > ay + ah + hexR + 4) continue; // off-screen
-            boolean owned = d.unlocked().contains(n.id());
-            boolean reachable = panel.isReachable(n, d.unlocked());
-            boolean affordable = reachable && d.freePoints() >= n.cost();
+            boolean owned = d.unlocked(advView).contains(n.id());
+            boolean reachable = panel.isReachable(n, d.unlocked(advView));
+            boolean affordable = reachable && d.freePoints(advView) >= n.cost();
             int typeTint = switch (n.type()) {
                 case ULTIMATE -> Ui.GOLD;
                 case SPELL -> 0xFFB09CFF;
@@ -470,7 +505,7 @@ public class JobScreen extends Screen {
                 } else unlockAnim.remove(n.id());
             }
             String glyph = switch (n.type()) {
-                case START -> job.def().glyph();
+                case START -> view.glyph();
                 case STAT -> n.stat().glyph;
                 default -> JobDefs.skill(n.skill()).glyph();
             };
@@ -482,11 +517,11 @@ public class JobScreen extends Screen {
         // neighbouring cells do not cover it); a dimmer one when they are next in line but need points
         for (SkillPanel.Node n : panel.nodes()) {
             if (n.type() == SkillPanel.NodeType.STAT || n.type() == SkillPanel.NodeType.START) continue;
-            if (!panel.isReachable(n, d.unlocked())) continue;
+            if (!panel.isReachable(n, d.unlocked(advView))) continue;
             int px = ox + (int) Math.round(hexR * Math.sqrt(3) * (n.q() + n.r() / 2.0));
             int py = oy + (int) Math.round(hexR * 1.5 * n.r());
             if (px < ax - hexR - 4 || px > ax + aw + hexR + 4 || py < ay - hexR - 4 || py > ay + ah + hexR + 4) continue; // off-screen
-            if (d.freePoints() >= n.cost()) {
+            if (d.freePoints(advView) >= n.cost()) {
                 int a = (int) (140 + 115 * pulse);
                 Ui.circle(g, px, py, hexR + 2, Ui.alpha(Ui.GOLD, a), 1);
                 Ui.circle(g, px, py, hexR + 3 + (int) (pulse * 2), Ui.alpha(Ui.GOLD, a / 3), 1);
@@ -519,12 +554,29 @@ public class JobScreen extends Screen {
         // info column
         int ix = ax + aw + 6, iy = ay, iw = W - (ix - left) - 8;
         Ui.inset(g, ix, iy, iw, ah);
-        g.text(font, Component.translatable("rpgmod.jobscreen.points_short"), ix + 5, iy + 5, Ui.DIM, false);
-        Ui.glyph(g, font, String.valueOf(d.freePoints()), ix + iw - 14, iy + 9, 1.5f, d.freePoints() > 0 ? Ui.GOLD : Ui.DIM);
-        g.fill(ix + 4, iy + 20, ix + iw - 4, iy + 21, Ui.EDGE);
+        g.text(font, Component.translatable(advView ? "rpgmod.jobscreen.adv_points_short" : "rpgmod.jobscreen.points_short"), ix + 5, iy + 5, Ui.DIM, false);
+        Ui.glyph(g, font, String.valueOf(d.freePoints(advView)), ix + iw - 14, iy + 9, 1.5f, d.freePoints(advView) > 0 ? Ui.GOLD : Ui.DIM);
+        int infoTop = iy + 20;
+        advBtnW = 0;
+        if (d.isAdvanced()) {
+            // switch between the base job's panel and the advanced job's panel (separate points)
+            advBtnX = ix + 4;
+            advBtnY = iy + 21;
+            advBtnW = iw - 8;
+            boolean hov = in(mouseX, mouseY, advBtnX, advBtnY, advBtnW, 14);
+            JobDefs.Job other = advView ? d.jobDef() : d.advancedDef();
+            int free = d.freePoints(!advView);
+            g.fill(advBtnX, advBtnY, advBtnX + advBtnW, advBtnY + 14, hov ? Ui.argb(other.color()) : Ui.EDGE);
+            g.fill(advBtnX + 1, advBtnY + 1, advBtnX + advBtnW - 1, advBtnY + 13, 0xFF1E2230);
+            Component label = Component.translatable("rpgmod.jobscreen.switch_panel", Component.translatable("rpgmod.job." + other.id()))
+                    .append(free > 0 ? " (" + free + ")" : "");
+            g.centeredText(font, font.substrByWidth(label, advBtnW - 4).getString(), advBtnX + advBtnW / 2, advBtnY + 3, free > 0 ? Ui.GOLD : Ui.TEXT);
+            infoTop = iy + 38;
+        }
+        g.fill(ix + 4, infoTop, ix + iw - 4, infoTop + 1, Ui.EDGE);
         if (hoveredNode != null) {
             SkillPanel.Node n = hoveredNode;
-            int ty = iy + 26;
+            int ty = infoTop + 6;
             Component name;
             Component sub;
             if (n.type() == SkillPanel.NodeType.STAT) {
@@ -533,7 +585,7 @@ public class JobScreen extends Screen {
                 sub = Component.translatable("rpgmod.node.stat");
             } else if (n.type() == SkillPanel.NodeType.START) {
                 name = Component.translatable("rpgmod.node.start");
-                sub = Ui.skillName(job.def().actives().get(0));
+                sub = advView ? Component.translatable("rpgmod.node.adv_start") : Ui.skillName(job.def().actives().get(0));
             } else {
                 name = Ui.skillName(n.skill());
                 sub = Component.translatable("rpgmod.node." + n.type().name().toLowerCase(java.util.Locale.ROOT));
@@ -545,22 +597,22 @@ public class JobScreen extends Screen {
             if (n.skill() != null) {
                 ty = drawSkillFacts(g, n.skill(), ix + 5, ty, iw - 10);
             }
-            boolean owned = d.unlocked().contains(n.id());
-            boolean reachable = d.panel().isReachable(n, d.unlocked());
+            boolean owned = d.unlocked(advView).contains(n.id());
+            boolean reachable = d.panel(advView).isReachable(n, d.unlocked(advView));
             Component state = owned ? Component.translatable("rpgmod.node.owned")
                     : !reachable ? Component.translatable("rpgmod.node.locked")
-                    : d.freePoints() >= n.cost() ? Component.translatable("rpgmod.node.click", n.cost())
+                    : d.freePoints(advView) >= n.cost() ? Component.translatable("rpgmod.node.click", n.cost())
                     : Component.translatable("rpgmod.node.need", n.cost());
-            int sc = owned ? Ui.EXP : reachable && d.freePoints() >= n.cost() ? Ui.GOLD : Ui.BAD;
+            int sc = owned ? Ui.EXP : reachable && d.freePoints(advView) >= n.cost() ? Ui.GOLD : Ui.BAD;
             g.textWithWordWrap(font, state, ix + 5, iy + ah - 50, iw - 10, sc, false);
         } else {
-            g.textWithWordWrap(font, Component.translatable("rpgmod.jobscreen.panel_hint"), ix + 5, iy + 28, iw - 10, Ui.DIM, false);
+            g.textWithWordWrap(font, Component.translatable(advView ? "rpgmod.jobscreen.adv_panel_hint" : "rpgmod.jobscreen.panel_hint"), ix + 5, infoTop + 8, iw - 10, Ui.DIM, false);
         }
         // reset button
         resetX = ix + 4;
         resetY = iy + ah - 22;
         resetW = iw - 8;
-        boolean canReset = d.unlocked().size() > 1 && (minecraft.player.hasInfiniteMaterials() || minecraft.player.experienceLevel >= resetCost());
+        boolean canReset = d.unlocked(advView).size() > 1 && (minecraft.player.hasInfiniteMaterials() || minecraft.player.experienceLevel >= resetCost());
         boolean hov = in(mouseX, mouseY, resetX, resetY, resetW, 18);
         g.fill(resetX, resetY, resetX + resetW, resetY + 18, resetArmed ? Ui.BAD : hov && canReset ? Ui.EDGE_LIGHT : Ui.EDGE);
         g.fill(resetX + 1, resetY + 1, resetX + resetW - 1, resetY + 17, canReset ? 0xFF1E2230 : 0xFF14161C);
@@ -598,13 +650,22 @@ public class JobScreen extends Screen {
     // ---- skills loadout
 
     private int slotX(int s) {
-        return left + 16 + s * 70;
+        return left + 16 + s * 52;
+    }
+
+    /** Slots in screen order: the actives (a third one with the advanced job), then the ultimate. */
+    private static int[] slotOrder(JobData d) {
+        return d.isAdvanced() ? new int[] {0, 1, 3, 2} : new int[] {0, 1, 2};
     }
 
     /** Every skill of the job (actives then ultimates), learnt or not. */
     private List<String> skillList(JobData d) {
         List<String> out = new ArrayList<>(d.jobDef().actives());
         out.addAll(d.jobDef().ultimates());
+        if (d.isAdvanced()) {
+            out.addAll(d.advancedDef().actives());
+            out.addAll(d.advancedDef().ultimates());
+        }
         return out;
     }
 
@@ -629,8 +690,10 @@ public class JobScreen extends Screen {
 
     private void drawSkills(GuiGraphicsExtractor g, JobData d, int mouseX, int mouseY) {
         g.text(font, Component.translatable("rpgmod.jobscreen.loadout"), left + 10, top + 38, Ui.GOLD, false);
-        for (int s = 0; s < 3; s++) {
-            int x = slotX(s), y = top + 50;
+        int[] order = slotOrder(d);
+        for (int i = 0; i < order.length; i++) {
+            int s = order[i];
+            int x = slotX(i), y = top + 50;
             boolean sel = s == selectedSlot;
             g.fill(x - 2, y - 2, x + 36, y + 36, sel ? Ui.GOLD : Ui.EDGE);
             SkillDef def = JobDefs.skill(d.slot(s));
@@ -653,7 +716,7 @@ public class JobScreen extends Screen {
             boolean hover = in(mouseX, mouseY, x, y, 98, 26);
             if (hover) hoveredSkill = id;
             int slotOf = -1;
-            for (int s = 0; s < 3; s++) if (d.slot(s).equals(id)) slotOf = s;
+            for (int s = 0; s < JobData.SLOTS; s++) if (d.slot(s).equals(id)) slotOf = s;
             g.fill(x, y, x + 98, y + 26, hover && known ? Ui.EDGE_LIGHT : Ui.EDGE);
             g.fill(x + 1, y + 1, x + 97, y + 25, known ? 0xFF181C26 : 0xFF111318);
             Ui.skillIcon(g, font, x + 3, y + 3, 20, def, !known);

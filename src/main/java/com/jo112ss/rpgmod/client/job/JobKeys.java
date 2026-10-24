@@ -6,7 +6,7 @@ import net.minecraft.client.KeyMapping;
 import net.minecraft.resources.Identifier;
 import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
 
-/** Key bindings (changeable in Controls): skills Z / X, ultimate C, status K, spell wheel V. */
+/** Key bindings (changeable in Controls): skills Z / X (/ B with the advanced job), ultimate C, status K, spell wheel V. */
 public final class JobKeys {
     private JobKeys() {}
 
@@ -15,16 +15,19 @@ public final class JobKeys {
     public static final KeyMapping SKILL_1 = new KeyMapping("key.rpgmod.skill_1", InputConstants.Type.KEYBOARD, InputConstants.KEY_Z, CATEGORY);
     public static final KeyMapping SKILL_2 = new KeyMapping("key.rpgmod.skill_2", InputConstants.Type.KEYBOARD, InputConstants.KEY_X, CATEGORY);
     public static final KeyMapping ULTIMATE = new KeyMapping("key.rpgmod.ultimate", InputConstants.Type.KEYBOARD, InputConstants.KEY_C, CATEGORY);
+    public static final KeyMapping SKILL_3 = new KeyMapping("key.rpgmod.skill_3", InputConstants.Type.KEYBOARD, InputConstants.KEY_B, CATEGORY);
     public static final KeyMapping STATUS = new KeyMapping("key.rpgmod.status", InputConstants.Type.KEYBOARD, InputConstants.KEY_K, CATEGORY);
     public static final KeyMapping SPELL_WHEEL = new KeyMapping("key.rpgmod.spell_wheel", InputConstants.Type.KEYBOARD, InputConstants.KEY_V, CATEGORY);
 
-    public static final KeyMapping[] SKILLS = {SKILL_1, SKILL_2, ULTIMATE};
+    /** Indexed by skill slot: 0 = skill 1, 1 = skill 2, 2 = ultimate, 3 = skill 3 (advanced job). */
+    public static final KeyMapping[] SKILLS = {SKILL_1, SKILL_2, ULTIMATE, SKILL_3};
 
     public static void register(RegisterKeyMappingsEvent event) {
         event.registerCategory(CATEGORY);
         event.register(SKILL_1);
         event.register(SKILL_2);
         event.register(ULTIMATE);
+        event.register(SKILL_3);
         event.register(STATUS);
         event.register(SPELL_WHEEL);
     }

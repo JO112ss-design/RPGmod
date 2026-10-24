@@ -330,6 +330,10 @@ public final class AutoTestServer {
     @SubscribeEvent
     public static void onTick(ServerTickEvent.Post event) {
         if (!ENABLED || player == null) return;
+        if (advancedSetupPending && !jobSetup) {
+            advancedSetupPending = false;
+            advancedSetup();
+        }
         if (swapCheckIn > 0 && --swapCheckIn == 0) {
             swapCheck();
             potionCheck();
@@ -338,12 +342,13 @@ public final class AutoTestServer {
             jobSetup = false;
             swapCheckIn = 40;
             com.jo112ss.rpgmod.job.JobManager.grantExp(player, 3000);
+            advancedSetupPending = true;
             // some armour on, for the status screen check (client values must match the server's)
             player.setItemSlot(net.minecraft.world.entity.EquipmentSlot.CHEST, new ItemStack(net.minecraft.world.item.Items.IRON_CHESTPLATE));
             player.setItemSlot(net.minecraft.world.entity.EquipmentSlot.HEAD, new ItemStack(net.minecraft.world.item.Items.DIAMOND_HELMET));
             com.jo112ss.rpgmod.job.JobData jd = com.jo112ss.rpgmod.job.JobManager.data(player);
             // unlock a path towards the outer ring so the panel shows every state
-            for (int id : new int[] {1, 2, 7, 8, 9, 19, 20}) com.jo112ss.rpgmod.job.JobManager.unlockNode(player, id);
+            for (int id : new int[] {1, 2, 7, 8, 9, 19, 20}) com.jo112ss.rpgmod.job.JobManager.unlockNode(player, id, false);
             // and walk up to the two nearest skill cells, so they show as "learnable now"
             var panel = com.jo112ss.rpgmod.job.core.SkillPanel.forJob(jd.jobId());
             java.util.Set<Integer> reached = new java.util.HashSet<>();
@@ -372,7 +377,7 @@ public final class AutoTestServer {
                 reached.add(goal.id());
                 java.util.List<Integer> path = new java.util.ArrayList<>();
                 for (int id = prev.get(goal.id()); id >= 0 && !jd.unlocked().contains(id); id = prev.get(id)) path.add(0, id);
-                for (int id : path) com.jo112ss.rpgmod.job.JobManager.unlockNode(player, id);
+                for (int id : path) com.jo112ss.rpgmod.job.JobManager.unlockNode(player, id, false);
             }
             ItemStack staff = new ItemStack(com.jo112ss.rpgmod.item.ModItems.get(com.jo112ss.rpgmod.item.WeaponType.STAFF, com.jo112ss.rpgmod.item.WeaponMaterial.IRON));
             player.getInventory().setItem(0, staff);
@@ -461,6 +466,24 @@ public final class AutoTestServer {
     }
 
     private static int swapCheckIn;
+    private static boolean advancedSetupPending;
+
+    /** Advanced job: promoted at 100, advanced points, a few advanced cells, the stats they add. */
+    private static void advancedSetup() {
+        var d = com.jo112ss.rpgmod.job.JobManager.data(player);
+        var before = com.jo112ss.rpgmod.job.JobStats.compute(d);
+        d.setLevel(120);
+        boolean promoted = d.ensureAdvanced();
+        if (promoted) com.jo112ss.rpgmod.job.JobManager.promote(player, d);
+        int free = d.freePoints(true);
+        for (int id = 1; id <= 4; id++) com.jo112ss.rpgmod.job.JobManager.unlockNode(player, id, true);
+        var after = com.jo112ss.rpgmod.job.JobStats.compute(d);
+        RpgMod.LOGGER.info("[AUTOTEST] advanced: promoted={} job={} shown {} Lv{} (total {}) adv points {} -> {} base points {}; magic attack {} -> {}, mana {} -> {}; monsters around Lv{}",
+                promoted, d.jobId(), d.displayJobId(), d.displayLevel(), d.level(), free, d.freePoints(true), d.freePoints(),
+                String.format("%.1f", before.get(com.jo112ss.rpgmod.job.core.JobStat.MAGIC_ATTACK)), String.format("%.1f", after.get(com.jo112ss.rpgmod.job.core.JobStat.MAGIC_ATTACK)),
+                String.format("%.0f", before.get(com.jo112ss.rpgmod.job.core.JobStat.MAX_MANA)), String.format("%.0f", after.get(com.jo112ss.rpgmod.job.core.JobStat.MAX_MANA)),
+                com.jo112ss.rpgmod.mob.MobLevels.topPlayerLevel(player.level().getServer()));
+    }
 
     /** Skill swap cooldown, level-scaled effect times and whole MP costs. */
     private static void swapCheck() {

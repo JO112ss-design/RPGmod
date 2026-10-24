@@ -32,6 +32,16 @@ public final class JobStats {
             SkillPanel.Node n = panel.node(id);
             if (n != null && n.type() == SkillPanel.NodeType.STAT) m.merge(n.stat(), n.amount(), Double::sum);
         }
+        // advanced job: its own growth per advanced level on top, and its panel
+        JobDefs.Job adv = data.isAdvanced() ? data.advancedDef() : null;
+        if (adv != null) {
+            adv.perLevel().forEach((s, v) -> m.merge(s, v * data.advLevel(), Double::sum));
+            SkillPanel ap = data.panel(true);
+            for (int id : data.unlocked(true)) {
+                SkillPanel.Node n = ap.node(id);
+                if (n != null && n.type() == SkillPanel.NodeType.STAT) m.merge(n.stat(), n.amount(), Double::sum);
+            }
+        }
         m.put(JobStat.COOLDOWN_REDUCTION, Math.min(50, m.get(JobStat.COOLDOWN_REDUCTION)));
         return m;
     }

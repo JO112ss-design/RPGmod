@@ -55,6 +55,7 @@ public final class JobCommands {
                             int lv = Math.min(IntegerArgumentType.getInteger(c, "level"), JobConfig.maxLevel());
                             JobData data = JobManager.data(p);
                             data.setLevel(lv);
+                            if (data.ensureAdvanced()) JobManager.promote(p, data);
                             JobStats.apply(p, data);
                             JobManager.sync(p);
                             c.getSource().sendSuccess(() -> Component.literal("Level of " + p.getGameProfile().name() + " = " + lv), true);

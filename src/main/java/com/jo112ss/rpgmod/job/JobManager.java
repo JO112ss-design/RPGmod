@@ -38,7 +38,7 @@ public final class JobManager {
         player.syncData(ModRegistries.JOB_DATA);
         // what other players see on this player's name plate: job and level
         JobData d = data(player);
-        String tag = d.hasJob() ? d.jobId() + ":" + d.level() : "";
+        String tag = d.hasJob() ? d.displayJobId() + ":" + d.displayLevel() : "";
         if (!tag.equals(player.getData(ModRegistries.JOB_TAG))) player.setData(ModRegistries.JOB_TAG, tag);
     }
 
@@ -55,6 +55,12 @@ public final class JobManager {
             d.resetPanel();
             player.sendSystemMessage(Component.translatable("rpgmod.job.panel_migrated").withStyle(ChatFormatting.GOLD));
         }
+        if (d.advPanelOutdated()) {
+            d.resetAdvPanel();
+            player.sendSystemMessage(Component.translatable("rpgmod.job.adv_panel_migrated").withStyle(ChatFormatting.GOLD));
+        }
+        // characters already at level 100 when the advanced jobs arrived are promoted on login
+        if (d.ensureAdvanced()) promote(player, d);
         JobStats.apply(player, d);
         d.setMana(Math.min(d.mana(), maxMana(player)));
         sync(player);
@@ -66,6 +72,26 @@ public final class JobManager {
         JobStats.apply(player, d);
         d.setMana(maxMana(player));
         player.setHealth(player.getMaxHealth());
+        sync(player);
+    }
+
+    /**
+     * Level 100: the advanced job. Announced to everyone, with a title for the player; the base
+     * panel stays as it is and the advanced panel opens with its own points.
+     */
+    public static void promote(ServerPlayer player, JobData d) {
+        JobDefs.Job adv = d.advancedDef();
+        if (adv == null) return;
+        Component name = Component.translatable("rpgmod.job." + adv.id()).withColor(adv.color());
+        player.connection.send(new net.minecraft.network.protocol.game.ClientboundSetTitlesAnimationPacket(10, 60, 20));
+        player.connection.send(new net.minecraft.network.protocol.game.ClientboundSetSubtitleTextPacket(
+                Component.translatable("rpgmod.job.promoted_sub").withStyle(ChatFormatting.GOLD)));
+        player.connection.send(new net.minecraft.network.protocol.game.ClientboundSetTitleTextPacket(name.copy().withStyle(ChatFormatting.BOLD)));
+        player.level().getServer().getPlayerList().broadcastSystemMessage(
+                Component.translatable("rpgmod.job.promoted", player.getDisplayName(), name).withStyle(ChatFormatting.GOLD), false);
+        player.level().playSound(null, player.blockPosition(), SoundEvents.UI_TOAST_CHALLENGE_COMPLETE, SoundSource.PLAYERS, 1.0F, 1.0F);
+        com.jo112ss.rpgmod.job.fx.ServerFx.of("level_up", player.position()).follow(player).color(adv.color()).send((ServerLevel) player.level());
+        JobStats.apply(player, d);
         sync(player);
     }
 
@@ -134,6 +160,7 @@ public final class JobManager {
         JobData d = data(player);
         if (!d.hasJob()) return;
         int gained = d.addExp(amount, JobConfig.maxLevel());
+        if (gained > 0 && d.ensureAdvanced()) promote(player, d);
         if (gained > 0) {
             JobStats.apply(player, d);
             d.setMana(maxMana(player));
@@ -147,23 +174,26 @@ public final class JobManager {
 
     // ------------------------------------------------------------------ skill panel / loadout
 
-    public static void unlockNode(ServerPlayer player, int nodeId) {
+    /** Buys a cell of the base panel ({@code adv} false) or of the advanced panel (advanced points). */
+    public static void unlockNode(ServerPlayer player, int nodeId, boolean adv) {
         JobData d = data(player);
-        SkillPanel panel = d.panel();
+        SkillPanel panel = d.panel(adv);
         if (panel == null) return;
         SkillPanel.Node node = panel.node(nodeId);
-        if (node == null || !panel.isReachable(node, d.unlocked())) return;
-        if (d.freePoints() < node.cost()) {
+        if (node == null || !panel.isReachable(node, d.unlocked(adv))) return;
+        if (d.freePoints(adv) < node.cost()) {
             tell(player, "rpgmod.job.not_enough_points");
             return;
         }
-        d.unlock(nodeId);
+        if (adv) d.unlockAdv(nodeId);
+        else d.unlock(nodeId);
         // a newly learnt skill goes into an empty slot automatically
         if (node.skill() != null) {
             SkillDef def = JobDefs.skill(node.skill());
             if (def != null && def.kind() == SkillKind.ACTIVE) {
                 if (d.slot(0).isEmpty()) d.setSlot(0, def.id());
                 else if (d.slot(1).isEmpty()) d.setSlot(1, def.id());
+                else if (d.isAdvanced() && d.slot(3).isEmpty()) d.setSlot(3, def.id());
             } else if (def != null && def.kind() == SkillKind.ULTIMATE && d.slot(2).isEmpty()) {
                 d.setSlot(2, def.id());
             }
@@ -174,9 +204,9 @@ public final class JobManager {
     }
 
     /** Resets the skill panel for vanilla experience levels (free in creative). */
-    public static void resetPanel(ServerPlayer player) {
+    public static void resetPanel(ServerPlayer player, boolean adv) {
         JobData d = data(player);
-        if (!d.hasJob() || d.unlocked().size() <= 1) return;
+        if (!d.hasJob() || d.unlocked(adv).size() <= 1) return;
         int cost = JobConfig.RESET_COST_LEVELS.get();
         if (!player.hasInfiniteMaterials()) {
             if (player.experienceLevel < cost) {
@@ -185,9 +215,10 @@ public final class JobManager {
             }
             player.giveExperienceLevels(-cost);
         }
-        d.resetPanel();
+        if (adv) d.resetAdvPanel();
+        else d.resetPanel();
         JobStats.apply(player, d);
-        player.sendSystemMessage(Component.translatable("rpgmod.job.reset_done", d.freePoints()).withStyle(ChatFormatting.GOLD));
+        player.sendSystemMessage(Component.translatable("rpgmod.job.reset_done", d.freePoints(adv)).withStyle(ChatFormatting.GOLD));
         player.level().playSound(null, player.blockPosition(), SoundEvents.GRINDSTONE_USE, SoundSource.PLAYERS, 1.0F, 1.0F);
         sync(player);
     }
@@ -260,10 +291,15 @@ public final class JobManager {
         return d.hasJob() && d.jobType().weapons.contains(WeaponType.BOW);
     }
 
-    /** Puts a learnt skill into slot 0/1 (actives) or 2 (ultimate); an empty id clears the slot. */
+    /** True for the active skill slots: 0, 1, and 3 once the advanced job is reached. */
+    public static boolean activeSlot(JobData d, int slot) {
+        return slot == 0 || slot == 1 || (slot == 3 && d.isAdvanced());
+    }
+
+    /** Puts a learnt skill into slot 0/1/3 (actives) or 2 (ultimate); an empty id clears the slot. */
     public static void equipSkill(ServerPlayer player, int slot, String skillId) {
         JobData d = data(player);
-        if (!d.hasJob() || slot < 0 || slot > 2) return;
+        if (!d.hasJob() || !(activeSlot(d, slot) || slot == 2)) return;
         if (skillId.isEmpty()) {
             d.setSlot(slot, "");
             sync(player);
@@ -273,8 +309,12 @@ public final class JobManager {
         if (def == null || !d.knows(skillId)) return;
         SkillKind need = slot == 2 ? SkillKind.ULTIMATE : SkillKind.ACTIVE;
         if (def.kind() != need) return;
-        boolean fresh = !d.slot(0).equals(skillId) && !d.slot(1).equals(skillId) && !d.slot(2).equals(skillId);
-        if (slot < 2 && d.slot(1 - slot).equals(skillId)) d.setSlot(1 - slot, d.slot(slot)); // swap
+        boolean fresh = true;
+        for (int k = 0; k < JobData.SLOTS; k++) if (d.slot(k).equals(skillId)) fresh = false;
+        // already in another active slot: the two swap places
+        for (int k = 0; k < JobData.SLOTS; k++) {
+            if (k != slot && k != 2 && d.slot(k).equals(skillId)) d.setSlot(k, d.slot(slot));
+        }
         d.setSlot(slot, skillId);
         if (fresh) swapCooldown(player, d, skillId);
         sync(player);
@@ -301,8 +341,8 @@ public final class JobManager {
         JobData d = data(player);
         if (!d.hasJob()) return 1;
         double bonus = JobConfig.SPEC.isLoaded() ? JobConfig.DURATION_AT_MAX.get() : 0.5;
-        int max = Math.max(2, JobConfig.maxLevel());
-        return 1 + bonus * Math.min(1, (d.level() - 1) / (double) (max - 1));
+        // the same growth per level all the way, so the advanced levels keep stretching it (x2 at 199)
+        return 1 + bonus * (d.level() - 1) / (double) (com.jo112ss.rpgmod.job.core.LevelCurve.DEFAULT_MAX_LEVEL - 1);
     }
 
     // ------------------------------------------------------------------ mana
@@ -376,7 +416,7 @@ public final class JobManager {
     /** Skill 1 / 2 / ultimate key. */
     public static void useSkill(ServerPlayer player, int slot) {
         JobData d = data(player);
-        if (!d.hasJob() || slot < 0 || slot > 2 || !player.isAlive() || player.isSpectator()) return;
+        if (!d.hasJob() || !(activeSlot(d, slot) || slot == 2) || !player.isAlive() || player.isSpectator()) return;
         if (com.jo112ss.rpgmod.item.Shields.guarding(player)) { // guard or attack, not both at once
             tell(player, "rpgmod.job.guarding");
             return;

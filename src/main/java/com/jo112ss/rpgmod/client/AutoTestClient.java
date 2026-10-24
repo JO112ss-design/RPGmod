@@ -56,27 +56,30 @@ public final class AutoTestClient {
                 com.jo112ss.rpgmod.RpgMod.LOGGER.info("[AUTOTEST] panel build={}us fps={}", com.jo112ss.rpgmod.client.job.JobScreen.lastPanelNanos / 1000, mc.getFps());
                 shot(mc, "13_panel");
             }
-            case 94 -> mc.gui.setScreen(new com.jo112ss.rpgmod.client.job.JobScreen(com.jo112ss.rpgmod.client.job.JobScreen.Tab.SKILLS));
-            case 104 -> shot(mc, "14_skills");
-            case 106 -> mc.gui.setScreen(new com.jo112ss.rpgmod.client.job.JobScreen(com.jo112ss.rpgmod.client.job.JobScreen.Tab.SPELLS));
-            case 116 -> shot(mc, "15_spells");
-            case 118 -> mc.gui.setScreen(null);
-            case 124 -> com.jo112ss.rpgmod.client.job.JobClient.send(com.jo112ss.rpgmod.network.JobActionPayload.USE_SKILL, 0, "");
-            case 126 -> mc.gameMode.useItem(mc.player, net.minecraft.world.InteractionHand.MAIN_HAND);
-            case 132 -> shot(mc, "16_hud");
-            case 134 -> {
+            case 93 -> com.jo112ss.rpgmod.client.job.JobScreen.testAdvView(true);
+            case 101 -> shot(mc, "13b_adv_panel");
+            case 102 -> com.jo112ss.rpgmod.client.job.JobScreen.testAdvView(false);
+            case 104 -> mc.gui.setScreen(new com.jo112ss.rpgmod.client.job.JobScreen(com.jo112ss.rpgmod.client.job.JobScreen.Tab.SKILLS));
+            case 114 -> shot(mc, "14_skills");
+            case 116 -> mc.gui.setScreen(new com.jo112ss.rpgmod.client.job.JobScreen(com.jo112ss.rpgmod.client.job.JobScreen.Tab.SPELLS));
+            case 126 -> shot(mc, "15_spells");
+            case 128 -> mc.gui.setScreen(null);
+            case 134 -> com.jo112ss.rpgmod.client.job.JobClient.send(com.jo112ss.rpgmod.network.JobActionPayload.USE_SKILL, 0, "");
+            case 136 -> mc.gameMode.useItem(mc.player, net.minecraft.world.InteractionHand.MAIN_HAND);
+            case 142 -> shot(mc, "16_hud");
+            case 144 -> {
                 com.jo112ss.rpgmod.client.job.SpellWheelScreen.testHold = true;
                 mc.gui.setScreen(new com.jo112ss.rpgmod.client.job.SpellWheelScreen());
             }
-            case 146 -> shot(mc, "17_wheel");
-            case 150 -> {
+            case 156 -> shot(mc, "17_wheel");
+            case 160 -> {
                 com.jo112ss.rpgmod.client.job.SpellWheelScreen.testHold = false;
                 mc.gui.setScreen(null);
                 com.jo112ss.rpgmod.job.JobData d = com.jo112ss.rpgmod.client.job.JobClient.data();
-                RpgMod.LOGGER.info("[AUTOTEST] job client: job={} level={} points={} slots={},{},{} mana={}", d.jobId(), d.level(), d.freePoints(),
-                        d.slot(0), d.slot(1), d.slot(2), d.mana());
+                RpgMod.LOGGER.info("[AUTOTEST] job client: job={} shown as {} Lv{} level={} points={} adv points={} slots={},{},{},{} mana={}", d.jobId(),
+                        d.displayJobId(), d.displayLevel(), d.level(), d.freePoints(), d.freePoints(true), d.slot(0), d.slot(1), d.slot(3), d.slot(2), d.mana());
             }
-            case 160 -> {
+            case 170 -> {
                 jobT = -1;
                 AutoTestServer.requestForge();
             }

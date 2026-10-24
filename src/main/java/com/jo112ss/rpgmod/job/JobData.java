@@ -27,8 +27,12 @@ public final class JobData {
     private int level = 1;
     private long exp;
     private final Set<Integer> unlocked = new TreeSet<>();
-    /** Equipped skill ids: 0 = skill 1, 1 = skill 2, 2 = ultimate. Empty string = none. */
-    private final String[] slots = {"", "", ""};
+    /** Cells owned on the advanced job's panel (paid with advanced points only). */
+    private final Set<Integer> advUnlocked = new TreeSet<>();
+    private int advPanelVersion = SkillPanel.ADV_VERSION;
+    /** Equipped skill ids: 0 = skill 1, 1 = skill 2, 2 = ultimate, 3 = skill 3 (advanced job). Empty string = none. */
+    private final String[] slots = {"", "", "", ""};
+    public static final int SLOTS = 4;
     private double mana = JobDefs.BASE_MANA;
     /** Skill id -> game time when it is ready again. */
     private final Map<String, Long> cooldowns = new HashMap<>();
@@ -46,12 +50,14 @@ public final class JobData {
             Codec.INT.optionalFieldOf("level", 1).forGetter(d -> d.level),
             Codec.LONG.optionalFieldOf("exp", 0L).forGetter(d -> d.exp),
             Codec.INT.listOf().optionalFieldOf("unlocked", List.of()).forGetter(d -> List.copyOf(d.unlocked)),
-            Codec.STRING.listOf().optionalFieldOf("slots", List.of("", "", "")).forGetter(d -> List.of(d.slots)),
+            Codec.STRING.listOf().optionalFieldOf("slots", List.of("", "", "", "")).forGetter(d -> List.of(d.slots)),
             Codec.DOUBLE.optionalFieldOf("mana", JobDefs.BASE_MANA).forGetter(d -> d.mana),
             Codec.unboundedMap(Codec.STRING, Codec.LONG).optionalFieldOf("cooldowns", Map.of()).forGetter(d -> Map.copyOf(d.cooldowns)),
             Codec.INT.optionalFieldOf("panel_version", 1).forGetter(d -> d.panelVersion),
             Codec.INT.optionalFieldOf("coat_mode", 0).forGetter(d -> d.coatMode),
-            Codec.INT.optionalFieldOf("bonus_points", 0).forGetter(d -> d.bonusPoints)
+            Codec.INT.optionalFieldOf("bonus_points", 0).forGetter(d -> d.bonusPoints),
+            Codec.INT.listOf().optionalFieldOf("adv_unlocked", List.of()).forGetter(d -> List.copyOf(d.advUnlocked)),
+            Codec.INT.optionalFieldOf("adv_panel_version", SkillPanel.ADV_VERSION).forGetter(d -> d.advPanelVersion)
     ).apply(i, JobData::new));
 
     public static final StreamCodec<RegistryFriendlyByteBuf, JobData> STREAM_CODEC = StreamCodec.of(
@@ -61,6 +67,8 @@ public final class JobData {
                 buf.writeVarLong(d.exp);
                 buf.writeVarInt(d.unlocked.size());
                 for (int id : d.unlocked) buf.writeVarInt(id);
+                buf.writeVarInt(d.advUnlocked.size());
+                for (int id : d.advUnlocked) buf.writeVarInt(id);
                 for (String s : d.slots) buf.writeUtf(s);
                 buf.writeDouble(d.mana);
                 buf.writeVarInt(d.cooldowns.size());
@@ -79,7 +87,9 @@ public final class JobData {
                 d.exp = buf.readVarLong();
                 int n = Math.min(buf.readVarInt(), 256);
                 for (int k = 0; k < n; k++) d.unlocked.add(buf.readVarInt());
-                for (int k = 0; k < 3; k++) d.slots[k] = buf.readUtf();
+                int an = Math.min(buf.readVarInt(), 256);
+                for (int k = 0; k < an; k++) d.advUnlocked.add(buf.readVarInt());
+                for (int k = 0; k < SLOTS; k++) d.slots[k] = buf.readUtf();
                 d.mana = buf.readDouble();
                 int c = Math.min(buf.readVarInt(), 256);
                 for (int k = 0; k < c; k++) d.cooldowns.put(buf.readUtf(), buf.readVarLong());
@@ -91,7 +101,10 @@ public final class JobData {
 
     public JobData() {}
 
-    private JobData(String job, int level, long exp, List<Integer> unlocked, List<String> slots, double mana, Map<String, Long> cooldowns, int panelVersion, int coatMode, int bonusPoints) {
+    private JobData(String job, int level, long exp, List<Integer> unlocked, List<String> slots, double mana, Map<String, Long> cooldowns, int panelVersion, int coatMode, int bonusPoints,
+                    List<Integer> advUnlocked, int advPanelVersion) {
+        this.advUnlocked.addAll(advUnlocked);
+        this.advPanelVersion = advPanelVersion;
         this.bonusPoints = Math.max(0, bonusPoints);
         this.panelVersion = panelVersion;
         this.coatMode = coatMode;
@@ -99,7 +112,7 @@ public final class JobData {
         this.level = Math.max(1, level);
         this.exp = Math.max(0, exp);
         this.unlocked.addAll(unlocked);
-        for (int k = 0; k < 3 && k < slots.size(); k++) this.slots[k] = slots.get(k);
+        for (int k = 0; k < SLOTS && k < slots.size(); k++) this.slots[k] = slots.get(k);
         this.mana = mana;
         this.cooldowns.putAll(cooldowns);
     }
@@ -142,8 +155,89 @@ public final class JobData {
         return java.util.Collections.unmodifiableSet(unlocked);
     }
 
+    /** Base panel points: one per level up to 100, plus skill books. */
     public int totalPoints() {
-        return LevelCurve.pointsForLevel(level) + bonusPoints;
+        return LevelCurve.pointsForLevel(Math.min(level, LevelCurve.DEFAULT_MAX_LEVEL)) + bonusPoints;
+    }
+
+    // ---- advanced job (level 100+)
+
+    /** True from level 100 on, once the job has an advanced job. */
+    public boolean isAdvanced() {
+        return hasJob() && level >= LevelCurve.ADVANCED_AT && JobDefs.advancedOf(job) != null;
+    }
+
+    public JobDefs.Job advancedDef() {
+        return hasJob() ? JobDefs.advancedOf(job) : null;
+    }
+
+    /** Advanced job level, 1-100 (0 before the advanced job). */
+    public int advLevel() {
+        return isAdvanced() ? LevelCurve.advancedLevel(level) : 0;
+    }
+
+    /** The job shown to players: the advanced job once reached. */
+    public String displayJobId() {
+        return isAdvanced() ? advancedDef().id() : job;
+    }
+
+    /** Level shown with the job name: the advanced level once reached. */
+    public int displayLevel() {
+        return isAdvanced() ? advLevel() : level;
+    }
+
+    public SkillPanel panel(boolean adv) {
+        if (!adv) return panel();
+        return isAdvanced() ? SkillPanel.forJob(advancedDef().id()) : null;
+    }
+
+    public Set<Integer> unlocked(boolean adv) {
+        return adv ? java.util.Collections.unmodifiableSet(advUnlocked) : unlocked();
+    }
+
+    public int totalPoints(boolean adv) {
+        return adv ? advLevel() : totalPoints();
+    }
+
+    public int spentPoints(boolean adv) {
+        if (!adv) return spentPoints();
+        SkillPanel p = panel(true);
+        return p == null ? 0 : p.spent(advUnlocked);
+    }
+
+    public int freePoints(boolean adv) {
+        return totalPoints(adv) - spentPoints(adv);
+    }
+
+    /** Gives the advanced panel its centre cell; true the first time (the promotion). */
+    public boolean ensureAdvanced() {
+        if (!isAdvanced() || advUnlocked.contains(0)) return false;
+        advUnlocked.add(0);
+        advPanelVersion = SkillPanel.ADV_VERSION;
+        return true;
+    }
+
+    public boolean advPanelOutdated() {
+        return isAdvanced() && advPanelVersion != SkillPanel.ADV_VERSION;
+    }
+
+    /** Back to only the advanced centre cell (advanced points refunded). */
+    public void resetAdvPanel() {
+        advUnlocked.clear();
+        advPanelVersion = SkillPanel.ADV_VERSION;
+        if (isAdvanced()) advUnlocked.add(0);
+        dropUnknownSlots();
+    }
+
+    public void unlockAdv(int nodeId) {
+        advUnlocked.add(nodeId);
+    }
+
+    /** Empties slots holding skills that are no longer learnt (after a reset). */
+    public void dropUnknownSlots() {
+        List<String> known = knownSkills();
+        for (int k = 0; k < SLOTS; k++) if (!slots[k].isEmpty() && !known.contains(slots[k])) slots[k] = "";
+        if (!isAdvanced()) slots[3] = "";
     }
 
     public int bonusPoints() {
@@ -187,6 +281,13 @@ public final class JobData {
             SkillPanel.Node n = p.node(id);
             if (n != null && n.skill() != null) out.add(n.skill());
         }
+        SkillPanel ap = panel(true);
+        if (ap != null) {
+            for (int id : advUnlocked) {
+                SkillPanel.Node n = ap.node(id);
+                if (n != null && n.skill() != null) out.add(n.skill());
+            }
+        }
         return new ArrayList<>(out);
     }
 
@@ -211,9 +312,11 @@ public final class JobData {
         level = 1;
         exp = 0;
         unlocked.clear();
+        advUnlocked.clear();
         cooldowns.clear();
         panelVersion = SkillPanel.VERSION;
-        slots[0] = slots[1] = slots[2] = "";
+        advPanelVersion = SkillPanel.ADV_VERSION;
+        slots[0] = slots[1] = slots[2] = slots[3] = "";
         if (hasJob()) {
             unlocked.add(0);
             JobDefs.Job def = jobDef();
@@ -281,11 +384,12 @@ public final class JobData {
     public void resetPanel() {
         unlocked.clear();
         panelVersion = SkillPanel.VERSION;
-        slots[0] = slots[1] = slots[2] = "";
-        if (hasJob()) {
-            unlocked.add(0);
+        if (hasJob()) unlocked.add(0);
+        // skills from the advanced panel stay equipped; the base ones that are gone come off
+        dropUnknownSlots();
+        if (hasJob() && slots[0].isEmpty()) {
             JobDefs.Job def = jobDef();
-            if (!def.actives().isEmpty()) slots[0] = def.actives().get(0);
+            if (!def.actives().isEmpty() && !java.util.Arrays.asList(slots).contains(def.actives().get(0))) slots[0] = def.actives().get(0);
         }
     }
 

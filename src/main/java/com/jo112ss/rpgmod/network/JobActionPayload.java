@@ -10,11 +10,12 @@ import net.minecraft.resources.Identifier;
 public record JobActionPayload(int action, int arg, String text) implements CustomPacketPayload {
     public static final int CHOOSE_JOB = 0;   // text = job id
     public static final int USE_SKILL = 1;    // arg = slot 0..2
-    public static final int UNLOCK_NODE = 2;  // arg = node id
+    public static final int UNLOCK_NODE = 2;  // arg = node id (base panel)
     public static final int EQUIP_SKILL = 3;  // arg = slot 0..2, text = skill id ("" clears)
     public static final int SET_SPELL = 4;    // arg = staff slot, text = spell id ("" clears)
     public static final int SELECT_SPELL = 5; // arg = staff slot
-    public static final int RESET_PANEL = 6;
+    public static final int RESET_PANEL = 6;  // arg = 1 for the advanced panel
+    public static final int UNLOCK_ADV_NODE = 7; // arg = node id (advanced panel)
 
     public static final Type<JobActionPayload> TYPE = new Type<>(Identifier.fromNamespaceAndPath(RpgMod.MODID, "job_action"));
 

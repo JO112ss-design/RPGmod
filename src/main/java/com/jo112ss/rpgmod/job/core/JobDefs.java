@@ -190,6 +190,47 @@ public final class JobDefs {
                 List.of());
     }
 
+    // ------------------------------------------------------------------ advanced jobs (level 100+)
+
+    /** Base job id -> its advanced job id, and back. */
+    public static final Map<String, String> ADVANCED = new LinkedHashMap<>();
+    public static final Map<String, String> BASE_OF = new LinkedHashMap<>();
+
+    static {
+        // growth per advanced level comes on top of the base job's own growth, which keeps going
+        advanced("fighter", "berserker", 0xB0201C, "狂", List.of(JobStat.ATTACK_DAMAGE, JobStat.CRIT_CHANCE, JobStat.ATTACK_SPEED, JobStat.MAX_HEALTH),
+                stats(JobStat.ATTACK_DAMAGE, 0.05, JobStat.CRIT_CHANCE, 0.05));
+        advanced("paladin", "guardian", 0xC8A030, "護", List.of(JobStat.ARMOR, JobStat.MAX_HEALTH, JobStat.ATTACK_DAMAGE),
+                stats(JobStat.ARMOR, 0.1, JobStat.MAX_HEALTH, 0.1));
+        advanced("ranger", "sharpshooter", 0x3E9E4A, "狙", List.of(JobStat.ATTACK_DAMAGE, JobStat.CRIT_CHANCE, JobStat.MOVEMENT_SPEED),
+                stats(JobStat.ATTACK_DAMAGE, 0.05, JobStat.CRIT_CHANCE, 0.05));
+        advanced("wizard", "spellmaster", 0x5A3FD8, "極", List.of(JobStat.MAGIC_ATTACK, JobStat.CAST_SPEED, JobStat.MAX_MANA, JobStat.MANA_REGEN),
+                stats(JobStat.MAGIC_ATTACK, 0.05, JobStat.MAX_MANA, 1));
+        advanced("enchanter", "runemaster", 0xC0508A, "刻", List.of(JobStat.MAGIC_ATTACK, JobStat.COOLDOWN_REDUCTION, JobStat.MAX_MANA, JobStat.SKILL_POWER),
+                stats(JobStat.MAGIC_ATTACK, 0.04, JobStat.MAX_MANA, 0.5));
+        advanced("gambler", "joker", 0x7A3FB0, "奇", List.of(JobStat.LUCK, JobStat.CRIT_CHANCE, JobStat.COOLDOWN_REDUCTION, JobStat.ATTACK_DAMAGE),
+                stats(JobStat.LUCK, 0.02, JobStat.CRIT_CHANCE, 0.05, JobStat.ATTACK_DAMAGE, 0.03));
+        advanced("assassin", "nightblade", 0x2E3A6E, "夜", List.of(JobStat.ATTACK_DAMAGE, JobStat.CRIT_CHANCE, JobStat.MOVEMENT_SPEED, JobStat.ATTACK_SPEED),
+                stats(JobStat.ATTACK_DAMAGE, 0.04, JobStat.CRIT_CHANCE, 0.05));
+        advanced("healer", "bishop", 0x3A8FD0, "聖", List.of(JobStat.MAGIC_ATTACK, JobStat.MAX_MANA, JobStat.SKILL_POWER, JobStat.MAX_HEALTH),
+                stats(JobStat.MAGIC_ATTACK, 0.04, JobStat.MAX_MANA, 0.75));
+    }
+
+    private static void advanced(String base, String id, int color, String glyph, List<JobStat> panelStats, Map<JobStat, Double> perLevel) {
+        job(id, color, glyph, panelStats, Map.of(), perLevel, List.of(), List.of(), List.of());
+        ADVANCED.put(base, id);
+        BASE_OF.put(id, base);
+    }
+
+    /** The advanced job of a base job, or null. */
+    public static Job advancedOf(String base) {
+        return job(ADVANCED.get(base));
+    }
+
+    public static boolean isAdvanced(String id) {
+        return BASE_OF.containsKey(id);
+    }
+
     // ------------------------------------------------------------------ helpers
 
     private static void job(String id, int color, String glyph, List<JobStat> panelStats, Map<JobStat, Double> base,
