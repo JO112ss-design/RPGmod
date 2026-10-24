@@ -60,6 +60,18 @@ public final class BossEvents {
         if (event.getAmount() > cap) event.setAmount(cap);
     }
 
+    /**
+     * Health past the vanilla cap is played by dividing every hit by the king's toughness. Done last
+     * (lowest priority), after everything that adds to a hit - arrows get the bow's material bonus
+     * and the shooter's own attack added in events, which would otherwise come through undivided.
+     */
+    @SubscribeEvent(priority = EventPriority.LOWEST)
+    public static void onKingHurt(LivingIncomingDamageEvent event) {
+        if (event.getEntity() instanceof KingSlime king && king.toughness() > 1) {
+            event.setAmount(event.getAmount() / king.toughness());
+        }
+    }
+
     /** The king shrinks on its own terms; it never splits like a vanilla slime when it dies. */
     @SubscribeEvent
     public static void onSplit(MobSplitEvent event) {

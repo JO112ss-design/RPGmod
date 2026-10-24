@@ -847,6 +847,19 @@ public final class AutoTestServer {
         // healer: heals are spells now, three new actives
         RpgMod.LOGGER.info("[AUTOTEST] p3 healer: actives {} spells {} casts={} start skills {}",
                 com.jo112ss.rpgmod.job.core.JobDefs.job("healer").actives(), com.jo112ss.rpgmod.job.core.JobDefs.job("healer").spells(), healer.castsSpells(), healer.knownSkills());
+        // king slime: an arrow carrying the shooter's own attack is divided by the king's toughness too
+        var king = com.jo112ss.rpgmod.mob.boss.BloodMoon.spawnNear(level, player);
+        if (king != null) {
+            var arrow = new net.minecraft.world.entity.projectile.arrow.Arrow(level, player, new ItemStack(Items.ARROW), new ItemStack(Items.BOW));
+            arrow.getPersistentData().putDouble("rpgmod_own_attack", 10);
+            com.jo112ss.rpgmod.job.JobManager.testForceCrit = false;
+            float kh = king.getHealth(), t = king.toughness();
+            king.hurtServer(level, player.damageSources().arrow(arrow, player), 6);
+            float lost = kh - king.getHealth();
+            RpgMod.LOGGER.info("[AUTOTEST] p3 king arrow: toughness {} lost {} (x toughness = {}); hit 6 + own 10 -> divided {} / undivided own {}",
+                    f(t), f(lost), f(lost * t), f(16 / t), f(6 / t + 10));
+            king.discard();
+        }
         // the fusion pairs
         RpgMod.LOGGER.info("[AUTOTEST] p3 fusion pairs: fire+ice={} fire+thunder={} ice+thunder={} fire+fire={} bolt+star={}",
                 com.jo112ss.rpgmod.job.SpellCasting.fusionOf("inferno", "frost_nova"), com.jo112ss.rpgmod.job.SpellCasting.fusionOf("thunder", "flame_burst"),

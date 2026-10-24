@@ -839,7 +839,9 @@ public class KingSlime extends Slime {
         if (source.getEntity() instanceof ServerPlayer p) participants.add(p.getUUID());
         // the openings: after a slam, dazed against a wall, exhausted after a combo, absorbing
         if (state == State.STUN || state == State.TIRED || state == State.ABSORB) damage *= damageTakenMult;
-        return super.hurtServer(level, source, damage / toughness);
+        // the toughness share is taken off last, in BossEvents.onKingHurt, so bonuses added on the way
+        // (a bow's material and the shooter's own attack, fire weapon...) are divided too
+        return super.hurtServer(level, source, damage);
     }
 
     /** Opening multiplier right now (for the overlay / tests): 1 when not open. */

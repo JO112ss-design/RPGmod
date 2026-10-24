@@ -139,8 +139,11 @@ public final class AdvancedHooks {
         level.playSound(null, vp.blockPosition(), SoundEvents.SHIELD_BLOCK.value(), SoundSource.PLAYERS, 0.8F, 0.6F);
     }
 
-    /** Yaksha: every melee hit lands again a moment later (its own crit roll); asura heals. */
-    @SubscribeEvent(priority = EventPriority.LOWEST)
+    /**
+     * Yaksha: every melee hit lands again a moment later (its own crit roll). Low, not lowest: the
+     * repeat must copy the hit before the bosses' toughness share is taken off (that comes last).
+     */
+    @SubscribeEvent(priority = EventPriority.LOW)
     public static void onDealt(LivingIncomingDamageEvent event) {
         if (!(event.getSource().getEntity() instanceof ServerPlayer sp) || event.getEntity() == sp || event.getAmount() <= 0) return;
         if (!(sp.level() instanceof ServerLevel level)) return;
