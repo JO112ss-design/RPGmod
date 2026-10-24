@@ -41,7 +41,7 @@ import net.minecraft.world.phys.Vec3;
  * spells and the bishop's three. Shares the targeting / damage helpers of {@link SkillExecutor}; the
  * lasting effects (exposed, cover, undying, twin venom...) are read by {@link AdvancedHooks}.
  */
-final class AdvSkills {
+public final class AdvSkills {
     private AdvSkills() {}
 
     static final Set<String> IDS = Set.of(
@@ -1197,7 +1197,7 @@ final class AdvSkills {
     // ================================================================== bishop
 
     /** Revives a player lying downed (Resurrection mod); false if they were not downed. */
-    static boolean revive(ServerPlayer p) {
+    public static boolean revive(ServerPlayer p) {
         if (!com.jo112ss.rpgmod.compat.Downed.is(p)) return false;
         try {
             Class<?> m = Class.forName("io.github.jo112ss.resurrection.DownedManager");

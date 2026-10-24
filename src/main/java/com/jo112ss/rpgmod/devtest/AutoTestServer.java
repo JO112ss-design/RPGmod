@@ -142,7 +142,7 @@ public final class AutoTestServer {
             }
             com.jo112ss.rpgmod.job.core.SkillDef def = com.jo112ss.rpgmod.job.core.JobDefs.skill(id);
             if (def != null) {
-                var job = com.jo112ss.rpgmod.job.JobType.byId(def.job());
+                var job = com.jo112ss.rpgmod.job.JobType.byId(com.jo112ss.rpgmod.job.core.JobDefs.BASE_OF.getOrDefault(def.job(), def.job()));
                 var weapon = def.kind() == com.jo112ss.rpgmod.job.core.SkillKind.SPELL || job == null ? com.jo112ss.rpgmod.item.WeaponType.STAFF : job.weapons.get(0);
                 if (id.equals("lucky_shot")) weapon = com.jo112ss.rpgmod.item.WeaponType.BOW;
                 player.getInventory().setItem(6, new ItemStack(com.jo112ss.rpgmod.item.ModItems.get(weapon, com.jo112ss.rpgmod.item.WeaponMaterial.IRON)));
@@ -350,35 +350,7 @@ public final class AutoTestServer {
             // unlock a path towards the outer ring so the panel shows every state
             for (int id : new int[] {1, 2, 7, 8, 9, 19, 20}) com.jo112ss.rpgmod.job.JobManager.unlockNode(player, id, false);
             // and walk up to the two nearest skill cells, so they show as "learnable now"
-            var panel = com.jo112ss.rpgmod.job.core.SkillPanel.forJob(jd.jobId());
-            java.util.Set<Integer> reached = new java.util.HashSet<>();
-            for (int goalCount = 0; goalCount < 2; goalCount++) {
-                java.util.Map<Integer, Integer> prev = new java.util.HashMap<>();
-                java.util.ArrayDeque<com.jo112ss.rpgmod.job.core.SkillPanel.Node> queue = new java.util.ArrayDeque<>();
-                for (int id : jd.unlocked()) {
-                    prev.put(id, -1);
-                    queue.add(panel.node(id));
-                }
-                com.jo112ss.rpgmod.job.core.SkillPanel.Node goal = null;
-                while (!queue.isEmpty()) {
-                    var n = queue.poll();
-                    if (!jd.unlocked().contains(n.id()) && n.type() != com.jo112ss.rpgmod.job.core.SkillPanel.NodeType.STAT && !reached.contains(n.id())) {
-                        goal = n;
-                        break;
-                    }
-                    for (var o : panel.neighbours(n)) {
-                        if (!prev.containsKey(o.id()) && (o.type() == com.jo112ss.rpgmod.job.core.SkillPanel.NodeType.STAT || !jd.unlocked().contains(o.id()))) {
-                            prev.put(o.id(), n.id());
-                            queue.add(o);
-                        }
-                    }
-                }
-                if (goal == null) break;
-                reached.add(goal.id());
-                java.util.List<Integer> path = new java.util.ArrayList<>();
-                for (int id = prev.get(goal.id()); id >= 0 && !jd.unlocked().contains(id); id = prev.get(id)) path.add(0, id);
-                for (int id : path) com.jo112ss.rpgmod.job.JobManager.unlockNode(player, id, false);
-            }
+            walkToSkills(jd, false, 2, false);
             ItemStack staff = new ItemStack(com.jo112ss.rpgmod.item.ModItems.get(com.jo112ss.rpgmod.item.WeaponType.STAFF, com.jo112ss.rpgmod.item.WeaponMaterial.IRON));
             player.getInventory().setItem(0, staff);
             player.getInventory().setSelectedSlot(0);
@@ -468,6 +440,46 @@ public final class AutoTestServer {
     private static int swapCheckIn;
     private static boolean advancedSetupPending;
 
+    /**
+     * Unlocks the stat cells on the way to the {@code count} nearest skill cells of a panel (and the
+     * skill cells too when {@code take}).
+     */
+    private static java.util.List<String> walkToSkills(com.jo112ss.rpgmod.job.JobData jd, boolean adv, int count, boolean take) {
+        var panel = jd.panel(adv);
+        java.util.List<String> got = new java.util.ArrayList<>();
+        java.util.Set<Integer> reached = new java.util.HashSet<>();
+        for (int goalCount = 0; goalCount < count; goalCount++) {
+            java.util.Map<Integer, Integer> prev = new java.util.HashMap<>();
+            java.util.ArrayDeque<com.jo112ss.rpgmod.job.core.SkillPanel.Node> queue = new java.util.ArrayDeque<>();
+            for (int id : jd.unlocked(adv)) {
+                prev.put(id, -1);
+                queue.add(panel.node(id));
+            }
+            com.jo112ss.rpgmod.job.core.SkillPanel.Node goal = null;
+            while (!queue.isEmpty()) {
+                var n = queue.poll();
+                if (!jd.unlocked(adv).contains(n.id()) && n.type() != com.jo112ss.rpgmod.job.core.SkillPanel.NodeType.STAT && !reached.contains(n.id())) {
+                    goal = n;
+                    break;
+                }
+                for (var o : panel.neighbours(n)) {
+                    if (!prev.containsKey(o.id()) && (o.type() == com.jo112ss.rpgmod.job.core.SkillPanel.NodeType.STAT || !jd.unlocked(adv).contains(o.id()))) {
+                        prev.put(o.id(), n.id());
+                        queue.add(o);
+                    }
+                }
+            }
+            if (goal == null) break;
+            reached.add(goal.id());
+            java.util.List<Integer> path = new java.util.ArrayList<>();
+            for (int id = prev.get(goal.id()); id >= 0 && !jd.unlocked(adv).contains(id); id = prev.get(id)) path.add(0, id);
+            if (take) path.add(goal.id());
+            for (int id : path) com.jo112ss.rpgmod.job.JobManager.unlockNode(player, id, adv);
+            if (take && jd.unlocked(adv).contains(goal.id())) got.add(goal.skill());
+        }
+        return got;
+    }
+
     /** Advanced job: promoted at 100, advanced points, a few advanced cells, the stats they add. */
     private static void advancedSetup() {
         var d = com.jo112ss.rpgmod.job.JobManager.data(player);
@@ -477,6 +489,15 @@ public final class AutoTestServer {
         if (promoted) com.jo112ss.rpgmod.job.JobManager.promote(player, d);
         int free = d.freePoints(true);
         for (int id = 1; id <= 4; id++) com.jo112ss.rpgmod.job.JobManager.unlockNode(player, id, true);
+        // learn the two nearest advanced skills and put an active one in the third slot
+        java.util.List<String> learnt = walkToSkills(d, true, 2, true);
+        for (String s : learnt) {
+            var sd = com.jo112ss.rpgmod.job.core.JobDefs.skill(s);
+            if (sd != null && sd.kind() == com.jo112ss.rpgmod.job.core.SkillKind.ACTIVE) com.jo112ss.rpgmod.job.JobManager.equipSkill(player, 3, s);
+            if (sd != null && sd.kind() == com.jo112ss.rpgmod.job.core.SkillKind.SPELL) com.jo112ss.rpgmod.job.JobManager.setSpell(player, 3, s);
+        }
+        RpgMod.LOGGER.info("[AUTOTEST] advanced skills learnt {} (known now {}), slot 3 = {}", learnt, d.knownSkills(), d.slot(3));
+        com.jo112ss.rpgmod.job.SkillTasks.later(320, AutoTestServer::advCheck);
         var after = com.jo112ss.rpgmod.job.JobStats.compute(d);
         RpgMod.LOGGER.info("[AUTOTEST] advanced: promoted={} job={} shown {} Lv{} (total {}) adv points {} -> {} base points {}; magic attack {} -> {}, mana {} -> {}; monsters around Lv{}",
                 promoted, d.jobId(), d.displayJobId(), d.displayLevel(), d.level(), free, d.freePoints(true), d.freePoints(),
@@ -590,6 +611,195 @@ public final class AutoTestServer {
                 if (round == 0) shieldCheck(net.minecraft.world.item.Items.SHIELD, 1);
                 else player.setItemSlot(net.minecraft.world.entity.EquipmentSlot.OFFHAND, ItemStack.EMPTY);
             });
+        });
+    }
+
+    // ------------------------------------------------------------------ advanced job effects
+
+    private static final net.minecraft.resources.ResourceKey<net.minecraft.world.damagesource.DamageType> SKILL_KEY =
+            net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.DAMAGE_TYPE, net.minecraft.resources.Identifier.fromNamespaceAndPath("rpgmod", "skill"));
+
+    private static net.minecraft.world.entity.monster.zombie.Husk advDummy(net.minecraft.server.level.ServerLevel level, double dx) {
+        var z = net.minecraft.world.entity.EntityTypes.HUSK.create(level, net.minecraft.world.entity.EntitySpawnReason.COMMAND);
+        z.snapTo(player.getX() + dx, player.getY(), player.getZ() + 2, 180F, 0F);
+        z.setNoAi(true);
+        z.getAttribute(Attributes.MAX_HEALTH).setBaseValue(1000);
+        z.getAttribute(Attributes.ARMOR).setBaseValue(0);
+        z.setHealth(1000);
+        level.addFreshEntity(z);
+        return z;
+    }
+
+    private static float hit(net.minecraft.server.level.ServerLevel level, net.minecraft.world.entity.LivingEntity e, net.minecraft.world.damagesource.DamageSource src, float amount) {
+        float before = e.getHealth();
+        e.hurtServer(level, src, amount);
+        return before - e.getHealth();
+    }
+
+    private static String f(double v) {
+        return String.format("%.2f", v);
+    }
+
+    /** The lasting effects of the advanced skills, each measured against the same hit without it. */
+    private static void advCheck() {
+        var level = (net.minecraft.server.level.ServerLevel) player.level();
+        var mode = player.gameMode();
+        var diff = level.getDifficulty();
+        boolean wasInv = player.getAbilities().invulnerable;
+        player.setGameMode(net.minecraft.world.level.GameType.SURVIVAL);
+        player.getAbilities().invulnerable = false;
+        level.getServer().setDifficulty(net.minecraft.world.Difficulty.NORMAL, true);
+        com.jo112ss.rpgmod.job.JobManager.testForceCrit = false;
+        var z = advDummy(level, 0);
+        var plain = level.damageSources().source(SKILL_KEY);
+        // exposed (+30% per level)
+        float a = hit(level, z, plain, 10);
+        z.addEffect(new net.minecraft.world.effect.MobEffectInstance(com.jo112ss.rpgmod.registry.ModEffects.EXPOSED, 200, 1));
+        float b = hit(level, z, plain, 10);
+        z.removeAllEffects();
+        RpgMod.LOGGER.info("[AUTOTEST] adv exposed II: {} -> {} (x{}, expected x1.60)", f(a), f(b), f(b / a));
+        // asura at half health: x1.75, 15% heals
+        var mine = player.damageSources().source(SKILL_KEY, player, player);
+        float c0 = hit(level, z, mine, 10);
+        player.setHealth(player.getMaxHealth() * 0.5F);
+        player.addEffect(new net.minecraft.world.effect.MobEffectInstance(com.jo112ss.rpgmod.registry.ModEffects.ASURA, 200, 0));
+        float hp0 = player.getHealth();
+        float c1 = hit(level, z, mine, 10);
+        RpgMod.LOGGER.info("[AUTOTEST] adv asura at 50% health: {} -> {} (x{}, expected x1.75), healed {} (expected {})", f(c0), f(c1), f(c1 / c0),
+                f(player.getHealth() - hp0), f(c1 * 0.15));
+        player.removeAllEffects();
+        player.setHealth(player.getMaxHealth());
+        // iron wall / sanctum on the player
+        float p0 = hit(level, player, plain, 10);
+        player.setHealth(player.getMaxHealth());
+        player.addEffect(new net.minecraft.world.effect.MobEffectInstance(com.jo112ss.rpgmod.registry.ModEffects.IRON_WALL, 200, 0));
+        float p1 = hit(level, player, plain, 10);
+        player.removeAllEffects();
+        player.setHealth(player.getMaxHealth());
+        player.addEffect(new net.minecraft.world.effect.MobEffectInstance(com.jo112ss.rpgmod.registry.ModEffects.SANCTUM, 200, 0));
+        float p2 = hit(level, player, plain, 10);
+        player.removeAllEffects();
+        RpgMod.LOGGER.info("[AUTOTEST] adv player hit {}: iron wall {} (x{}, expected x0.50, knockback res now {}), sanctum {} (x{}, expected x0.70)", f(p0), f(p1), f(p1 / p0),
+                f(player.getAttributeValue(Attributes.KNOCKBACK_RESISTANCE)), f(p2), f(p2 / p0));
+        // undying: a huge hit leaves 1 health
+        player.setHealth(10);
+        player.addEffect(new net.minecraft.world.effect.MobEffectInstance(com.jo112ss.rpgmod.registry.ModEffects.UNDYING, 200, 0));
+        player.hurtServer(level, plain, 500);
+        RpgMod.LOGGER.info("[AUTOTEST] adv undying: 500 damage at 10 health -> health {} alive={}", f(player.getHealth()), player.isAlive());
+        player.removeAllEffects();
+        player.setHealth(player.getMaxHealth());
+        // feather: no fall damage
+        float h = player.getHealth();
+        player.causeFallDamage(12, 1, level.damageSources().fall());
+        float fall0 = h - player.getHealth();
+        player.setHealth(player.getMaxHealth());
+        player.addEffect(new net.minecraft.world.effect.MobEffectInstance(com.jo112ss.rpgmod.registry.ModEffects.FEATHER, 200, 0));
+        player.causeFallDamage(12, 1, level.damageSources().fall());
+        RpgMod.LOGGER.info("[AUTOTEST] adv feather: 12-block fall {} -> {}", f(fall0), f(player.getMaxHealth() - player.getHealth()));
+        player.removeAllEffects();
+        player.setHealth(player.getMaxHealth());
+        // vanish: monsters cannot pick you
+        boolean seen0 = player.canBeSeenAsEnemy();
+        player.addEffect(new net.minecraft.world.effect.MobEffectInstance(com.jo112ss.rpgmod.registry.ModEffects.VANISH, 200, 0));
+        boolean seen1 = player.canBeSeenAsEnemy();
+        float v1 = hit(level, z, mine, 10);
+        RpgMod.LOGGER.info("[AUTOTEST] adv vanish: seen as enemy {} -> {}; first hit {} (expected x2 of {}), vanish left {}", seen0, seen1, f(v1), f(c0),
+                player.hasEffect(com.jo112ss.rpgmod.registry.ModEffects.VANISH));
+        player.removeAllEffects();
+        // yaksha: a sword hit lands twice
+        player.getInventory().setItem(7, new ItemStack(Items.IRON_SWORD));
+        player.getInventory().setSelectedSlot(7);
+        com.jo112ss.rpgmod.job.SkillTasks.later(3, () -> {
+            float y0 = z.getHealth();
+            player.attack(z);
+            float single = y0 - z.getHealth();
+            player.addEffect(new net.minecraft.world.effect.MobEffectInstance(com.jo112ss.rpgmod.registry.ModEffects.YAKSHA, 200, 0));
+            com.jo112ss.rpgmod.job.SkillTasks.later(25, () -> {
+                float y1 = z.getHealth();
+                player.attack(z);
+                com.jo112ss.rpgmod.job.SkillTasks.later(8, () -> {
+                    RpgMod.LOGGER.info("[AUTOTEST] adv yaksha: sword hit {} -> with yaksha {} in total (expected about x2)", f(single), f(y1 - z.getHealth()));
+                    player.removeAllEffects();
+                    advCheck2(level, z, mode, diff, wasInv);
+                });
+            });
+        });
+    }
+
+    private static void advCheck2(net.minecraft.server.level.ServerLevel level, net.minecraft.world.entity.LivingEntity z,
+                                  net.minecraft.world.level.GameType mode, net.minecraft.world.Difficulty diff, boolean wasInv) {
+        // twin venom on a sword hit
+        player.addEffect(new net.minecraft.world.effect.MobEffectInstance(com.jo112ss.rpgmod.registry.ModEffects.TWIN_VENOM, 200, 0));
+        player.attack(z);
+        RpgMod.LOGGER.info("[AUTOTEST] adv twin venom: poison={} wither={}", z.hasEffect(net.minecraft.world.effect.MobEffects.POISON), z.hasEffect(net.minecraft.world.effect.MobEffects.WITHER));
+        player.removeAllEffects();
+        // empowered shot: the same bow arrow with and without
+        var z2 = advDummy(level, 3);
+        var z3 = advDummy(level, -3);
+        com.jo112ss.rpgmod.job.SkillTasks.later(2, () -> {
+            bowTest(level, player, z2, 0);
+            player.addEffect(new net.minecraft.world.effect.MobEffectInstance(com.jo112ss.rpgmod.registry.ModEffects.EMPOWERED_SHOT, 200, 0));
+            bowTest(level, player, z3, 0);
+            RpgMod.LOGGER.info("[AUTOTEST] adv empowered shot used up: {}", !player.hasEffect(com.jo112ss.rpgmod.registry.ModEffects.EMPOWERED_SHOT));
+        });
+        com.jo112ss.rpgmod.job.SkillTasks.later(30, () -> {
+            RpgMod.LOGGER.info("[AUTOTEST] adv empowered shot: arrow {} -> empowered {} (expected about x2.5)", f(1000 - z2.getHealth()), f(1000 - z3.getHealth()));
+            z2.discard();
+            z3.discard();
+            // loaded dice: roulette lands on 6
+            player.addEffect(new net.minecraft.world.effect.MobEffectInstance(com.jo112ss.rpgmod.registry.ModEffects.LOADED_DICE, 600, 0));
+            var rd = com.jo112ss.rpgmod.job.core.JobDefs.skill("roulette");
+            com.jo112ss.rpgmod.job.SkillExecutor.execute(player, rd, 1);
+        });
+        com.jo112ss.rpgmod.job.SkillTasks.later(75, () -> {
+            var fo = player.getEffect(com.jo112ss.rpgmod.registry.ModEffects.FORTUNE);
+            RpgMod.LOGGER.info("[AUTOTEST] adv loaded dice: roulette number {} (expected 6), die used up {}", fo == null ? -1 : fo.getAmplifier() + 1,
+                    !player.hasEffect(com.jo112ss.rpgmod.registry.ModEffects.LOADED_DICE));
+            player.removeAllEffects();
+            // double cast: the staff's spell goes off twice
+            ItemStack staff = new ItemStack(com.jo112ss.rpgmod.item.ModItems.get(com.jo112ss.rpgmod.item.WeaponType.STAFF, com.jo112ss.rpgmod.item.WeaponMaterial.IRON));
+            player.getInventory().setItem(7, staff);
+            player.getInventory().setSelectedSlot(7);
+            com.jo112ss.rpgmod.job.JobManager.setSpell(player, 0, "magic_bolt");
+            com.jo112ss.rpgmod.job.JobManager.selectSpell(player, 0);
+            player.addEffect(new net.minecraft.world.effect.MobEffectInstance(com.jo112ss.rpgmod.registry.ModEffects.DOUBLE_CAST, 300, 1));
+            var jd = com.jo112ss.rpgmod.job.JobManager.data(player);
+            jd.setMana(500);
+            jd.setCooldown("magic_bolt", 0);
+            boolean cast = com.jo112ss.rpgmod.job.JobManager.releaseCast(player, player.getMainHandItem(), 1000);
+            RpgMod.LOGGER.info("[AUTOTEST] adv double cast: cast={} charges left={}", cast,
+                    player.getEffect(com.jo112ss.rpgmod.registry.ModEffects.DOUBLE_CAST) == null ? 0 : player.getEffect(com.jo112ss.rpgmod.registry.ModEffects.DOUBLE_CAST).getAmplifier() + 1);
+            // overload: magic attack x1.5, spells cost 50% more
+            double m0 = com.jo112ss.rpgmod.job.JobManager.magicAttack(player);
+            player.addEffect(new net.minecraft.world.effect.MobEffectInstance(com.jo112ss.rpgmod.registry.ModEffects.OVERLOAD, 200, 0));
+            RpgMod.LOGGER.info("[AUTOTEST] adv overload: magic attack {} -> {}, meteor... thunder cost {} -> {}", f(m0), f(com.jo112ss.rpgmod.job.JobManager.magicAttack(player)),
+                    com.jo112ss.rpgmod.job.core.JobDefs.skill("thunder").mana(), com.jo112ss.rpgmod.job.JobManager.manaCost(player, com.jo112ss.rpgmod.job.core.JobDefs.skill("thunder")));
+            player.removeAllEffects();
+            // keen: +25 crit rate
+            com.jo112ss.rpgmod.job.JobManager.testForceCrit = null;
+            double k0 = com.jo112ss.rpgmod.job.JobManager.critChance(player, null);
+            player.addEffect(new net.minecraft.world.effect.MobEffectInstance(com.jo112ss.rpgmod.registry.ModEffects.KEEN, 200, 0));
+            RpgMod.LOGGER.info("[AUTOTEST] adv keen: crit rate {} -> {}", f(k0), f(com.jo112ss.rpgmod.job.JobManager.critChance(player, null)));
+            player.removeAllEffects();
+            // revive through the Resurrection mod
+            boolean downed = false;
+            try {
+                Class<?> dm = Class.forName("io.github.jo112ss.resurrection.DownedManager");
+                downed = Boolean.TRUE.equals(dm.getMethod("forceDown", ServerPlayer.class).invoke(null, player));
+            } catch (ReflectiveOperationException | LinkageError ex) {
+                RpgMod.LOGGER.info("[AUTOTEST] adv revive: no Resurrection ({})", ex.toString());
+            }
+            boolean isDown = com.jo112ss.rpgmod.compat.Downed.is(player);
+            boolean revived = com.jo112ss.rpgmod.job.AdvSkills.revive(player);
+            RpgMod.LOGGER.info("[AUTOTEST] adv revive: forced down={} downed={} -> revived={} downed now={} health={}", downed, isDown, revived,
+                    com.jo112ss.rpgmod.compat.Downed.is(player), f(player.getHealth()));
+            z.discard();
+            player.setHealth(player.getMaxHealth());
+            player.setGameMode(mode);
+            player.getAbilities().invulnerable = wasInv;
+            player.onUpdateAbilities();
+            level.getServer().setDifficulty(diff, true);
+            player.getInventory().setSelectedSlot(0);
         });
     }
 

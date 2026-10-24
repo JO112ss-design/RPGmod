@@ -60,9 +60,12 @@ public final class AutoTestClient {
             case 101 -> shot(mc, "13b_adv_panel");
             case 102 -> com.jo112ss.rpgmod.client.job.JobScreen.testAdvView(false);
             case 104 -> mc.gui.setScreen(new com.jo112ss.rpgmod.client.job.JobScreen(com.jo112ss.rpgmod.client.job.JobScreen.Tab.SKILLS));
-            case 114 -> shot(mc, "14_skills");
+            case 112 -> shot(mc, "14_skills");
+            case 113 -> com.jo112ss.rpgmod.client.job.JobScreen.testAdvView(true);
+            case 115 -> shot(mc, "14b_skills_adv");
             case 116 -> mc.gui.setScreen(new com.jo112ss.rpgmod.client.job.JobScreen(com.jo112ss.rpgmod.client.job.JobScreen.Tab.SPELLS));
-            case 126 -> shot(mc, "15_spells");
+            case 126 -> shot(mc, "15_spells_adv");
+            case 127 -> com.jo112ss.rpgmod.client.job.JobScreen.testAdvView(false);
             case 128 -> mc.gui.setScreen(null);
             case 134 -> com.jo112ss.rpgmod.client.job.JobClient.send(com.jo112ss.rpgmod.network.JobActionPayload.USE_SKILL, 0, "");
             case 136 -> mc.gameMode.useItem(mc.player, net.minecraft.world.InteractionHand.MAIN_HAND);
@@ -191,6 +194,19 @@ public final class AutoTestClient {
             case "mob:archer" -> new int[] {40, 100, 160};
             case "mob:items" -> new int[] {30, 60, 120, 190};
             case "mob:sense" -> new int[] {40, 200, 380};
+            case "snipe" -> new int[] {6, 11};
+            case "rapid_fire", "flurry", "card_storm" -> new int[] {10};
+            case "dead_eye" -> new int[] {8, 20};
+            case "ricochet" -> new int[] {5, 12};
+            case "armageddon" -> new int[] {14, 40};
+            case "inferno", "earth_rune", "ward_rune", "grand_rune", "mana_well", "arcane_seal", "divine_domain", "shield_wall", "light_pillar" -> new int[] {10, 30};
+            case "absolute_zero" -> new int[] {8, 15};
+            case "thunderstorm", "starfall", "tornado", "dark_orb" -> new int[] {14, 38};
+            case "stone_spikes", "shadow_stitch", "great_miracle", "bastion", "yaksha", "asura" -> new int[] {8};
+            case "triple_whirl" -> new int[] {2, 12, 22};
+            case "decoy" -> new int[] {10, 102};
+            case "wildcard" -> new int[] {10, 30};
+            case "radiant_lance", "switcheroo", "vanish", "shadow_run", "decapitate", "phase_shift", "holy_nova" -> new int[] {3};
             case "mob:dragonhp" -> new int[] {100, 140};
             case "mob:downed" -> new int[] {50, 120, 200};
             case "mob:stairs" -> new int[] {60, 300, 550, 700};
@@ -212,6 +228,7 @@ public final class AutoTestClient {
             case "mob:nether" -> 280;
             case "mob:king" -> 960;
             case "mob:sense" -> 400;
+            case "decoy" -> 120;
             case "mob:dragonhp" -> 220;
             case "mob:downed" -> 260;
             case "mob:stairs" -> 720;
@@ -229,7 +246,13 @@ public final class AutoTestClient {
             if ("all".equals(System.getProperty("rpgmod.showcase"))) showSkills.addAll(com.jo112ss.rpgmod.job.core.JobDefs.SKILLS.keySet());
             // enemy work: levels, plates and damage numbers (skills were checked in earlier runs)
             // blood moon boss (the monster scenes and skills were checked in earlier runs)
-            showSkills.addAll(java.util.List.of("roulette", "coin_toss"));
+            // advanced jobs: every new skill and spell
+            for (var j : com.jo112ss.rpgmod.job.core.JobDefs.JOBS.values()) {
+                if (!com.jo112ss.rpgmod.job.core.JobDefs.isAdvanced(j.id())) continue;
+                showSkills.addAll(j.actives());
+                showSkills.addAll(j.ultimates());
+                showSkills.addAll(j.spells());
+            }
             mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK);
             com.jo112ss.rpgmod.client.mob.MobOverlay.testSelf = true;
             mc.options.particles().set(net.minecraft.server.level.ParticleStatus.ALL);
