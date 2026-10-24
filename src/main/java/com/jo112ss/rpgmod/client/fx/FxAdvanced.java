@@ -250,13 +250,15 @@ final class FxAdvanced {
             pos[0] = wall ? hit.getLocation() : to;
             gone[0] += speed;
             Vec3 at = pos[0];
-            Fx.p(S.ORB, at).color(light(c), c).size(size).alpha(1, 1).life(1).spawn();
-            Fx.p(S.GLOW, at).color(c, dark(c)).size(size * 3).alpha(0.5F, 0.4F).life(1).spawn();
-            for (int i = 0, n = Fx.n(4); i < n; i++) {
+            // a dark core with a purple rim, wisps being sucked in
+            smoke(at, 0x0A0012, size * 1.2F, size * 1.4F, 2).alpha(0.95F, 0.9F).spawn();
+            Fx.p(S.RING, at).size(size * 1.3F).color(light(c), c).alpha(0.9F, 0.6F).randomAngle().life(2).spawn();
+            Fx.p(S.GLOW, at).color(c).size(size * 3).alpha(0.45F, 0.3F).life(1).spawn();
+            for (int i = 0, n = Fx.n(5); i < n; i++) {
                 Vec3 off = Fx.randomUnit().scale(2.2);
-                Fx.p(S.GLOW, at.add(off)).vel(off.scale(-0.08)).color(light(c), dark(c)).size(0.14F, 0).life(12).spawn();
+                Fx.p(S.GLOW, at.add(off)).vel(off.scale(-0.08)).color(light(c), c).size(0.16F, 0).life(12).spawn();
             }
-            if (age % 3 == 0) smoke(at, 0x10001A, 0.4F, 1.0F, 16).alpha(0.6F, 0).spawn();
+            if (age % 2 == 0) smoke(at.add(Fx.randomUnit().scale(0.4)), 0x1A0830, 0.5F, 1.2F, 18).alpha(0.6F, 0).spawn();
             return wall || gone[0] >= p.a();
         });
     }

@@ -229,6 +229,9 @@ public final class AutoTestClient {
             case "mob:king" -> 960;
             case "mob:sense" -> 400;
             case "decoy" -> 120;
+            // lingering areas: let them run out before the next skill so its numbers are its own
+            case "armageddon", "thunderstorm", "inferno", "starfall", "tornado", "earth_rune", "ward_rune", "grand_rune",
+                 "shield_wall", "divine_domain", "mana_well", "arcane_seal", "dark_orb", "card_storm" -> 110;
             case "mob:dragonhp" -> 220;
             case "mob:downed" -> 260;
             case "mob:stairs" -> 720;

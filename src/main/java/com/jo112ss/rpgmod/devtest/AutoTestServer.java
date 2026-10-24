@@ -714,7 +714,7 @@ public final class AutoTestServer {
             player.attack(z);
             float single = y0 - z.getHealth();
             player.addEffect(new net.minecraft.world.effect.MobEffectInstance(com.jo112ss.rpgmod.registry.ModEffects.YAKSHA, 200, 0));
-            com.jo112ss.rpgmod.job.SkillTasks.later(25, () -> {
+            com.jo112ss.rpgmod.job.SkillTasks.later(60, () -> { // attack cooldown fully back (off-job weapons swing slower)
                 float y1 = z.getHealth();
                 player.attack(z);
                 com.jo112ss.rpgmod.job.SkillTasks.later(8, () -> {
