@@ -514,8 +514,8 @@ final class MobScenes {
             }
             case "leap" -> {
                 if (t % 20 == 0) {
-                    RpgMod.LOGGER.info("[AUTOTEST] leap t={} {} health lost={}", t,
-                            mobs.stream().map(m -> m.getType().getDescriptionId().replace("entity.minecraft.", "") + (m.isAlive() ? "" : "(gone)")
+                    RpgMod.LOGGER.info("[AUTOTEST] leap t={} difficulty {} {} health lost={}", t, level.getDifficulty(),
+                            mobs.stream().map(m -> m.getType().getDescriptionId().replace("entity.minecraft.", "") + (m.isAlive() ? "" : "(gone " + m.getRemovalReason() + " hp " + m.getHealth() + ")")
                                     + " " + (m.getTarget() == player ? "target" : "none") + " sees=" + m.getSensing().hasLineOfSight(player)
                                     + " dist=" + String.format("%.1f", m.distanceTo(player)) + " y=" + String.format("%.1f", m.getY() - c.getY())).toList(),
                             String.format("%.1f", lostHealth));
