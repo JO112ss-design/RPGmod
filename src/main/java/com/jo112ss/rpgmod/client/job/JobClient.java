@@ -84,7 +84,7 @@ public final class JobClient {
             int id = hit instanceof net.minecraft.world.phys.EntityHitResult eh ? eh.getEntity().getId() : -1;
             event.setCanceled(true);
             event.setSwingHand(false);
-            mc.player.swing(net.minecraft.world.InteractionHand.OFF_HAND);
+            mc.player.swing(net.minecraft.world.InteractionHand.OFF_HAND, mc.player.getOffhandItem().getAttackAnimation(), false);
             send(JobActionPayload.OFFHAND_ATTACK, id, "");
         }
     }

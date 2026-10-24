@@ -76,7 +76,7 @@ public final class DualWield {
         if (now < NEXT.getOrDefault(p.getUUID(), 0L)) return false;
         NEXT.put(p.getUUID(), now + interval(p));
         ServerLevel level = (ServerLevel) p.level();
-        p.swing(InteractionHand.OFF_HAND, false); // the client already swung its own arm
+        p.swing(InteractionHand.OFF_HAND, p.getOffhandItem().getAttackAnimation(), false); // the client already swung its own arm
         Entity e = entityId >= 0 ? level.getEntity(entityId) : null;
         if (!(e instanceof LivingEntity target) || !target.isAlive() || target == p || target instanceof ArmorStand
                 || target instanceof Player || (target instanceof TamableAnimal t && t.isOwnedBy(p))
@@ -88,7 +88,7 @@ public final class DualWield {
         boolean hit = target.hurtServer(level, p.damageSources().playerAttack(p), dmg);
         if (hit) {
             Vec3 dir = target.position().subtract(p.position()).multiply(1, 0, 1);
-            if (dir.lengthSqr() > 1e-4) target.knockback(0.25, -dir.x, -dir.z);
+            if (dir.lengthSqr() > 1e-4) SkillExecutor.push(target, dir, 0.3, 0.1);
             p.getOffhandItem().hurtAndBreak(1, p, EquipmentSlot.OFFHAND);
             ServerFx.of("x_slash", target.position().add(0, target.getBbHeight() * 0.6, 0)).vec(dir).a(1.4).b(-0.7).color(0x9CB0FF).send(level);
             level.playSound(null, p.blockPosition(), SoundEvents.PLAYER_ATTACK_SWEEP, SoundSource.PLAYERS, 0.7F, 1.5F);
