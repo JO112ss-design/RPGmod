@@ -75,7 +75,6 @@ public final class ModRegistries {
     /** "job:level" of a player, synced to everyone who can see them (for the name plates of allies). */
     public static final java.util.function.Supplier<net.neoforged.neoforge.attachment.AttachmentType<String>> JOB_TAG =
             ATTACHMENTS.register("job_tag", () -> net.neoforged.neoforge.attachment.AttachmentType.builder(() -> "")
-                    .copyOnDeath()
                     .sync(net.minecraft.network.codec.ByteBufCodecs.STRING_UTF8)
                     .build());
 
