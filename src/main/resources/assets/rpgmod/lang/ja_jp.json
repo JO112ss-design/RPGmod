@@ -673,7 +673,7 @@
   "rpgmod.skill.frost_tempest.desc": "融合魔法（氷＋雷）：狙った一帯に凍える嵐。中の敵は凍えて鈍り、雷が落ち続ける。",
   "rpgmod.job.left_spell_selected": "左クリックの呪文：%s",
   "rpgmod.fusion.cast": "融合魔法：%s！",
-  "rpgmod.jobscreen.hands_legend": "R＝右手（右クリック） L＝左手（左手の呪文キー）",
+  "rpgmod.jobscreen.hands_legend": "R＝右クリック L＝左手キー",
   "rpgmod.wheel.hint_hands": "左の輪＝左手、右の輪＝右手",
   "rpgmod.wheel.left_hand": "左手 [%s]",
   "rpgmod.wheel.right_hand": "右手 [%s]",

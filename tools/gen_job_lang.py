@@ -331,7 +331,7 @@ UI = {  # key: (ja, en)
  'effect.rpgmod.sanctum': ('神域', 'Sanctum'),
  'rpgmod.job.left_spell_selected': ('左クリックの呪文：%s', 'Left-click spell: %s'),
  'rpgmod.fusion.cast': ('融合魔法：%s！', 'Fusion: %s!'),
- 'rpgmod.jobscreen.hands_legend': ('R＝右手（右クリック） L＝左手（左手の呪文キー）', 'R = right hand (right click), L = left hand (left-hand spell key)'),
+ 'rpgmod.jobscreen.hands_legend': ('R＝右クリック L＝左手キー', 'R: right click  L: left-hand key'),
  'rpgmod.wheel.left_hand': ('左手 [%s]', 'Left hand [%s]'),
  'rpgmod.wheel.right_hand': ('右手 [%s]', 'Right hand [%s]'),
  'key.rpgmod.left_spell': ('左手の呪文（スペルマスター）', 'Left-hand spell (spellmaster)'),
