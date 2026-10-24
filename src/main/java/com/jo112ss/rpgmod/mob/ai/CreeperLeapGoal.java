@@ -27,6 +27,9 @@ public final class CreeperLeapGoal extends Goal {
 
     private final Creeper creeper;
     private int airborne = -1;
+    private double vy0;
+    private int flight;
+    private Vec3 vxz = Vec3.ZERO;
 
     public CreeperLeapGoal(Creeper creeper) {
         this.creeper = creeper;
@@ -72,17 +75,17 @@ public final class CreeperLeapGoal extends Goal {
     public void start() {
         LivingEntity t = target();
         if (t == null || !(creeper.level() instanceof ServerLevel sl)) return;
-        // an arc whose top clears both ends by 6 blocks, landing at the player's feet. Worked out with
-        // the game's own air physics (gravity 0.08 then x0.98 vertically, x0.91 horizontally per tick)
+        // a parabola whose top is 6 blocks above the higher end (clears a wall right in front of the
+        // player), landing at the player's feet. The goal steers the velocity every tick along it, so
+        // air drag and the creeper's own walking cannot cut it short.
         Vec3 from = creeper.position(), to = t.position();
-        double rise = Math.max(0, to.y - from.y) + 6; // high enough to still clear a wall right in front of the player
-        double vy = 0.5;
-        while (vy < 3 && apexOf(vy) < rise) vy += 0.02;
-        int flight = landingTick(vy, to.y - from.y);
-        double carry = (1 - Math.pow(0.91, flight)) / (1 - 0.91); // blocks covered per unit of starting speed
-        double vx = (to.x - from.x) / carry, vz = (to.z - from.z) / carry;
+        double rise = Math.max(0, to.y - from.y) + 6;
+        vy0 = Math.sqrt(2 * G * rise);
+        double fall = rise - (to.y - from.y);
+        flight = (int) Math.ceil(vy0 / G + Math.sqrt(2 * fall / G));
+        vxz = new Vec3((to.x - from.x) / flight, 0, (to.z - from.z) / flight);
         creeper.getNavigation().stop();
-        creeper.setDeltaMovement(vx, vy, vz);
+        creeper.setDeltaMovement(vxz.x, vy0, vxz.z);
         creeper.needsSync = true;
         creeper.resetFallDistance();
         airborne = 0;
@@ -92,28 +95,6 @@ public final class CreeperLeapGoal extends Goal {
         if (com.jo112ss.rpgmod.devtest.AutoTestServer.ENABLED) {
             com.jo112ss.rpgmod.RpgMod.LOGGER.info("[AUTOTEST] creeper leap: from {} to {} ({} blocks up)", from, to, String.format("%.1f", to.y - from.y));
         }
-    }
-
-    /** Highest point reached with a starting upward speed {@code vy}. */
-    private static double apexOf(double vy) {
-        double y = 0, best = 0;
-        for (int i = 0; i < 200 && vy > 0; i++) {
-            y += vy;
-            best = Math.max(best, y);
-            vy = (vy - G) * 0.98;
-        }
-        return best;
-    }
-
-    /** Tick at which the arc comes back down to height {@code dy}. */
-    private static int landingTick(double vy, double dy) {
-        double y = 0;
-        for (int i = 1; i < 200; i++) {
-            y += vy;
-            vy = (vy - G) * 0.98;
-            if (vy < 0 && y <= dy) return i;
-        }
-        return 200;
     }
 
     @Override
@@ -132,6 +113,10 @@ public final class CreeperLeapGoal extends Goal {
         if (airborne < 0) return;
         airborne++;
         creeper.resetFallDistance(); // its own leaps never hurt it
-        if (airborne > 3 && creeper.onGround()) airborne = 60; // landed
+        if (airborne > 3 && creeper.onGround()) {
+            airborne = 60; // landed
+            return;
+        }
+        if (airborne <= flight + 10) creeper.setDeltaMovement(vxz.x, vy0 - G * airborne, vxz.z);
     }
 }
