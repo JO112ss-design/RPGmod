@@ -22,8 +22,10 @@ public final class CreeperLeapGoal extends Goal {
     public static final String KEY = "rpgmod_leaper";
     private static final double G = 0.08;
 
+    /** Game time of the next possible leap (saved on the mob). */
+    private static final String NEXT = "rpgmod_leap_next";
+
     private final Creeper creeper;
-    private int cooldown = 40;
     private int airborne = -1;
 
     public CreeperLeapGoal(Creeper creeper) {
@@ -35,6 +37,11 @@ public final class CreeperLeapGoal extends Goal {
         return c.getPersistentData().getBooleanOr(KEY, false);
     }
 
+    /** A leaper whose leap is ready: it would rather jump in than hiss through the wall (see SmartSwellGoal). */
+    public static boolean leapReady(Creeper c) {
+        return isLeaper(c) && c.level().getGameTime() >= c.getPersistentData().getLongOr(NEXT, 0L);
+    }
+
     private LivingEntity target() {
         LivingEntity t = creeper.getTarget();
         return t instanceof Player p && !p.isCreative() && !p.isSpectator() && p.isAlive() ? p : null;
@@ -42,16 +49,13 @@ public final class CreeperLeapGoal extends Goal {
 
     @Override
     public boolean canUse() {
-        if (cooldown > 0) {
-            cooldown--;
-            return false;
-        }
+        if (!leapReady(creeper)) return false;
         LivingEntity t = target();
         if (t == null || !creeper.onGround() || creeper.getSwellDir() > 0 || creeper.isInWater()) return false;
         double dx = t.getX() - creeper.getX(), dz = t.getZ() - creeper.getZ();
         double h = Math.sqrt(dx * dx + dz * dz);
         double up = t.getY() - creeper.getY();
-        if (h < 2.5 || h > 16 || up < -6 || up > 12) return false;
+        if (h < 1.0 || h > 16 || up < -6 || up > 12) return false;
         Path path = creeper.getNavigation().getPath();
         boolean walkable = path != null && path.canReach();
         boolean seen = creeper.getSensing().hasLineOfSight(t);
@@ -91,7 +95,7 @@ public final class CreeperLeapGoal extends Goal {
     @Override
     public void stop() {
         airborne = -1;
-        cooldown = 60 + creeper.getRandom().nextInt(40);
+        creeper.getPersistentData().putLong(NEXT, creeper.level().getGameTime() + 60 + creeper.getRandom().nextInt(40));
     }
 
     @Override

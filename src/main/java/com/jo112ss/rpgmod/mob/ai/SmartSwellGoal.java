@@ -44,8 +44,11 @@ public final class SmartSwellGoal extends Goal {
             return false;
         }
         double d2 = creeper.distanceToSqr(t);
+        boolean seen = creeper.getSensing().hasLineOfSight(t);
+        // a leaping creeper with its leap ready jumps over the wall instead of blasting through it
+        if (!seen && CreeperLeapGoal.leapReady(creeper)) return false;
         if (d2 < 9) return true;
-        if (d2 < wallRange() * wallRange() && !creeper.getSensing().hasLineOfSight(t)) return true;
+        if (d2 < wallRange() * wallRange() && !seen) return true;
         breaching = shouldBreach(t, d2);
         return breaching;
     }
