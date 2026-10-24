@@ -186,7 +186,7 @@ public final class JobDefs {
                         skill("card_throw", SkillKind.ACTIVE, SkillEffect.SHOT, 9, 11, 1.8, 16, 0, List.of(), 0, "札")),
                 List.of(
                         skill("jackpot", SkillKind.ULTIMATE, SkillEffect.GAMBLE, 90, 35, 8, 10, 15, List.of(), 0, "当"),
-                        skill("roulette", SkillKind.ULTIMATE, SkillEffect.GAMBLE, 90, 35, 6, 10, 12, List.of(), 0, "輪")),
+                        skill("roulette", SkillKind.ULTIMATE, SkillEffect.BUFF, 90, 35, 0, 0, 12, List.of(), 0, "輪")),
                 List.of());
     }
 

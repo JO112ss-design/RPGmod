@@ -137,7 +137,8 @@ public final class SkillExecutor {
             case "lucky_shot" -> luckyShot(c);
             case "russian_roulette" -> russianRoulette(c);
             case "card_throw" -> cardThrow(c);
-            case "coin_toss", "dice_roll", "all_in", "jackpot", "roulette" -> gamble(c);
+            case "coin_toss", "dice_roll", "all_in", "jackpot" -> gamble(c);
+            case "roulette" -> roulette(c);
             default -> generic(c);
         };
     }
@@ -1071,6 +1072,30 @@ public final class SkillExecutor {
         SkillTasks.later(wait, () -> {
             if (!c.p.isAlive()) return;
             gambleOutcome(c, result);
+        });
+        return true;
+    }
+
+    /**
+     * Gambler ultimate: the wheel stops on 1 to 6 (luck: spun twice, the higher number kept). For a
+     * while every hit is a critical hit with +10% crit damage per number, and every gamble gets a
+     * second roll.
+     */
+    private static boolean roulette(Ctx c) {
+        int roll = c.p.getRandom().nextInt(6);
+        if (JobManager.luckyReroll(c.p)) roll = Math.max(roll, c.p.getRandom().nextInt(6));
+        final int number = roll;
+        int wait = rollTicks("roulette");
+        ServerFx.of("roulette", c.p.position()).follow(c.p).a(number).b(wait).send(c.level);
+        sound(c, SoundEvents.EXPERIENCE_ORB_PICKUP, 0.5F);
+        SkillTasks.later(wait, () -> {
+            if (!c.p.isAlive()) return;
+            c.p.addEffect(new MobEffectInstance(com.jo112ss.rpgmod.registry.ModEffects.FORTUNE, ticks(c.def.duration()), number), c.p);
+            ServerFx.of("gamble_buff", c.p.position()).follow(c.p).a(2).color(OUTCOME_COLORS[0]).send(c.level);
+            sound(c, c.p.position(), SoundEvents.PLAYER_LEVELUP, 1.0F, 1.0F + number * 0.1F);
+            sound(c, c.p.position(), SoundEvents.NOTE_BLOCK_BELL.value(), 1.0F, 1.2F + number * 0.1F);
+            c.p.sendSystemMessage(Component.translatable("rpgmod.roulette.fortune", number + 1, (number + 1) * 10, Math.round(c.def.duration()))
+                    .withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD), true);
         });
         return true;
     }

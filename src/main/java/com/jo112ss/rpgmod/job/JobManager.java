@@ -452,6 +452,7 @@ public final class JobManager {
     /** RPG crit rate in percent: job stat + forged weapon option. */
     public static double critChance(Player player, net.minecraft.world.damagesource.DamageSource source) {
         if (testForceCrit != null) return testForceCrit ? 100 : 0;
+        if (player.hasEffect(com.jo112ss.rpgmod.registry.ModEffects.FORTUNE)) return 100; // roulette: every hit a crit
         double rate = JobStats.compute(data(player)).get(JobStat.CRIT_CHANCE);
         var fd = weaponData(player, source);
         if (fd != null) rate += fd.get(com.jo112ss.rpgmod.smithing.core.OptionType.CRIT_CHANCE);
@@ -461,7 +462,9 @@ public final class JobManager {
     /** RPG crit multiplier: 1.5 + forged crit damage. */
     public static double critMultiplier(Player player, net.minecraft.world.damagesource.DamageSource source) {
         var fd = weaponData(player, source);
-        return 1.5 + (fd == null ? 0 : fd.get(com.jo112ss.rpgmod.smithing.core.OptionType.CRIT_DAMAGE) / 100.0);
+        var fortune = player.getEffect(com.jo112ss.rpgmod.registry.ModEffects.FORTUNE);
+        double luck = fortune == null ? 0 : 0.1 * (fortune.getAmplifier() + 1); // roulette: +10% per number
+        return 1.5 + luck + (fd == null ? 0 : fd.get(com.jo112ss.rpgmod.smithing.core.OptionType.CRIT_DAMAGE) / 100.0);
     }
 
     /** Charge time in ticks after cast speed (skill panel + forged options, capped at -60%). */
@@ -548,6 +551,7 @@ public final class JobManager {
 
     /** True when luck grants a second roll this time. */
     public static boolean luckyReroll(Player player) {
+        if (player.hasEffect(com.jo112ss.rpgmod.registry.ModEffects.FORTUNE)) return true; // roulette prize: always
         return player.getRandom().nextDouble() < luckChance(player);
     }
 

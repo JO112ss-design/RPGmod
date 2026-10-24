@@ -50,6 +50,13 @@ public final class ModEffects {
     public static final DeferredHolder<MobEffect, MobEffect> POISON_COAT = EFFECTS.register("poison_coat",
             () -> new Simple(MobEffectCategory.BENEFICIAL, 0x7DFF4A));
 
+    /**
+     * Gambler's roulette prize: every hit is a critical hit, crits deal +10% per level (amplifier + 1),
+     * and luck always grants a second roll (see JobManager).
+     */
+    public static final DeferredHolder<MobEffect, MobEffect> FORTUNE = EFFECTS.register("fortune",
+            () -> new Simple(MobEffectCategory.BENEFICIAL, 0xFFD54A));
+
     /** Melee hits set the target on fire and deal (amplifier + 1) extra damage. */
     public static final DeferredHolder<MobEffect, MobEffect> FIRE_WEAPON = EFFECTS.register("fire_weapon",
             () -> new Simple(MobEffectCategory.BENEFICIAL, 0xFF7A2A));

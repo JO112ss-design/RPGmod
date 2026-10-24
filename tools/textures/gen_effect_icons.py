@@ -47,6 +47,15 @@ def fire_weapon(d):
     d.polygon([(11, 15), (10, 12), (12, 13), (13, 15)], fill=(255, 220, 110, 255))
 
 
-for n, f in [('attack_down', attack_down), ('armor_break', armor_break), ('quick_cast', quick_cast), ('poison_coat', poison_coat), ('fire_weapon', fire_weapon)]:
+def fortune(d):
+    # a gold four-leaf clover
+    g, dk = (255, 213, 74, 255), (170, 120, 20, 255)
+    for cx, cy in ((6, 6), (12, 6), (6, 12), (12, 12)):
+        d.ellipse([cx - 3, cy - 3, cx + 3, cy + 3], fill=g, outline=dk)
+    d.line([(9, 9), (14, 17)], fill=(90, 160, 60, 255), width=2)
+    d.ellipse([7, 7, 11, 11], fill=(255, 245, 190, 255))
+
+
+for n, f in [('fortune', fortune), ('attack_down', attack_down), ('armor_break', armor_break), ('quick_cast', quick_cast), ('poison_coat', poison_coat), ('fire_weapon', fire_weapon)]:
     icon(n, f)
 print('icons written')

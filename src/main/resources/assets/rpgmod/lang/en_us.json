@@ -235,7 +235,7 @@
   "rpgmod.skill.jackpot": "Jackpot",
   "rpgmod.skill.jackpot.desc": "Spin the slots for the huge win.",
   "rpgmod.skill.roulette": "Roulette",
-  "rpgmod.skill.roulette.desc": "Spin the wheel of fate.",
+  "rpgmod.skill.roulette.desc": "Spin the wheel of fate: for 12 seconds Lady Luck is with you - every hit is a critical hit, crits deal +10% per number rolled (1-6), and every gamble gets a second roll.",
   "rpgmod.jobselect.title": "Choose your job",
   "rpgmod.jobselect.once": "This choice is permanent",
   "rpgmod.jobselect.choose": "Choose this job",
@@ -493,5 +493,7 @@
   "rpgmod.tooltip.shield_block": "Guard: blocks %1$s%% of the damage (paladins +20%%)",
   "rpgmod.job.guarding": "Lower your shield to use skills",
   "rpgmod.ally.no_job": "No job",
-  "rpgmod.ally.downed": "DOWN"
+  "rpgmod.ally.downed": "DOWN",
+  "effect.rpgmod.fortune": "Lady Luck",
+  "rpgmod.roulette.fortune": "Lady Luck! Rolled %1$s: every hit crits, crit damage +%2$s%% (%3$ss)"
 }
