@@ -72,10 +72,10 @@ public final class CreeperLeapGoal extends Goal {
     public void start() {
         LivingEntity t = target();
         if (t == null || !(creeper.level() instanceof ServerLevel sl)) return;
-        // an arc whose top clears both ends by 4 blocks, landing at the player's feet. Worked out with
+        // an arc whose top clears both ends by 6 blocks, landing at the player's feet. Worked out with
         // the game's own air physics (gravity 0.08 then x0.98 vertically, x0.91 horizontally per tick)
         Vec3 from = creeper.position(), to = t.position();
-        double rise = Math.max(0, to.y - from.y) + 4;
+        double rise = Math.max(0, to.y - from.y) + 6; // high enough to still clear a wall right in front of the player
         double vy = 0.5;
         while (vy < 3 && apexOf(vy) < rise) vy += 0.02;
         int flight = landingTick(vy, to.y - from.y);
