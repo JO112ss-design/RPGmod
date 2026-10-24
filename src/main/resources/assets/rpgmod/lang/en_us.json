@@ -689,5 +689,9 @@
   "death.attack.rpgmod.venom": "%1$s succumbed to venom",
   "death.attack.rpgmod.venom.player": "%1$s succumbed to the venom of %2$s",
   "rpgmod.job.no_downed": "Nobody downed nearby",
-  "rpgmod.job.need_xp": "Needs %s experience levels"
+  "rpgmod.job.need_xp": "Needs %s experience levels",
+  "rpgmod.shield.down": "Shield knocked out! Back in %s s",
+  "rpgmod.shield.back": "Shield is back",
+  "rpgmod.tooltip.shield_recover": "At 0 durability it is knocked out for %s s instead of breaking, then comes back full",
+  "rpgmod.tooltip.shield_down": "Knocked out (back at full within %s s)"
 }

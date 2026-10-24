@@ -337,6 +337,7 @@ public final class AutoTestServer {
         if (swapCheckIn > 0 && --swapCheckIn == 0) {
             swapCheck();
             potionCheck();
+            shieldCheck(player);
             // iron chest (+3) + diamond helmet (+6) tier bonus, K 80
             RpgMod.LOGGER.info("[AUTOTEST] player armour: level {} armour {} toughness {} defence {} reduction {}",
                     com.jo112ss.rpgmod.job.JobManager.data(player).level(), com.jo112ss.rpgmod.mob.Defense.armor(player),
@@ -443,6 +444,30 @@ public final class AutoTestServer {
     }
 
     private static int swapCheckIn;
+
+    /** A shield worn to nothing is knocked out (cooldown) instead of breaking, then comes back full. */
+    private static void shieldCheck(ServerPlayer player) {
+        ItemStack before = player.getOffhandItem().copy();
+        for (com.jo112ss.rpgmod.item.WeaponMaterial mat : new com.jo112ss.rpgmod.item.WeaponMaterial[] {com.jo112ss.rpgmod.item.WeaponMaterial.IRON, com.jo112ss.rpgmod.item.WeaponMaterial.NETHERITE}) {
+            ItemStack s = new ItemStack(com.jo112ss.rpgmod.item.ModItems.get(com.jo112ss.rpgmod.item.WeaponType.SHIELD, mat));
+            s.setDamageValue(s.getMaxDamage() - 3);
+            player.setItemSlot(net.minecraft.world.entity.EquipmentSlot.OFFHAND, s);
+            com.jo112ss.rpgmod.item.Shields.wear(player, s, 1);
+            boolean stillUp = !com.jo112ss.rpgmod.item.Shields.isDown(s);
+            com.jo112ss.rpgmod.item.Shields.wear(player, s, 10);
+            ItemStack held = player.getOffhandItem();
+            boolean down = com.jo112ss.rpgmod.item.Shields.isDown(held), cd = player.getCooldowns().isOnCooldown(held);
+            float pct = player.getCooldowns().getCooldownPercent(held, 0);
+            // time's up: back at full
+            net.minecraft.world.item.component.CustomData.update(net.minecraft.core.component.DataComponents.CUSTOM_DATA, held,
+                    t -> t.putLong(com.jo112ss.rpgmod.item.Shields.DOWN_KEY, player.level().getGameTime()));
+            com.jo112ss.rpgmod.item.Shields.tickDown(player);
+            RpgMod.LOGGER.info("[AUTOTEST] shield check {}: unbreakable={} first wear kept up={} -> present={} down={} cooldown={} ({}) seconds={} | after time: down={} damage={} cooldown={}",
+                    mat, held.has(net.minecraft.core.component.DataComponents.UNBREAKABLE), stillUp, !held.isEmpty(), down, cd, String.format("%.2f", pct),
+                    com.jo112ss.rpgmod.item.Shields.downSeconds(held), com.jo112ss.rpgmod.item.Shields.isDown(held), held.getDamageValue(), player.getCooldowns().isOnCooldown(held));
+        }
+        player.setItemSlot(net.minecraft.world.entity.EquipmentSlot.OFFHAND, before);
+    }
     private static boolean advancedSetupPending;
 
     /**

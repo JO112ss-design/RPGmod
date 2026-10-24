@@ -689,5 +689,9 @@
   "death.attack.rpgmod.venom": "%1$sは毒に倒れた",
   "death.attack.rpgmod.venom.player": "%1$sは%2$sの毒に倒れた",
   "rpgmod.job.no_downed": "近くにダウンした味方がいない",
-  "rpgmod.job.need_xp": "経験値レベルが%s必要"
+  "rpgmod.job.need_xp": "経験値レベルが%s必要",
+  "rpgmod.shield.down": "盾が壊れた！%s秒後に復活",
+  "rpgmod.shield.back": "盾が復活した",
+  "rpgmod.tooltip.shield_recover": "耐久が0になると壊れずに%s秒使えなくなり、満タンで復活",
+  "rpgmod.tooltip.shield_down": "壊れている（最大%s秒で満タン復活）"
 }

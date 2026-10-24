@@ -45,6 +45,10 @@ public final class ForgeTooltips {
         if (event.getItemStack().has(net.minecraft.core.component.DataComponents.BLOCKS_ATTACKS)) {
             int pct = (int) Math.round(com.jo112ss.rpgmod.item.Shields.block(event.getItemStack()) * 100);
             tip.add(Math.min(1, tip.size()), Component.translatable("rpgmod.tooltip.shield_block", pct).withStyle(ChatFormatting.DARK_GREEN));
+            if (event.getItemStack().isDamageableItem()) {
+                tip.add(Math.min(2, tip.size()), Component.translatable(com.jo112ss.rpgmod.item.Shields.isDown(event.getItemStack()) ? "rpgmod.tooltip.shield_down" : "rpgmod.tooltip.shield_recover",
+                        com.jo112ss.rpgmod.item.Shields.downSeconds(event.getItemStack())).withStyle(com.jo112ss.rpgmod.item.Shields.isDown(event.getItemStack()) ? ChatFormatting.RED : ChatFormatting.GRAY));
+            }
         }
         double heavy = com.jo112ss.rpgmod.job.JobConfig.SPEC.isLoaded() ? com.jo112ss.rpgmod.job.JobEvents.heavyMultiplier(event.getItemStack()) : 1;
         if (heavy != 1) {

@@ -63,6 +63,7 @@ public final class JobEvents {
             JobManager.updateAffinity(sp);
             JobManager.updateArmorTier(sp);
         }
+        if (sp.tickCount % 10 == 5) com.jo112ss.rpgmod.item.Shields.tickDown(sp);
     }
 
     /**
