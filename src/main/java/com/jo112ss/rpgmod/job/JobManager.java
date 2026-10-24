@@ -36,6 +36,10 @@ public final class JobManager {
 
     public static void sync(ServerPlayer player) {
         player.syncData(ModRegistries.JOB_DATA);
+        // what other players see on this player's name plate: job and level
+        JobData d = data(player);
+        String tag = d.hasJob() ? d.jobId() + ":" + d.level() : "";
+        if (!tag.equals(player.getData(ModRegistries.JOB_TAG))) player.setData(ModRegistries.JOB_TAG, tag);
     }
 
     private static void tell(ServerPlayer player, String key, Object... args) {

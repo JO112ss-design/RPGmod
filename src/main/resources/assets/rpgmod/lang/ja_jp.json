@@ -491,5 +491,7 @@
   "rpgmod.part.shield.4": "右縁",
   "rpgmod.type.shield": "盾",
   "rpgmod.tooltip.shield_block": "ガード：ダメージの%1$s%%を防ぐ（パラディンは+20%%）",
-  "rpgmod.job.guarding": "盾を構えている間はスキルを使えない"
+  "rpgmod.job.guarding": "盾を構えている間はスキルを使えない",
+  "rpgmod.ally.no_job": "職業なし",
+  "rpgmod.ally.downed": "ダウン"
 }

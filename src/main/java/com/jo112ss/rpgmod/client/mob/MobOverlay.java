@@ -133,6 +133,9 @@ public final class MobOverlay {
             plate(g, mc.font, (LivingEntity) d[0], (int) d[5], s[0], s[1], (float) d[2], (float) d[3], (boolean) d[4], dt);
         }
 
+        // ---- allies: job, level and health over the other players
+        allies(g, mc, proj, eye, sw, sh, partial);
+
         // ---- damage numbers
         Iterator<Num> it = NUMS.iterator();
         while (it.hasNext()) {
@@ -235,6 +238,84 @@ public final class MobOverlay {
             g.text(font, hpText, -font.width(hpText) / 2, 0, a(0xFFDDE2EA, fade), true);
             g.pose().popMatrix();
         }
+        g.pose().popMatrix();
+    }
+
+    private static final double ALLY_RANGE = 64;
+    /** Dev test: also draw the plate over yourself (third person), as there is nobody else around. */
+    public static boolean testSelf;
+
+    /**
+     * Name plates of the other players: a badge in the job's colour with job and level, and a health
+     * bar, just above the vanilla name. Shown through walls too (dimmed), so the party can find each
+     * other; "DOWN" when lying downed (Resurrection mod).
+     */
+    private static void allies(GuiGraphicsExtractor g, Minecraft mc, Matrix4f proj, Vec3 eye, int sw, int sh, float partial) {
+        List<Object[]> list = new ArrayList<>();
+        for (net.minecraft.world.entity.player.Player p : mc.level.players()) {
+            if ((p == mc.player && !(testSelf && !mc.options.getCameraType().isFirstPerson())) || !p.isAlive() || p.isSpectator() || p.isInvisible()) continue;
+            Vec3 pos = p.getPosition(partial);
+            double dist = pos.distanceTo(eye);
+            if (dist > ALLY_RANGE) continue;
+            float[] s = project(proj, pos.add(0, p.getBbHeight() + 0.95, 0).subtract(eye), sw, sh);
+            if (s == null) continue;
+            list.add(new Object[] {p, s, dist});
+        }
+        list.sort((a, b) -> Double.compare((double) b[2], (double) a[2])); // far first, near on top
+        for (Object[] o : list) {
+            var p = (net.minecraft.world.entity.player.Player) o[0];
+            float[] s = (float[]) o[1];
+            double dist = (double) o[2];
+            boolean seen = mc.level.clip(new ClipContext(eye, p.getEyePosition(partial), ClipContext.Block.VISUAL, ClipContext.Fluid.NONE, mc.player))
+                    .getType() == HitResult.Type.MISS;
+            float scale = (float) Math.max(0.6, Math.min(1.0, 1.1 - dist / 40));
+            allyPlate(g, mc.font, p, s[0], s[1], scale, seen ? 1f : 0.55f);
+        }
+    }
+
+    private static void allyPlate(GuiGraphicsExtractor g, Font font, net.minecraft.world.entity.player.Player p, float x, float y, float scale, float fade) {
+        String tag = p.getData(ModRegistries.JOB_TAG);
+        int sep = tag.indexOf(':');
+        String job = sep > 0 ? tag.substring(0, sep) : "";
+        String lv = sep > 0 ? tag.substring(sep + 1) : "";
+        var def = job.isEmpty() ? null : com.jo112ss.rpgmod.job.core.JobDefs.JOBS.get(job);
+        int color = def != null ? 0xFF000000 | def.color() : 0xFF8A8F99;
+        Component label = def != null ? Component.translatable("rpgmod.job." + job).append(" Lv" + lv) : Component.translatable("rpgmod.ally.no_job");
+        boolean downed = com.jo112ss.rpgmod.compat.Downed.is(p);
+        float hp = p.getHealth(), max = Math.max(1, p.getMaxHealth());
+        float frac = Math.max(0, Math.min(1, hp / max));
+
+        int labelW = font.width(label) + 8;
+        Component down = Component.translatable("rpgmod.ally.downed");
+        int downW = downed ? font.width(down) + 6 : 0;
+        int w = Math.max(56, labelW + downW);
+
+        g.pose().pushMatrix();
+        g.pose().translate(x, y);
+        g.pose().scale(scale, scale);
+        int left = -w / 2, top = -22;
+        // badge: job colour, darker edge
+        g.fill(left, top, left + labelW, top + 11, a(Ui.alpha(color, 0xE0), fade));
+        g.fill(left, top + 11, left + labelW, top + 12, a(Ui.mix(color, 0xFF000000, 0.5f), fade));
+        g.text(font, label, left + 4, top + 2, a(0xFF101218, fade), false);
+        if (downed) {
+            g.fill(left + labelW, top, left + labelW + downW, top + 12, a(0xE0C02828, fade));
+            g.text(font, down, left + labelW + 3, top + 2, a(0xFFFFFFFF, fade), false);
+        }
+        // health bar
+        int by = top + 14, bh = 4;
+        g.fill(left - 1, by - 1, left + w + 1, by + bh + 1, a(0xD0000000, fade));
+        g.fill(left, by, left + w, by + bh, a(0xFF2A1416, fade));
+        int hc = downed ? 0xFF8A8F99 : frac > 0.5f ? Ui.mix(0xFFE8D35A, 0xFF5FD65A, (frac - 0.5f) * 2) : Ui.mix(0xFFE04848, 0xFFE8D35A, frac * 2);
+        int fw = Math.round(w * frac);
+        g.fill(left, by, left + fw, by + bh, a(hc, fade));
+        g.fill(left, by, left + fw, by + 1, a(Ui.mix(hc, 0xFFFFFFFF, 0.45f), fade));
+        String hpText = fmt(hp) + " / " + fmt(max);
+        g.pose().pushMatrix();
+        g.pose().translate(0, by + bh + 2);
+        g.pose().scale(0.75f, 0.75f);
+        g.text(font, hpText, -font.width(hpText) / 2, 0, a(0xFFDDE2EA, fade), true);
+        g.pose().popMatrix();
         g.pose().popMatrix();
     }
 

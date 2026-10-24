@@ -228,6 +228,7 @@ public final class AutoTestClient {
             // blood moon boss (the monster scenes and skills were checked in earlier runs)
             showSkills.addAll(java.util.List.of("mob:downed"));
             mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK);
+            com.jo112ss.rpgmod.client.mob.MobOverlay.testSelf = true;
             mc.options.particles().set(net.minecraft.server.level.ParticleStatus.ALL);
             AutoTestServer.requestShowcase();
             return;

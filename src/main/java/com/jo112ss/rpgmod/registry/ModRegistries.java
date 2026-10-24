@@ -72,6 +72,13 @@ public final class ModRegistries {
                     .sync((holder, to) -> holder == to, com.jo112ss.rpgmod.job.JobData.STREAM_CODEC)
                     .build());
 
+    /** "job:level" of a player, synced to everyone who can see them (for the name plates of allies). */
+    public static final java.util.function.Supplier<net.neoforged.neoforge.attachment.AttachmentType<String>> JOB_TAG =
+            ATTACHMENTS.register("job_tag", () -> net.neoforged.neoforge.attachment.AttachmentType.builder(() -> "")
+                    .copyOnDeath()
+                    .sync(net.minecraft.network.codec.ByteBufCodecs.STRING_UTF8)
+                    .build());
+
     /** Monster level (0 = not levelled yet): saved with the entity, synced to everyone tracking it. */
     public static final java.util.function.Supplier<net.neoforged.neoforge.attachment.AttachmentType<Integer>> MOB_LEVEL =
             ATTACHMENTS.register("mob_level", () -> net.neoforged.neoforge.attachment.AttachmentType.builder(() -> 0)

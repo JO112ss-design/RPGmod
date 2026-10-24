@@ -491,5 +491,7 @@
   "rpgmod.part.shield.4": "Right rim",
   "rpgmod.type.shield": "Shield",
   "rpgmod.tooltip.shield_block": "Guard: blocks %1$s%% of the damage (paladins +20%%)",
-  "rpgmod.job.guarding": "Lower your shield to use skills"
+  "rpgmod.job.guarding": "Lower your shield to use skills",
+  "rpgmod.ally.no_job": "No job",
+  "rpgmod.ally.downed": "DOWN"
 }
