@@ -27,5 +27,7 @@ public class RpgModClient {
                 com.jo112ss.rpgmod.client.mob.MobOverlay::render);
         event.registerAboveAll(net.minecraft.resources.Identifier.fromNamespaceAndPath(RpgMod.MODID, "job_hud"),
                 com.jo112ss.rpgmod.client.job.JobHud::render);
+        // an RPG style HP bar instead of the hearts (same place, same "only in survival" rule)
+        event.replaceLayer(net.neoforged.neoforge.client.gui.VanillaGuiLayers.PLAYER_HEALTH, com.jo112ss.rpgmod.client.hud.HpBar::render);
     }
 }
