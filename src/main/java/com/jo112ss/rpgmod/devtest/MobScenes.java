@@ -134,22 +134,23 @@ final class MobScenes {
                     if (Math.abs(x) == 2 || Math.abs(z) == 2) level.setBlockAndUpdate(c.offset(x, y, z), Blocks.STONE.defaultBlockState());
                 }
                 tp(player, Vec3.atBottomCenterOf(c), -90, 10);
-                level.getChunkAt(c.offset(8, 0, 0));
-                level.getChunkAt(c.offset(-9, 0, 9));
-                var leaper = EntityTypes.CREEPER.create(level, EntitySpawnReason.COMMAND);
-                leaper.snapTo(c.getX() + 8.5, c.getY(), c.getZ() + 0.5, 90F, 0F);
-                MobLevels.apply(leaper, 30);
-                MobAi.onFirstLevel(leaper, 30);
-                leaper.getPersistentData().putBoolean(com.jo112ss.rpgmod.mob.ai.CreeperLeapGoal.KEY, true);
-                leaper.setPersistenceRequired();
-                level.addFreshEntity(leaper);
-                mobs.add(leaper);
-                Mob sk = spawn(level, EntityTypes.SKELETON, c.offset(-9, 0, 9), 30);
-                sk.setTarget(null);
-                RpgMod.LOGGER.info("[AUTOTEST] leap scene: alive {} {}, creeper follow range {} armour slots empty={} skeleton follow range {}", leaper.isAlive(), sk.isAlive(),
-                        leaper.getAttributeValue(net.minecraft.world.entity.ai.attributes.Attributes.FOLLOW_RANGE),
-                        leaper.getItemBySlot(EquipmentSlot.CHEST).isEmpty() && leaper.getItemBySlot(EquipmentSlot.HEAD).isEmpty(),
-                        sk.getAttributeValue(net.minecraft.world.entity.ai.attributes.Attributes.FOLLOW_RANGE));
+                // spawned once the player's arrival has the chunks ticking (else they unload at once)
+                com.jo112ss.rpgmod.job.SkillTasks.later(10, () -> {
+                    var leaper = EntityTypes.CREEPER.create(level, EntitySpawnReason.COMMAND);
+                    leaper.snapTo(c.getX() + 8.5, c.getY(), c.getZ() + 0.5, 90F, 0F);
+                    MobLevels.apply(leaper, 30);
+                    MobAi.onFirstLevel(leaper, 30);
+                    leaper.getPersistentData().putBoolean(com.jo112ss.rpgmod.mob.ai.CreeperLeapGoal.KEY, true);
+                    leaper.setPersistenceRequired();
+                    level.addFreshEntity(leaper);
+                    mobs.add(leaper);
+                    Mob sk = spawn(level, EntityTypes.SKELETON, c.offset(-9, 0, 9), 30);
+                    sk.setTarget(null);
+                    RpgMod.LOGGER.info("[AUTOTEST] leap scene: alive {} {}, creeper follow range {} armour slots empty={} skeleton follow range {}", leaper.isAlive(), sk.isAlive(),
+                            leaper.getAttributeValue(net.minecraft.world.entity.ai.attributes.Attributes.FOLLOW_RANGE),
+                            leaper.getItemBySlot(EquipmentSlot.CHEST).isEmpty() && leaper.getItemBySlot(EquipmentSlot.HEAD).isEmpty(),
+                            sk.getAttributeValue(net.minecraft.world.entity.ai.attributes.Attributes.FOLLOW_RANGE));
+                });
             }
             case "sense" -> {
                 // the player sealed in a stone hut: zombies far outside can never see them
@@ -515,7 +516,7 @@ final class MobScenes {
             case "leap" -> {
                 if (t % 20 == 0) {
                     RpgMod.LOGGER.info("[AUTOTEST] leap t={} difficulty {} {} health lost={}", t, level.getDifficulty(),
-                            mobs.stream().map(m -> m.getType().getDescriptionId().replace("entity.minecraft.", "") + (m.isAlive() ? "" : "(gone " + m.getRemovalReason() + " hp " + m.getHealth() + ")")
+                            mobs.stream().map(m0 -> level.getEntity(m0.getUUID()) instanceof Mob live ? live : m0).map(m -> m.getType().getDescriptionId().replace("entity.minecraft.", "") + (m.isAlive() ? "" : "(gone " + m.getRemovalReason() + " hp " + m.getHealth() + ")")
                                     + " " + (m.getTarget() == player ? "target" : "none") + " sees=" + m.getSensing().hasLineOfSight(player)
                                     + " dist=" + String.format("%.1f", m.distanceTo(player)) + " y=" + String.format("%.1f", m.getY() - c.getY())).toList(),
                             String.format("%.1f", lostHealth));
