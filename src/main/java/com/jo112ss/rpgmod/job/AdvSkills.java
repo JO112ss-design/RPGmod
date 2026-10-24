@@ -1385,7 +1385,7 @@ public final class AdvSkills {
         return true;
     }
 
-    /** Spell: a homing bolt of light (more against the undead). */
+    /** Spell: a homing bolt of light. */
     private static boolean holyBolt(Ctx c) {
         double range = c.def().radius();
         LivingEntity target = lookTarget(c, range, 15);
@@ -1394,7 +1394,7 @@ public final class AdvSkills {
         ServerFx.of("x_bolt", start).vec(dir.scale(1.8)).a(range).b(0.5).color(HOLY).follow(target).send(c.level());
         sound(c, SoundEvents.AMETHYST_BLOCK_CHIME, 1.8F);
         projectile(c, start, dir, 1.8, range, target, 0.22, (e, at, d) -> {
-            hurt(c, e, c.dmg(1) * (isUndead(e) ? 1.5F : 1), magic(c));
+            hurt(c, e, c.dmg(1), magic(c));
             push(e, d, 0.25, 0.1);
             ServerFx.of("x_hit", at).vec(d).a(1).color(HOLY).send(c.level());
             sound(c, at, SoundEvents.BELL_BLOCK, 0.6F, 1.8F);
@@ -1408,7 +1408,7 @@ public final class AdvSkills {
         Vec3 o = c.p().position();
         List<LivingEntity> foes = enemies(c.p(), o, r);
         for (LivingEntity e : foes) {
-            hurt(c, e, c.dmg(1) * (isUndead(e) ? 1.5F : 1), magic(c));
+            hurt(c, e, c.dmg(1), magic(c));
             pushAway(e, o, 0.6, 0.3);
         }
         List<ServerPlayer> allies = allies(c.p(), r);
@@ -1431,7 +1431,7 @@ public final class AdvSkills {
         SkillTasks.run(age -> {
             if (age % 10 == 5) {
                 List<LivingEntity> hit = enemies(c.p(), at, r);
-                for (LivingEntity e : hit) hurt(c, e, c.dmg(1) * (isUndead(e) ? 1.5F : 1), magic(c));
+                for (LivingEntity e : hit) hurt(c, e, c.dmg(1), magic(c));
                 if (!hit.isEmpty()) ServerFx.of("hit", at).color(HOLY).a(1).points(hit).send(c.level());
                 sound(c, at, SoundEvents.AMETHYST_BLOCK_CHIME, 1.0F, 1.6F);
             }
