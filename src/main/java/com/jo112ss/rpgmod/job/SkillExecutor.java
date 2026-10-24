@@ -1489,7 +1489,7 @@ public final class SkillExecutor {
         switch (mode) {
             case 0 -> target.addEffect(new MobEffectInstance(com.jo112ss.rpgmod.registry.ModEffects.ATTACK_DOWN, 100, 0), source);
             case 1 -> target.addEffect(new MobEffectInstance(com.jo112ss.rpgmod.registry.ModEffects.ARMOR_BREAK, 100, 0), source);
-            default -> target.addEffect(new MobEffectInstance(MobEffects.POISON, 100, 1), source);
+            default -> Venom.apply(target, 100, 0, source); // works on the undead too, a share of max health
         }
         if (target.level() instanceof ServerLevel sl) {
             ServerFx.of("coat_hit", target.position().add(0, target.getBbHeight() * 0.5, 0)).b(mode).send(sl);

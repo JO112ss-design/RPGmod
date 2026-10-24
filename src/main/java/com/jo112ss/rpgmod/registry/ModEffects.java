@@ -104,6 +104,8 @@ public final class ModEffects {
     public static final DeferredHolder<MobEffect, MobEffect> TWIN_VENOM = marker("twin_venom", MobEffectCategory.BENEFICIAL, 0x60E040);
     /** Nightblade ultimate: every melee hit strikes twice. */
     public static final DeferredHolder<MobEffect, MobEffect> YAKSHA = marker("yaksha", MobEffectCategory.BENEFICIAL, 0x5060E0);
+    /** Assassin / nightblade poison: a share of max health every second, undead too (see job.Venom). */
+    public static final DeferredHolder<MobEffect, MobEffect> VENOM = EFFECTS.register("venom", com.jo112ss.rpgmod.job.Venom.Effect::new);
     /** Bishop: damage taken -30% and harmful effects wash off. */
     public static final DeferredHolder<MobEffect, MobEffect> SANCTUM = marker("sanctum", MobEffectCategory.BENEFICIAL, 0xFFF0B0);
 }

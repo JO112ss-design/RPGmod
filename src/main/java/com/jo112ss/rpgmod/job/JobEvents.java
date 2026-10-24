@@ -94,6 +94,7 @@ public final class JobEvents {
     @SubscribeEvent(priority = net.neoforged.bus.api.EventPriority.LOW)
     public static void onRpgCrit(net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent event) {
         if (!(event.getSource().getEntity() instanceof ServerPlayer sp) || event.getEntity() == sp || event.getAmount() <= 0) return;
+        if (event.getSource().is(Venom.DAMAGE)) return; // poison ticks do not crit
         double chance = JobManager.critChance(sp, event.getSource()) / 100.0;
         if (chance <= 0 || sp.getRandom().nextDouble() >= chance) return;
         float before = event.getAmount();

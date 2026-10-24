@@ -1,1 +1,7 @@
-{ "replace": false, "values": ["rpgmod:skill_magic"] }
+{
+  "replace": false,
+  "values": [
+    "rpgmod:skill_magic",
+    "rpgmod:venom"
+  ]
+}

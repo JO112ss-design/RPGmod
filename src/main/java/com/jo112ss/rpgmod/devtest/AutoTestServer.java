@@ -734,7 +734,19 @@ public final class AutoTestServer {
         // twin venom on a sword hit
         player.addEffect(new net.minecraft.world.effect.MobEffectInstance(com.jo112ss.rpgmod.registry.ModEffects.TWIN_VENOM, 200, 0));
         player.attack(z);
-        RpgMod.LOGGER.info("[AUTOTEST] adv twin venom (on a husk: undead are immune to poison): poison={} wither={}", z.hasEffect(net.minecraft.world.effect.MobEffects.POISON), z.hasEffect(net.minecraft.world.effect.MobEffects.WITHER));
+        var ven = z.getEffect(com.jo112ss.rpgmod.registry.ModEffects.VENOM);
+        RpgMod.LOGGER.info("[AUTOTEST] adv twin venom (on a husk, undead): venom level={} wither={}", ven == null ? 0 : ven.getAmplifier() + 1, z.hasEffect(net.minecraft.world.effect.MobEffects.WITHER));
+        // venom on its own: 5% of max health a second, kill credit to the player
+        var vz = advDummy(level, 5);
+        com.jo112ss.rpgmod.job.SkillTasks.later(2, () -> {
+            float vh = vz.getHealth();
+            com.jo112ss.rpgmod.job.Venom.apply(vz, 100, 0, player);
+            com.jo112ss.rpgmod.job.SkillTasks.later(41, () -> {
+                RpgMod.LOGGER.info("[AUTOTEST] venom on a husk: lost {} in 2s (expected {} = 2 x 5% of {}), still poisoned {}", f(vh - vz.getHealth()),
+                        f(2 * vz.getMaxHealth() * 0.05), f(vz.getMaxHealth()), vz.hasEffect(com.jo112ss.rpgmod.registry.ModEffects.VENOM));
+                vz.discard();
+            });
+        });
         player.removeAllEffects();
         // empowered shot: the same bow arrow with and without
         var z2 = advDummy(level, 3);

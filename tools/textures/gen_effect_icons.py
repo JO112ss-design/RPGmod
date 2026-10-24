@@ -176,3 +176,13 @@ for n, f in [('exposed', exposed), ('keen', keen), ('asura', asura), ('iron_wall
              ('overload', overload), ('feather', feather), ('vanish', vanish), ('loaded_dice', loaded_dice), ('twin_venom', twin_venom),
              ('yaksha', yaksha), ('sanctum', sanctum)]:
     icon(n, f)
+
+
+def venom(d):
+    g, dk = (90, 200, 50, 255), (30, 90, 20, 255)
+    d.polygon([(9, 1), (14, 9), (14, 12), (12, 15), (9, 16), (6, 15), (4, 12), (4, 9)], fill=g, outline=dk)
+    d.ellipse([6, 9, 9, 12], fill=(200, 255, 170, 255))
+    d.point([(11, 13), (12, 12)], fill=(200, 255, 170, 255))
+
+
+icon('venom', venom)

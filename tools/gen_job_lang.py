@@ -100,7 +100,7 @@ SKILLS = {  # id: (ja, ja desc, en, en desc)
  'gravity': ('グラビティ', '狙った場所に重力の渦を作って敵を引き寄せ、まとめて押しつぶす。', 'Gravity Well', 'Pulls enemies into a gravity well, then crushes them together.'),
  'nourish': ('恵みの糧', '近くの味方の満腹度と隠し満腹度を回復する。', 'Nourish', 'Restores hunger and saturation to nearby allies.'),
  'purify': ('浄化', '近くの味方の悪い効果・炎・凍えをすべて消して少し回復し、周りの敵を聖なる光で撃つ（アンデッドに1.5倍）。杖で詠唱する呪文。', 'Purify', 'Removes all harmful effects, fire and freezing from nearby allies, heals a little and smites the enemies around (x1.5 on undead). A spell cast from the staff.'),
- 'poison_coat': ('毒塗り', '30秒間、武器に毒を塗る。攻撃した敵に効果。しゃがみ＋キーで種類を切替（塗っている最中でもすぐ切り替わる）：攻撃低下／防御低下／毒。', 'Weapon Coating', 'Coats your weapon for 30s; hits apply it. Sneak + key switches it at once: attack down / armour break / poison.'),
+ 'poison_coat': ('毒塗り', '30秒間、武器に毒を塗る。攻撃した敵に効果。しゃがみ＋キーで種類を切替（塗っている最中でもすぐ切り替わる）：攻撃低下／防御低下／猛毒（5秒間、毎秒最大HPの5%・アンデッドにも効く・ボスは1%）。', 'Weapon Coating', 'Coats your weapon for 30s; hits apply it. Sneak + key switches it at once: attack down / armour break / venom (5s, 5% of max health a second, undead too, 1% on bosses).'),
  'throwing_knives': ('投げナイフ', '扇状に5本のナイフを投げる。毒塗り中は毒も乗る。', 'Throwing Knives', 'Throws five knives in a fan; they carry your coating.'),
  'shadow_bind': ('影縛り', '狙った敵を影で3秒間その場に縛りつけ、攻撃力も下げる。', 'Shadow Bind', 'Shadows pin the targeted enemy in place for 3s and lower its attack.'),
  'fire_weapon': ('炎の付与', '近くの味方の武器に炎を宿す。攻撃が敵を燃やし、追加ダメージ。', 'Fire Weapon', 'The hits of nearby allies set enemies on fire and deal extra damage.'),
@@ -154,7 +154,7 @@ SKILLS = {  # id: (ja, ja desc, en, en desc)
  'wildcard': ('ワイルドカード', '全職業の必殺技からランダムに1つを自分の力で放つ。', 'Wild Card', 'Unleash a random ultimate from any job, with your own strength.'),
  'shadow_run': ('影走り', '影となって9ブロック前へ駆け抜け、通り道の敵を斬る。', 'Shadow Run', 'Dash 9 blocks through the shadows, cutting every enemy in the way.'),
  'flurry': ('乱れ斬り', '1秒で前方を6回斬りつける。', 'Flurry', 'Six quick cuts in front of you in one second.'),
- 'twin_venom': ('双毒刃', '15秒間、近接攻撃が強い毒と衰弱（ウィザー）を与える。', 'Twin Venom', 'For 15s your melee hits poison (II) and wither.'),
+ 'twin_venom': ('双毒刃', '15秒間、近接攻撃が強い猛毒（毎秒最大HPの7.5%・ボスは1.5%）と衰弱（ウィザー）を与える。', 'Twin Venom', 'For 15s your melee hits inflict strong venom (7.5% of max health a second, 1.5% on bosses) and wither.'),
  'shadow_stitch': ('影縫い', 'クナイで狙った敵の影を縫いとめる。周り4ブロックの敵も3秒間動けなくなる。', 'Shadow Stitch', 'A kunai pins the targeted enemy\'s shadow - and those of enemies within 4 blocks - for 3s.'),
  'moon_shadow': ('月影', '三日月の斬撃を飛ばし、通り道の敵をすべて斬る。', 'Moon Shadow', 'A crescent of moonlight flies forward, cutting every enemy in its path.'),
  'yaksha': ('夜叉', '12秒間、近接攻撃がすべて2回当たる。移動速度も上がる。', 'Yaksha', 'For 12s every melee hit strikes twice, and you move faster.'),
@@ -290,7 +290,7 @@ UI = {  # key: (ja, en)
  'key.rpgmod.spell_wheel': ('呪文選択（長押し）', 'Spell wheel (hold)'),
  'rpgmod.coat.0': ('攻撃低下', 'Attack Down'),
  'rpgmod.coat.1': ('防御低下', 'Armour Break'),
- 'rpgmod.coat.2': ('毒', 'Poison'),
+ 'rpgmod.coat.2': ('猛毒', 'Venom'),
  'rpgmod.coat.switched': ('次に塗る毒: %s', 'Next coating: %s'),
     'rpgmod.coat.switched_now': ('毒を切り替えた: %s（残り%s秒）', 'Coating switched: %s (%ss left)'),
  'rpgmod.coat.applied': ('武器に毒を塗った: %s', 'Weapon coated: %s'),
@@ -340,6 +340,9 @@ UI = {  # key: (ja, en)
  'key.rpgmod.left_spell': ('左手の呪文（スペルマスター）', 'Left-hand spell (spellmaster)'),
  'rpgmod.wheel.hint_hands': ('左の輪＝左手、右の輪＝右手', 'Left ring: left hand, right ring: right hand'),
  'rpgmod.healer.angel': ('%sの守護天使があなたを守っている', '%s\'s guardian angel watches over you'),
+ 'effect.rpgmod.venom': ('猛毒', 'Venom'),
+ 'death.attack.rpgmod.venom': ('%1$sは毒に倒れた', '%1$s succumbed to venom'),
+ 'death.attack.rpgmod.venom.player': ('%1$sは%2$sの毒に倒れた', '%1$s succumbed to the venom of %2$s'),
 }
 for lang, idx in (('ja_jp', 0), ('en_us', 1)):
     p = f'{A}/{lang}.json'

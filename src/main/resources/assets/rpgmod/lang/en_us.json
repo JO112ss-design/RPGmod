@@ -356,7 +356,7 @@
   "rpgmod.skill.purify": "Purify",
   "rpgmod.skill.purify.desc": "Removes all harmful effects, fire and freezing from nearby allies, heals a little and smites the enemies around (x1.5 on undead). A spell cast from the staff.",
   "rpgmod.skill.poison_coat": "Weapon Coating",
-  "rpgmod.skill.poison_coat.desc": "Coats your weapon for 30s; hits apply it. Sneak + key switches it at once: attack down / armour break / poison.",
+  "rpgmod.skill.poison_coat.desc": "Coats your weapon for 30s; hits apply it. Sneak + key switches it at once: attack down / armour break / venom (5s, 5% of max health a second, undead too, 1% on bosses).",
   "rpgmod.skill.throwing_knives": "Throwing Knives",
   "rpgmod.skill.throwing_knives.desc": "Throws five knives in a fan; they carry your coating.",
   "rpgmod.skill.shadow_bind": "Shadow Bind",
@@ -371,7 +371,7 @@
   "rpgmod.skill.card_throw.desc": "Throws three random cards: spade big damage, heart heals, diamond absorption, club poison and slow.",
   "rpgmod.coat.0": "Attack Down",
   "rpgmod.coat.1": "Armour Break",
-  "rpgmod.coat.2": "Poison",
+  "rpgmod.coat.2": "Venom",
   "rpgmod.coat.switched": "Next coating: %s",
   "rpgmod.coat.applied": "Weapon coated: %s",
   "rpgmod.roulette.click": "Click... %s chambers left",
@@ -624,7 +624,7 @@
   "rpgmod.skill.flurry": "Flurry",
   "rpgmod.skill.flurry.desc": "Six quick cuts in front of you in one second.",
   "rpgmod.skill.twin_venom": "Twin Venom",
-  "rpgmod.skill.twin_venom.desc": "For 15s your melee hits poison (II) and wither.",
+  "rpgmod.skill.twin_venom.desc": "For 15s your melee hits inflict strong venom (7.5% of max health a second, 1.5% on bosses) and wither.",
   "rpgmod.skill.shadow_stitch": "Shadow Stitch",
   "rpgmod.skill.shadow_stitch.desc": "A kunai pins the targeted enemy's shadow - and those of enemies within 4 blocks - for 3s.",
   "rpgmod.skill.moon_shadow": "Moon Shadow",
@@ -684,5 +684,8 @@
   "rpgmod.skill.holy_barrier.desc": "A shield of absorption for nearby allies, thicker the higher your magic attack (+4 per 8 magic attack, up to 20).",
   "rpgmod.skill.guardian_angel": "Guardian Angel",
   "rpgmod.skill.guardian_angel.desc": "The most wounded ally within 12 blocks (you included) cannot fall for 5s and gets Regeneration II.",
-  "rpgmod.healer.angel": "%s's guardian angel watches over you"
+  "rpgmod.healer.angel": "%s's guardian angel watches over you",
+  "effect.rpgmod.venom": "Venom",
+  "death.attack.rpgmod.venom": "%1$s succumbed to venom",
+  "death.attack.rpgmod.venom.player": "%1$s succumbed to the venom of %2$s"
 }

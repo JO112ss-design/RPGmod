@@ -63,8 +63,12 @@ public final class AdvancedHooks {
         float amount = event.getAmount();
         if (amount <= 0) return;
 
-        // ---- the attacker's side
-        if (src.getEntity() instanceof ServerPlayer sp && sp != victim) {
+        boolean venom = src.is(Venom.DAMAGE);
+        // poison ticks leave no hit cooldown behind (melee keeps landing in full)
+        if (venom) event.getContainer().setPostAttackInvulnerabilityTicks(0);
+
+        // ---- the attacker's side (not for poison ticks)
+        if (!venom && src.getEntity() instanceof ServerPlayer sp && sp != victim) {
             if (sp.hasEffect(ModEffects.ASURA)) {
                 float missing = 1 - sp.getHealth() / Math.max(1, sp.getMaxHealth());
                 amount *= (float) (1 + ASURA_MAX * Math.max(0, missing));
@@ -78,7 +82,7 @@ public final class AdvancedHooks {
             }
             boolean melee = src.getDirectEntity() == sp && src.is(DamageTypes.PLAYER_ATTACK);
             if (melee && sp.hasEffect(ModEffects.TWIN_VENOM)) {
-                victim.addEffect(new MobEffectInstance(MobEffects.POISON, 60, 1), sp);
+                Venom.apply(victim, 100, 1, sp);
                 victim.addEffect(new MobEffectInstance(MobEffects.WITHER, 60, 0), sp);
                 ServerFx.of("coat_hit", victim.position().add(0, victim.getBbHeight() * 0.5, 0)).b(2).send(level);
             }
@@ -154,7 +158,7 @@ public final class AdvancedHooks {
 
     @SubscribeEvent
     public static void onDamaged(LivingDamageEvent.Post event) {
-        if (event.getSource().getEntity() instanceof ServerPlayer sp && sp != event.getEntity() && sp.hasEffect(ModEffects.ASURA)) {
+        if (event.getSource().getEntity() instanceof ServerPlayer sp && sp != event.getEntity() && sp.hasEffect(ModEffects.ASURA) && !event.getSource().is(Venom.DAMAGE)) {
             float heal = (float) (event.getHealthDamage() * ASURA_LIFESTEAL);
             if (heal > 0) sp.heal(heal);
         }
