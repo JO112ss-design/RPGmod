@@ -30,6 +30,7 @@ public final class MobGear {
      */
     public static boolean wearsGear(Mob m) {
         return m instanceof net.minecraft.world.entity.monster.Enemy && !(m instanceof net.minecraft.world.entity.monster.Enderman)
+                && !(m instanceof net.minecraft.world.entity.monster.Creeper)
                 && !(m instanceof net.minecraft.world.entity.boss.enderdragon.EnderDragon) && !m.is(net.neoforged.neoforge.common.Tags.EntityTypes.BOSSES);
     }
 

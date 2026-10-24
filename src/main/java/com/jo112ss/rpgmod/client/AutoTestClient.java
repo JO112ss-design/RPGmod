@@ -194,6 +194,7 @@ public final class AutoTestClient {
             case "mob:archer" -> new int[] {40, 100, 160};
             case "mob:items" -> new int[] {30, 60, 120, 190};
             case "mob:sense" -> new int[] {40, 200, 380};
+            case "mob:leap" -> new int[] {30, 60, 90, 130, 200};
             case "snipe" -> new int[] {6, 11};
             case "rapid_fire", "flurry", "card_storm" -> new int[] {10};
             case "dead_eye" -> new int[] {8, 20};
@@ -232,6 +233,7 @@ public final class AutoTestClient {
             case "mob:king" -> 960;
             case "mob:sense" -> 400;
             case "decoy" -> 120;
+            case "mob:leap" -> 260;
             case "lcharge" -> 100;
             case "frost_tempest" -> 110;
             // lingering areas: let them run out before the next skill so its numbers are its own
@@ -265,6 +267,8 @@ public final class AutoTestClient {
             showSkills.addAll(java.util.List.of("steam_burst", "plasma_ray", "frost_tempest", "lcharge"));
             // healer: the new actives and the heals as spells
             showSkills.addAll(java.util.List.of("holy_light", "holy_barrier", "guardian_angel", "heal", "group_heal", "purify"));
+            // monsters: the leaping creeper, skeletons and creepers sensing through walls
+            showSkills.add("mob:leap");
             mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK);
             com.jo112ss.rpgmod.client.mob.MobOverlay.testSelf = true;
             mc.options.particles().set(net.minecraft.server.level.ParticleStatus.ALL);

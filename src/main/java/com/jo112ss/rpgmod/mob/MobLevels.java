@@ -129,8 +129,8 @@ public final class MobLevels {
             modifier(mob, Attributes.FLYING_SPEED, FLY, speed, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);
             modifier(mob, Attributes.KNOCKBACK_RESISTANCE, KB, MobLevelMath.knockbackResistance(r, lv), AttributeModifier.Operation.ADD_VALUE);
             AttributeInstance follow = mob.getAttribute(Attributes.FOLLOW_RANGE);
-            if (com.jo112ss.rpgmod.mob.ai.MobAi.isBuilderZombie(mob) && follow != null) {
-                // zombies hunt from far away (128 blocks by default)
+            if (com.jo112ss.rpgmod.mob.ai.MobAi.sensesFar(mob) && follow != null) {
+                // zombies, creepers, spiders and skeletons hunt from far away (128 blocks by default)
                 modifier(mob, Attributes.FOLLOW_RANGE, FOLLOW, Math.max(0, MobConfig.zombieRange() - follow.getBaseValue()), AttributeModifier.Operation.ADD_VALUE);
             } else {
                 // stronger monsters notice you from further away (+1 block per 4 levels, up to +16)
@@ -164,6 +164,8 @@ public final class MobLevels {
         MobLevelMath.Rules r = MobConfig.rules();
         double mult;
         if (attacker instanceof EnderDragon) mult = MobConfig.dragonDamage(); // its breath ignores armour, so it gets its own, gentler factor
+        // creeper blasts grow with level like any attack; other explosions (TNT...) only by a share
+        else if (attacker instanceof net.minecraft.world.entity.monster.Creeper) mult = MobLevelMath.damageMultiplier(r, lv);
         else mult = event.getSource().is(DamageTypeTags.IS_EXPLOSION) ? MobLevelMath.explosionMultiplier(r, lv) : MobLevelMath.damageMultiplier(r, lv);
         event.setAmount((float) (event.getAmount() * mult));
     }

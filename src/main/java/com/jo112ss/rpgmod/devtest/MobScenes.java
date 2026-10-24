@@ -69,6 +69,7 @@ final class MobScenes {
             case "sense" -> 8;
             case "stairs" -> 10;
             case "exit" -> 11;
+            case "leap" -> 14;
             default -> 5;
         };
         c = BlockPos.containing(arena).offset(40, 0, idx * 24 - 60);
@@ -125,6 +126,28 @@ final class MobScenes {
                 com.jo112ss.rpgmod.mob.ai.SurfaceGoal.lastMode = "-";
                 spawn(level, EntityTypes.ZOMBIE, c.offset(12, 1, 0), 25);
                 for (Mob m : mobs) m.setTarget(null);
+            }
+            case "leap" -> {
+                // the player in a roofless stone pen: a leaping creeper outside has no way in but over the top;
+                // a skeleton and a creeper far off behind the walls should still find the player
+                for (int x = -2; x <= 2; x++) for (int z = -2; z <= 2; z++) for (int y = 0; y <= 2; y++) {
+                    if (Math.abs(x) == 2 || Math.abs(z) == 2) level.setBlockAndUpdate(c.offset(x, y, z), Blocks.STONE.defaultBlockState());
+                }
+                tp(player, Vec3.atBottomCenterOf(c), -90, 10);
+                var leaper = EntityTypes.CREEPER.create(level, EntitySpawnReason.COMMAND);
+                leaper.snapTo(c.getX() + 8.5, c.getY(), c.getZ() + 0.5, 90F, 0F);
+                MobLevels.apply(leaper, 30);
+                MobAi.onFirstLevel(leaper, 30);
+                leaper.getPersistentData().putBoolean(com.jo112ss.rpgmod.mob.ai.CreeperLeapGoal.KEY, true);
+                leaper.setPersistenceRequired();
+                level.addFreshEntity(leaper);
+                mobs.add(leaper);
+                Mob sk = spawn(level, EntityTypes.SKELETON, c.offset(-9, 0, 9), 30);
+                sk.setTarget(null);
+                RpgMod.LOGGER.info("[AUTOTEST] leap scene: creeper follow range {} armour slots empty={} skeleton follow range {}",
+                        leaper.getAttributeValue(net.minecraft.world.entity.ai.attributes.Attributes.FOLLOW_RANGE),
+                        leaper.getItemBySlot(EquipmentSlot.CHEST).isEmpty() && leaper.getItemBySlot(EquipmentSlot.HEAD).isEmpty(),
+                        sk.getAttributeValue(net.minecraft.world.entity.ai.attributes.Attributes.FOLLOW_RANGE));
             }
             case "sense" -> {
                 // the player sealed in a stone hut: zombies far outside can never see them
@@ -365,7 +388,7 @@ final class MobScenes {
         if (scene == null) return;
         t++;
         // (the sense scene checks that zombies find the player on their own)
-        if (!java.util.Set.of("sense", "stairs", "exit", "downed").contains(scene)) for (Mob m : mobs) if (m.isAlive() && m.getTarget() == null) m.setTarget(player);
+        if (!java.util.Set.of("sense", "stairs", "exit", "downed", "leap").contains(scene)) for (Mob m : mobs) if (m.isAlive() && m.getTarget() == null) m.setTarget(player);
         switch (scene) {
             case "king" -> kingTick(level, player);
             case "downed" -> {
@@ -485,6 +508,15 @@ final class MobScenes {
                             z.blockPosition(), z.getBlockX() - c.getX(), z.getBlockY() - c.getY(), z.getTarget() == player,
                             com.jo112ss.rpgmod.mob.ai.SurfaceGoal.lastMode, com.jo112ss.rpgmod.mob.ai.BuilderGoal.dugBlocks,
                             String.format("%.1f", z.distanceTo(player)), String.format("%.1f", lostHealth));
+                }
+            }
+            case "leap" -> {
+                if (t % 20 == 0) {
+                    RpgMod.LOGGER.info("[AUTOTEST] leap t={} {} health lost={}", t,
+                            mobs.stream().map(m -> m.getType().getDescriptionId().replace("entity.minecraft.", "") + (m.isAlive() ? "" : "(gone)")
+                                    + " " + (m.getTarget() == player ? "target" : "none") + " sees=" + m.getSensing().hasLineOfSight(player)
+                                    + " dist=" + String.format("%.1f", m.distanceTo(player)) + " y=" + String.format("%.1f", m.getY() - c.getY())).toList(),
+                            String.format("%.1f", lostHealth));
                 }
             }
             case "sense" -> {

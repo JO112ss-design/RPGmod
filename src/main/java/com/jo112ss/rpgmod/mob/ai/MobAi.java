@@ -81,7 +81,20 @@ public final class MobAi {
             c.maxSwell = Math.max(16, 30 - Math.min(14, lv / 5));
             double charged = 0.05;
             if (r.nextDouble() < charged) c.getEntityData().set(Creeper.DATA_IS_POWERED, true);
+            // a fifth leap over walls and onto roofs
+            if (r.nextDouble() < 0.2) c.getPersistentData().putBoolean(CreeperLeapGoal.KEY, true);
         }
+        // a tenth of the spiders and skeletons carry two ender pearls (unseen, like the zombies' share)
+        if ((mob instanceof Spider || isOverworldSkeleton(mob)) && r.nextDouble() < 0.1) mob.getPersistentData().putInt(MobPearlGoal.KEY, 2);
+    }
+
+    public static boolean isOverworldSkeleton(Entity e) {
+        return e instanceof AbstractSkeleton && !(e instanceof WitherSkeleton);
+    }
+
+    /** Monsters that sense players through walls from the zombies' range (128 blocks by default). */
+    public static boolean sensesFar(Entity e) {
+        return isBuilderZombie(e) || e instanceof Creeper || e instanceof Spider || isOverworldSkeleton(e);
     }
 
     public static boolean isBuilderZombie(Entity e) {
@@ -114,6 +127,23 @@ public final class MobAi {
             if (mob instanceof net.minecraft.world.entity.monster.zombie.Zombie zombie) {
                 zombie.goalSelector.removeAllGoals(g -> g instanceof net.minecraft.world.entity.ai.goal.ZombieAttackGoal);
                 zombie.goalSelector.addGoal(3, new net.minecraft.world.entity.ai.goal.ZombieAttackGoal(zombie, 1.0, true));
+            }
+        }
+        if (!isBuilderZombie(mob) && sensesFar(mob) && mob.targetSelector.getAvailableGoals().stream().noneMatch(g -> g.getGoal() instanceof ZombieSenseGoal)) {
+            // creepers, spiders and skeletons find players like the zombies do: anywhere in range, through walls
+            mob.targetSelector.addGoal(1, new ZombieSenseGoal(mob));
+            if (mob instanceof Spider || isOverworldSkeleton(mob)) mob.goalSelector.addGoal(1, new MobPearlGoal(mob));
+            if (mob instanceof Creeper c) {
+                // and keep walking towards them out of sight (vanilla creepers stop when they lose sight)
+                c.goalSelector.removeAllGoals(g -> g.getClass() == net.minecraft.world.entity.ai.goal.MeleeAttackGoal.class);
+                c.goalSelector.addGoal(4, new net.minecraft.world.entity.ai.goal.MeleeAttackGoal(c, 1.0, true));
+                if (CreeperLeapGoal.isLeaper(c)) c.goalSelector.addGoal(1, new CreeperLeapGoal(c));
+            }
+        }
+        if (mob instanceof Creeper) {
+            // creepers wear no armour (older saves may still have some from before)
+            for (EquipmentSlot s : new EquipmentSlot[] {EquipmentSlot.HEAD, EquipmentSlot.CHEST, EquipmentSlot.LEGS, EquipmentSlot.FEET}) {
+                if (!mob.getItemBySlot(s).isEmpty()) mob.setItemSlot(s, ItemStack.EMPTY);
             }
         }
         if (mob instanceof AbstractSkeleton sk) tuneBow(sk, lv);
