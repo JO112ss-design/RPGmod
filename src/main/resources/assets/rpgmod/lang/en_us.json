@@ -507,7 +507,7 @@
   "rpgmod.job.sharpshooter.desc": "Advanced ranger: master of sniping and rapid fire.",
   "rpgmod.job.spellmaster": "Spellmaster",
   "rpgmod.job.spellmaster.role": "Advanced: magic damage",
-  "rpgmod.job.spellmaster.desc": "Advanced wizard: nine spell slots, a spell on each mouse button at once, and fusion of two elements.",
+  "rpgmod.job.spellmaster.desc": "Advanced wizard: four extra left-hand slots on the staff, a spell in each hand at once (right click and the left-hand spell key, left click by default), and fusion of two elements.",
   "rpgmod.job.runemaster": "Runemaster",
   "rpgmod.job.runemaster.role": "Advanced: area support",
   "rpgmod.job.runemaster.desc": "Advanced enchanter: runes that empower allies and weaken foes over a wide area.",
@@ -673,6 +673,9 @@
   "rpgmod.skill.frost_tempest.desc": "Fusion (ice + thunder): a freezing storm over the aimed area; enemies inside freeze and lightning keeps falling.",
   "rpgmod.job.left_spell_selected": "Left-click spell: %s",
   "rpgmod.fusion.cast": "Fusion: %s!",
-  "rpgmod.jobscreen.hands_legend": "● right click  ◆ left click (pick on the wheel)",
-  "rpgmod.wheel.hint_hands": "Right click: right hand / Left click: left hand"
+  "rpgmod.jobscreen.hands_legend": "R = right hand (right click), L = left hand (left-hand spell key)",
+  "rpgmod.wheel.hint_hands": "Left ring: left hand, right ring: right hand",
+  "rpgmod.wheel.left_hand": "Left hand [%s]",
+  "rpgmod.wheel.right_hand": "Right hand [%s]",
+  "key.rpgmod.left_spell": "Left-hand spell (spellmaster)"
 }

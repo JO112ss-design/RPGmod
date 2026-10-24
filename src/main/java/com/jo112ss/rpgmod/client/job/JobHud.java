@@ -135,7 +135,8 @@ public final class JobHud {
                         g.fill(lx + 1, y + SLOT - 1 - h, lx + SLOT - 1, y + SLOT - 1, 0xB0000000);
                     }
                 }
-                g.text(font, "L", lx + (SLOT - font.width("L")) / 2, y + SLOT + 2, 0xFF7FD8FF, true);
+                String lk = font.substrByWidth(JobKeys.LEFT_SPELL.getTranslatedKeyMessage(), SLOT + 4).getString();
+                g.text(font, lk, lx + (SLOT - font.width(lk)) / 2, y + SLOT + 2, 0xFF7FD8FF, true);
                 // left-click charge gauge, under the right-click one
                 if (JobClient.leftCharge >= 0 && left != null) {
                     int need = Math.max(1, com.jo112ss.rpgmod.job.JobManager.castTicks(mc.player, left));

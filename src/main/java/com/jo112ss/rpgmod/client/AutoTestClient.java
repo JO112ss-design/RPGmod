@@ -312,11 +312,11 @@ public final class AutoTestClient {
                 }
                 case 4 -> {
                     mc.player.getInventory().setSelectedSlot(0);
-                    mc.options.keyAttack.setDown(true);
+                    com.jo112ss.rpgmod.client.job.JobKeys.LEFT_SPELL.setDown(true);
                 }
                 case 20 -> shot(mc, String.format("c%02d_left_charging", i));
                 case 78 -> shot(mc, String.format("c%02d_left_charged", i));
-                case 80 -> mc.options.keyAttack.setDown(false);
+                case 80 -> com.jo112ss.rpgmod.client.job.JobKeys.LEFT_SPELL.setDown(false);
                 case 86 -> shot(mc, String.format("c%02d_left_released", i));
                 default -> { }
             }

@@ -176,7 +176,7 @@ public final class JobData {
         return isAdvanced() && advancedDef().id().equals(advancedId);
     }
 
-    /** Staff slots this caster can fill: four, nine for the spellmaster. */
+    /** Staff slots this caster can fill: four (right hand), eight for the spellmaster (four per hand). */
     public int spellSlots() {
         return isAdvancedAs("spellmaster") ? SpellLoadout.SLOTS : SpellLoadout.BASE_SLOTS;
     }

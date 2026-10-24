@@ -18,6 +18,8 @@ public final class JobKeys {
     public static final KeyMapping SKILL_3 = new KeyMapping("key.rpgmod.skill_3", InputConstants.Type.KEYBOARD, InputConstants.KEY_B, CATEGORY);
     public static final KeyMapping STATUS = new KeyMapping("key.rpgmod.status", InputConstants.Type.KEYBOARD, InputConstants.KEY_K, CATEGORY);
     public static final KeyMapping SPELL_WHEEL = new KeyMapping("key.rpgmod.spell_wheel", InputConstants.Type.KEYBOARD, InputConstants.KEY_V, CATEGORY);
+    /** Spellmaster: hold to charge the left-hand spell (left click by default; then the staff does not attack). */
+    public static final KeyMapping LEFT_SPELL = new KeyMapping("key.rpgmod.left_spell", InputConstants.Type.MOUSE, org.lwjgl.glfw.GLFW.GLFW_MOUSE_BUTTON_LEFT, CATEGORY);
 
     /** Indexed by skill slot: 0 = skill 1, 1 = skill 2, 2 = ultimate, 3 = skill 3 (advanced job). */
     public static final KeyMapping[] SKILLS = {SKILL_1, SKILL_2, ULTIMATE, SKILL_3};
@@ -30,5 +32,6 @@ public final class JobKeys {
         event.register(SKILL_3);
         event.register(STATUS);
         event.register(SPELL_WHEEL);
+        event.register(LEFT_SPELL);
     }
 }

@@ -507,7 +507,7 @@
   "rpgmod.job.sharpshooter.desc": "レンジャーの上級職。一撃必中の狙撃と速射を極めた射手。",
   "rpgmod.job.spellmaster": "スペルマスター",
   "rpgmod.job.spellmaster.role": "上級・魔法火力",
-  "rpgmod.job.spellmaster.desc": "ウィザードの上級職。杖の呪文枠が9つに増え、右クリックと左クリックで二つの呪文を同時に操り、属性の違う二つを融合させる大魔導師。",
+  "rpgmod.job.spellmaster.desc": "ウィザードの上級職。杖に左手用の呪文枠が4つ増え、右クリックと左手の呪文キー（初期は左クリック）で二つの呪文を同時に操り、属性の違う二つを融合させる大魔導師。",
   "rpgmod.job.runemaster": "ルーンマスター",
   "rpgmod.job.runemaster.role": "上級・範囲支援",
   "rpgmod.job.runemaster.desc": "エンチャンターの上級職。ルーンで広い範囲の味方を強め、敵を弱らせる。",
@@ -673,6 +673,9 @@
   "rpgmod.skill.frost_tempest.desc": "融合魔法（氷＋雷）：狙った一帯に凍える嵐。中の敵は凍えて鈍り、雷が落ち続ける。",
   "rpgmod.job.left_spell_selected": "左クリックの呪文：%s",
   "rpgmod.fusion.cast": "融合魔法：%s！",
-  "rpgmod.jobscreen.hands_legend": "●右クリック ◆左クリック（ホイールで選ぶ）",
-  "rpgmod.wheel.hint_hands": "右クリック：右手 / 左クリック：左手"
+  "rpgmod.jobscreen.hands_legend": "R＝右手（右クリック） L＝左手（左手の呪文キー）",
+  "rpgmod.wheel.hint_hands": "左の輪＝左手、右の輪＝右手",
+  "rpgmod.wheel.left_hand": "左手 [%s]",
+  "rpgmod.wheel.right_hand": "右手 [%s]",
+  "key.rpgmod.left_spell": "左手の呪文（スペルマスター）"
 }

@@ -7,7 +7,7 @@ JOBS = {  # id: (ja name, ja role, ja desc, en name, en role, en desc)
  'berserker': ('バーサーカー', '上級・近接火力', 'ファイターの上級職。守りを捨てて攻撃に全てを注ぐ狂戦士。', 'Berserker', 'Advanced: melee damage', 'Advanced fighter: throws defence away for raw power.'),
  'guardian': ('ガーディアン', '上級・盾役', 'パラディンの上級職。仲間の盾となり、どんな攻撃も受け止める守護者。', 'Guardian', 'Advanced: tank', 'Advanced paladin: the party\'s shield, taking every blow.'),
  'sharpshooter': ('シャープシューター', '上級・遠距離火力', 'レンジャーの上級職。一撃必中の狙撃と速射を極めた射手。', 'Sharpshooter', 'Advanced: ranged damage', 'Advanced ranger: master of sniping and rapid fire.'),
- 'spellmaster': ('スペルマスター', '上級・魔法火力', 'ウィザードの上級職。杖の呪文枠が9つに増え、右クリックと左クリックで二つの呪文を同時に操り、属性の違う二つを融合させる大魔導師。', 'Spellmaster', 'Advanced: magic damage', 'Advanced wizard: nine spell slots, a spell on each mouse button at once, and fusion of two elements.'),
+ 'spellmaster': ('スペルマスター', '上級・魔法火力', 'ウィザードの上級職。杖に左手用の呪文枠が4つ増え、右クリックと左手の呪文キー（初期は左クリック）で二つの呪文を同時に操り、属性の違う二つを融合させる大魔導師。', 'Spellmaster', 'Advanced: magic damage', 'Advanced wizard: four extra left-hand slots on the staff, a spell in each hand at once (right click and the left-hand spell key, left click by default), and fusion of two elements.'),
  'runemaster': ('ルーンマスター', '上級・範囲支援', 'エンチャンターの上級職。ルーンで広い範囲の味方を強め、敵を弱らせる。', 'Runemaster', 'Advanced: area support', 'Advanced enchanter: runes that empower allies and weaken foes over a wide area.'),
  'joker': ('ジョーカー', '上級・トリッキー', 'ギャンブラーの上級職。奇術と運で戦場をかき回す道化師。', 'Joker', 'Advanced: trickster', 'Advanced gambler: tricks and luck that turn a fight upside down.'),
  'nightblade': ('ナイトブレード', '上級・二刀流', 'アサシンの上級職。オフハンドに短剣を持つと右クリックでも斬れる二刀流の剣士。', 'Nightblade', 'Advanced: dual blades', 'Advanced assassin: with a dagger in the off hand, right click strikes with it too.'),
@@ -331,8 +331,11 @@ UI = {  # key: (ja, en)
  'effect.rpgmod.sanctum': ('神域', 'Sanctum'),
  'rpgmod.job.left_spell_selected': ('左クリックの呪文：%s', 'Left-click spell: %s'),
  'rpgmod.fusion.cast': ('融合魔法：%s！', 'Fusion: %s!'),
- 'rpgmod.jobscreen.hands_legend': ('●右クリック ◆左クリック（ホイールで選ぶ）', '● right click  ◆ left click (pick on the wheel)'),
- 'rpgmod.wheel.hint_hands': ('右クリック：右手 / 左クリック：左手', 'Right click: right hand / Left click: left hand'),
+ 'rpgmod.jobscreen.hands_legend': ('R＝右手（右クリック） L＝左手（左手の呪文キー）', 'R = right hand (right click), L = left hand (left-hand spell key)'),
+ 'rpgmod.wheel.left_hand': ('左手 [%s]', 'Left hand [%s]'),
+ 'rpgmod.wheel.right_hand': ('右手 [%s]', 'Right hand [%s]'),
+ 'key.rpgmod.left_spell': ('左手の呪文（スペルマスター）', 'Left-hand spell (spellmaster)'),
+ 'rpgmod.wheel.hint_hands': ('左の輪＝左手、右の輪＝右手', 'Left ring: left hand, right ring: right hand'),
 }
 for lang, idx in (('ja_jp', 0), ('en_us', 1)):
     p = f'{A}/{lang}.json'

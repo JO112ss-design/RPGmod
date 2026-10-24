@@ -776,8 +776,10 @@ public class JobScreen extends Screen {
 
     // ---- spells
 
+    /** Staff slots: four in a row; the spellmaster's two hands side by side (right hand, then left). */
     private int spellSlotX(int s) {
-        return left + 16 + s * (JobClient.data().spellSlots() > SpellLoadout.BASE_SLOTS ? 22 : 50);
+        if (JobClient.data().spellSlots() <= SpellLoadout.BASE_SLOTS) return left + 16 + s * 50;
+        return left + 14 + s * 23 + (SpellLoadout.isLeft(s) ? 12 : 0);
     }
 
     private int spellSlotSize() {
@@ -799,10 +801,12 @@ public class JobScreen extends Screen {
                 g.fill(x - 2, y - 2, x + size + 2, y + size + 2, sel ? Ui.GOLD : Ui.EDGE);
                 SkillDef def = JobDefs.skill(l.spell(s));
                 Ui.skillIcon(g, font, x, y, size, def, false);
-                // right-click spell (purple dot) and, for the spellmaster, left-click spell (blue diamond)
-                String mark = (l.selected() == s ? "●" : "") + (twoHands && l.selectedLeft() == s ? "◆" : "");
-                int col = l.selected() == s ? Ui.argb(0xB09CFF) : twoHands && l.selectedLeft() == s ? Ui.argb(0x7FD8FF) : Ui.DIM;
-                g.text(font, (s + 1) + mark, x, y + size + 4, col, false);
+                // the selected spell of each hand: purple dot (right), blue diamond (left)
+                boolean leftSlot = SpellLoadout.isLeft(s);
+                boolean chosen = leftSlot ? l.selectedLeft() == s : l.selected() == s;
+                String mark = chosen ? (leftSlot ? "◆" : "●") : "";
+                int col = chosen ? Ui.argb(leftSlot ? 0x7FD8FF : 0xB09CFF) : Ui.DIM;
+                g.text(font, (twoHands ? (leftSlot ? "L" : "R") : "") + (s % SpellLoadout.BASE_SLOTS + 1) + mark, x, y + size + 4, col, false);
                 if (in(mouseX, mouseY, x, y, size, size) && def != null) hoveredSkill = def.id();
             }
             if (twoHands) {

@@ -53,7 +53,7 @@ public final class JobClient {
     }
 
     private static void tickLeftCast(Minecraft mc) {
-        boolean want = mc.player != null && mc.gui.screen() == null && leftCasting() && mc.options.keyAttack.isDown();
+        boolean want = mc.player != null && mc.gui.screen() == null && leftCasting() && JobKeys.LEFT_SPELL.isDown();
         if (want && leftCharge < 0) {
             leftCharge = 0;
             send(JobActionPayload.LEFT_CAST, 1, "");
@@ -73,7 +73,8 @@ public final class JobClient {
     public static void onClickInput(net.neoforged.neoforge.client.event.InputEvent.InteractionKeyMappingTriggered event) {
         Minecraft mc = Minecraft.getInstance();
         if (mc.player == null) return;
-        if (event.isAttack() && leftCasting()) {
+        // on the attack button (the default), the left-hand spell takes it over; bound elsewhere, attacks stay
+        if (event.isAttack() && leftCasting() && JobKeys.LEFT_SPELL.getKey().equals(mc.options.keyAttack.getKey())) {
             event.setCanceled(true);
             event.setSwingHand(false);
             return;

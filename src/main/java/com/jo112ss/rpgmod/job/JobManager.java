@@ -452,7 +452,7 @@ public final class JobManager {
         JobData d = data(player);
         if (!d.hasJob() || !d.castsSpells()) return null;
         SpellLoadout loadout = staff.getOrDefault(ModRegistries.SPELL_LOADOUT.get(), SpellLoadout.EMPTY);
-        return usable(d, JobDefs.skill(loadout.selectedSpell(d.spellSlots())));
+        return usable(d, JobDefs.skill(loadout.selectedSpell()));
     }
 
     /** The spellmaster's left-click spell on the staff, else null. */
@@ -752,7 +752,7 @@ public final class JobManager {
 
     public static void selectSpell(ServerPlayer player, int slot) {
         ItemStack staff = heldStaff(player);
-        if (staff.isEmpty() || slot < 0 || slot >= data(player).spellSlots()) return;
+        if (staff.isEmpty() || slot < 0 || slot >= SpellLoadout.BASE_SLOTS) return;
         SpellLoadout l = staff.getOrDefault(ModRegistries.SPELL_LOADOUT.get(), SpellLoadout.EMPTY);
         staff.set(ModRegistries.SPELL_LOADOUT.get(), l.withSelected(slot));
         String spell = l.spell(slot);
@@ -766,7 +766,7 @@ public final class JobManager {
     public static void selectLeftSpell(ServerPlayer player, int slot) {
         ItemStack staff = heldStaff(player);
         JobData d = data(player);
-        if (staff.isEmpty() || !d.isAdvancedAs("spellmaster") || slot < 0 || slot >= d.spellSlots()) return;
+        if (staff.isEmpty() || !d.isAdvancedAs("spellmaster") || !SpellLoadout.isLeft(slot) || slot >= d.spellSlots()) return;
         SpellLoadout l = staff.getOrDefault(ModRegistries.SPELL_LOADOUT.get(), SpellLoadout.EMPTY);
         staff.set(ModRegistries.SPELL_LOADOUT.get(), l.withSelectedLeft(slot));
         String spell = l.spell(slot);

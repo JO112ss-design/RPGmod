@@ -495,8 +495,8 @@ public final class AutoTestServer {
             var sd = com.jo112ss.rpgmod.job.core.JobDefs.skill(s);
             if (sd != null && sd.kind() == com.jo112ss.rpgmod.job.core.SkillKind.ACTIVE) com.jo112ss.rpgmod.job.JobManager.equipSkill(player, 3, s);
             if (sd != null && sd.kind() == com.jo112ss.rpgmod.job.core.SkillKind.SPELL) {
-                com.jo112ss.rpgmod.job.JobManager.setSpell(player, 3, s);
-                com.jo112ss.rpgmod.job.JobManager.selectLeftSpell(player, 3); // spellmaster: on left click
+                com.jo112ss.rpgmod.job.JobManager.setSpell(player, 4, s); // spellmaster: the left hand's first slot
+                com.jo112ss.rpgmod.job.JobManager.selectLeftSpell(player, 4);
             }
         }
         RpgMod.LOGGER.info("[AUTOTEST] advanced skills learnt {} (known now {}), slot 3 = {}", learnt, d.knownSkills(), d.slot(3));
@@ -861,7 +861,7 @@ public final class AutoTestServer {
                     jd.setCooldown("starfall", 0);
                     var star = com.jo112ss.rpgmod.job.core.JobDefs.skill("starfall");
                     int need = com.jo112ss.rpgmod.job.JobManager.castTicks(player, star);
-                    RpgMod.LOGGER.info("[AUTOTEST] p3 staff loadout {} left spell {} (slot 6 of 9), charge {} ticks", loadout,
+                    RpgMod.LOGGER.info("[AUTOTEST] p3 staff loadout {} left spell {} (left hand slot 2), charge {} ticks", loadout,
                             com.jo112ss.rpgmod.job.JobManager.leftSpell(player, player.getMainHandItem()), need);
                     com.jo112ss.rpgmod.job.SpellCasting.leftPress(player);
                     com.jo112ss.rpgmod.job.SkillTasks.later(5, () -> com.jo112ss.rpgmod.job.SpellCasting.leftRelease(player)); // too early: fizzle

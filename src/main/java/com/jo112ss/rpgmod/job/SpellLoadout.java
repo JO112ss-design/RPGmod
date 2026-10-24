@@ -8,21 +8,21 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 
 /**
- * Spells set on a magic staff (item data component): up to nine slots (four for most casters, nine
- * for the spellmaster - see {@link JobData#spellSlots()}), the one cast with right click and the one
- * the spellmaster casts with left click.
+ * Spells set on a magic staff (item data component): four right-hand slots (0-3, cast with right
+ * click) and, for the spellmaster, four left-hand slots (4-7, cast with the left-hand spell key) -
+ * see {@link JobData#spellSlots()}. One spell is selected in each hand.
  */
 public record SpellLoadout(List<String> spells, int selected, int selectedLeft) {
-    /** Slots stored on every staff. */
-    public static final int SLOTS = 9;
-    /** Slots a caster can use before the spellmaster's five extra ones. */
+    /** Slots stored on every staff: both hands. */
+    public static final int SLOTS = 8;
+    /** Slots per hand; the right hand is 0-3, the left hand 4-7. */
     public static final int BASE_SLOTS = 4;
-    public static final SpellLoadout EMPTY = new SpellLoadout(List.of(), 0, 1);
+    public static final SpellLoadout EMPTY = new SpellLoadout(List.of(), 0, BASE_SLOTS);
 
     public static final Codec<SpellLoadout> CODEC = RecordCodecBuilder.create(i -> i.group(
             Codec.STRING.listOf().fieldOf("spells").forGetter(SpellLoadout::spells),
             Codec.INT.optionalFieldOf("selected", 0).forGetter(SpellLoadout::selected),
-            Codec.INT.optionalFieldOf("selected_left", 1).forGetter(SpellLoadout::selectedLeft)
+            Codec.INT.optionalFieldOf("selected_left", BASE_SLOTS).forGetter(SpellLoadout::selectedLeft)
     ).apply(i, SpellLoadout::new));
 
     public static final StreamCodec<FriendlyByteBuf, SpellLoadout> STREAM_CODEC = StreamCodec.of(
@@ -41,17 +41,17 @@ public record SpellLoadout(List<String> spells, int selected, int selectedLeft) 
         List<String> fixed = new ArrayList<>(spells);
         while (fixed.size() < SLOTS) fixed.add("");
         spells = List.copyOf(fixed.subList(0, SLOTS));
-        selected = Math.max(0, Math.min(SLOTS - 1, selected));
-        selectedLeft = Math.max(0, Math.min(SLOTS - 1, selectedLeft));
+        selected = Math.max(0, Math.min(BASE_SLOTS - 1, selected));
+        selectedLeft = Math.max(BASE_SLOTS, Math.min(SLOTS - 1, selectedLeft));
     }
 
     public String spell(int i) {
         return i >= 0 && i < spells.size() ? spells.get(i) : "";
     }
 
-    /** The right-click spell (only from the slots this caster can use). */
-    public String selectedSpell(int usable) {
-        return selected < usable ? spell(selected) : "";
+    /** Is this slot one of the left hand's? */
+    public static boolean isLeft(int slot) {
+        return slot >= BASE_SLOTS;
     }
 
     public String selectedSpell() {
