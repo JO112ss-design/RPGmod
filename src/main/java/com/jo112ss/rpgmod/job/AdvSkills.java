@@ -1318,9 +1318,27 @@ public final class AdvSkills {
         }
     }
 
-    /** Raises downed allies around you at once (half health) and heals everyone a little. */
+    /** Experience levels the revive prayer costs (like reviving by hand with the Resurrection mod). */
+    public static final int REVIVE_XP_LEVELS = 10;
+
+    /**
+     * Raises downed allies around you at once (half health) and heals everyone a little. Costs ten
+     * experience levels; with nobody downed in reach it is not cast (nothing spent).
+     */
     private static boolean revivePrayer(Ctx c) {
         List<ServerPlayer> allies = allies(c.p(), c.def().radius());
+        boolean anyDown = false;
+        for (ServerPlayer a : allies) if (com.jo112ss.rpgmod.compat.Downed.is(a)) anyDown = true;
+        if (!anyDown) {
+            fail(c.p(), "rpgmod.job.no_downed");
+            return false;
+        }
+        boolean free = c.p().hasInfiniteMaterials();
+        if (!free && c.p().experienceLevel < REVIVE_XP_LEVELS) {
+            c.p().sendSystemMessage(Component.translatable("rpgmod.job.need_xp", REVIVE_XP_LEVELS).withStyle(ChatFormatting.RED), true);
+            return false;
+        }
+        if (!free) c.p().giveExperienceLevels(-REVIVE_XP_LEVELS);
         int raised = 0;
         for (ServerPlayer a : allies) {
             if (revive(a)) {

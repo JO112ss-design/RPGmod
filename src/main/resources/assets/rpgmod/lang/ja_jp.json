@@ -632,7 +632,7 @@
   "rpgmod.skill.yaksha": "夜叉",
   "rpgmod.skill.yaksha.desc": "12秒間、近接攻撃がすべて2回当たる。移動速度も上がる。",
   "rpgmod.skill.revive_prayer": "蘇生の祈り",
-  "rpgmod.skill.revive_prayer.desc": "周囲12ブロックのダウンした味方をその場で起こし（HP50%）、他の味方は回復する。",
+  "rpgmod.skill.revive_prayer.desc": "周囲12ブロックのダウンした味方をその場で起こし（HP50%）、他の味方は回復する。経験値レベルを10消費（ダウンした味方がいないと使えない）。",
   "rpgmod.skill.divine_domain": "神域",
   "rpgmod.skill.divine_domain.desc": "足元に聖域（10秒）。中の味方は被ダメージ-30%、悪い効果が消えていく。",
   "rpgmod.skill.great_miracle": "大いなる奇跡",
@@ -687,5 +687,7 @@
   "rpgmod.healer.angel": "%sの守護天使があなたを守っている",
   "effect.rpgmod.venom": "猛毒",
   "death.attack.rpgmod.venom": "%1$sは毒に倒れた",
-  "death.attack.rpgmod.venom.player": "%1$sは%2$sの毒に倒れた"
+  "death.attack.rpgmod.venom.player": "%1$sは%2$sの毒に倒れた",
+  "rpgmod.job.no_downed": "近くにダウンした味方がいない",
+  "rpgmod.job.need_xp": "経験値レベルが%s必要"
 }

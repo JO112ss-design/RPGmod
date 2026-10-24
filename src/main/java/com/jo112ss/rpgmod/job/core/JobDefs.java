@@ -35,6 +35,8 @@ public final class JobDefs {
     }
 
     public static final Map<String, SkillDef> SKILLS = new LinkedHashMap<>();
+    /** Skills that raise downed players (their cooldown is x5 instead of the ultimates' x2). */
+    private static final java.util.Set<String> REVIVES = java.util.Set.of("revive_prayer", "great_miracle");
     /** Charge (hold) time in seconds for spells cast from a staff. */
     private static final Map<String, Double> CAST_TIMES = Map.ofEntries(
             Map.entry("magic_bolt", 0.6), Map.entry("flame_burst", 1.2), Map.entry("frost_nova", 1.0), Map.entry("thunder", 1.6),
@@ -375,6 +377,9 @@ public final class JobDefs {
     private static SkillDef skill(String id, SkillKind kind, SkillEffect effect, double cooldown, double mana, double power,
                                   double radius, double duration, List<String> effects, int amplifier, String glyph) {
         mana = Math.ceil(mana - 1e-9); // whole MP only
+        // ultimates wait twice as long, and the skills that raise the downed five times as long
+        if (REVIVES.contains(id)) cooldown *= 5;
+        else if (kind == SkillKind.ULTIMATE) cooldown *= 2;
         SkillDef def = new SkillDef(id, "", kind, effect, cooldown, mana, power, radius, duration, effects, amplifier, glyph, 0, CAST_TIMES.getOrDefault(id, 0.0));
         SKILLS.put(id, def);
         return def;

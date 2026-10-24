@@ -158,7 +158,7 @@ SKILLS = {  # id: (ja, ja desc, en, en desc)
  'shadow_stitch': ('影縫い', 'クナイで狙った敵の影を縫いとめる。周り4ブロックの敵も3秒間動けなくなる。', 'Shadow Stitch', 'A kunai pins the targeted enemy\'s shadow - and those of enemies within 4 blocks - for 3s.'),
  'moon_shadow': ('月影', '三日月の斬撃を飛ばし、通り道の敵をすべて斬る。', 'Moon Shadow', 'A crescent of moonlight flies forward, cutting every enemy in its path.'),
  'yaksha': ('夜叉', '12秒間、近接攻撃がすべて2回当たる。移動速度も上がる。', 'Yaksha', 'For 12s every melee hit strikes twice, and you move faster.'),
- 'revive_prayer': ('蘇生の祈り', '周囲12ブロックのダウンした味方をその場で起こし（HP50%）、他の味方は回復する。', 'Revive Prayer', 'Raises downed allies within 12 blocks on the spot (half health); heals the others.'),
+ 'revive_prayer': ('蘇生の祈り', '周囲12ブロックのダウンした味方をその場で起こし（HP50%）、他の味方は回復する。経験値レベルを10消費（ダウンした味方がいないと使えない）。', 'Revive Prayer', 'Raises downed allies within 12 blocks on the spot (half health); heals the others. Costs 10 experience levels (only usable with someone downed).'),
  'divine_domain': ('神域', '足元に聖域（10秒）。中の味方は被ダメージ-30%、悪い効果が消えていく。', 'Divine Domain', 'Holy ground under you (10s): allies on it take 30% less damage and are cleansed.'),
  'great_miracle': ('大いなる奇跡', '周囲30ブロックの味方を全員蘇生・全回復・浄化し、耐性IIと再生IIを与える。', 'Great Miracle', 'Every ally within 30 blocks is raised, fully healed and cleansed, and gets Resistance II and Regeneration II.'),
  'holy_bolt': ('聖光弾', '追尾する光の弾。', 'Holy Bolt', 'A homing bolt of light.'),
@@ -343,6 +343,8 @@ UI = {  # key: (ja, en)
  'effect.rpgmod.venom': ('猛毒', 'Venom'),
  'death.attack.rpgmod.venom': ('%1$sは毒に倒れた', '%1$s succumbed to venom'),
  'death.attack.rpgmod.venom.player': ('%1$sは%2$sの毒に倒れた', '%1$s succumbed to the venom of %2$s'),
+ 'rpgmod.job.no_downed': ('近くにダウンした味方がいない', 'Nobody downed nearby'),
+ 'rpgmod.job.need_xp': ('経験値レベルが%s必要', 'Needs %s experience levels'),
 }
 for lang, idx in (('ja_jp', 0), ('en_us', 1)):
     p = f'{A}/{lang}.json'

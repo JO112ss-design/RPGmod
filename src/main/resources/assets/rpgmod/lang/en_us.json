@@ -632,7 +632,7 @@
   "rpgmod.skill.yaksha": "Yaksha",
   "rpgmod.skill.yaksha.desc": "For 12s every melee hit strikes twice, and you move faster.",
   "rpgmod.skill.revive_prayer": "Revive Prayer",
-  "rpgmod.skill.revive_prayer.desc": "Raises downed allies within 12 blocks on the spot (half health); heals the others.",
+  "rpgmod.skill.revive_prayer.desc": "Raises downed allies within 12 blocks on the spot (half health); heals the others. Costs 10 experience levels (only usable with someone downed).",
   "rpgmod.skill.divine_domain": "Divine Domain",
   "rpgmod.skill.divine_domain.desc": "Holy ground under you (10s): allies on it take 30% less damage and are cleansed.",
   "rpgmod.skill.great_miracle": "Great Miracle",
@@ -687,5 +687,7 @@
   "rpgmod.healer.angel": "%s's guardian angel watches over you",
   "effect.rpgmod.venom": "Venom",
   "death.attack.rpgmod.venom": "%1$s succumbed to venom",
-  "death.attack.rpgmod.venom.player": "%1$s succumbed to the venom of %2$s"
+  "death.attack.rpgmod.venom.player": "%1$s succumbed to the venom of %2$s",
+  "rpgmod.job.no_downed": "Nobody downed nearby",
+  "rpgmod.job.need_xp": "Needs %s experience levels"
 }
