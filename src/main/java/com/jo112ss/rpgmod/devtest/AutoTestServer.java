@@ -286,6 +286,12 @@ public final class AutoTestServer {
             total += lost;
         }
         RpgMod.LOGGER.info("[AUTOTEST] skill {} hit {} dummies for {} total damage", lastCast, hit, String.format("%.1f", total));
+        var fortune = player.getEffect(com.jo112ss.rpgmod.registry.ModEffects.FORTUNE);
+        if (fortune != null) {
+            RpgMod.LOGGER.info("[AUTOTEST] fortune: number {} for {}s, crit chance {}%, crit x{}, reroll {}", fortune.getAmplifier() + 1,
+                    fortune.getDuration() / 20, com.jo112ss.rpgmod.job.JobManager.critChance(player, null),
+                    String.format("%.2f", com.jo112ss.rpgmod.job.JobManager.critMultiplier(player, null)), com.jo112ss.rpgmod.job.JobManager.luckyReroll(player));
+        }
         lastCast = null;
         sinceCast = -1;
     }
