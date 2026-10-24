@@ -517,9 +517,14 @@ public final class AutoTestServer {
     private static void shieldCheck(net.minecraft.world.item.Item shieldItem, int round) {
         var level = (net.minecraft.server.level.ServerLevel) player.level();
         var mode = player.gameMode();
+        var diff = level.getDifficulty();
         player.setGameMode(net.minecraft.world.level.GameType.SURVIVAL);
+        level.getServer().setDifficulty(net.minecraft.world.Difficulty.NORMAL, true);
         player.setItemSlot(net.minecraft.world.entity.EquipmentSlot.OFFHAND, new ItemStack(shieldItem));
-        com.jo112ss.rpgmod.job.SkillTasks.later(2, () -> player.startUsingItem(net.minecraft.world.InteractionHand.OFF_HAND));
+        com.jo112ss.rpgmod.job.SkillTasks.later(2, () -> {
+            player.startUsingItem(net.minecraft.world.InteractionHand.OFF_HAND);
+            RpgMod.LOGGER.info("[AUTOTEST] shield raised: using={} item={} difficulty was {}", player.isUsingItem(), player.getUseItem(), diff);
+        });
         com.jo112ss.rpgmod.job.SkillTasks.later(14, () -> {
             var z = net.minecraft.world.entity.EntityTypes.ZOMBIE.create(level, net.minecraft.world.entity.EntitySpawnReason.COMMAND);
             var look = player.getLookAngle().multiply(1, 0, 1).normalize();
@@ -545,6 +550,7 @@ public final class AutoTestServer {
                 z.discard();
                 player.setHealth(player.getMaxHealth());
                 player.setGameMode(mode);
+                level.getServer().setDifficulty(diff, true);
                 if (round == 0) shieldCheck(net.minecraft.world.item.Items.SHIELD, 1);
                 else player.setItemSlot(net.minecraft.world.entity.EquipmentSlot.OFFHAND, ItemStack.EMPTY);
             });
