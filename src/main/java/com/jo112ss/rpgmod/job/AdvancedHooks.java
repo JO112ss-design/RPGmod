@@ -45,6 +45,9 @@ public final class AdvancedHooks {
     private static final ResourceKey<DamageType> SKILL = ResourceKey.create(Registries.DAMAGE_TYPE, Identifier.fromNamespaceAndPath("rpgmod", "skill"));
     private static final ResourceKey<DamageType> SKILL_MAGIC = ResourceKey.create(Registries.DAMAGE_TYPE, Identifier.fromNamespaceAndPath("rpgmod", "skill_magic"));
 
+    /** Sharpshooter's roll: the next bow arrow carries this tag and hits this much harder. */
+    static final String EMPOWERED_TAG = "rpgmod_empowered";
+    public static final double EMPOWERED_MULT = 2.5;
     /** Exposed: +30% damage taken per level. */
     public static final double EXPOSED_PER_LEVEL = 0.3;
     /** Asura: up to +150% damage at (almost) no health; 15% of the damage dealt heals. */
@@ -81,6 +84,8 @@ public final class AdvancedHooks {
             }
         }
 
+        if (src.getDirectEntity() instanceof AbstractArrow arrow && arrow.entityTags().contains(EMPOWERED_TAG)) amount *= (float) EMPOWERED_MULT;
+
         // ---- the victim's side
         MobEffectInstance exposed = victim.getEffect(ModEffects.EXPOSED);
         if (exposed != null) amount *= (float) (1 + EXPOSED_PER_LEVEL * (exposed.getAmplifier() + 1));
@@ -114,7 +119,7 @@ public final class AdvancedHooks {
             if (g.isAlive()) g.hurtServer(level, g.damageSources().source(SKILL), moved);
         });
         ServerFx.of("x_link", g.position().add(0, 1.1, 0)).vec(vp.position().add(0, 1.1, 0)).color(0xF0D080).send(level);
-        level.playSound(null, g.blockPosition(), SoundEvents.SHIELD_BLOCK, SoundSource.PLAYERS, 0.6F, 1.3F);
+        level.playSound(null, g.blockPosition(), SoundEvents.SHIELD_BLOCK.value(), SoundSource.PLAYERS, 0.6F, 1.3F);
         return amount - moved;
     }
 
@@ -127,7 +132,7 @@ public final class AdvancedHooks {
             if (att.isAlive()) att.hurtServer(level, vp.damageSources().source(SKILL_MAGIC, vp, vp), back);
         });
         ServerFx.of("x_hit", att.position().add(0, att.getBbHeight() * 0.5, 0)).vec(att.position().subtract(vp.position())).a(1.2).color(0xFF9040).send(level);
-        level.playSound(null, vp.blockPosition(), SoundEvents.SHIELD_BLOCK, SoundSource.PLAYERS, 0.8F, 0.6F);
+        level.playSound(null, vp.blockPosition(), SoundEvents.SHIELD_BLOCK.value(), SoundSource.PLAYERS, 0.8F, 0.6F);
     }
 
     /** Yaksha: every melee hit lands again a moment later (its own crit roll); asura heals. */
@@ -150,7 +155,7 @@ public final class AdvancedHooks {
     @SubscribeEvent
     public static void onDamaged(LivingDamageEvent.Post event) {
         if (event.getSource().getEntity() instanceof ServerPlayer sp && sp != event.getEntity() && sp.hasEffect(ModEffects.ASURA)) {
-            float heal = (float) (event.getNewDamage() * ASURA_LIFESTEAL);
+            float heal = (float) (event.getHealthDamage() * ASURA_LIFESTEAL);
             if (heal > 0) sp.heal(heal);
         }
     }
@@ -174,7 +179,7 @@ public final class AdvancedHooks {
         if (event.getLevel().isClientSide() || !(event.getEntity() instanceof AbstractArrow arrow) || arrow.getWeaponItem() == null) return;
         if (!(arrow.getOwner() instanceof ServerPlayer sp) || !sp.hasEffect(ModEffects.EMPOWERED_SHOT)) return;
         sp.removeEffect(ModEffects.EMPOWERED_SHOT);
-        arrow.setBaseDamage(arrow.getBaseDamage() * 2.5);
+        arrow.addTag(EMPOWERED_TAG); // the hit is multiplied in onIncoming
         arrow.setCritArrow(true);
         if (event.getLevel() instanceof ServerLevel level) {
             ServerFx.of("arrow_trail", arrow.position()).follow(arrow).color(0xFFE060).send(level);

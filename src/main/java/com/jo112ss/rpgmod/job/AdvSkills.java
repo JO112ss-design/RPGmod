@@ -935,7 +935,7 @@ final class AdvSkills {
     // ================================================================== joker
 
     private static boolean isBig(LivingEntity e) {
-        return e.getType().is(net.neoforged.neoforge.common.Tags.EntityTypes.BOSSES) || e.getMaxHealth() > 400;
+        return e.is(net.neoforged.neoforge.common.Tags.EntityTypes.BOSSES) || e.getMaxHealth() > 400;
     }
 
     /** Trade places with the targeted enemy, leaving it dazed. */
