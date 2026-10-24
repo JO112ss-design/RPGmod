@@ -125,7 +125,7 @@ SKILLS = {  # id: (ja, ja desc, en, en desc)
  'weak_point': ('弱点看破', '狙った敵の弱点を暴く：被ダメージ+60%（周り4ブロックの敵も+30%）。光って壁越しに見える。', 'Weak Point', 'Exposes the targeted enemy: it takes 60% more damage (enemies within 4 blocks of it +30%), and glows.'),
  'ricochet': ('跳弾', '敵から敵へ跳ね返る弾。最大5体に当たり、跳ねるごとに少し弱まる。', 'Ricochet', 'A shot that bounces from enemy to enemy - up to five hits, a little weaker each time.'),
  'roll': ('ローリング', '低く後ろへ転がる。6秒以内に弓で撃つ次の矢が2.5倍の威力になる。', 'Roll', 'Roll back low; the next arrow from your bow within 6s hits two and a half times as hard.'),
- 'dead_eye': ('デッドアイ', '40ブロック以内の見えている敵すべてに照準を合わせ、1体ずつ追尾弾を撃ち込む。', 'Dead Eye', 'Marks every enemy in sight within 40 blocks and fires a homing shot at each one.'),
+ 'dead_eye': ('デッドアイ', '40ブロック以内の見えている敵すべてに照準を合わせ、1体ずつ追尾弾を撃ち込む（敵が少なければ最低4発を分けて撃つ）。', 'Dead Eye', 'Marks every enemy in sight within 40 blocks and fires a homing shot at each one (at least four shots, shared out when there are few).'),
  'double_cast': ('二重詠唱', '15秒間、次の2回の呪文がもう一度ただで発動する。', 'Double Cast', 'For 15s your next two spells go off a second time, free.'),
  'mana_overload': ('魔力暴走', '12秒間、魔法攻撃力が1.5倍。そのかわり呪文の消費MPも1.5倍。', 'Mana Overload', 'For 12s magic attack is x1.5 - but spells cost 50% more mana.'),
  'mana_well': ('マナの泉', '足元に泉を作る。中にいる味方は毎秒MPを回復する（8秒）。', 'Mana Well', 'A spring under your feet: allies standing in it regain mana every second (8s).'),

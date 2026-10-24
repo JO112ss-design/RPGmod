@@ -566,7 +566,7 @@
   "rpgmod.skill.roll": "ローリング",
   "rpgmod.skill.roll.desc": "低く後ろへ転がる。6秒以内に弓で撃つ次の矢が2.5倍の威力になる。",
   "rpgmod.skill.dead_eye": "デッドアイ",
-  "rpgmod.skill.dead_eye.desc": "40ブロック以内の見えている敵すべてに照準を合わせ、1体ずつ追尾弾を撃ち込む。",
+  "rpgmod.skill.dead_eye.desc": "40ブロック以内の見えている敵すべてに照準を合わせ、1体ずつ追尾弾を撃ち込む（敵が少なければ最低4発を分けて撃つ）。",
   "rpgmod.skill.double_cast": "二重詠唱",
   "rpgmod.skill.double_cast.desc": "15秒間、次の2回の呪文がもう一度ただで発動する。",
   "rpgmod.skill.mana_overload": "魔力暴走",

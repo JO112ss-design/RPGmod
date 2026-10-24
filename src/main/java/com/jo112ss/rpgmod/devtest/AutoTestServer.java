@@ -688,16 +688,6 @@ public final class AutoTestServer {
         RpgMod.LOGGER.info("[AUTOTEST] adv undying: 500 damage at 10 health -> health {} alive={}", f(player.getHealth()), player.isAlive());
         player.removeAllEffects();
         player.setHealth(player.getMaxHealth());
-        // feather: no fall damage
-        float h = player.getHealth();
-        player.causeFallDamage(12, 1, level.damageSources().fall());
-        float fall0 = h - player.getHealth();
-        player.setHealth(player.getMaxHealth());
-        player.addEffect(new net.minecraft.world.effect.MobEffectInstance(com.jo112ss.rpgmod.registry.ModEffects.FEATHER, 200, 0));
-        player.causeFallDamage(12, 1, level.damageSources().fall());
-        RpgMod.LOGGER.info("[AUTOTEST] adv feather: 12-block fall {} -> {}", f(fall0), f(player.getMaxHealth() - player.getHealth()));
-        player.removeAllEffects();
-        player.setHealth(player.getMaxHealth());
         // vanish: monsters cannot pick you
         boolean seen0 = player.canBeSeenAsEnemy();
         player.addEffect(new net.minecraft.world.effect.MobEffectInstance(com.jo112ss.rpgmod.registry.ModEffects.VANISH, 200, 0));
@@ -709,7 +699,17 @@ public final class AutoTestServer {
         // yaksha: a sword hit lands twice
         player.getInventory().setItem(7, new ItemStack(Items.IRON_SWORD));
         player.getInventory().setSelectedSlot(7);
-        com.jo112ss.rpgmod.job.SkillTasks.later(3, () -> {
+        com.jo112ss.rpgmod.job.SkillTasks.later(15, () -> {
+            // feather: no fall damage (after the hit cooldown of the last checks ran out)
+            float h = player.getHealth();
+            player.causeFallDamage(12, 1, level.damageSources().fall());
+            float fall0 = h - player.getHealth();
+            player.setHealth(player.getMaxHealth());
+            player.addEffect(new net.minecraft.world.effect.MobEffectInstance(com.jo112ss.rpgmod.registry.ModEffects.FEATHER, 200, 0));
+            player.causeFallDamage(12, 1, level.damageSources().fall());
+            RpgMod.LOGGER.info("[AUTOTEST] adv feather: 12-block fall {} -> {}", f(fall0), f(player.getMaxHealth() - player.getHealth()));
+            player.removeAllEffects();
+            player.setHealth(player.getMaxHealth());
             float y0 = z.getHealth();
             player.attack(z);
             float single = y0 - z.getHealth();
@@ -731,19 +731,22 @@ public final class AutoTestServer {
         // twin venom on a sword hit
         player.addEffect(new net.minecraft.world.effect.MobEffectInstance(com.jo112ss.rpgmod.registry.ModEffects.TWIN_VENOM, 200, 0));
         player.attack(z);
-        RpgMod.LOGGER.info("[AUTOTEST] adv twin venom: poison={} wither={}", z.hasEffect(net.minecraft.world.effect.MobEffects.POISON), z.hasEffect(net.minecraft.world.effect.MobEffects.WITHER));
+        RpgMod.LOGGER.info("[AUTOTEST] adv twin venom (on a husk: undead are immune to poison): poison={} wither={}", z.hasEffect(net.minecraft.world.effect.MobEffects.POISON), z.hasEffect(net.minecraft.world.effect.MobEffects.WITHER));
         player.removeAllEffects();
         // empowered shot: the same bow arrow with and without
         var z2 = advDummy(level, 3);
         var z3 = advDummy(level, -3);
+        float[] start = new float[2];
         com.jo112ss.rpgmod.job.SkillTasks.later(2, () -> {
+            start[0] = z2.getHealth();
+            start[1] = z3.getHealth();
             bowTest(level, player, z2, 0);
             player.addEffect(new net.minecraft.world.effect.MobEffectInstance(com.jo112ss.rpgmod.registry.ModEffects.EMPOWERED_SHOT, 200, 0));
             bowTest(level, player, z3, 0);
             RpgMod.LOGGER.info("[AUTOTEST] adv empowered shot used up: {}", !player.hasEffect(com.jo112ss.rpgmod.registry.ModEffects.EMPOWERED_SHOT));
         });
         com.jo112ss.rpgmod.job.SkillTasks.later(30, () -> {
-            RpgMod.LOGGER.info("[AUTOTEST] adv empowered shot: arrow {} -> empowered {} (expected about x2.5)", f(1000 - z2.getHealth()), f(1000 - z3.getHealth()));
+            RpgMod.LOGGER.info("[AUTOTEST] adv empowered shot: arrow {} -> empowered {} (expected about x2.5)", f(start[0] - z2.getHealth()), f(start[1] - z3.getHealth()));
             z2.discard();
             z3.discard();
             // loaded dice: roulette lands on 6

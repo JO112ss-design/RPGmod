@@ -239,12 +239,12 @@ public final class JobDefs {
                 stats(JobStat.ATTACK_DAMAGE, 0.05, JobStat.CRIT_CHANCE, 0.05),
                 List.of(
                         skill("snipe", A, SkillEffect.SHOT, 10, 18, 6.0, 64, 0, List.of(), 0, "狙"),
-                        skill("rapid_fire", A, SkillEffect.SHOT, 9, 15, 0.9, 0, 0, List.of(), 0, "速"),
+                        skill("rapid_fire", A, SkillEffect.SHOT, 9, 15, 0.7, 0, 0, List.of(), 0, "速"),
                         skill("weak_point", A, SkillEffect.DEBUFF, 18, 15, 0, 32, 10, List.of("minecraft:glowing"), 0, "看"),
                         skill("ricochet", A, SkillEffect.BOLT, 8, 15, 2.2, 28, 0, List.of(), 0, "跳"),
                         skill("roll", A, SkillEffect.BACKSTEP, 8, 10, 1.6, 0, 6, List.of(), 0, "転")),
                 List.of(
-                        skill("dead_eye", U, SkillEffect.SHOT, 100, 35, 3.5, 40, 0, List.of(), 0, "眼")),
+                        skill("dead_eye", U, SkillEffect.SHOT, 100, 35, 2.5, 40, 0, List.of(), 0, "眼")),
                 List.of());
         // ---- Spellmaster: the strongest spells, slow to charge; two at once
         advanced("wizard", "spellmaster", 0x5A3FD8, "極", List.of(JobStat.MAGIC_ATTACK, JobStat.CAST_SPEED, JobStat.MAX_MANA, JobStat.MANA_REGEN),
@@ -256,16 +256,16 @@ public final class JobDefs {
                         skill("phase_shift", A, SkillEffect.BLINK, 12, 20, 0, 14, 0, List.of(), 0, "位"),
                         skill("arcane_seal", A, SkillEffect.DEBUFF, 22, 30, 0, 6, 8, List.of("minecraft:slowness", "rpgmod:exposed"), 0, "封")),
                 List.of(
-                        skill("armageddon", U, SkillEffect.WHIRL, 120, 140, 4.0, 12, 5, List.of(), 0, "滅")),
+                        skill("armageddon", U, SkillEffect.WHIRL, 120, 140, 3.0, 12, 5, List.of(), 0, "滅")),
                 List.of(
                         skill("inferno", S, SkillEffect.WHIRL, 12, 50, 2.5, 4.5, 4, List.of(), 0, "獄"),
                         skill("absolute_zero", S, SkillEffect.DEBUFF, 16, 55, 3.5, 7, 3, List.of(), 0, "零"),
-                        skill("thunderstorm", S, SkillEffect.LIGHTNING, 18, 60, 2.0, 8, 0, List.of(), 0, "霆"),
+                        skill("thunderstorm", S, SkillEffect.LIGHTNING, 18, 60, 1.4, 8, 0, List.of(), 0, "霆"),
                         skill("stone_spikes", S, SkillEffect.SWEEP, 10, 40, 3.5, 14, 0, List.of(), 0, "岩"),
                         skill("radiant_lance", S, SkillEffect.BOLT, 10, 45, 4.5, 32, 0, List.of(), 0, "槍"),
                         skill("dark_orb", S, SkillEffect.BOLT, 14, 50, 1.0, 20, 0, List.of(), 0, "闇"),
                         skill("tornado", S, SkillEffect.WHIRL, 15, 50, 0.6, 4, 4, List.of(), 0, "竜"),
-                        skill("starfall", S, SkillEffect.WHIRL, 20, 70, 0.9, 6, 3, List.of(), 0, "星")));
+                        skill("starfall", S, SkillEffect.WHIRL, 20, 70, 0.7, 6, 3, List.of(), 0, "星")));
         // ---- Runemaster: runes on the ground, wide buffs and debuffs, handy blessings
         advanced("enchanter", "runemaster", 0xC0508A, "刻", List.of(JobStat.MAGIC_ATTACK, JobStat.COOLDOWN_REDUCTION, JobStat.MAX_MANA, JobStat.SKILL_POWER),
                 stats(JobStat.MAGIC_ATTACK, 0.04, JobStat.MAX_MANA, 0.5),
@@ -285,7 +285,7 @@ public final class JobDefs {
                         skill("switcheroo", A, SkillEffect.BLINK, 12, 15, 0, 24, 3, List.of(), 0, "換"),
                         skill("decoy", A, SkillEffect.BUFF, 25, 25, 3.0, 4, 5, List.of(), 0, "分"),
                         skill("loaded_dice", A, SkillEffect.BUFF, 40, 20, 0, 0, 30, List.of(), 0, "詐"),
-                        skill("card_storm", A, SkillEffect.WHIRL, 14, 25, 0.7, 5, 3, List.of(), 0, "嵐"),
+                        skill("card_storm", A, SkillEffect.WHIRL, 14, 25, 0.5, 5, 3, List.of(), 0, "嵐"),
                         skill("vanish", A, SkillEffect.STEALTH, 18, 20, 0, 16, 3, List.of(), 0, "消")),
                 List.of(
                         skill("wildcard", U, SkillEffect.GAMBLE, 90, 40, 0, 0, 0, List.of(), 0, "J")),
@@ -295,7 +295,7 @@ public final class JobDefs {
                 stats(JobStat.ATTACK_DAMAGE, 0.04, JobStat.CRIT_CHANCE, 0.05),
                 List.of(
                         skill("shadow_run", A, SkillEffect.DASH, 8, 15, 2.5, 9, 0, List.of(), 0, "走"),
-                        skill("flurry", A, SkillEffect.SWEEP, 10, 18, 0.8, 4, 0, List.of(), 0, "乱"),
+                        skill("flurry", A, SkillEffect.SWEEP, 10, 18, 0.6, 4, 0, List.of(), 0, "乱"),
                         skill("twin_venom", A, SkillEffect.BUFF, 25, 15, 0, 0, 15, List.of(), 0, "双"),
                         skill("shadow_stitch", A, SkillEffect.DEBUFF, 16, 20, 1.5, 20, 3, List.of(), 0, "縫"),
                         skill("moon_shadow", A, SkillEffect.SWEEP, 12, 22, 3.5, 16, 0, List.of(), 0, "月")),
@@ -313,7 +313,7 @@ public final class JobDefs {
                 List.of(
                         skill("holy_bolt", S, SkillEffect.BOLT, 0.8, 8, 1.6, 28, 0, List.of(), 0, "聖"),
                         skill("holy_nova", S, SkillEffect.WHIRL, 10, 40, 3.0, 7, 0, List.of(), 0, "輝"),
-                        skill("light_pillar", S, SkillEffect.WHIRL, 14, 50, 1.2, 3, 0, List.of(), 0, "柱")));
+                        skill("light_pillar", S, SkillEffect.WHIRL, 14, 50, 1.0, 3, 0, List.of(), 0, "柱")));
     }
 
     private static void advanced(String base, String id, int color, String glyph, List<JobStat> panelStats, Map<JobStat, Double> perLevel,

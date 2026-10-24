@@ -566,7 +566,7 @@
   "rpgmod.skill.roll": "Roll",
   "rpgmod.skill.roll.desc": "Roll back low; the next arrow from your bow within 6s hits two and a half times as hard.",
   "rpgmod.skill.dead_eye": "Dead Eye",
-  "rpgmod.skill.dead_eye.desc": "Marks every enemy in sight within 40 blocks and fires a homing shot at each one.",
+  "rpgmod.skill.dead_eye.desc": "Marks every enemy in sight within 40 blocks and fires a homing shot at each one (at least four shots, shared out when there are few).",
   "rpgmod.skill.double_cast": "Double Cast",
   "rpgmod.skill.double_cast.desc": "For 15s your next two spells go off a second time, free.",
   "rpgmod.skill.mana_overload": "Mana Overload",

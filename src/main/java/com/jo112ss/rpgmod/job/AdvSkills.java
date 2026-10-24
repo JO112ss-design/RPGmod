@@ -425,13 +425,22 @@ public final class AdvSkills {
         return true;
     }
 
-    /** Eight arrows in quick succession wherever you aim. */
+    /**
+     * Eight shots in quick succession wherever you aim. Simulated shots with skill damage: real arrows
+     * this close together would mostly bounce off the target's hit cooldown.
+     */
     private static boolean rapidFire(Ctx c) {
         SkillTasks.run(age -> {
             if (!c.p().isAlive()) return true;
             if (age % 3 == 0) {
-                float jitter = (c.p().getRandom().nextFloat() - 0.5F) * 3;
-                arrow(c, jitter, c.dmg(1), false, "arrow_trail", SHOT);
+                Vec3 start = c.hand();
+                Vec3 dir = c.look().add(new Vec3(c.p().getRandom().nextGaussian(), c.p().getRandom().nextGaussian(), c.p().getRandom().nextGaussian()).scale(0.02)).normalize();
+                LivingEntity target = lookTarget(c, 40, 4);
+                ServerFx.of("x_bolt", start).vec(dir.scale(3)).a(40).b(0.18).color(SHOT).follow(target).send(c.level());
+                projectile(c, start, dir, 3, 40, target, 0.15, (e, at, d) -> {
+                    hurt(c, e, c.dmg(1), melee(c));
+                    ServerFx.of("hit", at).color(SHOT).a(0.6).point(at).send(c.level());
+                }, (at, d, wall) -> { });
                 sound(c, c.p().position(), SoundEvents.ARROW_SHOOT, 0.7F, 1.3F + age * 0.02F);
             }
             return age >= 21;
@@ -527,10 +536,12 @@ public final class AdvSkills {
         ServerFx.of("eagle_eye", c.p().position()).follow(c.p()).a(1.5).send(c.level());
         sound(c, SoundEvents.SPYGLASS_USE, 0.6F);
         sound(c, c.p().position(), SoundEvents.BELL_RESONATE, 0.8F, 1.8F);
-        List<LivingEntity> fire = targets;
+        // at least four shots: with few enemies in sight, they take several each
+        List<LivingEntity> fire = new ArrayList<>();
+        for (int i = 0; i < Math.max(4, targets.size()); i++) fire.add(targets.get(i % targets.size()));
         for (int i = 0; i < fire.size(); i++) {
             LivingEntity t = fire.get(i);
-            SkillTasks.later(14 + i, () -> {
+            SkillTasks.later(14 + i * 2, () -> {
                 if (!t.isAlive() || !c.p().isAlive()) return;
                 Vec3 start = c.hand();
                 Vec3 dir = mid(t).subtract(start).normalize();
@@ -772,7 +783,7 @@ public final class AdvSkills {
     /** Spell: a slow orb of darkness that tears at everything it passes and bursts at the end. */
     private static boolean darkOrb(Ctx c) {
         Vec3 start = c.hand();
-        Vec3 dir = c.look();
+        Vec3 dir = c.flat(); // level, at chest height (aimed down it would burst on the ground at once)
         double speed = 0.4, range = c.def().radius();
         ServerFx.of("x_orb", start).vec(dir.scale(speed)).a(range).b(1.1).color(VOID).send(c.level());
         sound(c, SoundEvents.WITHER_SHOOT, 0.6F);
@@ -935,7 +946,7 @@ public final class AdvSkills {
     // ================================================================== joker
 
     private static boolean isBig(LivingEntity e) {
-        return e.is(net.neoforged.neoforge.common.Tags.EntityTypes.BOSSES) || e.getMaxHealth() > 400;
+        return e.is(net.neoforged.neoforge.common.Tags.EntityTypes.BOSSES) || e instanceof com.jo112ss.rpgmod.mob.boss.KingSlime;
     }
 
     /** Trade places with the targeted enemy, leaving it dazed. */
@@ -1243,8 +1254,8 @@ public final class AdvSkills {
         Vec3 o = c.p().position();
         double r = c.def().radius();
         int life = ticks(c.def().duration());
-        ServerFx.of("x_zone", o).vec(new Vec3(1, 1, 0)).a(r).b(life).color(HOLY).send(c.level());
-        ServerFx.of("x_pillar", o).a(r * 0.6).b(20).color(HOLY).send(c.level());
+        ServerFx.of("x_zone", o).vec(new Vec3(1, 3, 0)).a(r).b(life).color(HOLY).send(c.level());
+        ServerFx.of("x_pillar", o).a(1.5).b(20).color(HOLY).send(c.level());
         sound(c, SoundEvents.BEACON_ACTIVATE, 1.3F);
         sound(c, o, SoundEvents.BELL_RESONATE, 0.8F, 1.0F);
         SkillTasks.run(age -> {

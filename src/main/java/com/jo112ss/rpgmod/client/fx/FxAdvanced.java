@@ -169,8 +169,9 @@ final class FxAdvanced {
             default -> S.CIRCLE_ARCANE;
         };
         int rise = (int) p.vec().y;
-        ground(circle, o, r * 2, c, life).color(light(c), c).alpha(0.9F, 0.5F).fadeIn(0.08F).spin(0.01F).size(r * 1.6F, r * 2).easeOut().spawn();
-        ground(S.RING, o, r * 2.05F, c, life).color(c).alpha(0.7F, 0.3F).fadeIn(0.08F).spawn();
+        // sprite size is the radius
+        ground(circle, o, r, c, life).color(light(c), c).alpha(0.6F, 0.3F).fadeIn(0.08F).spin(0.01F).size(r * 0.8F, r).easeOut().spawn();
+        ground(S.RING, o, r * 1.02F, c, life).color(c).alpha(0.5F, 0.2F).fadeIn(0.08F).spawn();
         FxAnims.run(life, age -> {
             int n = Fx.n(Math.max(1, (int) (r * r * 0.25)));
             for (int i = 0; i < n; i++) {
@@ -359,7 +360,7 @@ final class FxAdvanced {
         Vec3 o = p.pos();
         float r = Math.max(0.6F, p.a());
         int life = Math.max(10, (int) p.b());
-        ground(S.CIRCLE_HOLY, o, r * 2, c, life).color(0xFFFFFF, c).alpha(1, 0.4F).spin(0.03F).spawn();
+        ground(S.CIRCLE_HOLY, o, r, c, life).color(0xFFFFFF, c).alpha(0.8F, 0.3F).spin(0.03F).spawn();
         flash(o.add(0, 1, 0), c, r * 1.5F, 6);
         FxAnims.run(life, age -> {
             for (int i = 0, n = Fx.n((int) (3 + r * 2)); i < n; i++) {
@@ -440,15 +441,17 @@ final class FxAdvanced {
         int life = Math.max(10, (int) p.b());
         FxAnims.run(life, age -> {
             Vec3 o = start.add(vel.scale(age));
-            for (int i = 0, n = Fx.n(10); i < n; i++) {
-                double h = Fx.r(0, 5);
-                double rr = 0.4 + r * 0.8 * h / 5;
-                double a = age * 0.6 + Fx.r(0, Math.PI * 2);
+            for (int i = 0, n = Fx.n(22); i < n; i++) {
+                double h = Fx.r(0, 5.5);
+                double rr = 0.3 + r * 0.85 * h / 5.5;
+                double a = age * 0.7 + Fx.r(0, Math.PI * 2);
                 Vec3 v = o.add(Math.cos(a) * rr, h, Math.sin(a) * rr);
-                Vec3 t = new Vec3(-Math.sin(a), 0.1, Math.cos(a)).scale(0.3);
-                Fx.p(S.STREAK, v).vel(t).color(0xFFFFFF, c).size(0.5F, 0.2F).alpha(0.7F, 0).life(6).spawn();
-                if (i % 3 == 0) smoke(v, 0x8A9A90, 0.4F, 1.0F, 14).vel(t.scale(0.5)).alpha(0.4F, 0).spawn();
+                Vec3 t = new Vec3(-Math.sin(a), 0.12, Math.cos(a)).scale(0.35 + rr * 0.08);
+                Fx.p(S.STREAK, v).fixed(Fx.axial(v, t)).vel(t).color(0xFFFFFF, c).size(0.9F, 0.4F).alpha(0.85F, 0).life(7).spawn();
+                if (i % 3 == 0) smoke(v, 0x7A8A80, 0.6F, 1.4F, 16).vel(t.scale(0.6)).alpha(0.55F, 0).spawn();
+                if (i % 4 == 0) Fx.p(S.GLOW, v).vel(t).color(light(c), c).size(0.22F, 0).life(10).spawn();
             }
+            if (age % 2 == 0) ground(S.WAVE, o, r * 0.6F, c, 8).size(r * 0.5F, r).color(light(c), c).alpha(0.5F, 0).spin(0.2F).spawn();
             if (age % 4 == 0) debris(o, 3, r * 0.6, 0.6);
             return false;
         });
@@ -464,12 +467,16 @@ final class FxAdvanced {
             Vec3 at = o.add(dir.scale(i));
             int d = i;
             FxAnims.later(d, () -> {
-                debris(at, 6, 0.6, 0.5);
-                for (int k = 0; k < 3; k++) {
-                    Vec3 v = at.add(Fx.r(-0.6, 0.6), 0, Fx.r(-0.6, 0.6));
-                    Fx.p(S.SHARD, v.add(0, 0.6, 0)).upright().color(light(c), dark(c)).size(Fx.rf(0.6F, 1.0F), 0.2F).alpha(1, 0).lit().life(16).spawn();
+                debris(at, 10, 0.7, 0.7);
+                for (int k = 0; k < 4; k++) {
+                    Vec3 v = at.add(Fx.r(-0.7, 0.7), 0, Fx.r(-0.7, 0.7));
+                    float s = Fx.rf(0.9F, 1.5F);
+                    // a spike shoots up out of the ground, then sinks back
+                    Fx.p(S.SHARD, v.add(0, s * 0.4, 0)).upright().vel(0, 0.12, 0).friction(0.7F).color(0xFFFFFF, light(c)).size(s, s * 0.6F).alpha(1, 0).life(18).spawn();
+                    Fx.p(S.SHARD, v.add(0, s * 0.4, 0)).upright().vel(0, 0.12, 0).friction(0.7F).color(c, dark(c)).size(s * 1.15F, s * 0.7F).alpha(0.8F, 0).life(18).spawn();
                 }
-                ground(S.WAVE, at, 0.3F, c, 8).size(0.3F, 1.4F).easeOut().alpha(0.7F, 0).spawn();
+                for (int k = 0; k < 3; k++) smoke(at.add(Fx.r(-0.5, 0.5), 0.2, Fx.r(-0.5, 0.5)), dark(c), 0.5F, 1.2F, 20).vel(0, 0.04, 0).alpha(0.6F, 0).spawn();
+                ground(S.WAVE, at, 0.3F, c, 8).size(0.3F, 1.6F).easeOut().alpha(0.8F, 0).spawn();
             });
         }
         FxAnims.shake(o, 0.3F, 8, 12);
@@ -590,13 +597,16 @@ final class FxAdvanced {
         int life = Math.max(10, (int) p.b());
         flash(o.add(0, 1, 0), c, 1.6F, 6);
         FxAnims.run(life, age -> {
-            for (int i = 0, n = Fx.n(5); i < n; i++) {
+            double yaw = Math.toRadians(p.vec().x);
+            Vec3 side = new Vec3(Math.cos(yaw), 0, Math.sin(yaw));
+            for (int i = 0, n = Fx.n(14); i < n; i++) {
                 // a rough body: head, torso and legs as stacked glows
-                double h = Fx.r(0, 1.85);
-                double wdt = h > 1.45 ? 0.22 : h > 0.75 ? 0.3 : 0.2;
-                Vec3 v = o.add(Fx.r(-wdt, wdt), h, Fx.r(-wdt * 0.6, wdt * 0.6));
-                Fx.p(S.GLOW, v).color(light(c), c).size(0.28F, 0).alpha(0.7F, 0).life(8).spawn();
+                double h = Fx.r(0, 1.9);
+                double wdt = h > 1.45 ? 0.25 : h > 0.75 ? 0.4 : 0.22;
+                Vec3 v = o.add(side.scale(Fx.r(-wdt, wdt))).add(0, h, 0).add(side.cross(new Vec3(0, 1, 0)).scale(Fx.r(-0.12, 0.12)));
+                Fx.p(S.GLOW, v).color(light(c), c).size(0.32F, 0.1F).alpha(0.85F, 0).life(6).spawn();
             }
+            if (age % 4 == 0) Fx.p(S.GLOW, o.add(0, 1, 0)).color(c).size(2.0F).alpha(0.25F, 0).life(5).spawn();
             if (age % 3 == 0) smoke(o.add(Fx.r(-0.3, 0.3), Fx.r(0, 1.8), Fx.r(-0.3, 0.3)), 0x2A1840, 0.4F, 0.9F, 14).alpha(0.6F, 0).spawn();
             if (age % 10 == 0) Fx.p(S.SKULL, o.add(0, 2.3, 0)).size(0.25F).alpha(0.9F, 0).life(10).spawn();
             return false;
