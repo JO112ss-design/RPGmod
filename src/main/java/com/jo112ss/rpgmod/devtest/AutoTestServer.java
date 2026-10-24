@@ -463,13 +463,20 @@ public final class AutoTestServer {
                 String.format("%.3f", com.jo112ss.rpgmod.job.JobManager.levelDurationScale(player, defs.get("empower"))),
                 defs.get("power_slash").mana(), defs.get("magic_bolt").mana(), defs.get("russian_roulette").mana());
         long now = player.level().getGameTime();
-        for (String id : d.knownSkills(com.jo112ss.rpgmod.job.core.SkillKind.ACTIVE)) {
-            if (id.equals(d.slot(0)) || id.equals(d.slot(1))) continue;
-            long before = d.cooldownEnd(id) - now;
-            com.jo112ss.rpgmod.job.JobManager.equipSkill(player, 0, id);
-            RpgMod.LOGGER.info("[AUTOTEST] swap {} into slot 0: cooldown {} -> {} ticks", id, Math.max(0, before), d.cooldownEnd(id) - now);
-            break;
-        }
+        var known = d.knownSkills(com.jo112ss.rpgmod.job.core.SkillKind.ACTIVE);
+        RpgMod.LOGGER.info("[AUTOTEST] swap test: known actives {} slots {} / {}", known, d.slot(0), d.slot(1));
+        if (known.isEmpty()) return;
+        String id = known.get(0);
+        // take it out of every slot, then put it back in: a fresh skill in a slot
+        for (int i = 0; i < 2; i++) if (d.slot(i).equals(id)) com.jo112ss.rpgmod.job.JobManager.equipSkill(player, i, "");
+        long before = d.cooldownEnd(id) - now;
+        com.jo112ss.rpgmod.job.JobManager.equipSkill(player, 0, id);
+        long after = d.cooldownEnd(id) - now;
+        // moving it to the other slot is not a new skill: no extra wait
+        d.setCooldown(id, now);
+        com.jo112ss.rpgmod.job.JobManager.equipSkill(player, 1, id);
+        RpgMod.LOGGER.info("[AUTOTEST] swap {} into slot 0: cooldown {} -> {} ticks; moved to slot 1: {} ticks", id, Math.max(0, before), after,
+                Math.max(0, d.cooldownEnd(id) - now));
     }
 
     private static void log(String when) {
