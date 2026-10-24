@@ -324,7 +324,10 @@ public final class AutoTestServer {
     @SubscribeEvent
     public static void onTick(ServerTickEvent.Post event) {
         if (!ENABLED || player == null) return;
-        if (swapCheckIn > 0 && --swapCheckIn == 0) swapCheck();
+        if (swapCheckIn > 0 && --swapCheckIn == 0) {
+            swapCheck();
+            potionCheck();
+        }
         if (jobSetup) {
             jobSetup = false;
             swapCheckIn = 40;
@@ -477,6 +480,35 @@ public final class AutoTestServer {
         com.jo112ss.rpgmod.job.JobManager.equipSkill(player, 1, id);
         RpgMod.LOGGER.info("[AUTOTEST] swap {} into slot 0: cooldown {} -> {} ticks; moved to slot 1: {} ticks", id, Math.max(0, before), after,
                 Math.max(0, d.cooldownEnd(id) - now));
+    }
+
+    /** Recovery potions: what one gives back, and how often 300 kills drop them. */
+    private static void potionCheck() {
+        var level = (net.minecraft.server.level.ServerLevel) player.level();
+        player.setHealth(player.getMaxHealth() * 0.2F);
+        var d = com.jo112ss.rpgmod.job.JobManager.data(player);
+        d.setMana(0);
+        float hpBefore = player.getHealth();
+        com.jo112ss.rpgmod.registry.ModRegistries.HP_POTION.get().finishUsingItem(new ItemStack(com.jo112ss.rpgmod.registry.ModRegistries.HP_POTION.get()), level, player);
+        com.jo112ss.rpgmod.registry.ModRegistries.MP_POTION.get().finishUsingItem(new ItemStack(com.jo112ss.rpgmod.registry.ModRegistries.MP_POTION.get()), level, player);
+        RpgMod.LOGGER.info("[AUTOTEST] potions: hp {} -> {} of {}, mp 0 -> {} of {}", hpBefore, player.getHealth(), player.getMaxHealth(),
+                String.format("%.1f", d.mana()), String.format("%.1f", com.jo112ss.rpgmod.job.JobManager.maxMana(player)));
+        int hp = 0, mp = 0;
+        var at = player.position().add(0, 0, 40);
+        for (int i = 0; i < 300; i++) {
+            var z = net.minecraft.world.entity.EntityTypes.ZOMBIE.create(level, net.minecraft.world.entity.EntitySpawnReason.COMMAND);
+            z.snapTo(at.x, at.y, at.z, 0, 0);
+            level.addFreshEntity(z);
+            z.hurtServer(level, level.damageSources().playerAttack(player), 100000F);
+        }
+        for (var it : level.getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class, new net.minecraft.world.phys.AABB(at, at).inflate(6))) {
+            if (it.getItem().is(com.jo112ss.rpgmod.registry.ModRegistries.HP_POTION.get())) hp += it.getItem().getCount();
+            if (it.getItem().is(com.jo112ss.rpgmod.registry.ModRegistries.MP_POTION.get())) mp += it.getItem().getCount();
+            it.discard();
+        }
+        RpgMod.LOGGER.info("[AUTOTEST] potion drops from 300 kills: hp={} mp={} (expected about 9 each); meteor ratio {}", hp, mp,
+                com.jo112ss.rpgmod.job.core.JobDefs.skill("meteor").power());
+        player.setHealth(player.getMaxHealth());
     }
 
     private static void log(String when) {
