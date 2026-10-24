@@ -723,6 +723,11 @@ public class JobScreen extends Screen {
     /** Enchanter buffs: listed time and what the current magic attack makes of it. */
     private Component durationLine(SkillDef def) {
         if (minecraft.player == null) return null;
+        double byLevel = com.jo112ss.rpgmod.job.JobManager.levelDurationScale(minecraft.player, def);
+        if (def.duration() > 0 && def.kind() != com.jo112ss.rpgmod.job.core.SkillKind.ULTIMATE && byLevel >= 1
+                && !("enchanter".equals(def.job()) && def.effect() == com.jo112ss.rpgmod.job.core.SkillEffect.BUFF)) {
+            return Component.translatable("rpgmod.jobscreen.duration_level", fmt(def.duration()), fmt(def.duration() * byLevel));
+        }
         double scale = com.jo112ss.rpgmod.job.JobManager.buffDurationScale(minecraft.player, def);
         if (scale == 1 && !("enchanter".equals(def.job()) && def.effect() == com.jo112ss.rpgmod.job.core.SkillEffect.BUFF)) return null;
         return Component.translatable("rpgmod.jobscreen.duration", fmt(def.duration()), fmt(def.duration() * scale));

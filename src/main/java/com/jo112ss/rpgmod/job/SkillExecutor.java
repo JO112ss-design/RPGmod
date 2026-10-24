@@ -57,6 +57,9 @@ public final class SkillExecutor {
 
     public static boolean execute(ServerPlayer p, SkillDef def, double power) {
         ServerLevel level = (ServerLevel) p.level();
+        // longer effects at higher levels (not ultimates, not the enchanter's magic-scaled buffs)
+        double longer = JobManager.levelDurationScale(p, def);
+        if (longer != 1) def = def.withDuration(def.duration() * longer);
         Ctx c = new Ctx(p, level, def, power, JobManager.skillBoost(p));
         return switch (def.id()) {
             // fighter

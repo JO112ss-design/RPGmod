@@ -324,8 +324,10 @@ public final class AutoTestServer {
     @SubscribeEvent
     public static void onTick(ServerTickEvent.Post event) {
         if (!ENABLED || player == null) return;
+        if (swapCheckIn > 0 && --swapCheckIn == 0) swapCheck();
         if (jobSetup) {
             jobSetup = false;
+            swapCheckIn = 40;
             com.jo112ss.rpgmod.job.JobManager.grantExp(player, 3000);
             // some armour on, for the status screen check (client values must match the server's)
             player.setItemSlot(net.minecraft.world.entity.EquipmentSlot.CHEST, new ItemStack(net.minecraft.world.item.Items.IRON_CHESTPLATE));
@@ -445,6 +447,28 @@ public final class AutoTestServer {
             com.jo112ss.rpgmod.job.JobManager.testForceCrit = null;
             dummy.discard();
             critT = -1;
+        }
+    }
+
+    private static int swapCheckIn;
+
+    /** Skill swap cooldown, level-scaled effect times and whole MP costs. */
+    private static void swapCheck() {
+        var d = com.jo112ss.rpgmod.job.JobManager.data(player);
+        var defs = com.jo112ss.rpgmod.job.core.JobDefs.SKILLS;
+        RpgMod.LOGGER.info("[AUTOTEST] level {}: time x{} (active mana_barrier), x{} (spell arcane_shield), x{} (ultimate meteor), x{} (enchanter empower); MP power_slash={} magic_bolt={} russian_roulette={}",
+                d.level(), String.format("%.3f", com.jo112ss.rpgmod.job.JobManager.levelDurationScale(player, defs.get("mana_barrier"))),
+                String.format("%.3f", com.jo112ss.rpgmod.job.JobManager.levelDurationScale(player, defs.get("arcane_shield"))),
+                String.format("%.3f", com.jo112ss.rpgmod.job.JobManager.levelDurationScale(player, defs.get("meteor"))),
+                String.format("%.3f", com.jo112ss.rpgmod.job.JobManager.levelDurationScale(player, defs.get("empower"))),
+                defs.get("power_slash").mana(), defs.get("magic_bolt").mana(), defs.get("russian_roulette").mana());
+        long now = player.level().getGameTime();
+        for (String id : d.knownSkills(com.jo112ss.rpgmod.job.core.SkillKind.ACTIVE)) {
+            if (id.equals(d.slot(0)) || id.equals(d.slot(1))) continue;
+            long before = d.cooldownEnd(id) - now;
+            com.jo112ss.rpgmod.job.JobManager.equipSkill(player, 0, id);
+            RpgMod.LOGGER.info("[AUTOTEST] swap {} into slot 0: cooldown {} -> {} ticks", id, Math.max(0, before), d.cooldownEnd(id) - now);
+            break;
         }
     }
 

@@ -269,9 +269,36 @@ public final class JobManager {
         if (def == null || !d.knows(skillId)) return;
         SkillKind need = slot == 2 ? SkillKind.ULTIMATE : SkillKind.ACTIVE;
         if (def.kind() != need) return;
+        boolean fresh = !d.slot(0).equals(skillId) && !d.slot(1).equals(skillId) && !d.slot(2).equals(skillId);
         if (slot < 2 && d.slot(1 - slot).equals(skillId)) d.setSlot(1 - slot, d.slot(slot)); // swap
         d.setSlot(slot, skillId);
+        if (fresh) swapCooldown(player, d, skillId);
         sync(player);
+    }
+
+    /**
+     * A skill just put into a slot needs a moment before it can be used, so a fight cannot be won
+     * by swapping fresh skills in one after another. A longer cooldown it already had is kept.
+     */
+    private static void swapCooldown(Player player, JobData d, String skillId) {
+        double secs = JobConfig.SPEC.isLoaded() ? JobConfig.SWAP_COOLDOWN.get() : 10;
+        if (secs <= 0) return;
+        long now = player.level().getGameTime();
+        d.setCooldown(skillId, Math.max(d.cooldownEnd(skillId), now + Math.round(secs * 20)));
+    }
+
+    /**
+     * Effect time of a skill grows with the job level (up to +50% at the top by default). Ultimates
+     * keep their time, and enchanter buffs follow magic attack instead.
+     */
+    public static double levelDurationScale(Player player, SkillDef def) {
+        if (player == null || def == null || def.duration() <= 0 || def.kind() == SkillKind.ULTIMATE) return 1;
+        if ("enchanter".equals(def.job()) && def.effect() == com.jo112ss.rpgmod.job.core.SkillEffect.BUFF) return 1;
+        JobData d = data(player);
+        if (!d.hasJob()) return 1;
+        double bonus = JobConfig.SPEC.isLoaded() ? JobConfig.DURATION_AT_MAX.get() : 0.5;
+        int max = Math.max(2, JobConfig.maxLevel());
+        return 1 + bonus * Math.min(1, (d.level() - 1) / (double) (max - 1));
     }
 
     // ------------------------------------------------------------------ mana
@@ -589,7 +616,13 @@ public final class JobManager {
             if (def == null || def.kind() != SkillKind.SPELL || !d.knows(spellId)) return;
         }
         SpellLoadout l = staff.getOrDefault(ModRegistries.SPELL_LOADOUT.get(), SpellLoadout.EMPTY);
+        boolean fresh = !spellId.isEmpty();
+        for (int i = 0; i < SpellLoadout.SLOTS && fresh; i++) if (l.spell(i).equals(spellId)) fresh = false;
         staff.set(ModRegistries.SPELL_LOADOUT.get(), l.withSpell(slot, spellId));
+        if (fresh) {
+            swapCooldown(player, d, spellId);
+            sync(player);
+        }
     }
 
     public static void selectSpell(ServerPlayer player, int slot) {

@@ -24,6 +24,8 @@ public final class JobConfig {
     public static final ModConfigSpec.DoubleValue ENCHANT_BUFF_MIN = B.comment("Shortest enchanter buff time, as a multiple of the listed time").defineInRange("enchanterBuffMinMultiplier", 0.5, 0.01, 100);
     public static final ModConfigSpec.DoubleValue ENCHANT_BUFF_MAX = B.comment("Longest enchanter buff time, as a multiple of the listed time").defineInRange("enchanterBuffMaxMultiplier", 3.0, 0.01, 100);
 
+    public static final ModConfigSpec.DoubleValue SWAP_COOLDOWN = B.comment("Seconds a skill or spell cannot be used after it is put into a slot (stops swapping in fresh skills mid-fight)").defineInRange("skillSwapCooldown", 10.0, 0, 600);
+    public static final ModConfigSpec.DoubleValue DURATION_AT_MAX = B.comment("Extra effect time of non-ultimate skills at the highest level (0.5 = +50%), growing evenly from level 1; enchanter buffs follow magic attack instead").defineInRange("skillDurationBonusAtMax", 0.5, 0, 10);
     public static final ModConfigSpec.DoubleValue MACE_MULT = B.comment("Normal (non-skill) hits with a mace deal this much (heavy, slow weapon)").defineInRange("maceAttackMultiplier", 1.25, 0, 100);
     public static final ModConfigSpec.DoubleValue HAMMER_MULT = B.comment("Normal (non-skill) hits with a hammer deal this much").defineInRange("hammerAttackMultiplier", 1.6, 0, 100);
 

@@ -159,6 +159,7 @@ UI = {  # key: (ja, en)
  'rpgmod.job.spell_selected': ('呪文: %s', 'Spell: %s'),
  'rpgmod.job.no_target': ('届く範囲に敵がいません', 'No enemy in reach'),
  'rpgmod.jobscreen.power.damage': ('威力 %1$s×%2$s%%（今 %3$s）', 'Damage %1$s x%2$s%% (now %3$s)'),
+ 'rpgmod.jobscreen.duration_level': ('効果時間 %1$s秒（今 %2$s秒・レベルで伸びる）', 'Lasts %1$ss (now %2$ss, longer with level)'),
  'rpgmod.jobscreen.duration': ('効果時間 %1$s秒（今 %2$s秒・魔法攻撃力で伸びる）', 'Lasts %1$ss (now %2$ss, longer with magic attack)'),
  'entity.rpgmod.king_slime': ('キングスライム', 'King Slime'),
  'item.rpgmod.skill_book': ('スキルの書', 'Skill Book'),

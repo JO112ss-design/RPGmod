@@ -37,6 +37,10 @@ public record SkillDef(
         int color,
         double castTime
 ) {
+    public SkillDef withDuration(double duration) {
+        return new SkillDef(id, job, kind, effect, cooldown, mana, power, radius, duration, effects, amplifier, glyph, color, castTime);
+    }
+
     public SkillDef withEffect(SkillEffect effect, double power, double radius, double duration, List<String> effects) {
         return new SkillDef(id, job, kind, effect, cooldown, mana, power, radius, duration, effects, amplifier, glyph, color, castTime);
     }

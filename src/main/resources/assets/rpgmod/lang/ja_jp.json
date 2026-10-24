@@ -473,5 +473,6 @@
   "rpgmod.part.arrow.2": "矢羽根",
   "rpgmod.gui.arrow_count": "品質で 4／8／16／32本",
   "rpgmod.dragon.guard_takeoff": "ドラゴンが身を守って飛び立った！",
-  "rpgmod.dragon.guard_flight": "ドラゴンが守りを固めている…次に降りてくるまで攻撃が通らない"
+  "rpgmod.dragon.guard_flight": "ドラゴンが守りを固めている…次に降りてくるまで攻撃が通らない",
+  "rpgmod.jobscreen.duration_level": "効果時間 %1$s秒（今 %2$s秒・レベルで伸びる）"
 }
