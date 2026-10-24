@@ -12,8 +12,11 @@ public final class LevelCurve {
      */
     public static long expToNext(int level) {
         double base = 15 + 2.5 * level + level * (double) level / 8.0;
-        return Math.round(base * earlyMultiplier(level));
+        return Math.round(base * earlyMultiplier(level) * SCALE);
     }
+
+    /** Every level costs this much more than the curve above (a longer climb to 100). */
+    public static final double SCALE = 2.5;
 
     /** Levels below this cost extra (more at the start), joining the plain curve here. */
     public static final int EARLY_UNTIL = 40;

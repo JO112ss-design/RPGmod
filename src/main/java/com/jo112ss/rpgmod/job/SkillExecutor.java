@@ -673,7 +673,11 @@ public final class SkillExecutor {
                         a -> a.isAlive() && horizontal(a.position(), o) <= r)) {
                     a.heal(c.dmg(1.0 / pulses));
                 }
-                for (LivingEntity e : enemies(c.p, o, r)) e.addEffect(new MobEffectInstance(MobEffects.SLOWNESS, 30, 0), c.p);
+                for (LivingEntity e : enemies(c.p, o, r)) {
+                    e.addEffect(new MobEffectInstance(MobEffects.SLOWNESS, 30, 0), c.p);
+                    // the holy ground burns the enemies standing on it
+                    hurt(c, e, c.dmg(0.25) * (isUndead(e) ? 1.5F : 1), magic(c));
+                }
                 sound(c, o, SoundEvents.AMETHYST_BLOCK_CHIME, 0.7F, 1.2F);
             }
             return age >= pulses * 20 - 1;
@@ -1393,7 +1397,11 @@ public final class SkillExecutor {
             a.setTicksFrozen(0);
             a.heal(c.dmg(1));
         }
+        // and a burst of holy light that hurts the enemies around (more so the undead)
+        List<LivingEntity> foes = enemies(c.p, c.p.position(), c.def.radius());
+        for (LivingEntity e : foes) hurt(c, e, c.dmg(5) * (isUndead(e) ? 1.5F : 1), magic(c));
         ServerFx.of("purify", c.p.position()).follow(c.p).a(c.def.radius()).points(others(c.p, allies)).send(c.level);
+        if (!foes.isEmpty()) ServerFx.of("judgement_strike", c.p.position()).a(c.def.radius()).points(foes).send(c.level);
         sound(c, SoundEvents.ZOMBIE_VILLAGER_CURE, 1.8F);
         return true;
     }

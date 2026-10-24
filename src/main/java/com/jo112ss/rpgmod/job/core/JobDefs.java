@@ -108,7 +108,7 @@ public final class JobDefs {
                         skill("holy_wave", SkillKind.ACTIVE, SkillEffect.SWEEP, 10, 14, 2.0, 10, 0, List.of(), 0, "波")),
                 List.of(
                         skill("divine_aegis", SkillKind.ULTIMATE, SkillEffect.BUFF, 100, 42, 0, 8, 12, List.of("minecraft:resistance", "minecraft:absorption"), 1, "盾"),
-                        skill("judgement", SkillKind.ULTIMATE, SkillEffect.WHIRL, 90, 42, 5.6, 6.5, 0, List.of(), 0, "審")),
+                        skill("judgement", SkillKind.ULTIMATE, SkillEffect.WHIRL, 90, 42, 3.5, 6.5, 0, List.of(), 0, "審")),
                 List.of());
         // ---- Wizard: spells on the staff, skills 1/2 for mana and mobility
         job("wizard", 0x7B68EE, "魔", List.of(JobStat.MAX_MANA, JobStat.MAGIC_ATTACK, JobStat.SKILL_POWER, JobStat.CAST_SPEED, JobStat.MANA_REGEN),
@@ -134,7 +134,7 @@ public final class JobDefs {
                         skill("gravity", SkillKind.SPELL, SkillEffect.WHIRL, 12, 42, 2.4, 5, 0, List.of(), 0, "重")));
         // ---- Healer: heals and buffs
         job("healer", 0x5BC0DE, "癒", List.of(JobStat.MAX_MANA, JobStat.MAGIC_ATTACK, JobStat.SKILL_POWER, JobStat.MAX_HEALTH),
-                stats(JobStat.MAX_MANA, 40, JobStat.SKILL_POWER, 10, JobStat.MAGIC_ATTACK, 1), stats(JobStat.MAGIC_ATTACK, 0.07 + 4 / 99.0, JobStat.ATTACK_DAMAGE, 4 / 99.0, JobStat.MAX_MANA, 0.75, JobStat.MAX_HEALTH, hpTo(30, 0), JobStat.ARMOR, LEVEL_ARMOR),
+                stats(JobStat.MAX_MANA, 40, JobStat.SKILL_POWER, 10, JobStat.MAGIC_ATTACK, 1), stats(JobStat.MAGIC_ATTACK, 0.07 + 4 / 99.0, JobStat.ATTACK_DAMAGE, 0.05 + 4 / 99.0, JobStat.MAX_MANA, 0.75, JobStat.MAX_HEALTH, hpTo(30, 0), JobStat.ARMOR, LEVEL_ARMOR),
                 List.of(
                         skill("heal", SkillKind.ACTIVE, SkillEffect.HEAL, 6, 21, 0.9, 4, 0, List.of(), 0, "癒"),
                         skill("group_heal", SkillKind.ACTIVE, SkillEffect.HEAL, 12, 42, 0.6, 10, 0, List.of(), 0, "群"),
