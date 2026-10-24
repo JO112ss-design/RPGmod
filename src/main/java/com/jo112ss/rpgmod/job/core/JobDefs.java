@@ -121,17 +121,17 @@ public final class JobDefs {
                         skill("quick_cast", SkillKind.ACTIVE, SkillEffect.BUFF, 30, 28, 0, 0, 12, List.of("rpgmod:quick_cast"), 0, "速"),
                         skill("chrono", SkillKind.ACTIVE, SkillEffect.BUFF, 45, 42, 0.5, 0, 0, List.of(), 0, "時")),
                 List.of(
-                        skill("meteor", SkillKind.ULTIMATE, SkillEffect.WHIRL, 100, 112, 3.0, 5.5, 5, List.of(), 0, "隕"),
+                        skill("meteor", SkillKind.ULTIMATE, SkillEffect.WHIRL, 100, 112, 4.5, 5.5, 5, List.of(), 0, "隕"),
                         skill("time_warp", SkillKind.ULTIMATE, SkillEffect.DEBUFF, 90, 84, 0, 10, 8, List.of("minecraft:slowness", "minecraft:weakness"), 2, "遅")),
                 List.of(
-                        skill("magic_bolt", SkillKind.SPELL, SkillEffect.BOLT, 1.2, 12, 1.4, 28, 0, List.of(), 0, "弾"),
-                        skill("flame_burst", SkillKind.SPELL, SkillEffect.WHIRL, 6, 28, 1.4, 7, 4, List.of(), 0, "炎"),
-                        skill("frost_nova", SkillKind.SPELL, SkillEffect.DEBUFF, 8, 28, 1.0, 6, 6, List.of("minecraft:slowness"), 2, "氷"),
-                        skill("thunder", SkillKind.SPELL, SkillEffect.LIGHTNING, 10, 42, 2.2, 28, 0, List.of(), 0, "雷"),
+                        skill("magic_bolt", SkillKind.SPELL, SkillEffect.BOLT, 0.3, 5, 1.4, 28, 0, List.of(), 0, "弾"),
+                        skill("flame_burst", SkillKind.SPELL, SkillEffect.WHIRL, 6, 28, 2.1, 7, 4, List.of(), 0, "炎"),
+                        skill("frost_nova", SkillKind.SPELL, SkillEffect.DEBUFF, 8, 28, 1.5, 6, 6, List.of("minecraft:slowness"), 2, "氷"),
+                        skill("thunder", SkillKind.SPELL, SkillEffect.LIGHTNING, 10, 42, 3.3, 28, 0, List.of(), 0, "雷"),
                         skill("arcane_shield", SkillKind.SPELL, SkillEffect.BUFF, 20, 35, 0, 0, 15, List.of("minecraft:absorption", "minecraft:resistance"), 1, "護"),
-                        skill("arcane_missiles", SkillKind.SPELL, SkillEffect.BOLT, 5, 26, 0.5, 24, 0, List.of(), 0, "矢"),
-                        skill("blizzard", SkillKind.SPELL, SkillEffect.DEBUFF, 14, 49, 0.35, 4, 2, List.of("minecraft:slowness"), 1, "嵐"),
-                        skill("gravity", SkillKind.SPELL, SkillEffect.WHIRL, 12, 42, 1.6, 5, 0, List.of(), 0, "重")));
+                        skill("arcane_missiles", SkillKind.SPELL, SkillEffect.BOLT, 5, 26, 0.75, 24, 0, List.of(), 0, "矢"),
+                        skill("blizzard", SkillKind.SPELL, SkillEffect.DEBUFF, 14, 49, 0.525, 4, 2, List.of("minecraft:slowness"), 1, "嵐"),
+                        skill("gravity", SkillKind.SPELL, SkillEffect.WHIRL, 12, 42, 2.4, 5, 0, List.of(), 0, "重")));
         // ---- Healer: heals and buffs
         job("healer", 0x5BC0DE, "癒", List.of(JobStat.MAX_MANA, JobStat.MAGIC_ATTACK, JobStat.SKILL_POWER, JobStat.MAX_HEALTH),
                 stats(JobStat.MAX_MANA, 40, JobStat.SKILL_POWER, 10, JobStat.MAGIC_ATTACK, 1), stats(JobStat.MAGIC_ATTACK, 0.07 + 4 / 99.0, JobStat.ATTACK_DAMAGE, 4 / 99.0, JobStat.MAX_MANA, 0.75, JobStat.MAX_HEALTH, hpTo(30, 0), JobStat.ARMOR, LEVEL_ARMOR),
