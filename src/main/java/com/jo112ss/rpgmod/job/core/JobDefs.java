@@ -70,6 +70,8 @@ public final class JobDefs {
     /** Skills whose power is not a damage ratio although their effect type usually is (and the reverse). */
     private static final java.util.Set<String> NO_POWER_LINE = java.util.Set.of();
     private static final java.util.Set<String> DAMAGE_TOO = java.util.Set.of("decoy", "reprisal", "grand_rune");
+    /** Damage skills that keep their ratio (see SKILL_DAMAGE): the wizard's plain bolt is its normal attack. */
+    private static final java.util.Set<String> UNSCALED = java.util.Set.of("magic_bolt", "reprisal"); // reprisal: 15% of attack, as asked
 
     /** Mana every job starts with before job / level / panel bonuses. */
     public static final double BASE_MANA = 100;
@@ -385,9 +387,20 @@ public final class JobDefs {
         if (REVIVES.contains(id)) cooldown *= 5;
         else if (kind == SkillKind.ULTIMATE) cooldown *= 2;
         SkillDef def = new SkillDef(id, "", kind, effect, cooldown, mana, power, radius, duration, effects, amplifier, glyph, 0, CAST_TIMES.getOrDefault(id, 0.0));
+        if ("damage".equals(powerKind(def)) && !UNSCALED.contains(id)) {
+            // damage skills hit for three quarters of their listed ratio (heals, buffs and the plain bolt are left alone)
+            def = new SkillDef(id, "", kind, effect, cooldown, mana, power * SKILL_DAMAGE, radius, duration, effects, amplifier, glyph, 0, CAST_TIMES.getOrDefault(id, 0.0));
+        }
         SKILLS.put(id, def);
         return def;
     }
+
+    /**
+     * Every damage skill's ratio is multiplied by this: against monsters sized for 3 to 6 plain hits,
+     * a skill should take about half of one, not all of it.
+     */
+    public static final double SKILL_DAMAGE = 0.75;
+
 
     static {
         // fill in owner job and icon colour now that every job exists

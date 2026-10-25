@@ -63,8 +63,10 @@ final class BalanceTests {
                     own, mag, sw, staff, String.format("%.2f", MobLevelMath.healthMultiplier(r, lv)),
                     String.format("%.2f", MobLevelMath.damageMultiplier(r, lv)), LevelCurve.expToNext(lv));
         }
-        log("dragon health x{} damage x{}; magic bolt ratio {}", MobConfig.dragonHealth(), MobConfig.dragonDamage(),
-                com.jo112ss.rpgmod.job.core.JobDefs.skill("magic_bolt").power());
+        log("dragon health x{} damage x{}; ratios: magic bolt {} power slash {} thunder {} earthshatter {} heal {} reprisal {}", MobConfig.dragonHealth(), MobConfig.dragonDamage(),
+                com.jo112ss.rpgmod.job.core.JobDefs.skill("magic_bolt").power(), com.jo112ss.rpgmod.job.core.JobDefs.skill("power_slash").power(),
+                com.jo112ss.rpgmod.job.core.JobDefs.skill("thunder").power(), com.jo112ss.rpgmod.job.core.JobDefs.skill("earthshatter").power(),
+                com.jo112ss.rpgmod.job.core.JobDefs.skill("heal").power(), com.jo112ss.rpgmod.job.core.JobDefs.skill("reprisal").power());
         // panels: no skill power cells left
         int sp = 0;
         for (String j : new String[] {"wizard", "healer", "enchanter", "paladin", "runemaster", "bishop"}) {

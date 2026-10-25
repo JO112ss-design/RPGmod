@@ -46,8 +46,8 @@ public final class MobConfig {
     }
     public static final ModConfigSpec.IntValue VARIANCE = B.comment("Random spread of levels (+-)").defineInRange("variance", 2, 0, 50);
     // (renamed with the 500-health rebalance so older configs pick up the new curves)
-    public static final ModConfigSpec.DoubleValue HP_LINEAR = B.comment("Health x (1 + a(L-1) + b(L-1)^2): x8 at Lv100, x15 at Lv200").defineInRange("healthGrowthA", 0.06, 0, 10);
-    public static final ModConfigSpec.DoubleValue HP_SQUARE = B.defineInRange("healthGrowthB", 0.00006, 0, 10);
+    public static final ModConfigSpec.DoubleValue HP_LINEAR = B.comment("Health x (1 + a(L-1) + b(L-1)^2): x8.6 at Lv100, x17.6 at Lv200").defineInRange("healthGrowthLinear", 0.07, 0, 10);
+    public static final ModConfigSpec.DoubleValue HP_SQUARE = B.defineInRange("healthGrowthSquare", 0.00007, 0, 10);
     public static final ModConfigSpec.DoubleValue DMG_LINEAR = B.comment("Damage x (1 + a(L-1) + b(L-1)^2): x12 at Lv100, x24 at Lv200 (players have up to 500 health)").defineInRange("damageGrowthLinear", 0.105, 0, 10);
     public static final ModConfigSpec.DoubleValue DMG_SQUARE = B.defineInRange("damageGrowthSquare", 0.00007, 0, 10);
     public static final ModConfigSpec.DoubleValue EXPLOSION_SHARE = B.comment("Share of the damage growth that explosions get").defineInRange("explosionShare", 0.25, 0, 1);

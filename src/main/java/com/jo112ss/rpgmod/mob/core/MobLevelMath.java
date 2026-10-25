@@ -30,7 +30,7 @@ public final class MobLevelMath {
         public double endBlocksPerLevel = 400;
         public int variance = 2;
 
-        public double hpLinear = 0.06, hpSquare = 0.00006;
+        public double hpLinear = 0.07, hpSquare = 0.00007;
         /** Unchanged at level 1, about x2.8 at level 110 (half of the original x5.6 at the top). */
         public double damageLinear = 0.105, damageSquare = 0.00007;
         /** Share of the damage growth that explosions get. */
