@@ -81,25 +81,36 @@ public final class MobGear {
     }
 
     private static final net.minecraft.resources.Identifier DAMPEN = net.minecraft.resources.Identifier.fromNamespaceAndPath(com.jo112ss.rpgmod.RpgMod.MODID, "gear_weapon_share");
+    private static final net.minecraft.resources.Identifier DAMPEN_MULT = net.minecraft.resources.Identifier.fromNamespaceAndPath(com.jo112ss.rpgmod.RpgMod.MODID, "gear_weapon_share_mult");
 
     /** Re-applies the weapon share to a monster loaded from disk (the setting or the weapons may have changed). */
     public static void refreshWeapon(Mob mob) {
         dampenWeapon(mob, mob.getMainHandItem());
     }
 
-    /** Only part of a monster weapon's attack counts (monsterWeaponEffect, a quarter by default). */
+    /**
+     * Only part of a monster weapon's attack counts (monsterWeaponShare, 45% by default): of its flat
+     * attack, and of its material multiplier (x1.45 becomes about x1.2).
+     */
     private static void dampenWeapon(Mob mob, ItemStack weapon) {
         var inst = mob.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE);
         var mods = weapon.get(net.minecraft.core.component.DataComponents.ATTRIBUTE_MODIFIERS);
         if (inst == null) return;
+        inst.removeModifier(DAMPEN_MULT);
         if (mods == null) {
             inst.removeModifier(DAMPEN);
             return;
         }
-        double bonus = 0;
+        double bonus = 0, mult = 1;
         for (var e : mods.modifiers()) {
-            if (e.attribute().value() == net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE.value()
-                    && e.modifier().operation() == net.minecraft.world.entity.ai.attributes.AttributeModifier.Operation.ADD_VALUE) bonus += e.modifier().amount();
+            if (e.attribute().value() != net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE.value()) continue;
+            if (e.modifier().operation() == net.minecraft.world.entity.ai.attributes.AttributeModifier.Operation.ADD_VALUE) bonus += e.modifier().amount();
+            if (e.modifier().operation() == net.minecraft.world.entity.ai.attributes.AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL) mult *= 1 + e.modifier().amount();
+        }
+        if (mult != 1) { // keep only the share of the multiplier: x(1 + share(m-1)) in all
+            double keep = (1 + MobConfig.weaponShare() * (mult - 1)) / mult - 1;
+            inst.addPermanentModifier(new net.minecraft.world.entity.ai.attributes.AttributeModifier(DAMPEN_MULT, keep,
+                    net.minecraft.world.entity.ai.attributes.AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL));
         }
         inst.removeModifier(DAMPEN);
         double cut = -bonus * (1 - MobConfig.weaponShare());

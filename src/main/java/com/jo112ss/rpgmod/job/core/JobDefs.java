@@ -74,15 +74,15 @@ public final class JobDefs {
     /** Mana every job starts with before job / level / panel bonuses. */
     public static final double BASE_MANA = 100;
     public static final double BASE_MANA_REGEN = 1.0;
-    /** Attack and magic attack from levels are half of what they were: the other half went to the weapon materials. */
-    private static final double LEVEL_ATK = 0.5;
+    // Attack and magic attack from levels: +1 every 5 levels (0.2 a level, counted in whole points,
+    // see JobStats); casters' melee and the enchanter's dagger +1 every 10. Weapon materials multiply it.
 
     // ------------------------------------------------------------------ definitions
 
     static {
         // ---- Fighter: heavy melee
         job("fighter", 0xD9534F, "闘", List.of(JobStat.MAX_HEALTH, JobStat.ATTACK_DAMAGE, JobStat.ARMOR),
-                stats(JobStat.MAX_HEALTH, 4, JobStat.ATTACK_DAMAGE, 2), stats(JobStat.MAX_HEALTH, hpGrow(1.0, 4), JobStat.ATTACK_DAMAGE, LEVEL_ATK * (0.08 + 4 / 99.0)),
+                stats(JobStat.MAX_HEALTH, 4, JobStat.ATTACK_DAMAGE, 2), stats(JobStat.MAX_HEALTH, hpGrow(1.0, 4), JobStat.ATTACK_DAMAGE, 0.2),
                 List.of(
                         skill("power_slash", SkillKind.ACTIVE, SkillEffect.SWEEP, 6, 11, 3.0, 4.5, 0, List.of(), 0, "斬"),
                         skill("charge", SkillKind.ACTIVE, SkillEffect.DASH, 8, 7, 2.0, 0, 0, List.of(), 0, "突"),
@@ -96,7 +96,7 @@ public final class JobDefs {
                 List.of());
         // ---- Ranger: bows
         job("ranger", 0x5CB85C, "弓", List.of(JobStat.ATTACK_DAMAGE, JobStat.MOVEMENT_SPEED, JobStat.CRIT_CHANCE),
-                stats(JobStat.MOVEMENT_SPEED, 5, JobStat.CRIT_CHANCE, 3, JobStat.ATTACK_DAMAGE, 1), stats(JobStat.CRIT_CHANCE, 0.05, JobStat.ATTACK_DAMAGE, LEVEL_ATK * (0.08 + 4 / 99.0), JobStat.MAX_HEALTH, hpGrow(1.0, 0)),
+                stats(JobStat.MOVEMENT_SPEED, 5, JobStat.CRIT_CHANCE, 3, JobStat.ATTACK_DAMAGE, 1), stats(JobStat.CRIT_CHANCE, 0.05, JobStat.ATTACK_DAMAGE, 0.2, JobStat.MAX_HEALTH, hpGrow(1.0, 0)),
                 List.of(
                         skill("multishot", SkillKind.ACTIVE, SkillEffect.SHOT, 6, 11, 1.6, 0, 0, List.of(), 0, "連"),
                         skill("backstep", SkillKind.ACTIVE, SkillEffect.BACKSTEP, 7, 7, 1.4, 0, 0, List.of(), 0, "退"),
@@ -110,7 +110,7 @@ public final class JobDefs {
                 List.of());
         // ---- Paladin: front line, protects allies
         job("paladin", 0xF0C040, "聖", List.of(JobStat.MAX_HEALTH, JobStat.ARMOR, JobStat.ATTACK_DAMAGE, JobStat.COOLDOWN_REDUCTION),
-                stats(JobStat.MAX_HEALTH, 6, JobStat.ARMOR, 4), stats(JobStat.MAX_HEALTH, hpGrow(1.2, 6), JobStat.ATTACK_DAMAGE, LEVEL_ATK * (0.06 + 4 / 99.0)),
+                stats(JobStat.MAX_HEALTH, 6, JobStat.ARMOR, 4), stats(JobStat.MAX_HEALTH, hpGrow(1.2, 6), JobStat.ATTACK_DAMAGE, 0.2),
                 List.of(
                         skill("shield_bash", SkillKind.ACTIVE, SkillEffect.SWEEP, 7, 11, 1.6, 4, 3, List.of("minecraft:slowness"), 1, "打"),
                         skill("holy_guard", SkillKind.ACTIVE, SkillEffect.BUFF, 20, 18, 0, 7, 8, List.of("minecraft:resistance"), 0, "護"),
@@ -124,7 +124,7 @@ public final class JobDefs {
                 List.of());
         // ---- Wizard: spells on the staff, skills 1/2 for mana and mobility
         job("wizard", 0x7B68EE, "魔", List.of(JobStat.MAX_MANA, JobStat.MAGIC_ATTACK, JobStat.COOLDOWN_REDUCTION, JobStat.CAST_SPEED, JobStat.MANA_REGEN),
-                stats(JobStat.MAX_MANA, 50, JobStat.MANA_REGEN, 0.5, JobStat.MAGIC_ATTACK, 2), stats(JobStat.MAX_MANA, 1, JobStat.MAGIC_ATTACK, LEVEL_ATK * (0.08 + 4 / 99.0), JobStat.ATTACK_DAMAGE, LEVEL_ATK * (4 / 99.0), JobStat.MAX_HEALTH, hpGrow(0.6, 0)),
+                stats(JobStat.MAX_MANA, 50, JobStat.MANA_REGEN, 0.5, JobStat.MAGIC_ATTACK, 2), stats(JobStat.MAX_MANA, 1, JobStat.MAGIC_ATTACK, 0.2, JobStat.ATTACK_DAMAGE, 0.1, JobStat.MAX_HEALTH, hpGrow(0.6, 0)),
                 List.of(
                         skill("mana_surge", SkillKind.ACTIVE, SkillEffect.MANA, 20, 0, 40, 0, 0, List.of(), 0, "充"),
                         skill("blink", SkillKind.ACTIVE, SkillEffect.BLINK, 8, 21, 0, 10, 0, List.of(), 0, "瞬"),
@@ -146,7 +146,7 @@ public final class JobDefs {
                         skill("gravity", SkillKind.SPELL, SkillEffect.WHIRL, 12, 42, 2.4, 5, 0, List.of(), 0, "重")));
         // ---- Healer: heals (spells charged on the staff) and buffs
         job("healer", 0x5BC0DE, "癒", List.of(JobStat.MAX_MANA, JobStat.MAGIC_ATTACK, JobStat.MANA_REGEN, JobStat.MAX_HEALTH),
-                stats(JobStat.MAX_MANA, 40, JobStat.MAGIC_ATTACK, 1), stats(JobStat.MAGIC_ATTACK, LEVEL_ATK * (0.07 + 4 / 99.0), JobStat.ATTACK_DAMAGE, LEVEL_ATK * (0.05 + 4 / 99.0), JobStat.MAX_MANA, 0.75, JobStat.MAX_HEALTH, hpGrow(0.6, 0)),
+                stats(JobStat.MAX_MANA, 40, JobStat.MAGIC_ATTACK, 1), stats(JobStat.MAGIC_ATTACK, 0.2, JobStat.ATTACK_DAMAGE, 0.2, JobStat.MAX_MANA, 0.75, JobStat.MAX_HEALTH, hpGrow(0.6, 0)),
                 List.of(
                         skill("holy_light", SkillKind.ACTIVE, SkillEffect.BOLT, 6, 14, 1.8, 24, 0, List.of(), 0, "照"),
                         skill("blessing", SkillKind.ACTIVE, SkillEffect.BUFF, 20, 35, 0, 8, 8, List.of("minecraft:regeneration"), 0, "祝"),
@@ -163,7 +163,7 @@ public final class JobDefs {
                         skill("purify", SkillKind.SPELL, SkillEffect.HEAL, 18, 28, 0.4, 8, 0, List.of(), 0, "浄")));
         // ---- Assassin: daggers, burst and stealth
         job("assassin", 0x8E44AD, "影", List.of(JobStat.CRIT_CHANCE, JobStat.ATTACK_DAMAGE, JobStat.ATTACK_SPEED, JobStat.MOVEMENT_SPEED),
-                stats(JobStat.CRIT_CHANCE, 5, JobStat.MOVEMENT_SPEED, 5, JobStat.ATTACK_DAMAGE, 1), stats(JobStat.CRIT_CHANCE, 0.075, JobStat.ATTACK_DAMAGE, LEVEL_ATK * (0.08 + 4 / 99.0), JobStat.MAX_HEALTH, hpGrow(1.0, 0)),
+                stats(JobStat.CRIT_CHANCE, 5, JobStat.MOVEMENT_SPEED, 5, JobStat.ATTACK_DAMAGE, 1), stats(JobStat.CRIT_CHANCE, 0.075, JobStat.ATTACK_DAMAGE, 0.2, JobStat.MAX_HEALTH, hpGrow(1.0, 0)),
                 List.of(
                         skill("shadow_step", SkillKind.ACTIVE, SkillEffect.BLINK, 7, 11, 0, 12, 0, List.of(), 0, "影"),
                         skill("backstab", SkillKind.ACTIVE, SkillEffect.SWEEP, 6, 11, 3.0, 3.5, 0, List.of(), 0, "急"),
@@ -177,7 +177,7 @@ public final class JobDefs {
                 List.of());
         // ---- Enchanter: buffs allies, weakens enemies
         job("enchanter", 0xE67EB5, "付", List.of(JobStat.MANA_REGEN, JobStat.MAGIC_ATTACK, JobStat.COOLDOWN_REDUCTION, JobStat.MAX_MANA),
-                stats(JobStat.COOLDOWN_REDUCTION, 5, JobStat.MAX_MANA, 30, JobStat.MAGIC_ATTACK, 1), stats(JobStat.MAGIC_ATTACK, LEVEL_ATK * (0.07 + 4 / 99.0), JobStat.ATTACK_DAMAGE, LEVEL_ATK * (4 / 99.0), JobStat.COOLDOWN_REDUCTION, 0.05, JobStat.MAX_HEALTH, hpGrow(0.6, 0)),
+                stats(JobStat.COOLDOWN_REDUCTION, 5, JobStat.MAX_MANA, 30, JobStat.MAGIC_ATTACK, 1), stats(JobStat.MAGIC_ATTACK, 0.2, JobStat.ATTACK_DAMAGE, 0.1, JobStat.COOLDOWN_REDUCTION, 0.05, JobStat.MAX_HEALTH, hpGrow(0.6, 0)),
                 List.of(
                         skill("empower", SkillKind.ACTIVE, SkillEffect.BUFF, 18, 35, 0, 8, 20, List.of("minecraft:strength"), 0, "強"),
                         skill("haste", SkillKind.ACTIVE, SkillEffect.BUFF, 18, 35, 0, 8, 20, List.of("minecraft:speed", "minecraft:haste"), 0, "速"),
@@ -191,7 +191,7 @@ public final class JobDefs {
                 List.of());
         // ---- Gambler: random results
         job("gambler", 0x1ABC9C, "賭", List.of(JobStat.CRIT_CHANCE, JobStat.ATTACK_DAMAGE, JobStat.LUCK, JobStat.COOLDOWN_REDUCTION),
-                stats(JobStat.LUCK, 2, JobStat.CRIT_CHANCE, 5), stats(JobStat.LUCK, 0.025, JobStat.CRIT_CHANCE, 0.05, JobStat.ATTACK_DAMAGE, LEVEL_ATK * (0.06 + 4 / 99.0), JobStat.MAX_HEALTH, hpGrow(1.0, 0)),
+                stats(JobStat.LUCK, 2, JobStat.CRIT_CHANCE, 5), stats(JobStat.LUCK, 0.025, JobStat.CRIT_CHANCE, 0.05, JobStat.ATTACK_DAMAGE, 0.2, JobStat.MAX_HEALTH, hpGrow(1.0, 0)),
                 List.of(
                         skill("coin_toss", SkillKind.ACTIVE, SkillEffect.GAMBLE, 8, 7, 2, 6, 6, List.of(), 0, "銭"),
                         skill("lucky_shot", SkillKind.ACTIVE, SkillEffect.SHOT, 6, 7, 2.0, 0, 0, List.of(), 0, "幸"),
@@ -220,7 +220,7 @@ public final class JobDefs {
         SkillKind A = SkillKind.ACTIVE, U = SkillKind.ULTIMATE, S = SkillKind.SPELL;
         // ---- Berserker: all-out damage, paid for with health
         advanced("fighter", "berserker", 0xB0201C, "狂", List.of(JobStat.ATTACK_DAMAGE, JobStat.CRIT_CHANCE, JobStat.ATTACK_SPEED, JobStat.MAX_HEALTH),
-                stats(JobStat.ATTACK_DAMAGE, LEVEL_ATK * 0.05, JobStat.CRIT_CHANCE, 0.05),
+                stats(JobStat.CRIT_CHANCE, 0.05),
                 List.of(
                         skill("blood_frenzy", A, SkillEffect.BUFF, 25, 15, 0.15, 0, 12, List.of("minecraft:strength", "minecraft:haste"), 1, "血"),
                         skill("decapitate", A, SkillEffect.SWEEP, 8, 18, 4.0, 4, 0, List.of(), 0, "断"),
@@ -244,7 +244,7 @@ public final class JobDefs {
                 List.of());
         // ---- Sharpshooter: long range, heavy single shots
         advanced("ranger", "sharpshooter", 0x3E9E4A, "狙", List.of(JobStat.ATTACK_DAMAGE, JobStat.CRIT_CHANCE, JobStat.MOVEMENT_SPEED),
-                stats(JobStat.ATTACK_DAMAGE, LEVEL_ATK * 0.05, JobStat.CRIT_CHANCE, 0.05),
+                stats(JobStat.CRIT_CHANCE, 0.05),
                 List.of(
                         skill("snipe", A, SkillEffect.SHOT, 10, 18, 6.0, 64, 0, List.of(), 0, "狙"),
                         skill("rapid_fire", A, SkillEffect.SHOT, 9, 15, 0.7, 0, 0, List.of(), 0, "速"),
@@ -256,7 +256,7 @@ public final class JobDefs {
                 List.of());
         // ---- Spellmaster: the strongest spells, slow to charge; two at once
         advanced("wizard", "spellmaster", 0x5A3FD8, "極", List.of(JobStat.MAGIC_ATTACK, JobStat.CAST_SPEED, JobStat.MAX_MANA, JobStat.MANA_REGEN),
-                stats(JobStat.MAGIC_ATTACK, LEVEL_ATK * 0.05, JobStat.MAX_MANA, 1),
+                stats(JobStat.MAX_MANA, 1),
                 List.of(
                         skill("double_cast", A, SkillEffect.BUFF, 30, 30, 0, 0, 15, List.of(), 1, "重"),
                         skill("mana_overload", A, SkillEffect.BUFF, 45, 0, 0, 0, 12, List.of(), 0, "暴"),
@@ -276,7 +276,7 @@ public final class JobDefs {
                         skill("starfall", S, SkillEffect.WHIRL, 20, 70, 0.7, 6, 3, List.of(), 0, "星")));
         // ---- Runemaster: runes on the ground, wide buffs and debuffs, handy blessings
         advanced("enchanter", "runemaster", 0xC0508A, "刻", List.of(JobStat.MAGIC_ATTACK, JobStat.COOLDOWN_REDUCTION, JobStat.MAX_MANA, JobStat.MANA_REGEN),
-                stats(JobStat.MAGIC_ATTACK, LEVEL_ATK * 0.04, JobStat.MAX_MANA, 0.5),
+                stats(JobStat.MAX_MANA, 0.5),
                 List.of(
                         skill("earth_rune", A, SkillEffect.DEBUFF, 20, 35, 0.3, 6, 8, List.of(), 1, "地"),
                         skill("ward_rune", A, SkillEffect.BUFF, 30, 40, 0, 5, 10, List.of(), 0, "守"),
@@ -288,7 +288,7 @@ public final class JobDefs {
                 List.of());
         // ---- Joker: tricks - swaps, decoys and a loaded die
         advanced("gambler", "joker", 0x7A3FB0, "奇", List.of(JobStat.LUCK, JobStat.CRIT_CHANCE, JobStat.COOLDOWN_REDUCTION, JobStat.ATTACK_DAMAGE),
-                stats(JobStat.LUCK, 0.02, JobStat.CRIT_CHANCE, 0.05, JobStat.ATTACK_DAMAGE, LEVEL_ATK * 0.03),
+                stats(JobStat.LUCK, 0.02, JobStat.CRIT_CHANCE, 0.05),
                 List.of(
                         skill("switcheroo", A, SkillEffect.BLINK, 12, 15, 0, 24, 3, List.of(), 0, "換"),
                         skill("decoy", A, SkillEffect.BUFF, 25, 25, 3.0, 4, 5, List.of(), 0, "分"),
@@ -300,7 +300,7 @@ public final class JobDefs {
                 List.of());
         // ---- Nightblade: two blades and the dark
         advanced("assassin", "nightblade", 0x2E3A6E, "夜", List.of(JobStat.ATTACK_DAMAGE, JobStat.CRIT_CHANCE, JobStat.MOVEMENT_SPEED, JobStat.ATTACK_SPEED),
-                stats(JobStat.ATTACK_DAMAGE, LEVEL_ATK * 0.04, JobStat.CRIT_CHANCE, 0.05),
+                stats(JobStat.CRIT_CHANCE, 0.05),
                 List.of(
                         skill("shadow_run", A, SkillEffect.DASH, 8, 15, 2.5, 9, 0, List.of(), 0, "走"),
                         skill("flurry", A, SkillEffect.SWEEP, 10, 18, 0.6, 4, 0, List.of(), 0, "乱"),
@@ -312,7 +312,7 @@ public final class JobDefs {
                 List.of());
         // ---- Bishop: holy magic from the staff, and miracles
         advanced("healer", "bishop", 0x3A8FD0, "聖", List.of(JobStat.MAGIC_ATTACK, JobStat.MAX_MANA, JobStat.CAST_SPEED, JobStat.MANA_REGEN),
-                stats(JobStat.MAGIC_ATTACK, LEVEL_ATK * 0.04, JobStat.MAX_MANA, 0.75),
+                stats(JobStat.MAX_MANA, 0.75),
                 List.of(
                         skill("revive_prayer", A, SkillEffect.HEAL, 120, 60, 1.0, 12, 0, List.of(), 0, "蘇"),
                         skill("divine_domain", A, SkillEffect.BUFF, 45, 50, 0, 6, 10, List.of(), 0, "神")),

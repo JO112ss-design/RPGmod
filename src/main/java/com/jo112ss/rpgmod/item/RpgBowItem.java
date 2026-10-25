@@ -37,6 +37,10 @@ public class RpgBowItem extends BowItem {
         return super.use(level, player, hand);
     }
 
+    public WeaponMaterial material() {
+        return material;
+    }
+
     public int damageBonus() {
         return material.bowBonus;
     }

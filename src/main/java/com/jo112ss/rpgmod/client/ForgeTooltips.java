@@ -35,12 +35,14 @@ public final class ForgeTooltips {
         List<Component> tip = event.getToolTip();
         if (event.getItemStack().getItem() instanceof com.jo112ss.rpgmod.item.RpgBowItem bow) {
             tip.add(Math.min(1, tip.size()), Component.translatable("rpgmod.tooltip.bow_bonus", bow.damageBonus()).withStyle(ChatFormatting.DARK_GREEN));
+            if (bow.material().multiplier != 1) tip.add(Math.min(2, tip.size()), Component.translatable("rpgmod.tooltip.weapon_mult",
+                    String.format("%.2f", bow.material().multiplier)).withStyle(ChatFormatting.DARK_GREEN));
         }
         net.minecraft.world.item.Item it = event.getItemStack().getItem();
         if (com.jo112ss.rpgmod.item.ModItems.typeOf(it) == com.jo112ss.rpgmod.item.WeaponType.STAFF) {
             var mat = com.jo112ss.rpgmod.item.ModItems.materialOf(it);
             if (mat != null) tip.add(Math.min(1, tip.size()), Component.translatable("rpgmod.tooltip.staff_bonus",
-                    String.format("%.0f", mat.staffMagic())).withStyle(ChatFormatting.LIGHT_PURPLE));
+                    String.format("%.0f", mat.staffMagic()), String.format("%.2f", mat.multiplier)).withStyle(ChatFormatting.LIGHT_PURPLE));
         }
         if (event.getItemStack().has(net.minecraft.core.component.DataComponents.BLOCKS_ATTACKS)) {
             int pct = (int) Math.round(com.jo112ss.rpgmod.item.Shields.block(event.getItemStack()) * 100);

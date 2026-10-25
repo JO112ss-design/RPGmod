@@ -322,7 +322,7 @@
   "rpgmod.node.legend_owned": "解放済",
   "rpgmod.node.legend_open": "解放可",
   "rpgmod.node.legend_locked": "未解放",
-  "rpgmod.tooltip.staff_bonus": "魔法攻撃力 %s",
+  "rpgmod.tooltip.staff_bonus": "魔法攻撃力 %1$s、魔法攻撃力全体 ×%2$s",
   "rpgmod.crit.hit": "会心！ %sダメージ（×%s）",
   "rpgmod.job.no_target": "届く範囲に敵がいません",
   "rpgmod.gamble.lucky": "ラッキー！",
@@ -770,5 +770,6 @@
   "rpgmod.jobscreen.mastered_bonus": "極めた職 %1$s（HP+%2$s%%）",
   "rpgmod.jobscreen.adv_waiting": "上位職のポイント %1$s（上位職になると使える）",
   "rpgmod.jobchange.hidden": "？？？",
-  "rpgmod.stat.level_power": "レベル補正"
+  "rpgmod.stat.level_power": "レベル補正",
+  "rpgmod.tooltip.weapon_mult": "攻撃力全体 ×%s（レベルの攻撃力も含めて）"
 }

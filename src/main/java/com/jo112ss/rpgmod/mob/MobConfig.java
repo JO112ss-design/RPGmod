@@ -19,7 +19,7 @@ public final class MobConfig {
     public static final ModConfigSpec.BooleanValue RPG_ARMOR = B.comment("RPG armour: reduction = defence / (defence + K), defence = armour x2 + toughness x2 (replaces the vanilla formula)").define("rpgArmor", true);
     public static final ModConfigSpec.DoubleValue PLAYER_ARMOR_K = B.comment("K for players (bigger = armour less effective; 80: copper set -20%, iron -41%, netherite -71% at Lv1 and -75% at Lv100)").defineInRange("playerArmorReductionK", 80.0, 1, 10000);
     public static final ModConfigSpec.DoubleValue MONSTER_ARMOR_K = B.comment("K for monsters (their random gear counts for less)").defineInRange("monsterArmorK", 80.0, 1, 10000);
-    public static final ModConfigSpec.DoubleValue GEAR_WEAPON = B.comment("Share of a monster's weapon attack that counts").defineInRange("monsterWeaponEffect", 0.25, 0, 1);
+    public static final ModConfigSpec.DoubleValue GEAR_WEAPON = B.comment("Share of a monster's weapon attack that counts (its flat attack and its material multiplier)").defineInRange("monsterWeaponShare", 0.45, 0, 1);
     public static final ModConfigSpec.IntValue ZOMBIE_RANGE = B.comment("How far zombies, creepers, spiders and skeletons notice and follow players, through walls (blocks)").defineInRange("monsterSenseRange", 64, 8, 512);
 
     static {
@@ -189,7 +189,7 @@ public final class MobConfig {
     }
 
     public static double weaponShare() {
-        return SPEC.isLoaded() ? GEAR_WEAPON.get() : 0.25;
+        return SPEC.isLoaded() ? GEAR_WEAPON.get() : 0.45;
     }
 
     public static boolean equipment() {

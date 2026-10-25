@@ -48,10 +48,19 @@ final class BalanceTests {
             f.setJob("fighter");
             f.setLevel(lv);
             var st = JobStats.compute(f);
-            log("Lv{}: hp fighter {} paladin {} wizard {} healer {} enchanter {} ranger {} | armor from level {} | level power x{} | monster hp x{} dmg x{} | exp to next {}",
+            JobData w = new JobData();
+            w.setJob("wizard");
+            w.setLevel(lv);
+            double own = st.get(JobStat.ATTACK_DAMAGE), mag = JobStats.compute(w).get(JobStat.MAGIC_ATTACK);
+            StringBuilder sw = new StringBuilder(), staff = new StringBuilder();
+            for (var mat : com.jo112ss.rpgmod.item.WeaponMaterial.values()) {
+                sw.append(mat.id).append('=').append(String.format("%.1f", (1 + 3 + mat.meleeBonus() + own) * mat.multiplier)).append(' ');
+                staff.append(mat.id).append('=').append(String.format("%.1f", (1 + mat.staffMagic() + mag) * mat.multiplier)).append(' ');
+            }
+            log("Lv{}: hp fighter {} paladin {} wizard {} healer {} enchanter {} ranger {} | armor from level {} | own attack {} magic {} | sword {}| staff {}| monster hp x{} dmg x{} | exp to next {}",
                     lv, Math.round(hp("fighter", lv)), Math.round(hp("paladin", lv)), Math.round(hp("wizard", lv)), Math.round(hp("healer", lv)),
                     Math.round(hp("enchanter", lv)), Math.round(hp("ranger", lv)), String.format("%.1f", st.get(JobStat.ARMOR)),
-                    String.format("%.2f", JobManager.levelPower(f)), String.format("%.2f", MobLevelMath.healthMultiplier(r, lv)),
+                    own, mag, sw, staff, String.format("%.2f", MobLevelMath.healthMultiplier(r, lv)),
                     String.format("%.2f", MobLevelMath.damageMultiplier(r, lv)), LevelCurve.expToNext(lv));
         }
         log("dragon health x{} damage x{}; magic bolt ratio {}", MobConfig.dragonHealth(), MobConfig.dragonDamage(),
@@ -66,8 +75,18 @@ final class BalanceTests {
 
         // the player at its level: shown stats
         JobData d = JobManager.data(p);
-        log("player {} Lv{}: max hp {} attack {} (x{}) magic {}", d.displayJobId(), d.level(), String.format("%.0f", p.getMaxHealth()),
-                String.format("%.1f", JobManager.physicalAttack(p)), String.format("%.2f", JobManager.levelPower(p)), String.format("%.1f", JobManager.magicAttack(p)));
+        log("player {} Lv{}: max hp {} attack {} magic {}", d.displayJobId(), d.level(), String.format("%.0f", p.getMaxHealth()),
+                String.format("%.1f", JobManager.physicalAttack(p)), String.format("%.1f", JobManager.magicAttack(p)));
+        // the held weapon's multiplier on the attack: a netherite sword in the main hand (checked two ticks later)
+        int slot = p.getInventory().getSelectedSlot();
+        ItemStack prev = p.getInventory().getItem(slot);
+        p.getInventory().setItem(slot, new ItemStack(Items.NETHERITE_SWORD));
+        SkillTasks.later(2, () -> {
+            var inst = p.getAttribute(Attributes.ATTACK_DAMAGE);
+            log("netherite sword held: attack {} (formula (1 + 3 + 6 + own {}) x1.45 = {})", String.format("%.1f", inst.getValue()),
+                    JobStats.compute(d).get(JobStat.ATTACK_DAMAGE), String.format("%.1f", (10 + JobStats.compute(d).get(JobStat.ATTACK_DAMAGE)) * 1.45));
+            p.getInventory().setItem(slot, prev);
+        });
 
         // damage dealt: the level bonus on a plain hit; magic against armour
         Husk bare = dummy(level, p, 3, 0);
@@ -86,10 +105,10 @@ final class BalanceTests {
             armoured.damageCooldownTime = 0;
             armoured.hurtServer(level, magic, 10);
             JobManager.testForceCrit = null;
-            log("hit 10: bare ({}% reduction) took {} (level power x{}), magic vs diamond armour ({}% reduction) took {} (x{} expected)",
+            log("hit 10: bare ({}% reduction) took {}, magic vs diamond armour ({}% reduction) took {} ({} expected)",
                     Math.round(com.jo112ss.rpgmod.mob.Defense.reduction(bare) * 100), String.format("%.1f", b0 - bare.getHealth()),
-                    String.format("%.2f", JobManager.levelPower(p)), Math.round(com.jo112ss.rpgmod.mob.Defense.reduction(armoured) * 100),
-                    String.format("%.1f", a0 - armoured.getHealth()), String.format("%.1f", 10 * JobManager.levelPower(p) * (1 - com.jo112ss.rpgmod.mob.Defense.reduction(armoured))));
+                    Math.round(com.jo112ss.rpgmod.mob.Defense.reduction(armoured) * 100),
+                    String.format("%.1f", a0 - armoured.getHealth()), String.format("%.1f", 10 * (1 - com.jo112ss.rpgmod.mob.Defense.reduction(armoured))));
             bare.discard();
             armoured.discard();
 

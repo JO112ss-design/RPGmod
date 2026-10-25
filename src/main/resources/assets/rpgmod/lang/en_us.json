@@ -322,7 +322,7 @@
   "rpgmod.node.legend_owned": "Owned",
   "rpgmod.node.legend_open": "Open",
   "rpgmod.node.legend_locked": "Locked",
-  "rpgmod.tooltip.staff_bonus": "Magic Attack %s",
+  "rpgmod.tooltip.staff_bonus": "Magic Attack %1$s, all magic attack x%2$s",
   "rpgmod.crit.hit": "Critical! %s damage (x%s)",
   "rpgmod.job.no_target": "No enemy in reach",
   "rpgmod.gamble.lucky": "Lucky!",
@@ -770,5 +770,6 @@
   "rpgmod.jobscreen.mastered_bonus": "%1$s mastered (HP +%2$s%%)",
   "rpgmod.jobscreen.adv_waiting": "%1$s advanced points (for an advanced job)",
   "rpgmod.jobchange.hidden": "???",
-  "rpgmod.stat.level_power": "Level bonus"
+  "rpgmod.stat.level_power": "Level bonus",
+  "rpgmod.tooltip.weapon_mult": "All attack x%s (your own included)"
 }

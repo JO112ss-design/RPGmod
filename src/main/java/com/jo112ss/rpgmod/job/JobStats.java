@@ -26,8 +26,13 @@ public final class JobStats {
         JobDefs.Job job = data.jobDef();
         if (job == null) return m;
         job.base().forEach((s, v) -> m.merge(s, v, Double::sum));
-        // the base job's growth goes on with the character level (the advanced job's adds to it)
-        job.perLevel().forEach((s, v) -> m.merge(s, v * (data.level() - 1), Double::sum));
+        // the base job's growth goes on with the character level (the advanced job's adds to it);
+        // attack and magic attack grow in whole points (+1 every 5 levels at 0.2 a level)
+        job.perLevel().forEach((s, v) -> {
+            double grown = v * (data.level() - 1);
+            if (s == JobStat.ATTACK_DAMAGE || s == JobStat.MAGIC_ATTACK) grown = Math.floor(grown + 1e-9);
+            m.merge(s, grown, Double::sum);
+        });
         SkillPanel panel = data.panel();
         for (int id : data.unlocked()) {
             SkillPanel.Node n = panel.node(id);

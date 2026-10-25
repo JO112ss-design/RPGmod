@@ -365,8 +365,7 @@ public class JobScreen extends Screen {
         g.text(font, Component.translatable("rpgmod.jobscreen.stats"), sx + 6, sy + 5, Ui.GOLD, false);
         List<Component[]> rows = new ArrayList<>();
         rows.add(row("max_health", fmt(p.getMaxHealth())));
-        double lvPow = com.jo112ss.rpgmod.job.JobManager.levelPower(p); // the level bonus on damage dealt
-        rows.add(row("attack_damage", fmt(com.jo112ss.rpgmod.job.JobManager.physicalAttack(p) * lvPow)));
+        rows.add(row("attack_damage", fmt(com.jo112ss.rpgmod.job.JobManager.physicalAttack(p))));
         if (com.jo112ss.rpgmod.mob.MobConfig.rpgArmor()) {
             // toughness counts as much as armour in the RPG formula: show it next to it
             double tough = com.jo112ss.rpgmod.mob.Defense.toughness(p);
@@ -385,12 +384,11 @@ public class JobScreen extends Screen {
         rows.add(row("crit_chance", String.format("%.1f%% ×%.2f", com.jo112ss.rpgmod.job.JobManager.critChance(p, null), com.jo112ss.rpgmod.job.JobManager.critMultiplier(p, null))));
         rows.add(row("max_mana", fmt(maxMana)));
         rows.add(row("mana_regen", String.format("%.1f/s", com.jo112ss.rpgmod.job.JobManager.manaRegen(p))));
-        rows.add(row("level_power", String.format("×%.2f", lvPow)));
         rows.add(row("cooldown_reduction", String.format("%.0f%%", st.get(JobStat.COOLDOWN_REDUCTION))));
         double reroll = com.jo112ss.rpgmod.job.JobManager.luckChance(p) * 100;
         rows.add(row("luck", fmt(p.getAttributeValue(Attributes.LUCK))
                 + (reroll >= 0.5 ? "  " + Component.translatable("rpgmod.jobscreen.luck_reroll", String.format("%.0f", reroll)).getString() : "")));
-        rows.add(row("magic_attack", fmt(com.jo112ss.rpgmod.job.JobManager.magicAttack(p) * lvPow)));
+        rows.add(row("magic_attack", fmt(com.jo112ss.rpgmod.job.JobManager.magicAttack(p))));
         rows.add(row("cast_speed", String.format("-%.0f%%", Math.min(60, com.jo112ss.rpgmod.job.JobManager.castSpeedPercent(p)))));
         for (int i = 0; i < rows.size(); i++) {
             int col = i / 7, r = i % 7;
@@ -853,8 +851,7 @@ public class JobScreen extends Screen {
         String kind = JobDefs.powerKind(def);
         if (kind == null || minecraft.player == null) return null;
         boolean magic = JobDefs.isMagic(def);
-        double now = def.power() * com.jo112ss.rpgmod.job.JobManager.powerMultiplier(minecraft.player, def)
-                * ("damage".equals(kind) ? com.jo112ss.rpgmod.job.JobManager.levelPower(minecraft.player) : 1);
+        double now = def.power() * com.jo112ss.rpgmod.job.JobManager.powerMultiplier(minecraft.player, def);
         return Component.translatable("rpgmod.jobscreen.power." + kind,
                 Component.translatable(magic ? "rpgmod.stat.magic_attack" : "rpgmod.stat.attack_damage"),
                 String.format("%.0f", def.power() * 100), String.format("%.1f", now));

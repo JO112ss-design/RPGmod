@@ -667,6 +667,14 @@ public final class JobManager {
         return mat == null ? 0 : mat.staffMagic();
     }
 
+    /** The held staff's material multiplier on the whole magic attack (1 without a staff). */
+    public static double staffMultiplier(Player player) {
+        var item = player.getMainHandItem().getItem();
+        if (ModItems.typeOf(item) != WeaponType.STAFF) return 1;
+        var mat = ModItems.materialOf(item);
+        return mat == null ? 1 : mat.multiplier;
+    }
+
     /**
      * Attack used by weapon skills: the player's attack attribute, which already adds up the base 1,
      * the held weapon, the job's own attack (level + panel), forged attack % and strength. Bows have
@@ -676,8 +684,10 @@ public final class JobManager {
         double atk = player.getAttributeValue(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE);
         ItemStack held = player.getMainHandItem();
         if (ModItems.typeOf(held.getItem()) == WeaponType.BOW) {
-            double bow = 5 + (held.getItem() instanceof com.jo112ss.rpgmod.item.RpgBowItem rb ? rb.damageBonus() : 0);
+            var rb = held.getItem() instanceof com.jo112ss.rpgmod.item.RpgBowItem r ? r : null;
+            double bow = 5 + (rb != null ? rb.damageBonus() : 0);
             atk += bow * (1 + com.jo112ss.rpgmod.gem.Gear.option(held, com.jo112ss.rpgmod.smithing.core.OptionType.ATTACK_DAMAGE) / 100.0);
+            if (rb != null) atk *= rb.material().multiplier; // the bow's material multiplies the whole attack
         } else if (held.is(net.minecraft.world.item.Items.BOW) || held.is(net.minecraft.world.item.Items.CROSSBOW)) {
             atk += 5;
         }
@@ -689,7 +699,7 @@ public final class JobManager {
         double own = JobStats.compute(data(player)).get(JobStat.MAGIC_ATTACK);
         double gear = gearOption(player, com.jo112ss.rpgmod.smithing.core.OptionType.MAGIC_POWER);
         double overload = player.hasEffect(com.jo112ss.rpgmod.registry.ModEffects.OVERLOAD) ? 1.5 : 1; // spellmaster
-        return (1 + staffMagic(player) + own) * (1 + gear / 100.0) * overload;
+        return (1 + staffMagic(player) + own) * staffMultiplier(player) * (1 + gear / 100.0) * overload;
     }
 
     /**
@@ -723,23 +733,12 @@ public final class JobManager {
 
     /**
      * What a skill's power ratio is multiplied by: its attack (weapon + own, or staff + own magic).
-     * Damage = ratio x this; the level bonus ({@link #levelPower}), crits, armour etc. apply after.
+     * Damage = ratio x this; crits, armour etc. apply after.
      */
     public static double powerMultiplier(Player player, SkillDef def) {
         return skillAttack(player, def);
     }
 
-    /** Share of extra damage per level on everything a player deals (+0.5%: x1.5 at 100, about x2 at the top). */
-    public static final double LEVEL_POWER = 0.005;
-
-    /** The level bonus on all damage a player deals to monsters (melee, arrows, skills, spells). */
-    public static double levelPower(JobData d) {
-        return d.hasJob() ? 1 + LEVEL_POWER * (d.level() - 1) : 1;
-    }
-
-    public static double levelPower(Player player) {
-        return levelPower(data(player));
-    }
 
     /** Colour of each spell's charging circle and casting light. */
     public static int spellColor(String id) {

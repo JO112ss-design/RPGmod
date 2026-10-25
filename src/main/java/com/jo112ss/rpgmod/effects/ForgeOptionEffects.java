@@ -136,21 +136,22 @@ public final class ForgeOptionEffects {
             weapon = player.getMainHandItem(); // melee
         } else if (event.getSource().getDirectEntity() instanceof AbstractArrow arrow && arrow.getWeaponItem() != null) {
             ItemStack bow = arrow.getWeaponItem();
+            double mult = 1;
             if (bow.getItem() instanceof RpgBowItem rpgBow) {
                 // material bonus, scaled by draw strength (arrow speed 3 = full draw)
                 double drawn = Math.min(1.0, arrow.getDeltaMovement().length() / 3.0);
                 event.setAmount((float) (event.getAmount() + rpgBow.damageBonus() * drawn));
+                mult = rpgBow.material().multiplier;
             }
             weapon = bow;
             applyRangedOptions(event, bow, player);
-            // the shooter's own attack (job level, panel, strength...), taken when the arrow was loosed
+            // the shooter's own attack (job level, panel, strength...), taken when the arrow was loosed,
+            // then the bow material's multiplier on the whole arrow
             double own = arrow.getPersistentData().getDoubleOr(OWN_ATTACK, 0);
-            if (own != 0) {
-                float before = event.getAmount();
-                event.setAmount((float) Math.max(0, before + own));
-                if (com.jo112ss.rpgmod.devtest.AutoTestServer.ENABLED) {
-                    com.jo112ss.rpgmod.RpgMod.LOGGER.info("[AUTOTEST] bow arrow {} + own {} -> {}", before, String.format("%.1f", own), event.getAmount());
-                }
+            float before = event.getAmount();
+            event.setAmount((float) Math.max(0, (before + own) * mult));
+            if (com.jo112ss.rpgmod.devtest.AutoTestServer.ENABLED) {
+                com.jo112ss.rpgmod.RpgMod.LOGGER.info("[AUTOTEST] bow arrow ({} + own {}) x{} -> {}", before, String.format("%.1f", own), mult, event.getAmount());
             }
         } else {
             return;
@@ -188,19 +189,18 @@ public final class ForgeOptionEffects {
     public static double ownAttack(Player player, ItemStack bow) {
         var inst = player.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE);
         if (inst == null) return 0;
-        double own = inst.getValue() - inst.getBaseValue();
+        double value = inst.getValue();
         ItemStack main = player.getMainHandItem();
         if (main != bow && !main.isEmpty()) { // shot from the off hand: the main-hand weapon is not the bow's
-            double[] w = {0};
+            double[] w = {0, 1};
             main.forEachModifier(net.minecraft.world.entity.EquipmentSlot.MAINHAND, (attr, mod) -> {
-                if (attr.is(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE)
-                        && mod.operation() == net.minecraft.world.entity.ai.attributes.AttributeModifier.Operation.ADD_VALUE) {
-                    w[0] += mod.amount();
-                }
+                if (!attr.is(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE)) return;
+                if (mod.operation() == net.minecraft.world.entity.ai.attributes.AttributeModifier.Operation.ADD_VALUE) w[0] += mod.amount();
+                if (mod.operation() == net.minecraft.world.entity.ai.attributes.AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL) w[1] *= 1 + mod.amount();
             });
-            own -= w[0];
+            value = value / w[1] - w[0]; // without that weapon's multiplier and attack
         }
-        return own;
+        return value - inst.getBaseValue();
     }
 
     /**
