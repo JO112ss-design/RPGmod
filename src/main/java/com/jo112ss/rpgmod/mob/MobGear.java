@@ -13,8 +13,10 @@ import net.minecraft.world.item.Items;
 
 /**
  * Random equipment by level for every hostile monster but endermen and bosses: armour pieces and one
- * of the jobs' weapons, from copper up to diamond, netherite only from level 90. Monsters whose model
- * cannot show it still get its armour and attack. Nothing of it drops.
+ * of the jobs' weapons, from copper up to diamond, netherite only from level 135. The steps are
+ * stretched 1.5 times over the levels ({@link #GEAR_STRETCH}): a level 150 monster is geared like a
+ * level 100 one used to be. Monsters whose model cannot show it still get its armour and attack.
+ * Nothing of it drops.
  */
 public final class MobGear {
     private MobGear() {}
@@ -34,7 +36,15 @@ public final class MobGear {
                 && !(m instanceof net.minecraft.world.entity.boss.enderdragon.EnderDragon) && !m.is(net.neoforged.neoforge.common.Tags.EntityTypes.BOSSES);
     }
 
-    /** A material for this level, with some spread; netherite only from level 90. */
+    /** Gear goes up 1.5 times slower than the monster's level. */
+    public static final double GEAR_STRETCH = 1.5;
+
+    /** The level the gear tables are read at. */
+    static int gearLevel(int lv) {
+        return (int) Math.round(lv / GEAR_STRETCH);
+    }
+
+    /** A material for this gear level, with some spread; netherite only from gear level 90. */
     static WeaponMaterial material(int lv, RandomSource r) {
         double x = r.nextDouble();
         if (lv >= 90) return x < 0.5 ? WeaponMaterial.NETHERITE : WeaponMaterial.DIAMOND;
@@ -48,6 +58,7 @@ public final class MobGear {
     public static void equip(Mob mob, int lv) {
         if (!MobConfig.equipment() || !wearsGear(mob)) return;
         RandomSource r = mob.getRandom();
+        lv = gearLevel(lv);
         double armorChance = Math.min(0.65, 0.25 + lv * 0.004);
         for (int i = 0; i < ARMOR_SLOTS.length; i++) {
             if (r.nextDouble() >= armorChance) continue;
