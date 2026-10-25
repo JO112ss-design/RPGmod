@@ -11,7 +11,6 @@ public enum OptionType {
     ATTACK_SPEED("attack_speed", 0.1, true, 3, 8, NaN(), NaN()),
     CRIT_CHANCE("crit_chance", 0.1, true, 2, 5, NaN(), NaN()),
     CRIT_DAMAGE("crit_damage", 0.1, true, 5, 15, NaN(), NaN()),
-    ARMOR_PENETRATION("armor_penetration", 0.1, true, 3, 8, NaN(), NaN()),
     BOSS_DAMAGE("boss_damage", 0.1, true, 4, 10, NaN(), NaN()),
     MAX_HEALTH("max_health", 1, false, 1, 2, 1, 2),
     ARMOR("armor", 1, false, 1, 2, 1, 2),
@@ -48,7 +47,16 @@ public enum OptionType {
         return Double.NaN;
     }
 
+    /** Armour penetration was removed: options and gems that had it count as attack. */
+    public static final String OLD_PENETRATION = "armor_penetration";
+
+    /** The id an old option id now stands for. */
+    public static String current(String id) {
+        return OLD_PENETRATION.equals(id) ? ATTACK_DAMAGE.id : id;
+    }
+
     public static OptionType byId(String id) {
+        id = current(id);
         for (OptionType t : values()) if (t.id.equals(id)) return t;
         return null;
     }

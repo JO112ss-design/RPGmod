@@ -30,9 +30,9 @@ public final class MobLevelMath {
         public double endBlocksPerLevel = 400;
         public int variance = 2;
 
-        public double hpLinear = 0.025, hpSquare = 0.00025;
+        public double hpLinear = 0.06, hpSquare = 0.00006;
         /** Unchanged at level 1, about x2.8 at level 110 (half of the original x5.6 at the top). */
-        public double damageLinear = 0.0078, damageSquare = 0.000078;
+        public double damageLinear = 0.105, damageSquare = 0.00007;
         /** Share of the damage growth that explosions get. */
         public double explosionShare = 0.25;
         /** Off by default: every monster gets the flat speed multiplier instead (config speedMultiplier). */

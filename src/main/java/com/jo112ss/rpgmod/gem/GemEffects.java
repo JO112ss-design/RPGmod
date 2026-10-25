@@ -181,7 +181,7 @@ public final class GemEffects {
             long now = sp.level().getGameTime();
             if (steal > 0 && now >= STEAL_NEXT.getOrDefault(sp.getUUID(), 0L)) {
                 STEAL_NEXT.put(sp.getUUID(), now + GemSpecial.HEAL_COOLDOWN);
-                sp.heal((float) (dealt * steal / 100.0));
+                com.jo112ss.rpgmod.job.HealthScale.heal(sp, (float) (dealt * steal / 100.0));
             }
         }
         // thorns on the one hit: melee only
@@ -233,7 +233,7 @@ public final class GemEffects {
     public static void onTick(PlayerTickEvent.Post event) {
         if (!(event.getEntity() instanceof ServerPlayer p) || p.tickCount % 100 != 0 || !p.isAlive()) return;
         if (p.getHealth() < p.getMaxHealth() && Gear.has(p, GemSpecial.REGENERATION)) {
-            p.heal((float) (p.getMaxHealth() * GemSpecial.REGENERATION.value / 100.0));
+            com.jo112ss.rpgmod.job.HealthScale.heal(p, (float) (p.getMaxHealth() * GemSpecial.REGENERATION.value / 100.0));
         }
     }
 

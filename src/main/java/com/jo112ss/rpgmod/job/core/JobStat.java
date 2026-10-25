@@ -15,7 +15,6 @@ public enum JobStat {
     CRIT_CHANCE("crit_chance", "会", true),
     MAX_MANA("max_mana", "MP", false),
     MANA_REGEN("mana_regen", "回", false),
-    SKILL_POWER("skill_power", "技", true),
     COOLDOWN_REDUCTION("cooldown_reduction", "短", true),
     CAST_SPEED("cast_speed", "詠", true),
     /** Flat magic attack added to the staff's (casters' skills scale with it). */
@@ -49,7 +48,6 @@ public enum JobStat {
             case CRIT_CHANCE -> 1;
             case MAX_MANA -> 5;
             case MANA_REGEN -> 0.1;
-            case SKILL_POWER -> 2;
             case COOLDOWN_REDUCTION -> 1.5;
             case CAST_SPEED -> 2;
             case MAGIC_ATTACK -> 0.4;

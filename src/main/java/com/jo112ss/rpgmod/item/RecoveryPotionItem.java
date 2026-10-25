@@ -44,7 +44,7 @@ public class RecoveryPotionItem extends Item {
                 sp.sendSystemMessage(Component.translatable("rpgmod.potion.mp_used", Math.round(amount)).withStyle(ChatFormatting.AQUA), true);
             } else {
                 float amount = (float) (sp.getMaxHealth() * SHARE);
-                sp.heal(amount);
+                com.jo112ss.rpgmod.job.HealthScale.heal(sp, amount);
                 sp.sendSystemMessage(Component.translatable("rpgmod.potion.hp_used", Math.round(amount)).withStyle(ChatFormatting.RED), true);
             }
         }

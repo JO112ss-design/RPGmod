@@ -33,7 +33,7 @@ STATS = {'max_health': ('最大HP', 'Max Health'), 'attack_damage': ('攻撃力'
          'armor_toughness': ('防具強度', 'Toughness'), 'movement_speed': ('移動速度', 'Speed'), 'attack_speed': ('攻撃速度', 'Attack Speed'),
          'luck': ('幸運', 'Luck'), 'crit_chance': ('会心率', 'Crit Chance'), 'max_mana': ('最大MP', 'Max MP'),
          'mana_regen': ('MP回復', 'MP Regen'), 'skill_power': ('スキル威力', 'Skill Power'), 'cooldown_reduction': ('CT短縮', 'Cooldown Red.'),
-         'magic_attack': ('魔法攻撃力', 'Magic Attack')}
+         'magic_attack': ('魔法攻撃力', 'Magic Attack'), 'level_power': ('レベル補正', 'Level bonus')}
 SKILLS = {  # id: (ja, ja desc, en, en desc)
  'power_slash': ('強撃', '前方の広い扇形（半径4.5）を斬り払う。', 'Power Slash', 'Cleave a wide arc in front of you (4.5 blocks).'),
  'charge': ('突進', '前方へ突っ込み、ぶつかった敵を弾き飛ばす。', 'Charge', 'Dash forward, knocking aside enemies in your way.'),

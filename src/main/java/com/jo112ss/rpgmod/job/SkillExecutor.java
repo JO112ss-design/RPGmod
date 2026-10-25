@@ -60,7 +60,7 @@ public final class SkillExecutor {
         // longer effects at higher levels (not ultimates, not the enchanter's magic-scaled buffs)
         double longer = JobManager.levelDurationScale(p, def);
         if (longer != 1) def = def.withDuration(def.duration() * longer);
-        Ctx c = new Ctx(p, level, def, power, JobManager.skillBoost(p));
+        Ctx c = new Ctx(p, level, def, power, 1.0);
         return switch (def.id()) {
             // fighter
             case "power_slash" -> powerSlash(c);
@@ -151,11 +151,11 @@ public final class SkillExecutor {
 
     /**
      * Everything a skill needs, so the helpers stay short. {@code power} is the attack the skill scales
-     * with times the skill power stat (see {@link JobManager#powerMultiplier}); {@code boost} is the
-     * skill power stat alone, for amounts that do not depend on attack (mana).
+     * with (see {@link JobManager#powerMultiplier}); {@code boost} scales amounts that do not depend on
+     * attack (mana) - 1 since skill power was removed.
      */
     record Ctx(ServerPlayer p, ServerLevel level, SkillDef def, double power, double boost) {
-        /** The skill's ratio x attack x skill power, times {@code scale}. */
+        /** The skill's ratio x attack, times {@code scale}. */
         float dmg(double scale) {
             return (float) (def.power() * power * scale);
         }
@@ -646,7 +646,7 @@ public final class SkillExecutor {
     static boolean heal(Ctx c, String fx, boolean cleanse) {
         List<ServerPlayer> allies = allies(c.p, c.def.radius());
         for (ServerPlayer a : allies) {
-            a.heal(c.dmg(1));
+            com.jo112ss.rpgmod.job.HealthScale.heal(a, c.dmg(1));
             if (cleanse) {
                 a.removeEffect(MobEffects.POISON);
                 a.removeEffect(MobEffects.WITHER);
@@ -678,7 +678,7 @@ public final class SkillExecutor {
             if (age % 20 == 0) {
                 for (ServerPlayer a : c.level.getEntitiesOfClass(ServerPlayer.class, new AABB(o, o).inflate(r, 3, r),
                         a -> a.isAlive() && horizontal(a.position(), o) <= r)) {
-                    a.heal(c.dmg(1.0 / pulses));
+                    com.jo112ss.rpgmod.job.HealthScale.heal(a, c.dmg(1.0 / pulses));
                 }
                 for (LivingEntity e : enemies(c.p, o, r)) {
                     e.addEffect(new MobEffectInstance(MobEffects.SLOWNESS, 30, 0), c.p);
@@ -1125,7 +1125,7 @@ public final class SkillExecutor {
             }
             case 1 -> { // heal the party
                 allies = allies(c.p, r);
-                for (ServerPlayer a : allies) a.heal((float) (0.25 * bet * c.power));
+                for (ServerPlayer a : allies) com.jo112ss.rpgmod.job.HealthScale.heal(a, (float) (0.25 * bet * c.power));
                 sound(c, o, SoundEvents.AMETHYST_BLOCK_CHIME, 1.0F, 1.5F);
             }
             case 2 -> { // buff the party
@@ -1303,7 +1303,7 @@ public final class SkillExecutor {
                 double side = to.subtract(dir.scale(along)).multiply(1, 0, 1).length();
                 if (along < 0 || along > front || side > 1.8 || Math.abs(to.y) > 3 || !done.add(e.getId())) continue;
                 if (e instanceof Player ally) {
-                    ally.heal(c.dmg(0.25));
+                    com.jo112ss.rpgmod.job.HealthScale.heal(ally, c.dmg(0.25));
                     ServerFx.of("heal_burst", ally.position()).follow(ally).color(0xFFD95A).send(c.level);
                 } else if (isEnemy(c.p, e)) {
                     hurt(c, e, c.dmg(1), magic(c));
@@ -1476,7 +1476,7 @@ public final class SkillExecutor {
             }
             a.clearFire();
             a.setTicksFrozen(0);
-            a.heal(c.dmg(1));
+            com.jo112ss.rpgmod.job.HealthScale.heal(a, c.dmg(1));
         }
         // and a burst of holy light that hurts the enemies around (more so the undead)
         List<LivingEntity> foes = enemies(c.p, c.p.position(), c.def.radius());
@@ -1661,7 +1661,7 @@ public final class SkillExecutor {
                     case 0 -> hurt(c, e, c.dmg(1.8), melee(c));
                     case 1 -> {
                         hurt(c, e, c.dmg(0.6), melee(c));
-                        c.p.heal(c.dmg(0.25));
+                        com.jo112ss.rpgmod.job.HealthScale.heal(c.p, c.dmg(0.25));
                     }
                     case 2 -> {
                         hurt(c, e, c.dmg(0.8), melee(c));

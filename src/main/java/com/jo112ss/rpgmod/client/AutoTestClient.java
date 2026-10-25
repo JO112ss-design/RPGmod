@@ -242,6 +242,7 @@ public final class AutoTestClient {
             case "mob:golem" -> 1110;
             case "gem:checks" -> 140;
             case "job:checks" -> 60;
+            case "bal:checks" -> 40;
             case "job:screen" -> 70;
             case "perf" -> 1800;
             case "gem:socket" -> 70;
@@ -284,7 +285,9 @@ public final class AutoTestClient {
             showSkills.clear();
             if ("all".equals(System.getProperty("rpgmod.showcase"))) showSkills.addAll(com.jo112ss.rpgmod.job.core.JobDefs.SKILLS.keySet());
             // job changes: logic checks, then the job change screen and the panel's mastery locks
-            showSkills.addAll(java.util.List.of("job:checks", "job:screen"));
+            showSkills.clear(); // the 500-health rebalance: numbers by level, damage and healing paths
+            if ("all".equals(System.getProperty("rpgmod.showcase"))) showSkills.addAll(com.jo112ss.rpgmod.job.core.JobDefs.SKILLS.keySet());
+            showSkills.addAll(java.util.List.of("bal:checks", "fp:magic_bolt", "power_slash", "job:checks"));
             mc.options.gamma().set(1.0); // the night fight, brightly lit for the screenshots
             mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK);
             com.jo112ss.rpgmod.client.mob.MobOverlay.testSelf = true;

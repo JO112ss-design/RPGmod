@@ -144,6 +144,10 @@ public final class AutoTestServer {
                 PerfTest.run(level, player, 15);
                 return;
             }
+            if (id.startsWith("bal:")) {
+                BalanceTests.scene(level, player, id.substring(4));
+                return;
+            }
             if (id.startsWith("job:")) {
                 JobChangeTests.scene(level, player, id.substring(4));
                 return;

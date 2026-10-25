@@ -18,7 +18,7 @@ import net.minecraft.world.level.storage.ValueOutput;
 
 /**
  * A glowing stone pillar of the Golem's armour: it stands still, does nothing, and while any of them
- * stands the Golem takes half damage. Health grows with the boss level (12 + level). Gone with the
+ * stands the Golem takes half damage. Health grows with the boss level like a monster's (15 x the level health multiplier: about three hits from a player of that level). Gone with the
  * Golem (and when the world is reloaded, as it cannot find its Golem again).
  */
 public class GolemPillar extends Monster {
@@ -55,7 +55,7 @@ public class GolemPillar extends Monster {
 
     /** Health for the boss level. */
     public void setup(int level) {
-        this.getAttribute(Attributes.MAX_HEALTH).setBaseValue(12 + level);
+        this.getAttribute(Attributes.MAX_HEALTH).setBaseValue(15 * com.jo112ss.rpgmod.mob.core.MobLevelMath.healthMultiplier(com.jo112ss.rpgmod.mob.MobConfig.rules(), level));
         this.setHealth(this.getMaxHealth());
     }
 

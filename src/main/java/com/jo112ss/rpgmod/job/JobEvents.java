@@ -27,6 +27,14 @@ public final class JobEvents {
         JobManager.forgetCombat(event.getEntity());
     }
 
+    /** Every point of damage a player deals to a monster grows with the player's level (+0.5% a level). */
+    @SubscribeEvent
+    public static void onLevelPower(net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent event) {
+        if (!(event.getSource().getEntity() instanceof ServerPlayer p) || event.getEntity() instanceof net.minecraft.world.entity.player.Player) return;
+        double m = JobManager.levelPower(p);
+        if (m != 1) event.setAmount((float) (event.getAmount() * m));
+    }
+
     /** Attacking or being hurt puts a player "in combat" (pauses the faster out-of-combat mana regeneration). */
     @SubscribeEvent(priority = net.neoforged.bus.api.EventPriority.LOWEST)
     public static void onCombat(net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent event) {

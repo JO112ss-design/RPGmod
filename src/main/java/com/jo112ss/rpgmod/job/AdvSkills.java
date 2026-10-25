@@ -1032,7 +1032,7 @@ public final class AdvSkills {
                         case 0 -> hurt(c, e, c.dmg(1.6), melee(c));
                         case 1 -> {
                             hurt(c, e, c.dmg(1), melee(c));
-                            c.p().heal(c.dmg(0.15));
+                            com.jo112ss.rpgmod.job.HealthScale.heal(c.p(), c.dmg(0.15));
                         }
                         case 2 -> {
                             hurt(c, e, c.dmg(1), melee(c));
@@ -1346,7 +1346,7 @@ public final class AdvSkills {
                 a.setHealth(Math.max(a.getHealth(), a.getMaxHealth() * 0.5F));
                 ServerFx.of("x_pillar", a.position()).a(1.2).b(30).color(HOLY).send(c.level());
             } else {
-                a.heal(c.dmg(1));
+                com.jo112ss.rpgmod.job.HealthScale.heal(a, c.dmg(1));
             }
             ServerFx.of("heal_burst", a.position()).follow(a).color(HOLY).send(c.level());
         }
@@ -1430,7 +1430,7 @@ public final class AdvSkills {
             pushAway(e, o, 0.6, 0.3);
         }
         List<ServerPlayer> allies = allies(c.p(), r);
-        for (ServerPlayer a : allies) a.heal(c.dmg(0.3));
+        for (ServerPlayer a : allies) com.jo112ss.rpgmod.job.HealthScale.heal(a, c.dmg(0.3));
         ServerFx.of("x_ring", o).a(r).b(2).color(HOLY).points(foes).send(c.level());
         ServerFx.of("x_burst", o.add(0, 1, 0)).a(2).b(2).color(HOLY).send(c.level());
         for (ServerPlayer a : others(c.p(), allies)) ServerFx.of("heal_burst", a.position()).follow(a).color(HOLY).send(c.level());

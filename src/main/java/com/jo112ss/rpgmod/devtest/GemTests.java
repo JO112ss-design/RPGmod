@@ -110,15 +110,10 @@ final class GemTests {
             for (int i = 0; i < p.getInventory().getContainerSize(); i++) if (com.jo112ss.rpgmod.item.TempArrows.is(p.getInventory().getItem(i))) p.getInventory().setItem(i, ItemStack.EMPTY);
         }
 
-        // material bows pierce armour
-        StringBuilder pen = new StringBuilder();
-        for (var mat : com.jo112ss.rpgmod.item.WeaponMaterial.values()) {
-            ItemStack bowS = new ItemStack(com.jo112ss.rpgmod.item.ModItems.get(com.jo112ss.rpgmod.item.WeaponType.BOW, mat));
-            var ar = new net.minecraft.world.entity.projectile.arrow.Arrow(level, p, new ItemStack(Items.ARROW), bowS);
-            pen.append(mat.id).append('=').append(String.format("%.2f", com.jo112ss.rpgmod.effects.ForgeOptionEffects.armorPenetration(level.damageSources().arrow(ar, p)))).append(' ');
-            ar.discard();
-        }
-        log("bow penetration: {}", pen);
+        // armour penetration is gone: old options and gems count as attack
+        var oldGem = new Gem("armor_penetration", Gem.COMMON, 2.0);
+        var oldOpt = new com.jo112ss.rpgmod.smithing.ForgedData.Option("armor_penetration", 5.0);
+        log("old penetration: gem -> {} ({}), forged option -> {} ({})", oldGem.effect(), oldGem.option(), oldOpt.id(), oldOpt.type());
 
         // capacities
         log("capacity copper helmet {} iron sword {} gold dagger {} diamond chest {} netherite hammer {} vanilla shield {} netherite shield {} leather {} arrow {} bow(diamond) {}",

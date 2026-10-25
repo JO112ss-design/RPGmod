@@ -25,9 +25,12 @@ public final class LevelCurve {
         return Math.round(base * earlyMultiplier(level) * SCALE * stageMultiplier(level));
     }
 
-    /** Levels up to 100 cost half (the base job goes by quicker), the advanced job's 1.5 times. */
+    /**
+     * Levels up to 100 cost half (the base job goes by quicker), the advanced job's 0.9 times: with
+     * monsters dying in about as many hits at every level, 100 -> 199 takes about four times 1 -> 100.
+     */
     public static double stageMultiplier(int level) {
-        return level < ADVANCED_AT ? 0.5 : 1.5;
+        return level < ADVANCED_AT ? 0.5 : 0.9;
     }
 
     /** Every level costs this much more than the curve above (a longer climb to 100). */

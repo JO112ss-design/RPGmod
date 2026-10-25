@@ -16,6 +16,10 @@ import net.minecraft.network.codec.StreamCodec;
  */
 public record ForgedData(int quality, List<Option> options, String crafter) {
     public record Option(String id, double value) {
+        public Option {
+            id = OptionType.current(id); // old armour penetration options are attack now
+        }
+
         public static final Codec<Option> CODEC = RecordCodecBuilder.create(i -> i.group(
                 Codec.STRING.fieldOf("id").forGetter(Option::id),
                 Codec.DOUBLE.fieldOf("value").forGetter(Option::value)
@@ -66,7 +70,9 @@ public record ForgedData(int quality, List<Option> options, String crafter) {
 
     /** Value of an option, or 0 if the weapon does not have it. */
     public double get(OptionType type) {
-        for (Option o : options) if (o.id.equals(type.id)) return o.value;
+        double sum = 0; // an old penetration option may sit next to an attack one: they add up
+        for (Option o : options) if (o.id.equals(type.id)) sum += o.value;
+        if (sum != 0) return sum;
         return 0;
     }
 }

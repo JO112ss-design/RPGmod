@@ -720,17 +720,25 @@ public final class JobManager {
         return JobDefs.isMagic(def) ? magicAttack(player) : physicalAttack(player);
     }
 
-    /** Skill power stat as a multiplier (1.2 = +20%). */
-    public static double skillBoost(Player player) {
-        return 1 + JobStats.compute(data(player)).get(JobStat.SKILL_POWER) / 100.0;
-    }
 
     /**
-     * What a skill's power ratio is multiplied by: its attack (weapon + own, or staff + own magic)
-     * times the skill power stat. Damage = ratio x this; crits, armour etc. apply after.
+     * What a skill's power ratio is multiplied by: its attack (weapon + own, or staff + own magic).
+     * Damage = ratio x this; the level bonus ({@link #levelPower}), crits, armour etc. apply after.
      */
     public static double powerMultiplier(Player player, SkillDef def) {
-        return skillAttack(player, def) * skillBoost(player);
+        return skillAttack(player, def);
+    }
+
+    /** Share of extra damage per level on everything a player deals (+0.5%: x1.5 at 100, about x2 at the top). */
+    public static final double LEVEL_POWER = 0.005;
+
+    /** The level bonus on all damage a player deals to monsters (melee, arrows, skills, spells). */
+    public static double levelPower(JobData d) {
+        return d.hasJob() ? 1 + LEVEL_POWER * (d.level() - 1) : 1;
+    }
+
+    public static double levelPower(Player player) {
+        return levelPower(data(player));
     }
 
     /** Colour of each spell's charging circle and casting light. */

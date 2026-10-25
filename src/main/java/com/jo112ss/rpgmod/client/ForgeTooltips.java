@@ -35,7 +35,6 @@ public final class ForgeTooltips {
         List<Component> tip = event.getToolTip();
         if (event.getItemStack().getItem() instanceof com.jo112ss.rpgmod.item.RpgBowItem bow) {
             tip.add(Math.min(1, tip.size()), Component.translatable("rpgmod.tooltip.bow_bonus", bow.damageBonus()).withStyle(ChatFormatting.DARK_GREEN));
-            tip.add(Math.min(2, tip.size()), Component.translatable("rpgmod.tooltip.bow_penetration", bow.armorPenetration()).withStyle(ChatFormatting.DARK_GREEN));
         }
         net.minecraft.world.item.Item it = event.getItemStack().getItem();
         if (com.jo112ss.rpgmod.item.ModItems.typeOf(it) == com.jo112ss.rpgmod.item.WeaponType.STAFF) {

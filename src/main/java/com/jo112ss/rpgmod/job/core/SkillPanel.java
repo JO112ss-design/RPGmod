@@ -107,9 +107,9 @@ public final class SkillPanel {
     }
 
     /** Panel layout version; bump when node ids change so saved progress is refunded. */
-    public static final int VERSION = 5;
+    public static final int VERSION = 6; // 6: skill power cells became other stats (points refunded)
     /** Layout version of the advanced panels (bump when their cells change). */
-    public static final int ADV_VERSION = 2;
+    public static final int ADV_VERSION = 3;
 
     /**
      * Layout version of one job's base panel: {@link #VERSION}, or higher for a job whose cells changed

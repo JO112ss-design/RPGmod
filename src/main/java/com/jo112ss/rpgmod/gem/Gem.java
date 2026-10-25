@@ -41,6 +41,7 @@ public record Gem(String effect, int rarity, double value, int ver) {
 
     public Gem {
         rarity = Math.max(COMMON, Math.min(LEGENDARY, rarity));
+        effect = OptionType.current(effect); // armour penetration gems became attack gems
     }
 
     /** What a stat gem adds: its value (old gems from before the cut count a third). */

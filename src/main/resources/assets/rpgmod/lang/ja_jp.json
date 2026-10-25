@@ -769,5 +769,6 @@
   "rpgmod.jobscreen.mastery": "熟練度",
   "rpgmod.jobscreen.mastered_bonus": "極めた職 %1$s（HP+%2$s%%）",
   "rpgmod.jobscreen.adv_waiting": "上位職のポイント %1$s（上位職になると使える）",
-  "rpgmod.jobchange.hidden": "？？？"
+  "rpgmod.jobchange.hidden": "？？？",
+  "rpgmod.stat.level_power": "レベル補正"
 }

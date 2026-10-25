@@ -68,10 +68,8 @@ public final class Defense {
     public static void onDamage(LivingIncomingDamageEvent event) {
         if (!MobConfig.rpgArmor() || event.getSource().is(DamageTypeTags.BYPASSES_ARMOR)) return;
         LivingEntity victim = event.getEntity();
-        // armour penetration on the attacker's forged weapon ignores that share of the armour
-        double keep = 1 - com.jo112ss.rpgmod.effects.ForgeOptionEffects.armorPenetration(event.getSource());
         // replaces the vanilla armour reduction: the container still runs vanilla's (for armour wear),
         // then this decides how much is actually taken off
-        event.getContainer().addModifier(DamageContainer.Reduction.ARMOR, (c, vanilla) -> (float) (c.getNewDamage() * reduction(victim) * keep));
+        event.getContainer().addModifier(DamageContainer.Reduction.ARMOR, (c, vanilla) -> (float) (c.getNewDamage() * reduction(victim)));
     }
 }

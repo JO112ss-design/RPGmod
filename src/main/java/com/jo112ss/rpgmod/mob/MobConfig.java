@@ -45,10 +45,11 @@ public final class MobConfig {
         B.pop().push("stats");
     }
     public static final ModConfigSpec.IntValue VARIANCE = B.comment("Random spread of levels (+-)").defineInRange("variance", 2, 0, 50);
-    public static final ModConfigSpec.DoubleValue HP_LINEAR = B.comment("Health x (1 + a(L-1) + b(L-1)^2)").defineInRange("healthA", 0.025, 0, 10);
-    public static final ModConfigSpec.DoubleValue HP_SQUARE = B.defineInRange("healthB", 0.00025, 0, 10);
-    public static final ModConfigSpec.DoubleValue DMG_LINEAR = B.comment("Damage x (1 + a(L-1) + b(L-1)^2): x1 at Lv1, about x2.8 at Lv110").defineInRange("damageGrowthA", 0.0078, 0, 10);
-    public static final ModConfigSpec.DoubleValue DMG_SQUARE = B.defineInRange("damageGrowthB", 0.000078, 0, 10);
+    // (renamed with the 500-health rebalance so older configs pick up the new curves)
+    public static final ModConfigSpec.DoubleValue HP_LINEAR = B.comment("Health x (1 + a(L-1) + b(L-1)^2): x8 at Lv100, x15 at Lv200").defineInRange("healthGrowthA", 0.06, 0, 10);
+    public static final ModConfigSpec.DoubleValue HP_SQUARE = B.defineInRange("healthGrowthB", 0.00006, 0, 10);
+    public static final ModConfigSpec.DoubleValue DMG_LINEAR = B.comment("Damage x (1 + a(L-1) + b(L-1)^2): x12 at Lv100, x24 at Lv200 (players have up to 500 health)").defineInRange("damageGrowthLinear", 0.105, 0, 10);
+    public static final ModConfigSpec.DoubleValue DMG_SQUARE = B.defineInRange("damageGrowthSquare", 0.00007, 0, 10);
     public static final ModConfigSpec.DoubleValue EXPLOSION_SHARE = B.comment("Share of the damage growth that explosions get").defineInRange("explosionShare", 0.25, 0, 1);
     static {
         B.pop().push("ai");
@@ -56,8 +57,8 @@ public final class MobConfig {
     public static final ModConfigSpec.BooleanValue SMART_AI = B.comment("Smarter monsters (building, digging, items, aimed shots...)").define("enabled", true);
     public static final ModConfigSpec.BooleanValue BREAK_BLOCKS = B.comment("Monsters may break blocks (digging zombies, wall-breaching creepers, TNT); also needs mobGriefing").define("breakBlocks", true);
     public static final ModConfigSpec.BooleanValue DRAGON = B.comment("Three-stage Ender Dragon").define("dragon", true);
-    public static final ModConfigSpec.DoubleValue DRAGON_HEALTH = B.comment("Ender Dragon health multiplier (vanilla 200)").defineInRange("dragonHealth", 3.0, 0.1, 100);
-    public static final ModConfigSpec.DoubleValue DRAGON_DAMAGE = B.comment("Ender Dragon damage multiplier (all its attacks, breath included)").defineInRange("dragonDamage", 1.5, 0, 100);
+    public static final ModConfigSpec.DoubleValue DRAGON_HEALTH = B.comment("Ender Dragon health multiplier (vanilla 200)").defineInRange("dragonHealthMultiplier", 6.0, 0.1, 100);
+    public static final ModConfigSpec.DoubleValue DRAGON_DAMAGE = B.comment("Ender Dragon damage multiplier (all its attacks, breath included)").defineInRange("dragonDamageMultiplier", 8.0, 0, 100);
     public static final ModConfigSpec.DoubleValue DRAGON_PER_PLAYER = B.comment("Extra Ender Dragon health per additional player online, spectators not counted (0.6 = +60%; 6 players: x4)").defineInRange("dragonHealthPerPlayer", 0.6, 0, 10);
     public static final ModConfigSpec.DoubleValue DRAGON_WINDOW = B.comment("Most of its health the dragon can lose per perch, or per flight between perches (0.2 = 20%; 0 = no limit)").defineInRange("dragonMaxShare", 0.2, 0, 1);
     static {
@@ -208,7 +209,7 @@ public final class MobConfig {
     }
 
     public static double dragonHealth() {
-        return SPEC.isLoaded() ? DRAGON_HEALTH.get() : 3.0;
+        return SPEC.isLoaded() ? DRAGON_HEALTH.get() : 6.0;
     }
 
     public static double dragonPerPlayer() {
@@ -220,7 +221,7 @@ public final class MobConfig {
     }
 
     public static double dragonDamage() {
-        return SPEC.isLoaded() ? DRAGON_DAMAGE.get() : 1.5;
+        return SPEC.isLoaded() ? DRAGON_DAMAGE.get() : 8.0;
     }
 
     public static boolean dragon() {

@@ -156,27 +156,10 @@ public final class ForgeOptionEffects {
             return;
         }
 
-        double pen = (com.jo112ss.rpgmod.gem.Gear.total(player, OptionType.ARMOR_PENETRATION, weapon) + RpgBowItem.basePenetration(weapon)) / 100.0;
-        if (pen > 0 && !com.jo112ss.rpgmod.mob.MobConfig.rpgArmor()) { // with RPG armour, Defense applies it
-            float keep = (float) Math.max(0, 1 - pen);
-            event.addReductionModifier(DamageContainer.Reduction.ARMOR, (container, reduction) -> reduction * keep);
-        }
         double boss = com.jo112ss.rpgmod.gem.Gear.total(player, OptionType.BOSS_DAMAGE, weapon) / 100.0;
         if (boss > 0 && event.getEntity().is(Tags.EntityTypes.BOSSES)) {
             event.setAmount((float) (event.getAmount() * (1 + boss)));
         }
-    }
-
-    /** Armour penetration (0..1) of the forged weapon behind a player's hit: melee weapon or the bow of an arrow. */
-    public static double armorPenetration(net.minecraft.world.damagesource.DamageSource source) {
-        if (!(source.getEntity() instanceof Player player)) return 0;
-        ItemStack weapon;
-        if (source.getDirectEntity() == player) weapon = player.getMainHandItem();
-        else if (source.getDirectEntity() instanceof AbstractArrow arrow && arrow.getWeaponItem() != null) weapon = arrow.getWeaponItem();
-        else return 0;
-        // a material bow's own penetration only for its arrows (not when swung)
-        double base = source.getDirectEntity() instanceof AbstractArrow ? RpgBowItem.basePenetration(weapon) : 0;
-        return Math.min(1, (com.jo112ss.rpgmod.gem.Gear.total(player, OptionType.ARMOR_PENETRATION, weapon) + base) / 100.0);
     }
 
     private static final String OWN_ATTACK = "rpgmod_own_attack";

@@ -163,7 +163,7 @@ public final class AdvancedHooks {
     public static void onDamaged(LivingDamageEvent.Post event) {
         if (event.getSource().getEntity() instanceof ServerPlayer sp && sp != event.getEntity() && sp.hasEffect(ModEffects.ASURA) && !event.getSource().is(Venom.DAMAGE)) {
             float heal = (float) (event.getHealthDamage() * ASURA_LIFESTEAL);
-            if (heal > 0) sp.heal(heal);
+            if (heal > 0) com.jo112ss.rpgmod.job.HealthScale.heal(sp, heal);
         }
     }
 
