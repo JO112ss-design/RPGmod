@@ -252,13 +252,16 @@ public final class JobManager {
     private static final WeaponType[] ARMOR_PIECES = {WeaponType.HELMET, WeaponType.CHESTPLATE, WeaponType.LEGGINGS, WeaponType.BOOTS};
     private static final net.minecraft.world.entity.EquipmentSlot[] ARMOR_SLOTS = {net.minecraft.world.entity.EquipmentSlot.HEAD,
             net.minecraft.world.entity.EquipmentSlot.CHEST, net.minecraft.world.entity.EquipmentSlot.LEGS, net.minecraft.world.entity.EquipmentSlot.FEET};
-    /** Extra armour per piece (helmet, chest, legs, boots) for players: iron +10, gold +18, diamond +32, netherite +44 for all four. */
+    /**
+     * Extra armour per piece (helmet, chest, legs, boots) for players: iron +13, gold +34, diamond +44,
+     * netherite +66 for all four - a full set is then worth iron 28, gold 45, diamond 64, netherite 86.
+     */
     private static final int[][] TIER_ARMOR = {
             {0, 0, 0, 0}, // copper
-            {2, 3, 3, 2}, // iron
-            {3, 6, 5, 4}, // gold
-            {6, 10, 9, 7}, // diamond
-            {8, 14, 12, 10}, // netherite
+            {3, 4, 4, 2}, // iron
+            {8, 10, 9, 7}, // gold
+            {10, 14, 11, 9}, // diamond
+            {15, 20, 17, 14}, // netherite
     };
 
     /** Higher-tier armour worn by a player is worth more than its vanilla value (monsters never get this). */
