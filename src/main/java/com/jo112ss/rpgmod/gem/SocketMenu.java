@@ -26,7 +26,7 @@ public class SocketMenu extends AbstractContainerMenu {
 
     private final ContainerLevelAccess access;
     private final Player player;
-    private final Container slots = new SimpleContainer(2) {
+    private final Container table = new SimpleContainer(2) {
         @Override
         public void setChanged() {
             super.setChanged();
@@ -42,7 +42,7 @@ public class SocketMenu extends AbstractContainerMenu {
         super(ModRegistries.SOCKET_MENU.get(), id);
         this.access = access;
         this.player = inv.player;
-        addSlot(new Slot(slots, 0, GEAR_X, GEAR_Y) {
+        addSlot(new Slot(table, 0, GEAR_X, GEAR_Y) {
             @Override
             public boolean mayPlace(ItemStack stack) {
                 return Sockets.capacity(stack) > 0;
@@ -53,7 +53,7 @@ public class SocketMenu extends AbstractContainerMenu {
                 return 1;
             }
         });
-        addSlot(new Slot(slots, 1, GEM_X, GEM_Y) {
+        addSlot(new Slot(table, 1, GEM_X, GEM_Y) {
             @Override
             public boolean mayPlace(ItemStack stack) {
                 return Sockets.isGem(stack);
@@ -68,11 +68,11 @@ public class SocketMenu extends AbstractContainerMenu {
     }
 
     public ItemStack gear() {
-        return slots.getItem(0);
+        return table.getItem(0);
     }
 
     public ItemStack gemStack() {
-        return slots.getItem(1);
+        return table.getItem(1);
     }
 
     /** Why the gem cannot be set right now (a translation key), or null if it can. */
@@ -99,7 +99,7 @@ public class SocketMenu extends AbstractContainerMenu {
         ItemStack gear = gear();
         Gem gem = GemItems.gem(gemStack());
         gear.set(ModRegistries.SOCKETS.get(), Sockets.of(gear).with(gem));
-        slots.setItem(1, ItemStack.EMPTY);
+        table.setItem(1, ItemStack.EMPTY);
         if (!p.hasInfiniteMaterials()) p.giveExperienceLevels(-COST);
         access.execute((level, pos) -> {
             level.playSound(null, pos, SoundEvents.AMETHYST_BLOCK_RESONATE, SoundSource.BLOCKS, 1.0F, 1.2F);
@@ -108,7 +108,7 @@ public class SocketMenu extends AbstractContainerMenu {
                 sl.sendParticles(net.minecraft.core.particles.ParticleTypes.END_ROD, pos.getX() + 0.5, pos.getY() + 1.1, pos.getZ() + 0.5, 12, 0.25, 0.1, 0.25, 0.03);
             }
         });
-        slots.setChanged();
+        table.setChanged();
         broadcastChanges();
         if (com.jo112ss.rpgmod.devtest.AutoTestServer.ENABLED) {
             RpgMod.LOGGER.info("[AUTOTEST] socketed {} {} into {} ({}/{}), level now {}", gem.rarityId(), gem.effect(), gear.getItem(),
@@ -119,8 +119,8 @@ public class SocketMenu extends AbstractContainerMenu {
 
     /** Dev test: put items in the two slots. */
     public void testPut(ItemStack gear, ItemStack gem) {
-        slots.setItem(0, gear);
-        slots.setItem(1, gem);
+        table.setItem(0, gear);
+        table.setItem(1, gem);
     }
 
     @Override
@@ -129,7 +129,7 @@ public class SocketMenu extends AbstractContainerMenu {
         if (slot == null || !slot.hasItem()) return ItemStack.EMPTY;
         ItemStack stack = slot.getItem();
         ItemStack copy = stack.copy();
-        int invStart = 2, invEnd = slots.size() + 36;
+        int invStart = 2, invEnd = this.slots.size();
         if (index < 2) {
             if (!moveItemStackTo(stack, invStart, invEnd, true)) return ItemStack.EMPTY;
         } else if (Sockets.isGem(stack)) {
@@ -145,7 +145,7 @@ public class SocketMenu extends AbstractContainerMenu {
     }
 
     private Slot slots_(int index) {
-        return index >= 0 && index < this.slots.size() + 36 ? getSlot(index) : null;
+        return index >= 0 && index < this.slots.size() ? getSlot(index) : null;
     }
 
     @Override
@@ -156,6 +156,6 @@ public class SocketMenu extends AbstractContainerMenu {
     @Override
     public void removed(Player p) {
         super.removed(p);
-        access.execute((level, pos) -> clearContainer(p, slots));
+        access.execute((level, pos) -> clearContainer(p, table));
     }
 }

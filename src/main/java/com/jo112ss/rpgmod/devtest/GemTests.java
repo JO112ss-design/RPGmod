@@ -57,7 +57,7 @@ final class GemTests {
     }
 
     static void hit(ServerLevel level, ServerPlayer p, LivingEntity t, float dmg) {
-        t.invulnerableTime = 0;
+        t.setInvulnerableTime(0);
         t.hurtServer(level, p.damageSources().playerAttack(p), dmg);
     }
 
@@ -180,12 +180,12 @@ final class GemTests {
         p.setHealth(p.getMaxHealth());
         float d0 = d.getHealth();
         hit(level, p, d, 10);
-        float full = d0 - d.getHealth();
+        float atFull = d0 - d.getHealth();
         p.setHealth(p.getMaxHealth() * 0.3F);
         d0 = d.getHealth();
         hit(level, p, d, 10);
         float low = d0 - d.getHealth();
-        log("desperation: full health {} low health {} (x{})", full, low, String.format("%.2f", low / full));
+        log("desperation: full health {} low health {} (x{})", atFull, low, String.format("%.2f", low / atFull));
 
         // mana drain
         var jd = JobManager.data(p);
@@ -205,21 +205,21 @@ final class GemTests {
         p.setHealth(p.getMaxHealth());
         Husk f = dummy(level, p, -2, 6, 500);
         float pf = p.getHealth(), ff = f.getHealth();
-        p.invulnerableTime = 0;
+        p.setInvulnerableTime(0);
         p.hurtServer(level, level.damageSources().mobAttack(f), 8);
         log("thorns: player took {} husk took {} (20%)", pf - p.getHealth(), ff - f.getHealth());
-        p.invulnerableTime = 0;
+        p.setInvulnerableTime(0);
         p.setHealth(5);
         p.hurtServer(level, level.damageSources().magic(), 100);
         log("phoenix: 100 damage at 5 HP -> health {} alive {} next at {}", p.getHealth(), p.isAlive(), p.getPersistentData().getLongOr(GemEffects.PHOENIX_NEXT, 0) - level.getGameTime());
         p.setHealth(p.getMaxHealth());
-        p.invulnerableTime = 0;
+        p.setInvulnerableTime(0);
         float h0 = p.getHealth();
         p.causeFallDamage(10, 1, level.damageSources().fall());
         float withBoots = h0 - p.getHealth();
         p.setItemSlot(EquipmentSlot.FEET, ItemStack.EMPTY);
         p.setHealth(p.getMaxHealth());
-        p.invulnerableTime = 0;
+        p.setInvulnerableTime(0);
         h0 = p.getHealth();
         p.causeFallDamage(10, 1, level.damageSources().fall());
         log("acrobat: 10-block fall {} with the gem, {} without", withBoots, h0 - p.getHealth());
