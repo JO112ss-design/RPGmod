@@ -278,6 +278,10 @@ public final class BuilderGoal extends Goal {
             resetDig();
             // plain stone, deepslate and dirt break without dropping (heaps of items made the game lag)
             sl.destroyBlock(p, !noDrop(s), mob);
+            if (com.jo112ss.rpgmod.devtest.AutoTestServer.ENABLED) {
+                com.jo112ss.rpgmod.RpgMod.LOGGER.info("[AUTOTEST] zombie dug {} drops={} items around {}", s.getBlock().getDescriptionId(), !noDrop(s),
+                        sl.getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class, mob.getBoundingBox().inflate(4)).size());
+            }
             dugBlocks++;
             cooldown = 1;
         }
