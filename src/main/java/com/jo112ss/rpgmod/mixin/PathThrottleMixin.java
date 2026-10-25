@@ -22,6 +22,8 @@ public abstract class PathThrottleMixin {
 
     @Unique private long rpgmod$next;
     @Unique private double rpgmod$dist;
+    /** The last path searched: recomputePath() clears the current one before asking again. */
+    @Unique private Path rpgmod$last;
 
     @Shadow public abstract void setMaxVisitedNodesMultiplier(float multiplier);
 
@@ -30,8 +32,9 @@ public abstract class PathThrottleMixin {
                                  CallbackInfoReturnable<Path> cir) {
         if (targets.isEmpty() || !PathBudget.applies(mob)) return;
         long now = mob.level().getGameTime();
-        if (now < rpgmod$next && path != null && !path.isDone()) {
-            cir.setReturnValue(path); // keep walking the current path for now
+        Path keep = path != null ? path : rpgmod$last;
+        if (now < rpgmod$next && keep != null && !keep.isDone()) {
+            cir.setReturnValue(keep); // keep walking the current path for now
             return;
         }
         double best = Double.MAX_VALUE;
@@ -45,7 +48,8 @@ public abstract class PathThrottleMixin {
                               CallbackInfoReturnable<Path> cir) {
         if (targets.isEmpty() || !PathBudget.applies(mob)) return;
         Path p = cir.getReturnValue();
-        if (p != null && p == path) return; // the throttled early return
+        if (p != null && p == path) return; // vanilla's own early return (same goal, path still running)
+        rpgmod$last = p;
         rpgmod$next = mob.level().getGameTime() + PathBudget.interval(rpgmod$dist, p != null && p.canReach());
     }
 }
