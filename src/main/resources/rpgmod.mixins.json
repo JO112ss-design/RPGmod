@@ -4,7 +4,8 @@
   "package": "com.jo112ss.rpgmod.mixin",
   "mixins": [
     "PlayerTargetMixin",
-    "PathThrottleMixin"
+    "PathThrottleMixin",
+    "HealthCapMixin"
   ],
   "client": [
     "SkyRendererMixin"

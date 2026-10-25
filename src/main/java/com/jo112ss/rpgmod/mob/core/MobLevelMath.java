@@ -82,9 +82,12 @@ public final class MobLevelMath {
         return clamp(base + spread, min, max);
     }
 
+    /** Monster health is on three times vanilla's scale, like players' attack (job experience takes it back out). */
+    public static final double HEALTH_SCALE = 3;
+
     public static double healthMultiplier(Rules r, int level) {
         int k = Math.max(0, level - 1);
-        return 1 + r.hpLinear * k + r.hpSquare * k * k;
+        return HEALTH_SCALE * (1 + r.hpLinear * k + r.hpSquare * k * k);
     }
 
     public static double damageMultiplier(Rules r, int level) {

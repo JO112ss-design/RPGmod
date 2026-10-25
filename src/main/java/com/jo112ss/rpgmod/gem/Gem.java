@@ -11,8 +11,11 @@ import net.minecraft.network.codec.StreamCodec;
  * common, or rare with a bigger value) or a {@link GemSpecial} id.
  */
 public record Gem(String effect, int rarity, double value, int ver) {
-    /** Gems made before stat values were cut to a third (version 1) count a third of their stored value. */
-    public static final int VERSION = 2;
+    /**
+     * Gems made before stat values were cut to a third (version 1) count a third of their stored value;
+     * every stat gem counts a whole number, at least 1 (version 3).
+     */
+    public static final int VERSION = 3;
 
     public Gem(String effect, int rarity, double value) {
         this(effect, rarity, value, VERSION);
@@ -42,11 +45,13 @@ public record Gem(String effect, int rarity, double value, int ver) {
     public Gem {
         rarity = Math.max(COMMON, Math.min(LEGENDARY, rarity));
         effect = OptionType.current(effect); // armour penetration gems became attack gems
+        if (OptionType.ATTACK_DAMAGE.id.equals(effect)) effect = OptionType.ATTACK_FLAT.id; // attack gems give flat attack
     }
 
-    /** What a stat gem adds: its value (old gems from before the cut count a third). */
+    /** What a stat gem adds: a whole number, at least 1 (old gems from before the cut count a third, rounded). */
     public double statValue() {
-        return ver < VERSION ? Math.round(value / 3 * 10) / 10.0 : value;
+        double v = ver < 2 ? value / 3 : value;
+        return Math.max(1, Math.round(v));
     }
 
     /** The forging option this gem adds to, or null for a special gem. */

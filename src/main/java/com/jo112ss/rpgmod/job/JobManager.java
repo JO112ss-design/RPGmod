@@ -249,6 +249,8 @@ public final class JobManager {
     public static void onKill(ServerPlayer killer, LivingEntity victim) {
         if (victim instanceof Player) return;
         double exp = victim.getMaxHealth() * JobConfig.EXP_MULTIPLIER.get();
+        // levelled monsters have three times vanilla's health scale: experience stays as it was
+        if (com.jo112ss.rpgmod.mob.MobLevels.isLevelled(victim) && com.jo112ss.rpgmod.mob.MobLevels.level(victim) > 0) exp /= com.jo112ss.rpgmod.mob.core.MobLevelMath.HEALTH_SCALE;
         // the blood moon boss pays in skill books; its job experience is that of its health alone
         if (victim.is(Tags.EntityTypes.BOSSES) && !(victim instanceof com.jo112ss.rpgmod.mob.boss.BloodMoonBoss)) exp *= JobConfig.BOSS_EXP_MULTIPLIER.get();
         long amount = Math.max(1, Math.round(exp));
@@ -685,11 +687,11 @@ public final class JobManager {
         ItemStack held = player.getMainHandItem();
         if (ModItems.typeOf(held.getItem()) == WeaponType.BOW) {
             var rb = held.getItem() instanceof com.jo112ss.rpgmod.item.RpgBowItem r ? r : null;
-            double bow = 5 + (rb != null ? rb.damageBonus() : 0);
+            double bow = 15 + (rb != null ? rb.damageBonus() : 0); // a full-draw arrow on the x3 scale
             atk += bow * (1 + com.jo112ss.rpgmod.gem.Gear.option(held, com.jo112ss.rpgmod.smithing.core.OptionType.ATTACK_DAMAGE) / 100.0);
             if (rb != null) atk *= rb.material().multiplier; // the bow's material multiplies the whole attack
         } else if (held.is(net.minecraft.world.item.Items.BOW) || held.is(net.minecraft.world.item.Items.CROSSBOW)) {
-            atk += 5;
+            atk += 15;
         }
         return atk;
     }
@@ -699,7 +701,7 @@ public final class JobManager {
         double own = JobStats.compute(data(player)).get(JobStat.MAGIC_ATTACK);
         double gear = gearOption(player, com.jo112ss.rpgmod.smithing.core.OptionType.MAGIC_POWER);
         double overload = player.hasEffect(com.jo112ss.rpgmod.registry.ModEffects.OVERLOAD) ? 1.5 : 1; // spellmaster
-        return (1 + staffMagic(player) + own) * staffMultiplier(player) * (1 + gear / 100.0) * overload;
+        return (3 + staffMagic(player) + own) * staffMultiplier(player) * (1 + gear / 100.0) * overload;
     }
 
     /**

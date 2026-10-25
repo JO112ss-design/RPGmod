@@ -113,7 +113,8 @@ public final class MobGear {
                     net.minecraft.world.entity.ai.attributes.AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL));
         }
         inst.removeModifier(DAMPEN);
-        double cut = -bonus * (1 - MobConfig.weaponShare());
+        // weapons are on the players' x3 attack scale: a monster takes its share of a third of it
+        double cut = -bonus * (1 - MobConfig.weaponShare() / 3);
         if (cut < 0) inst.addPermanentModifier(new net.minecraft.world.entity.ai.attributes.AttributeModifier(DAMPEN, cut,
                 net.minecraft.world.entity.ai.attributes.AttributeModifier.Operation.ADD_VALUE));
     }

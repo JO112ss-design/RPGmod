@@ -57,7 +57,7 @@ public final class MobConfig {
     public static final ModConfigSpec.BooleanValue SMART_AI = B.comment("Smarter monsters (building, digging, items, aimed shots...)").define("enabled", true);
     public static final ModConfigSpec.BooleanValue BREAK_BLOCKS = B.comment("Monsters may break blocks (digging zombies, wall-breaching creepers, TNT); also needs mobGriefing").define("breakBlocks", true);
     public static final ModConfigSpec.BooleanValue DRAGON = B.comment("Three-stage Ender Dragon").define("dragon", true);
-    public static final ModConfigSpec.DoubleValue DRAGON_HEALTH = B.comment("Ender Dragon health multiplier (vanilla 200)").defineInRange("dragonHealthMultiplier", 6.0, 0.1, 100);
+    public static final ModConfigSpec.DoubleValue DRAGON_HEALTH = B.comment("Ender Dragon health multiplier (vanilla 200)").defineInRange("dragonHealthScale", 18.0, 0.1, 300);
     public static final ModConfigSpec.DoubleValue DRAGON_DAMAGE = B.comment("Ender Dragon damage multiplier (all its attacks, breath included)").defineInRange("dragonDamageMultiplier", 8.0, 0, 100);
     public static final ModConfigSpec.DoubleValue DRAGON_PER_PLAYER = B.comment("Extra Ender Dragon health per additional player online, spectators not counted (0.6 = +60%; 6 players: x4)").defineInRange("dragonHealthPerPlayer", 0.6, 0, 10);
     public static final ModConfigSpec.DoubleValue DRAGON_WINDOW = B.comment("Most of its health the dragon can lose per perch, or per flight between perches (0.2 = 20%; 0 = no limit)").defineInRange("dragonMaxShare", 0.2, 0, 1);
@@ -209,7 +209,7 @@ public final class MobConfig {
     }
 
     public static double dragonHealth() {
-        return SPEC.isLoaded() ? DRAGON_HEALTH.get() : 6.0;
+        return SPEC.isLoaded() ? DRAGON_HEALTH.get() : 18.0;
     }
 
     public static double dragonPerPlayer() {

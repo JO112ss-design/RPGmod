@@ -771,5 +771,6 @@
   "rpgmod.jobscreen.adv_waiting": "%1$s advanced points (for an advanced job)",
   "rpgmod.jobchange.hidden": "???",
   "rpgmod.stat.level_power": "Level bonus",
-  "rpgmod.tooltip.weapon_mult": "All attack x%s (your own included)"
+  "rpgmod.tooltip.weapon_mult": "All attack x%s (your own included)",
+  "rpgmod.option.attack_flat": "Attack"
 }

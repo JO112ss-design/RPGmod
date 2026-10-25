@@ -25,6 +25,7 @@ public final class JobStats {
         m.put(JobStat.MANA_REGEN, JobDefs.BASE_MANA_REGEN);
         JobDefs.Job job = data.jobDef();
         if (job == null) return m;
+        m.merge(JobStat.ATTACK_DAMAGE, FIST, Double::sum); // the bare hand's 1 brought to the x3 scale
         job.base().forEach((s, v) -> m.merge(s, v, Double::sum));
         // the base job's growth goes on with the character level (the advanced job's adds to it);
         // attack and magic attack grow in whole points (+1 every 5 levels at 0.2 a level)
@@ -50,6 +51,33 @@ public final class JobStats {
         }
         m.put(JobStat.COOLDOWN_REDUCTION, Math.min(50, m.get(JobStat.COOLDOWN_REDUCTION)));
         return m;
+    }
+
+    /**
+     * Attack is on three times vanilla's scale: the bare hand counts 3 (vanilla's 1 + this), and
+     * weapons, levels and the panel are tripled too (monsters have three times the health).
+     */
+    public static final double FIST = 2;
+
+    /** Strength and weakness (vanilla +3 / -4 per level) brought to the x3 scale: their extra share. */
+    public static final double STRENGTH_EXTRA = 6, WEAKNESS_EXTRA = 8;
+    private static final Identifier POTION_SCALE_ID = Identifier.fromNamespaceAndPath(RpgMod.MODID, "job/potion_scale");
+
+    /** Adds the missing two thirds of strength / weakness to the attack (called every few ticks). */
+    public static void updatePotionScale(ServerPlayer player) {
+        AttributeInstance atk = player.getAttribute(Attributes.ATTACK_DAMAGE);
+        if (atk == null) return;
+        double extra = 0;
+        var s = player.getEffect(net.minecraft.world.effect.MobEffects.STRENGTH);
+        if (s != null) extra += STRENGTH_EXTRA * (s.getAmplifier() + 1);
+        var w = player.getEffect(net.minecraft.world.effect.MobEffects.WEAKNESS);
+        if (w != null) extra -= WEAKNESS_EXTRA * (w.getAmplifier() + 1);
+        var cur = atk.getModifier(POTION_SCALE_ID);
+        if (extra == 0) {
+            if (cur != null) atk.removeModifier(POTION_SCALE_ID);
+        } else if (cur == null || cur.amount() != extra) {
+            atk.addOrUpdateTransientModifier(new AttributeModifier(POTION_SCALE_ID, extra, AttributeModifier.Operation.ADD_VALUE));
+        }
     }
 
     /** Max health per mastered job (multiplier on the total). */

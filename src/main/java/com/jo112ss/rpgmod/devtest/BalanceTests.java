@@ -54,8 +54,8 @@ final class BalanceTests {
             double own = st.get(JobStat.ATTACK_DAMAGE), mag = JobStats.compute(w).get(JobStat.MAGIC_ATTACK);
             StringBuilder sw = new StringBuilder(), staff = new StringBuilder();
             for (var mat : com.jo112ss.rpgmod.item.WeaponMaterial.values()) {
-                sw.append(mat.id).append('=').append(String.format("%.1f", (1 + 3 + mat.meleeBonus() + own) * mat.multiplier)).append(' ');
-                staff.append(mat.id).append('=').append(String.format("%.1f", (1 + mat.staffMagic() + mag) * mat.multiplier)).append(' ');
+                sw.append(mat.id).append('=').append(String.format("%.1f", (1 + 9 + mat.meleeBonus() + own) * mat.multiplier)).append(' ');
+                staff.append(mat.id).append('=').append(String.format("%.1f", (3 + mat.staffMagic() + mag) * mat.multiplier)).append(' ');
             }
             log("Lv{}: hp fighter {} paladin {} wizard {} healer {} enchanter {} ranger {} | armor from level {} | own attack {} magic {} | sword {}| staff {}| monster hp x{} dmg x{} | exp to next {}",
                     lv, Math.round(hp("fighter", lv)), Math.round(hp("paladin", lv)), Math.round(hp("wizard", lv)), Math.round(hp("healer", lv)),
@@ -67,6 +67,31 @@ final class BalanceTests {
                 com.jo112ss.rpgmod.job.core.JobDefs.skill("magic_bolt").power(), com.jo112ss.rpgmod.job.core.JobDefs.skill("power_slash").power(),
                 com.jo112ss.rpgmod.job.core.JobDefs.skill("thunder").power(), com.jo112ss.rpgmod.job.core.JobDefs.skill("earthshatter").power(),
                 com.jo112ss.rpgmod.job.core.JobDefs.skill("heal").power(), com.jo112ss.rpgmod.job.core.JobDefs.skill("reprisal").power());
+        // gems: whole numbers, flat attack, max health in %
+        var rnd = net.minecraft.util.RandomSource.create(7);
+        StringBuilder gems = new StringBuilder();
+        boolean whole = true;
+        for (var t : com.jo112ss.rpgmod.gem.GemRoller.statPool()) {
+            double lo = 1e9, hi = 0, rlo = 1e9, rhi = 0;
+            for (int i = 0; i < 300; i++) {
+                double c = com.jo112ss.rpgmod.gem.GemRoller.stat(t, com.jo112ss.rpgmod.gem.Gem.COMMON, rnd).statValue();
+                double rr = com.jo112ss.rpgmod.gem.GemRoller.stat(t, com.jo112ss.rpgmod.gem.Gem.RARE, rnd).statValue();
+                lo = Math.min(lo, c); hi = Math.max(hi, c); rlo = Math.min(rlo, rr); rhi = Math.max(rhi, rr);
+                whole &= c == Math.rint(c) && rr == Math.rint(rr) && c >= 1;
+            }
+            gems.append(t.id).append(String.format(" %.0f-%.0f/%.0f-%.0f%s, ", lo, hi, rlo, rhi, t.percent ? "%" : ""));
+        }
+        var oldAtk = new com.jo112ss.rpgmod.gem.Gem("attack_damage", com.jo112ss.rpgmod.gem.Gem.COMMON, 2.4, 2);
+        var oldHp = new com.jo112ss.rpgmod.gem.Gem("max_health", com.jo112ss.rpgmod.gem.Gem.COMMON, 0.5, 2);
+        log("gems (common/rare) whole={} {}; old attack gem -> {} {}; old hp gem -> {} {}%", whole, gems, oldAtk.effect(), oldAtk.statValue(), oldHp.effect(), oldHp.statValue());
+        // a zombie at level 199: health past vanilla's 1024
+        var z = EntityTypes.ZOMBIE.create(level, EntitySpawnReason.COMMAND);
+        if (z != null) {
+            com.jo112ss.rpgmod.mob.MobLevels.apply(z, 199);
+            log("zombie Lv199 max health {} (multiplier x{})", z.getMaxHealth(), String.format("%.1f", MobLevelMath.healthMultiplier(r, 199)));
+            z.discard();
+        }
+
         // panels: no skill power cells left
         int sp = 0;
         for (String j : new String[] {"wizard", "healer", "enchanter", "paladin", "runemaster", "bishop"}) {
@@ -85,8 +110,8 @@ final class BalanceTests {
         p.getInventory().setItem(slot, new ItemStack(Items.NETHERITE_SWORD));
         SkillTasks.later(2, () -> {
             var inst = p.getAttribute(Attributes.ATTACK_DAMAGE);
-            log("netherite sword held: attack {} (formula (1 + 3 + 6 + own {}) x1.45 = {})", String.format("%.1f", inst.getValue()),
-                    JobStats.compute(d).get(JobStat.ATTACK_DAMAGE), String.format("%.1f", (10 + JobStats.compute(d).get(JobStat.ATTACK_DAMAGE)) * 1.45));
+            log("netherite sword held: attack {} (formula (1 + 9 + 18 + own {}) x1.45 = {})", String.format("%.1f", inst.getValue()),
+                    JobStats.compute(d).get(JobStat.ATTACK_DAMAGE), String.format("%.1f", (28 + JobStats.compute(d).get(JobStat.ATTACK_DAMAGE)) * 1.45));
             p.getInventory().setItem(slot, prev);
         });
 

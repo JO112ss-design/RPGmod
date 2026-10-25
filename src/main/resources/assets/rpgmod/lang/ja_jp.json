@@ -771,5 +771,6 @@
   "rpgmod.jobscreen.adv_waiting": "上位職のポイント %1$s（上位職になると使える）",
   "rpgmod.jobchange.hidden": "？？？",
   "rpgmod.stat.level_power": "レベル補正",
-  "rpgmod.tooltip.weapon_mult": "攻撃力全体 ×%s（レベルの攻撃力も含めて）"
+  "rpgmod.tooltip.weapon_mult": "攻撃力全体 ×%s（レベルの攻撃力も含めて）",
+  "rpgmod.option.attack_flat": "攻撃力"
 }

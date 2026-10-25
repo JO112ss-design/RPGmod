@@ -62,6 +62,7 @@ public final class JobEvents {
         if (sp.tickCount % 2 == 0) {
             JobManager.updateAffinity(sp);
             JobManager.updateArmorTier(sp);
+            JobStats.updatePotionScale(sp);
         }
         if (sp.tickCount % 10 == 5) com.jo112ss.rpgmod.item.Shields.tickDown(sp);
     }

@@ -56,7 +56,8 @@ public final class ForgeOptionEffects {
     static {
         ATTRIBUTE_OPTIONS.put(OptionType.ATTACK_DAMAGE, new AttrBonus(Attributes.ATTACK_DAMAGE, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL, 0.01));
         ATTRIBUTE_OPTIONS.put(OptionType.ATTACK_SPEED, new AttrBonus(Attributes.ATTACK_SPEED, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL, 0.01));
-        ATTRIBUTE_OPTIONS.put(OptionType.MAX_HEALTH, new AttrBonus(Attributes.MAX_HEALTH, AttributeModifier.Operation.ADD_VALUE, 1));
+        ATTRIBUTE_OPTIONS.put(OptionType.MAX_HEALTH, new AttrBonus(Attributes.MAX_HEALTH, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL, 0.01));
+        ATTRIBUTE_OPTIONS.put(OptionType.ATTACK_FLAT, new AttrBonus(Attributes.ATTACK_DAMAGE, AttributeModifier.Operation.ADD_VALUE, 1));
         ATTRIBUTE_OPTIONS.put(OptionType.ARMOR, new AttrBonus(Attributes.ARMOR, AttributeModifier.Operation.ADD_VALUE, 1));
         ATTRIBUTE_OPTIONS.put(OptionType.ARMOR_TOUGHNESS, new AttrBonus(Attributes.ARMOR_TOUGHNESS, AttributeModifier.Operation.ADD_VALUE, 1));
         ATTRIBUTE_OPTIONS.put(OptionType.MOVEMENT_SPEED, new AttrBonus(Attributes.MOVEMENT_SPEED, AttributeModifier.Operation.ADD_MULTIPLIED_BASE, 0.01));
@@ -179,6 +180,7 @@ public final class ForgeOptionEffects {
         if (!(event.getEntity() instanceof AbstractArrow arrow) || !(arrow.getOwner() instanceof Player player)) return;
         ItemStack bow = arrow.getWeaponItem();
         if (bow == null || !(bow.getItem() instanceof net.minecraft.world.item.ProjectileWeaponItem)) return;
+        arrow.setBaseDamage(arrow.getBaseDamage() * 3); // players' attack is on a x3 scale (monsters have x3 health)
         double own = ownAttack(player, bow);
         if (Math.abs(own) < 1e-4) return;
         double drawn = Math.min(1.0, arrow.getDeltaMovement().length() / 3.0);
@@ -200,7 +202,7 @@ public final class ForgeOptionEffects {
             });
             value = value / w[1] - w[0]; // without that weapon's multiplier and attack
         }
-        return value - inst.getBaseValue();
+        return value - inst.getBaseValue() - com.jo112ss.rpgmod.job.JobStats.FIST;
     }
 
     /**
