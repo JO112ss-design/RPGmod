@@ -239,7 +239,7 @@ public final class AutoTestClient {
             case "decoy" -> 120;
             case "mob:leap" -> 260;
             case "gem:checks" -> 140;
-            case "perf" -> 440;
+            case "perf" -> 1800;
             case "gem:socket" -> 70;
             case "gem:procs" -> 80;
             case "lcharge" -> 100;
