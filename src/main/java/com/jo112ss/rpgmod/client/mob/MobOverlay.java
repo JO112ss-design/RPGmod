@@ -80,7 +80,7 @@ public final class MobOverlay {
         Entity crosshair = mc.crosshairPickEntity;
         List<Object[]> plates = new ArrayList<>();
         for (Entity e : mc.level.entitiesForRendering()) {
-            if (!(e instanceof LivingEntity le) || e instanceof EnderDragon || e instanceof com.jo112ss.rpgmod.mob.boss.KingSlime || !le.isAlive() || le.isInvisible()) continue;
+            if (!(e instanceof LivingEntity le) || e instanceof EnderDragon || e instanceof com.jo112ss.rpgmod.mob.boss.BloodMoonBoss || !le.isAlive() || le.isInvisible()) continue;
             int lv = e.getData(ModRegistries.MOB_LEVEL);
             if (lv <= 0) continue;
             Vec3 pos = e.getPosition(partial);

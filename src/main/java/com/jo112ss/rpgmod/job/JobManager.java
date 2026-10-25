@@ -145,7 +145,7 @@ public final class JobManager {
         if (victim instanceof Player) return;
         double exp = victim.getMaxHealth() * JobConfig.EXP_MULTIPLIER.get();
         // the blood moon boss pays in skill books; its job experience is that of its health alone
-        if (victim.is(Tags.EntityTypes.BOSSES) && !(victim instanceof com.jo112ss.rpgmod.mob.boss.KingSlime)) exp *= JobConfig.BOSS_EXP_MULTIPLIER.get();
+        if (victim.is(Tags.EntityTypes.BOSSES) && !(victim instanceof com.jo112ss.rpgmod.mob.boss.BloodMoonBoss)) exp *= JobConfig.BOSS_EXP_MULTIPLIER.get();
         long amount = Math.max(1, Math.round(exp));
         double r = JobConfig.SHARE_RADIUS.get();
         if (r <= 0) {

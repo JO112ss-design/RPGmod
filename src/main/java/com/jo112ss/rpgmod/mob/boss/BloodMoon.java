@@ -88,8 +88,8 @@ public final class BloodMoon {
             RpgMod.LOGGER.info("[blood moon] {} on day {}", now ? "rises" : "sets", d);
         }
         if (active && ow.getData(ModRegistries.BOSS_DAY) != d && server.getTickCount() % 40 == 0) {
-            KingSlime king = summon(ow);
-            if (king != null) ow.setData(ModRegistries.BOSS_DAY, d);
+            var boss = summon(ow);
+            if (boss != null) ow.setData(ModRegistries.BOSS_DAY, d);
         }
     }
 
@@ -117,7 +117,7 @@ public final class BloodMoon {
     @SubscribeEvent
     public static void onSpawnCheck(MobSpawnEvent.PositionCheck event) {
         if (!active || event.getSpawnType() != EntitySpawnReason.NATURAL) return;
-        if (!(event.getEntity() instanceof Enemy) || event.getEntity() instanceof KingSlime) return;
+        if (!(event.getEntity() instanceof Enemy) || event.getEntity() instanceof BloodMoonBoss || event.getEntity() instanceof GolemPillar) return;
         if (event.getLevel().getLevel().dimension() != Level.OVERWORLD) return;
         if (event.getEntity().getRandom().nextDouble() >= MobConfig.bloodMoonSpawns()) {
             event.setResult(MobSpawnEvent.PositionCheck.Result.FAIL);
@@ -148,19 +148,28 @@ public final class BloodMoon {
 
     // ------------------------------------------------------------------ the boss
 
-    /** Summons the King Slime near a random player in the overworld; null if nobody is there or no room. */
-    public static KingSlime summon(ServerLevel ow) {
+    /**
+     * Summons the night's boss - the King Slime or the Golem ({@link MobConfig#golemChance()}) - near a
+     * random player in the overworld; null if nobody is there or no room.
+     */
+    public static net.minecraft.world.entity.Mob summon(ServerLevel ow) {
+        boolean golem = ow.getRandom().nextDouble() < MobConfig.golemChance();
+        return summon(ow, golem);
+    }
+
+    public static net.minecraft.world.entity.Mob summon(ServerLevel ow, boolean golem) {
         List<ServerPlayer> pool = new ArrayList<>();
         for (ServerPlayer p : ow.players()) if (p.isAlive() && !p.isSpectator() && !com.jo112ss.rpgmod.compat.Downed.is(p)) pool.add(p);
         java.util.Collections.shuffle(pool, new java.util.Random(ow.getRandom().nextLong()));
+        String key = golem ? "golem" : "king_slime";
         for (ServerPlayer p : pool) {
-            KingSlime king = spawnNear(ow, p);
-            if (king != null) {
-                BossEvents.broadcast(ow.getServer(), Component.translatable("rpgmod.boss.king_slime.appeared", p.getDisplayName()).withStyle(ChatFormatting.RED));
+            net.minecraft.world.entity.Mob boss = golem ? spawnNear(ow, p, ModRegistries.GOLEM.get()) : spawnNear(ow, p);
+            if (boss != null) {
+                BossEvents.broadcast(ow.getServer(), Component.translatable("rpgmod.boss." + key + ".appeared", p.getDisplayName()).withStyle(ChatFormatting.RED));
                 for (ServerPlayer q : ow.players()) {
-                    q.connection.send(new ClientboundSetSubtitleTextPacket(Component.translatable("rpgmod.boss.king_slime.near", p.getDisplayName()).withStyle(ChatFormatting.RED)));
+                    q.connection.send(new ClientboundSetSubtitleTextPacket(Component.translatable("rpgmod.boss." + key + ".near", p.getDisplayName()).withStyle(ChatFormatting.RED)));
                 }
-                return king;
+                return boss;
             }
         }
         return null;
@@ -171,8 +180,13 @@ public final class BloodMoon {
      * open space at their own height (a big cave), else the surface anyway.
      */
     public static KingSlime spawnNear(ServerLevel level, ServerPlayer p) {
-        KingSlime king = ModRegistries.KING_SLIME.get().create(level, EntitySpawnReason.EVENT);
+        return spawnNear(level, p, ModRegistries.KING_SLIME.get());
+    }
+
+    public static <T extends net.minecraft.world.entity.Mob> T spawnNear(ServerLevel level, ServerPlayer p, net.minecraft.world.entity.EntityType<T> type) {
+        T king = type.create(level, EntitySpawnReason.EVENT);
         if (king == null) return null;
+        boolean golem = king instanceof Golem;
         var rnd = level.getRandom();
         for (int pass = 0; pass < 3; pass++) {
             for (int i = 0; i < 24; i++) {
@@ -192,10 +206,10 @@ public final class BloodMoon {
                 if (!level.noCollision(king) || level.containsAnyLiquid(king.getBoundingBox())) continue;
                 king.setPersistenceRequired();
                 level.addFreshEntity(king);
-                com.jo112ss.rpgmod.job.fx.ServerFx.of("king_spawn", king.position()).a(king.getBbWidth()).send(level, 128);
-                level.playSound(null, king.blockPosition(), SoundEvents.SLIME_SQUISH, SoundSource.HOSTILE, 4.0F, 0.3F);
-                level.playSound(null, king.blockPosition(), SoundEvents.RAVAGER_ROAR, SoundSource.HOSTILE, 3.0F, 0.6F);
-                RpgMod.LOGGER.info("[blood moon] King Slime Lv{} near {} at {}", MobLevels.level(king), p.getGameProfile().name(), king.blockPosition());
+                com.jo112ss.rpgmod.job.fx.ServerFx.of(golem ? "golem_spawn" : "king_spawn", king.position()).a(king.getBbWidth()).send(level, 128);
+                level.playSound(null, king.blockPosition(), golem ? SoundEvents.STONE_BREAK : SoundEvents.SLIME_SQUISH, SoundSource.HOSTILE, 4.0F, 0.3F);
+                level.playSound(null, king.blockPosition(), SoundEvents.RAVAGER_ROAR, SoundSource.HOSTILE, 3.0F, golem ? 0.4F : 0.6F);
+                RpgMod.LOGGER.info("[blood moon] {} Lv{} near {} at {}", golem ? "Golem" : "King Slime", MobLevels.level(king), p.getGameProfile().name(), king.blockPosition());
                 return king;
             }
         }

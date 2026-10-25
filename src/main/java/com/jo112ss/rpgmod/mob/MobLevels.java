@@ -56,7 +56,8 @@ public final class MobLevels {
     public static void onJoin(EntityJoinLevelEvent event) {
         if (event.getLevel().isClientSide() || !MobConfig.levels()) return;
         if (!(event.getEntity() instanceof Mob mob) || !(mob instanceof Enemy)) return;
-        if (mob instanceof com.jo112ss.rpgmod.mob.boss.KingSlime king) {
+        if (mob instanceof com.jo112ss.rpgmod.mob.boss.GolemPillar) return; // the golem sets it up itself
+        if (mob instanceof com.jo112ss.rpgmod.mob.boss.BloodMoonBoss king) {
             // bosses: level = highest player level (+ bonus), health set by the boss itself
             boolean fresh = level(mob) <= 0;
             if (fresh) mob.setData(ModRegistries.MOB_LEVEL, Math.max(1, topPlayerLevel(((ServerLevel) event.getLevel()).getServer()) + MobConfig.bossLevelBonus()));

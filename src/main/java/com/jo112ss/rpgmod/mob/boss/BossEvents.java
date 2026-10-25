@@ -33,6 +33,8 @@ public final class BossEvents {
     @SubscribeEvent
     public static void onAttributes(EntityAttributeCreationEvent event) {
         event.put(ModRegistries.KING_SLIME.get(), KingSlime.createAttributes().build());
+        event.put(ModRegistries.GOLEM.get(), Golem.createAttributes().build());
+        event.put(ModRegistries.GOLEM_PILLAR.get(), GolemPillar.createAttributes().build());
     }
 
     @SubscribeEvent
@@ -55,7 +57,7 @@ public final class BossEvents {
     @SubscribeEvent(priority = EventPriority.LOW)
     public static void onBossHit(LivingIncomingDamageEvent event) {
         if (!(event.getEntity() instanceof Player p)) return;
-        if (!(event.getSource().getEntity() instanceof KingSlime)) return;
+        if (!(event.getSource().getEntity() instanceof BloodMoonBoss)) return;
         float cap = (float) (p.getMaxHealth() * MobConfig.bossMaxHit());
         if (event.getAmount() > cap) event.setAmount(cap);
     }
@@ -67,7 +69,7 @@ public final class BossEvents {
      */
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public static void onKingHurt(LivingIncomingDamageEvent event) {
-        if (event.getEntity() instanceof KingSlime king && king.toughness() > 1) {
+        if (event.getEntity() instanceof BloodMoonBoss king && king.toughness() > 1) {
             event.setAmount(event.getAmount() / king.toughness());
         }
     }

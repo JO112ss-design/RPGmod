@@ -51,6 +51,17 @@ public final class ModRegistries {
             ENTITIES.registerEntityType("king_slime", com.jo112ss.rpgmod.mob.boss.KingSlime::new, net.minecraft.world.entity.MobCategory.MONSTER,
                     b -> b.sized(0.52F, 0.52F).eyeHeight(0.325F).clientTrackingRange(16).fireImmune());
 
+    /** The other blood moon boss: a giant stone golem (2.2x an iron golem). */
+    public static final DeferredHolder<net.minecraft.world.entity.EntityType<?>, net.minecraft.world.entity.EntityType<com.jo112ss.rpgmod.mob.boss.Golem>> GOLEM =
+            ENTITIES.registerEntityType("golem", com.jo112ss.rpgmod.mob.boss.Golem::new, net.minecraft.world.entity.MobCategory.MONSTER,
+                    b -> b.sized(1.4F * com.jo112ss.rpgmod.mob.boss.Golem.SCALE, 2.7F * com.jo112ss.rpgmod.mob.boss.Golem.SCALE).eyeHeight(2.3F * com.jo112ss.rpgmod.mob.boss.Golem.SCALE)
+                            .clientTrackingRange(16).fireImmune());
+
+    /** The Golem's armour pillars. */
+    public static final DeferredHolder<net.minecraft.world.entity.EntityType<?>, net.minecraft.world.entity.EntityType<com.jo112ss.rpgmod.mob.boss.GolemPillar>> GOLEM_PILLAR =
+            ENTITIES.registerEntityType("golem_pillar", com.jo112ss.rpgmod.mob.boss.GolemPillar::new, net.minecraft.world.entity.MobCategory.MONSTER,
+                    b -> b.sized(1.0F, 2.6F).clientTrackingRange(10).fireImmune());
+
     public static final DeferredHolder<MenuType<?>, MenuType<ForgeMenu>> FORGE_MENU = MENUS.register("forge",
             () -> IMenuTypeExtension.create((windowId, inv, buf) -> new ForgeMenu(windowId, inv)));
 

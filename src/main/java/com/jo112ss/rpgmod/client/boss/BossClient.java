@@ -14,5 +14,7 @@ public final class BossClient {
     @SubscribeEvent
     public static void onRenderers(EntityRenderersEvent.RegisterRenderers event) {
         event.registerEntityRenderer(ModRegistries.KING_SLIME.get(), KingSlimeRenderer::new);
+        event.registerEntityRenderer(ModRegistries.GOLEM.get(), GolemRenderer::new);
+        event.registerEntityRenderer(ModRegistries.GOLEM_PILLAR.get(), GolemPillarRenderer::new);
     }
 }

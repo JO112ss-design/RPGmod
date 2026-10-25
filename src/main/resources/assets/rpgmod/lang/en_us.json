@@ -733,5 +733,15 @@
   "death.attack.rpgmod.gem.player": "%1$s was struck by the gem of %2$s",
   "rpgmod.gem.cap_percent": " stacks up to %s%%",
   "rpgmod.gem.cap_seconds": " stacks up to %s s",
-  "rpgmod.tooltip.bow_penetration": "Armour penetration %s%% (arrows ignore that share of armour)"
+  "rpgmod.tooltip.bow_penetration": "Armour penetration %s%% (arrows ignore that share of armour)",
+  "entity.rpgmod.golem": "Golem",
+  "entity.rpgmod.golem_pillar": "Stone Pillar",
+  "rpgmod.boss.golem.appeared": "The blood moon rises... the Golem appeared near %s!",
+  "rpgmod.boss.golem.near": "The Golem appeared near %s",
+  "rpgmod.boss.golem.enraged": "The Golem's core is glowing red-hot!",
+  "rpgmod.boss.golem.armour": "The Golem raised its stone armour - break the glowing pillars!",
+  "rpgmod.boss.golem.armour_broken": "The stone armour shattered!",
+  "rpgmod.boss.golem.armour_bar": "Stone armour (half damage)",
+  "rpgmod.boss.golem.left": "Dawn breaks and the Golem crumbles back into the ground...",
+  "rpgmod.boss.golem.defeated": "The Golem was defeated! (%s)"
 }

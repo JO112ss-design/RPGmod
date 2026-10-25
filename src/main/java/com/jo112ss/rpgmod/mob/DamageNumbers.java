@@ -73,7 +73,7 @@ public final class DamageNumbers {
 
     private static void send(ServerLevel sl, LivingEntity e, float amount, int kind) {
         // the King Slime past the health cap: show what the hit was really worth against its full health
-        if (e instanceof com.jo112ss.rpgmod.mob.boss.KingSlime k) amount *= k.toughness();
+        if (e instanceof com.jo112ss.rpgmod.mob.boss.BloodMoonBoss k) amount *= k.toughness();
         if (e instanceof net.minecraft.world.entity.boss.enderdragon.EnderDragon d) amount *= com.jo112ss.rpgmod.mob.dragon.DragonDirector.toughness(d);
         // from the upper body, below the health plate; the client lets it rise and drift sideways
         Vec3 at = e.position().add(0, e.getBbHeight() * 0.7, 0);

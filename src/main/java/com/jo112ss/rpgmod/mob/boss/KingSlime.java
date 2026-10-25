@@ -67,7 +67,7 @@ import net.minecraft.world.phys.Vec3;
  * No single hit takes more than a fifth of a player's health (see {@link BossEvents}). Health follows
  * the boss level (highest player job level) and the number of players online. Leaves at dawn.
  */
-public class KingSlime extends Slime {
+public class KingSlime extends Slime implements BloodMoonBoss {
     public static final int START_SIZE = 10;
     private static final int[] SPLIT_SIZES = {8, 7, 6};
     private static final float[] SPLIT_AT = {0.75F, 0.5F, 0.25F};
@@ -220,6 +220,7 @@ public class KingSlime extends Slime {
      * Max health = base x level growth x (1 + share per extra player online). The current share of
      * health is kept, so people joining mid-fight do not reset it.
      */
+    @Override
     public void recomputeHealth(boolean fill) {
         if (!(this.level() instanceof ServerLevel sl)) return;
         int online = Math.max(1, sl.getServer().getPlayerList().getPlayerCount());
@@ -1004,6 +1005,7 @@ public class KingSlime extends Slime {
     }
 
     /** Damage taken is divided by this past the max health cap (1 below it). */
+    @Override
     public float toughness() {
         return toughness;
     }

@@ -43,7 +43,7 @@ public final class Venom {
     }
 
     public static boolean isBoss(LivingEntity e) {
-        return e.is(net.neoforged.neoforge.common.Tags.EntityTypes.BOSSES) || e instanceof com.jo112ss.rpgmod.mob.boss.KingSlime;
+        return e.is(net.neoforged.neoforge.common.Tags.EntityTypes.BOSSES) || e instanceof com.jo112ss.rpgmod.mob.boss.BloodMoonBoss;
     }
 
     /** Damage of one tick (once a second). */

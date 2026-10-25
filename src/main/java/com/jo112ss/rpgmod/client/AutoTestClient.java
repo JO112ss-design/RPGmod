@@ -195,6 +195,7 @@ public final class AutoTestClient {
             case "mob:items" -> new int[] {30, 60, 120, 190};
             case "mob:sense" -> new int[] {40, 200, 380};
             case "mob:leap" -> new int[] {30, 60, 90, 130, 200};
+            case "mob:golem" -> new int[] {54, 72, 80, 84, 112, 118, 128, 164, 178, 186, 214, 228, 268, 271, 300, 328, 340, 380, 452, 470, 504, 512, 590, 600, 660, 676, 712, 800, 900, 1010, 1060};
             case "gem:checks" -> new int[] {20};
             case "perf" -> new int[] {200};
             case "gem:socket" -> new int[] {20, 45};
@@ -238,6 +239,7 @@ public final class AutoTestClient {
             case "mob:sense" -> 400;
             case "decoy" -> 120;
             case "mob:leap" -> 260;
+            case "mob:golem" -> 1110;
             case "gem:checks" -> 140;
             case "perf" -> 1800;
             case "gem:socket" -> 70;
@@ -279,7 +281,7 @@ public final class AutoTestClient {
             // (the advanced skills, healer spells and monster scenes above were checked in earlier runs)
             showSkills.clear();
             if ("all".equals(System.getProperty("rpgmod.showcase"))) showSkills.addAll(com.jo112ss.rpgmod.job.core.JobDefs.SKILLS.keySet());
-            showSkills.addAll(java.util.List.of("gem:checks", "gem:socket"));
+            showSkills.addAll(java.util.List.of("mob:golem"));
             mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK);
             com.jo112ss.rpgmod.client.mob.MobOverlay.testSelf = true;
             mc.options.particles().set(net.minecraft.server.level.ParticleStatus.ALL);

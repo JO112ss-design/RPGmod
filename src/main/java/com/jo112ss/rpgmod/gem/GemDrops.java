@@ -32,7 +32,7 @@ public final class GemDrops {
     }
 
     public static boolean isBoss(LivingEntity e) {
-        return e.is(Tags.EntityTypes.BOSSES) || e instanceof com.jo112ss.rpgmod.mob.boss.KingSlime;
+        return e.is(Tags.EntityTypes.BOSSES) || e instanceof com.jo112ss.rpgmod.mob.boss.BloodMoonBoss;
     }
 
     @SubscribeEvent
@@ -43,7 +43,7 @@ public final class GemDrops {
         if (!byPlayer) return;
         boolean boss = isBoss(mob);
         if (!boss) {
-            if (!(mob instanceof Enemy)) return;
+            if (!(mob instanceof Enemy) || mob instanceof com.jo112ss.rpgmod.mob.boss.GolemPillar) return;
             if (mob.getPersistentData().getBooleanOr(com.jo112ss.rpgmod.mob.boss.BossEvents.CHILD, false)) return;
             if (mob.getRandom().nextDouble() >= chance(MobLevels.level(mob))) return;
         }

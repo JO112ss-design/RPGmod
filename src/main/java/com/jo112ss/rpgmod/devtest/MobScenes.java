@@ -39,6 +39,7 @@ final class MobScenes {
     private static float lostHealth;
     private static float maxHit;
     private static com.jo112ss.rpgmod.mob.boss.KingSlime king;
+    private static com.jo112ss.rpgmod.mob.boss.Golem golem;
     private static Mob dummy;
     private static long savedTime = -1;
 
@@ -66,6 +67,7 @@ final class MobScenes {
             case "dragonhp" -> 12;
             case "downed" -> 13;
             case "king" -> 9;
+            case "golem" -> 9;
             case "sense" -> 8;
             case "stairs" -> 10;
             case "exit" -> 11;
@@ -73,7 +75,7 @@ final class MobScenes {
             default -> 5;
         };
         c = BlockPos.containing(arena).offset(40, 0, idx * 24 - 60);
-        clear(level, c, name.equals("king") ? 22 : 10);
+        clear(level, c, name.equals("king") || name.equals("golem") ? 22 : 10);
         scene = name;
         maxHit = 0;
         t = 0;
@@ -221,6 +223,12 @@ final class MobScenes {
                 d.getPhaseManager().setPhase(net.minecraft.world.entity.boss.enderdragon.phases.EnderDragonPhase.HOVERING);
                 dragon = d;
             }
+            case "golem" -> {
+                tp(player, Vec3.atBottomCenterOf(c), -90, -2);
+                savedTime = level.getOverworldClockTime();
+                setTime(level, 9 * 24000L + 14000); // night of day 10: blood moon
+                level.setData(com.jo112ss.rpgmod.registry.ModRegistries.BOSS_DAY, com.jo112ss.rpgmod.mob.boss.BloodMoon.day(level)); // no natural boss: this scene calls its own
+            }
             case "king" -> {
                 tp(player, Vec3.atBottomCenterOf(c), -90, -6);
                 savedTime = level.getOverworldClockTime();
@@ -346,6 +354,124 @@ final class MobScenes {
         }
     }
 
+    private static final java.util.Map<String, Integer> golemStates = new java.util.LinkedHashMap<>();
+
+    private static void golemTick(ServerLevel level, ServerPlayer player) {
+        var g = golem;
+        switch (t) {
+            case 45 -> {
+                var b = com.jo112ss.rpgmod.mob.boss.BloodMoon.summon(level, true);
+                g = golem = b instanceof com.jo112ss.rpgmod.mob.boss.Golem gg ? gg : null;
+                RpgMod.LOGGER.info("[AUTOTEST] golem summoned={} level={} hp={} toughness={} size={}x{}", g != null, g == null ? -1 : MobLevels.level(g),
+                        g == null ? -1 : String.format("%.0f", g.effectiveMaxHealth()), g == null ? -1 : g.toughness(), g == null ? -1 : g.getBbWidth(), g == null ? -1 : g.getBbHeight());
+                if (g != null) {
+                    com.jo112ss.rpgmod.mob.boss.BloodMoon.testKeep = true;
+                    g.snapTo(c.getX() + 19.5, c.getY(), c.getZ() + 0.5, 90, 0);
+                    dummy = EntityTypes.HUSK.create(level, EntitySpawnReason.COMMAND);
+                    dummy.snapTo(c.getX() + 9.5, c.getY(), c.getZ() + 0.5, 90, 0);
+                    dummy.setNoAi(true);
+                    dummy.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.MAX_HEALTH).setBaseValue(5000);
+                    dummy.setHealth(5000);
+                    dummy.setItemSlot(EquipmentSlot.HEAD, new ItemStack(Items.LEATHER_HELMET));
+                    level.addFreshEntity(dummy);
+                    g.setTarget(dummy);
+                }
+            }
+            case 50, 466 -> golemPortrait(player, g, -1);
+            case 56, 472 -> tp(player, Vec3.atBottomCenterOf(c), -90, -2);
+            case 60 -> gmove(g, "slam");
+            case 100 -> gmove(g, "throw");
+            case 150 -> gmove(g, "fissure");
+            case 200 -> gmove(g, "charge");
+            case 255 -> { // somebody close for the sweep: the dummy steps up to it
+                if (g != null && dummy != null) dummy.setPos(g.getX() - 3.2, g.getY(), g.getZ());
+                gmove(g, "sweep");
+            }
+            case 285 -> { if (dummy != null) dummy.setPos(c.getX() + 9.5, c.getY(), c.getZ() + 0.5); }
+            case 290 -> gmove(g, "rockfall");
+            case 370 -> gmove(g, "overheat");
+            case 448 -> { if (g != null) g.setHealth(g.getMaxHealth() * 0.49F); }
+            case 500 -> { // break the pillars: the armour shatters and it staggers
+                if (g != null) {
+                    var ps = g.pillars(level);
+                    RpgMod.LOGGER.info("[AUTOTEST] golem armour: pillars={} shield={} phase={} opening x{} pillar hp={}", ps.size(), g.shielded(), g.phase(), g.openingMultiplier(),
+                            ps.isEmpty() ? -1 : String.format("%.0f", ps.get(0).getMaxHealth()));
+                    for (var p : ps) p.hurtServer(level, player.damageSources().playerAttack(player), 100000);
+                }
+            }
+            case 530 -> { if (g != null) RpgMod.LOGGER.info("[AUTOTEST] golem after pillars: shield={} breaks={} state={} opening x{}", g.shielded(), g.shieldBreaks, g.state(), g.openingMultiplier()); }
+            case 580 -> gmove(g, "quake");
+            case 650 -> { // a target it cannot walk to: up on a stone tower
+                if (g != null && dummy != null) {
+                    for (int y = 0; y < 5; y++) for (int x = -1; x <= 1; x++) for (int z = -1; z <= 1; z++) level.setBlockAndUpdate(c.offset(9 + x, y, z), Blocks.STONE.defaultBlockState());
+                    dummy.setPos(c.getX() + 9.5, c.getY() + 5, c.getZ() + 0.5);
+                }
+                gmove(g, "leap");
+            }
+            case 710 -> {
+                if (g != null) {
+                    RpgMod.LOGGER.info("[AUTOTEST] golem before kill: hp={}/{} armours={} wall hits={} states={} max hit={} lost={}", String.format("%.0f", g.getHealth()),
+                            String.format("%.0f", g.getMaxHealth()), g.armours(), g.wallHits, golemStates, String.format("%.1f", maxHit), String.format("%.1f", lostHealth));
+                    g.hurtServer(level, player.damageSources().playerAttack(player), 1000000);
+                }
+            }
+            case 720 -> {
+                int books = player.getInventory().countItem(com.jo112ss.rpgmod.registry.ModRegistries.SKILL_BOOK.get());
+                int gems = level.getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class, player.getBoundingBox().inflate(40), e -> com.jo112ss.rpgmod.gem.Sockets.isGem(e.getItem())).size();
+                RpgMod.LOGGER.info("[AUTOTEST] golem dead={} books={} gems dropped={}", g == null || !g.isAlive(), books, gems);
+                for (int y = 0; y < 5; y++) for (int x = -1; x <= 1; x++) for (int z = -1; z <= 1; z++) level.setBlockAndUpdate(c.offset(9 + x, y, z), Blocks.AIR.defaultBlockState());
+            }
+            case 725 -> { // a free-running golem: its own combos and overheats
+                g = golem = com.jo112ss.rpgmod.mob.boss.BloodMoon.spawnNear(level, player, com.jo112ss.rpgmod.registry.ModRegistries.GOLEM.get());
+                golemStates.clear();
+                if (g != null) {
+                    g.snapTo(c.getX() + 16.5, c.getY(), c.getZ() + 0.5, 90, 0);
+                    if (dummy != null) {
+                        dummy.setPos(c.getX() + 8.5, c.getY(), c.getZ() + 0.5);
+                        g.setTarget(dummy);
+                    }
+                }
+            }
+            case 1000 -> {
+                RpgMod.LOGGER.info("[AUTOTEST] golem free run states={}", golemStates);
+                com.jo112ss.rpgmod.mob.boss.BloodMoon.testKeep = false;
+                setTime(level, 9 * 24000L + 23300); // dawn
+            }
+            case 1090 -> RpgMod.LOGGER.info("[AUTOTEST] golem left at dawn={}", g == null || g.isRemoved());
+            default -> { }
+        }
+        if (t % 10 == 0) {
+            for (var m : level.getEntitiesOfClass(Mob.class, player.getBoundingBox().inflate(96),
+                    m -> m instanceof net.minecraft.world.entity.monster.Enemy && !(m instanceof com.jo112ss.rpgmod.mob.boss.Golem)
+                            && !(m instanceof com.jo112ss.rpgmod.mob.boss.GolemPillar) && m != dummy)) m.discard();
+            player.setHealth(player.getMaxHealth());
+            player.getFoodData().setFoodLevel(20);
+        }
+        if (g != null && g.isAlive() && dummy != null && dummy.isAlive() && g.getTarget() != dummy) g.setTarget(dummy);
+        if (g != null && g.isAlive()) {
+            if (t % 2 == 0) golemStates.merge(g.state().name(), 1, Integer::sum);
+            if (t % 20 == 0) {
+                RpgMod.LOGGER.info("[AUTOTEST] golem t={} state={} phase={} shield={} hp={}/{} dist={} max hit={} lost={}", t, g.state(), g.phase(), g.shielded(),
+                        String.format("%.0f", g.getHealth()), String.format("%.0f", g.getMaxHealth()), String.format("%.1f", g.distanceTo(player)),
+                        String.format("%.1f", maxHit), String.format("%.1f", lostHealth));
+            }
+        }
+    }
+
+    private static void gmove(com.jo112ss.rpgmod.mob.boss.Golem g, String m) {
+        if (g != null) g.testMove(m);
+    }
+
+    private static void golemPortrait(ServerPlayer player, com.jo112ss.rpgmod.mob.boss.Golem g, int side) {
+        if (g == null || !g.isAlive()) return;
+        double d = g.getBbWidth() * 1.3 + 7;
+        Vec3 at = g.position().add(side * d * 0.7, 0, side * d * 0.7);
+        Vec3 look = g.position().add(0, g.getBbHeight() * 0.5, 0).subtract(at.add(0, 1.6, 0));
+        float yaw = (float) Math.toDegrees(Math.atan2(-look.x, look.z));
+        float pitch = (float) -Math.toDegrees(Math.atan2(look.y, Math.hypot(look.x, look.z)));
+        tp(player, at, yaw, pitch);
+    }
+
     private static void move(com.jo112ss.rpgmod.mob.boss.KingSlime k, String m) {
         if (k != null) k.testMove(m);
     }
@@ -394,6 +520,7 @@ final class MobScenes {
         if (!java.util.Set.of("sense", "stairs", "exit", "downed", "leap").contains(scene)) for (Mob m : mobs) if (m.isAlive() && m.getTarget() == null) m.setTarget(player);
         switch (scene) {
             case "king" -> kingTick(level, player);
+            case "golem" -> golemTick(level, player);
             case "downed" -> {
                 // with the Resurrection mod: monsters leave a downed player alone, and come back once revived
                 var cmd = level.getServer().createCommandSourceStack().withSuppressedOutput();
@@ -557,6 +684,8 @@ final class MobScenes {
     static void end(ServerLevel level, ServerPlayer player) {
         if (king != null) king.discard();
         king = null;
+        if (golem != null) golem.discard();
+        golem = null;
         if (dummy != null) dummy.discard();
         dummy = null;
         com.jo112ss.rpgmod.mob.boss.BloodMoon.testKeep = false;

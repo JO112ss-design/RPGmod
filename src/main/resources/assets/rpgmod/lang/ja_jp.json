@@ -733,5 +733,15 @@
   "death.attack.rpgmod.gem.player": "%1$sは%2$sの宝石の力で倒された",
   "rpgmod.gem.cap_percent": " 重ねて最大%s%%",
   "rpgmod.gem.cap_seconds": " 重ねて最大%s秒",
-  "rpgmod.tooltip.bow_penetration": "防具貫通 %s%%（矢が敵の防御を無視する割合）"
+  "rpgmod.tooltip.bow_penetration": "防具貫通 %s%%（矢が敵の防御を無視する割合）",
+  "entity.rpgmod.golem": "ゴーレム",
+  "entity.rpgmod.golem_pillar": "岩の柱",
+  "rpgmod.boss.golem.appeared": "ブラッドムーンが昇った…ゴーレムが %s の近くに現れた！",
+  "rpgmod.boss.golem.near": "ゴーレムが %s の近くに現れた",
+  "rpgmod.boss.golem.enraged": "ゴーレムの核が赤熱している！",
+  "rpgmod.boss.golem.armour": "ゴーレムが岩の鎧をまとった！周りの光る柱を壊せ！",
+  "rpgmod.boss.golem.armour_broken": "岩の鎧が砕けた！",
+  "rpgmod.boss.golem.armour_bar": "岩の鎧（被ダメ半分）",
+  "rpgmod.boss.golem.left": "夜が明け、ゴーレムは崩れて地面に還っていった…",
+  "rpgmod.boss.golem.defeated": "ゴーレムを倒した！（%s）"
 }
