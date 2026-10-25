@@ -11,7 +11,7 @@ public final class ClientHandlerProxy {
     }
 
     public static void openJobSelect(OpenJobSelectPayload payload, IPayloadContext context) {
-        com.jo112ss.rpgmod.client.job.JobClient.openJobSelect();
+        com.jo112ss.rpgmod.client.job.JobClient.openJobSelect(payload.change());
     }
 
     public static void bloodMoon(BloodMoonPayload payload, IPayloadContext context) {

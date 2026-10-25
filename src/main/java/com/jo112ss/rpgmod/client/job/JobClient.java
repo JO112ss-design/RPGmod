@@ -30,8 +30,10 @@ public final class JobClient {
     /** Set when the server says we have no job; the screen opens once no other screen (e.g. world loading) is up. */
     private static boolean pendingSelect;
 
-    public static void openJobSelect() {
-        pendingSelect = true;
+    public static void openJobSelect(boolean change) {
+        Minecraft mc = Minecraft.getInstance();
+        if (change) mc.gui.setScreen(new JobSelectScreen(true)); // a job change book was used
+        else pendingSelect = true;
     }
 
     public static boolean holdingStaff() {
@@ -96,7 +98,7 @@ public final class JobClient {
         tickLeftCast(mc);
         if (pendingSelect && mc.player != null && mc.gui.screen() == null && mc.player.tickCount > 20) {
             pendingSelect = false;
-            if (!data().hasJob()) mc.gui.setScreen(new JobSelectScreen());
+            if (!data().hasJob()) mc.gui.setScreen(new JobSelectScreen(false));
             return;
         }
         if (mc.player == null || mc.gui.screen() != null) {
@@ -105,7 +107,7 @@ public final class JobClient {
             return;
         }
         while (JobKeys.STATUS.consumeClick()) {
-            mc.gui.setScreen(data().hasJob() ? new JobScreen(JobScreen.Tab.STATUS) : new JobSelectScreen());
+            mc.gui.setScreen(data().hasJob() ? new JobScreen(JobScreen.Tab.STATUS) : new JobSelectScreen(false));
             return;
         }
         for (int i = 0; i < JobKeys.SKILLS.length; i++) {

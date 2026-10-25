@@ -39,6 +39,8 @@ public final class ModRegistries {
 
     public static final net.neoforged.neoforge.registries.DeferredItem<com.jo112ss.rpgmod.item.SkillBookItem> SKILL_BOOK =
             ITEMS.registerItem("skill_book", com.jo112ss.rpgmod.item.SkillBookItem::new, p -> p.stacksTo(64).rarity(net.minecraft.world.item.Rarity.RARE));
+    public static final net.neoforged.neoforge.registries.DeferredItem<com.jo112ss.rpgmod.item.JobBookItem> JOB_BOOK =
+            ITEMS.registerItem("job_change_book", com.jo112ss.rpgmod.item.JobBookItem::new, p -> p.stacksTo(16).rarity(net.minecraft.world.item.Rarity.EPIC));
     public static final net.neoforged.neoforge.registries.DeferredItem<com.jo112ss.rpgmod.item.RecoveryPotionItem> HP_POTION =
             ITEMS.registerItem("hp_potion", p -> new com.jo112ss.rpgmod.item.RecoveryPotionItem(p, false), com.jo112ss.rpgmod.item.RecoveryPotionItem::props);
     public static final net.neoforged.neoforge.registries.DeferredItem<com.jo112ss.rpgmod.item.RecoveryPotionItem> MP_POTION =
@@ -138,6 +140,7 @@ public final class ModRegistries {
                     output.accept(com.jo112ss.rpgmod.gem.GemItems.stack(new com.jo112ss.rpgmod.gem.Gem(t.id, com.jo112ss.rpgmod.gem.Gem.COMMON, com.jo112ss.rpgmod.gem.GemRoller.max(t))));
                 }
                 output.accept(SKILL_BOOK.get());
+                output.accept(JOB_BOOK.get());
                 output.accept(HP_POTION.get());
                 output.accept(MP_POTION.get());
                 for (com.jo112ss.rpgmod.item.WeaponType t : com.jo112ss.rpgmod.item.WeaponType.values()) {

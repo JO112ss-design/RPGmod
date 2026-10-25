@@ -130,7 +130,7 @@ public class JobScreen extends Screen {
             if (!panning) {
                 JobData d = JobClient.data();
                 SkillPanel.Node n = nodeAt(event.x(), event.y());
-                if (d.hasJob() && n != null && d.panel(advView).isReachable(n, d.unlocked(advView)) && d.freePoints(advView) >= n.cost()) {
+                if (d.hasJob() && n != null && d.panel(advView).isReachable(n, d.unlocked(advView)) && d.freePoints(advView) >= n.cost() && masteryOk(d, n)) {
                     JobClient.send(advView ? JobActionPayload.UNLOCK_ADV_NODE : JobActionPayload.UNLOCK_NODE, n.id(), "");
                 }
             }
@@ -255,6 +255,11 @@ public class JobScreen extends Screen {
         return super.mouseClicked(event, doubleClick);
     }
 
+    /** Base panel skills, spells and ultimates need some mastery of the job (advanced panels none). */
+    private boolean masteryOk(JobData d, SkillPanel.Node n) {
+        return advView || d.masteryPercent(d.jobId()) >= SkillPanel.masteryNeeded(n);
+    }
+
     private static boolean in(double mx, double my, int x, int y, int w, int h) {
         return mx >= x && mx < x + w && my >= y && my < y + h;
     }
@@ -344,6 +349,13 @@ public class JobScreen extends Screen {
             g.item(new ItemStack(ModItems.get(t, WeaponMaterial.IRON)), wx, cy + 155);
             wx += 18;
         }
+        // mastery of the base job: opens its outer skills, its ultimates and its advanced job
+        int pct = d.masteryPercent(job.id);
+        Ui.bar(g, font, cx + 6, cy + 186, cw - 12, 10, (float) d.masteryFraction(job.id), pct >= 100 ? Ui.GOLD : 0xFFB09CFF, pct + "%");
+        Component mLabel = Component.translatable("rpgmod.jobscreen.mastery");
+        if (d.masteredCount() > 0) mLabel = mLabel.copy().append(Component.translatable("rpgmod.jobscreen.mastered_bonus", d.masteredCount(),
+                Math.round(d.masteredCount() * com.jo112ss.rpgmod.job.JobStats.MASTERY_HEALTH * 100)));
+        g.text(font, font.substrByWidth(mLabel, cw - 12).getString(), cx + 6, cy + 175, Ui.DIM, false);
 
         // stat table
         int sx = left + 128, sy = top + 40, sw = W - 136;
@@ -454,7 +466,8 @@ public class JobScreen extends Screen {
             if (px < ax - hexR - 4 || px > ax + aw + hexR + 4 || py < ay - hexR - 4 || py > ay + ah + hexR + 4) continue; // off-screen
             boolean owned = d.unlocked(advView).contains(n.id());
             boolean reachable = panel.isReachable(n, d.unlocked(advView));
-            boolean affordable = reachable && d.freePoints(advView) >= n.cost();
+            boolean mOk = masteryOk(d, n);
+            boolean affordable = reachable && mOk && d.freePoints(advView) >= n.cost();
             int typeTint = switch (n.type()) {
                 case ULTIMATE -> Ui.GOLD;
                 case SPELL -> 0xFFB09CFF;
@@ -514,12 +527,17 @@ public class JobScreen extends Screen {
             float gs = hexR / 11f * (n.type() == SkillPanel.NodeType.STAT ? 1f : 1.15f);
             if (font.width(glyph) > 8) gs *= 0.8f;
             Ui.glyph(g, font, glyph, px + 1, py + 1, gs, tc);
+            if (!owned && !mOk) {
+                // mastery still too low: a small red tag with the % it needs
+                String need = SkillPanel.masteryNeeded(n) + "%";
+                Ui.glyph(g, font, need, px + 1, py + hexR / 2 + 1, Math.max(0.45f, hexR / 22f), Ui.BAD);
+            }
         }
         // pass 3: a pulsing gold ring around skill cells that can be learned now (drawn last so the
         // neighbouring cells do not cover it); a dimmer one when they are next in line but need points
         for (SkillPanel.Node n : panel.nodes()) {
             if (n.type() == SkillPanel.NodeType.STAT || n.type() == SkillPanel.NodeType.START) continue;
-            if (!panel.isReachable(n, d.unlocked(advView))) continue;
+            if (!panel.isReachable(n, d.unlocked(advView)) || !masteryOk(d, n)) continue;
             int px = ox + (int) Math.round(hexR * Math.sqrt(3) * (n.q() + n.r() / 2.0));
             int py = oy + (int) Math.round(hexR * 1.5 * n.r());
             if (px < ax - hexR - 4 || px > ax + aw + hexR + 4 || py < ay - hexR - 4 || py > ay + ah + hexR + 4) continue; // off-screen
@@ -574,6 +592,11 @@ public class JobScreen extends Screen {
                     .append(free > 0 ? " (" + free + ")" : "");
             g.centeredText(font, font.substrByWidth(label, advBtnW - 4).getString(), advBtnX + advBtnW / 2, advBtnY + 3, free > 0 ? Ui.GOLD : Ui.TEXT);
             infoTop = iy + 38;
+        } else if (d.waitingAdvPoints() > 0) {
+            // points of levels past 100 wait for an advanced job
+            Component w = Component.translatable("rpgmod.jobscreen.adv_waiting", d.waitingAdvPoints());
+            g.textWithWordWrap(font, w, ix + 5, iy + 21, iw - 10, 0xFFB09CFF, false);
+            infoTop = iy + 22 + font.split(w, iw - 10).size() * 9;
         }
         g.fill(ix + 4, infoTop, ix + iw - 4, infoTop + 1, Ui.EDGE);
         if (hoveredNode != null) {
@@ -601,11 +624,13 @@ public class JobScreen extends Screen {
             }
             boolean owned = d.unlocked(advView).contains(n.id());
             boolean reachable = d.panel(advView).isReachable(n, d.unlocked(advView));
+            boolean mOk = masteryOk(d, n);
             Component state = owned ? Component.translatable("rpgmod.node.owned")
+                    : !mOk ? Component.translatable("rpgmod.node.need_mastery", SkillPanel.masteryNeeded(n), d.masteryPercent(d.jobId()))
                     : !reachable ? Component.translatable("rpgmod.node.locked")
                     : d.freePoints(advView) >= n.cost() ? Component.translatable("rpgmod.node.click", n.cost())
                     : Component.translatable("rpgmod.node.need", n.cost());
-            int sc = owned ? Ui.EXP : reachable && d.freePoints(advView) >= n.cost() ? Ui.GOLD : Ui.BAD;
+            int sc = owned ? Ui.EXP : mOk && reachable && d.freePoints(advView) >= n.cost() ? Ui.GOLD : Ui.BAD;
             g.textWithWordWrap(font, state, ix + 5, iy + ah - 50, iw - 10, sc, false);
         } else {
             g.textWithWordWrap(font, Component.translatable(advView ? "rpgmod.jobscreen.adv_panel_hint" : "rpgmod.jobscreen.panel_hint"), ix + 5, infoTop + 8, iw - 10, Ui.DIM, false);

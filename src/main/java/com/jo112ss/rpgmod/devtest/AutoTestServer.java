@@ -144,6 +144,10 @@ public final class AutoTestServer {
                 PerfTest.run(level, player, 15);
                 return;
             }
+            if (id.startsWith("job:")) {
+                JobChangeTests.scene(level, player, id.substring(4));
+                return;
+            }
             if (id.startsWith("gem:")) {
                 GemTests.scene(level, player, id.substring(4), targets);
                 return;
@@ -538,6 +542,8 @@ public final class AutoTestServer {
         var d = com.jo112ss.rpgmod.job.JobManager.data(player);
         var before = com.jo112ss.rpgmod.job.JobStats.compute(d);
         d.setLevel(120);
+        d.setMastery(d.jobId(), com.jo112ss.rpgmod.job.core.LevelCurve.masteryExp());
+        d.setAdvanced(true);
         boolean promoted = d.ensureAdvanced();
         if (promoted) com.jo112ss.rpgmod.job.JobManager.promote(player, d);
         int free = d.freePoints(true);
@@ -881,6 +887,7 @@ public final class AutoTestServer {
         var bishop = new com.jo112ss.rpgmod.job.JobData();
         bishop.setJob("healer");
         bishop.setLevel(120);
+        bishop.setAdvanced(true);
         var wizard = new com.jo112ss.rpgmod.job.JobData();
         wizard.setJob("wizard");
         var healer = new com.jo112ss.rpgmod.job.JobData();

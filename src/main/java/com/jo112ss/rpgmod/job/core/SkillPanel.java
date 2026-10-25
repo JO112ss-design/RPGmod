@@ -130,6 +130,19 @@ public final class SkillPanel {
         return k <= 3 ? 1.0 : k <= 5 ? 1.5 : 2.0;
     }
 
+    /**
+     * Job mastery (%) a cell of a base job's panel needs: none for stat cells and the inner rings'
+     * skills and spells, 25 / 50 on rings 4 / 5, 75 further out, 100 for the ultimates. Advanced
+     * panels need none (the advanced job itself needs a mastered job).
+     */
+    public static int masteryNeeded(Node n) {
+        return switch (n.type()) {
+            case STAT, START -> 0;
+            case ULTIMATE -> 100;
+            default -> n.ring() <= 3 ? 0 : n.ring() == 4 ? 25 : n.ring() == 5 ? 50 : 75;
+        };
+    }
+
     static int statCost(int k) {
         return k <= 3 ? 1 : k <= 5 ? 2 : 3;
     }

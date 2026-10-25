@@ -45,6 +45,27 @@ public final class LevelCurve {
         return 1 + 2.0 * Math.pow(1 - level / (double) EARLY_UNTIL, 1.5);
     }
 
+    /**
+     * Job mastery that counts as 100%: all the experience from level 1 to 100. A character's first
+     * job is mastered the moment it reaches level 100, and since mastery only grows with experience
+     * earned (doubled only from level 100 on), a mastered job always means level 100 or more.
+     */
+    public static long masteryExp() {
+        long m = masteryCache;
+        if (m == 0) {
+            for (int l = 1; l < ADVANCED_AT; l++) m += expToNext(l);
+            masteryCache = m;
+        }
+        return m;
+    }
+
+    private static volatile long masteryCache;
+
+    /** Mastery grows twice as fast once the character is level 100 or more. */
+    public static int masteryRate(int level) {
+        return level >= ADVANCED_AT ? 2 : 1;
+    }
+
     /** Skill points earned by a level: one at level 1, then one per level. */
     public static int pointsForLevel(int level) {
         return Math.max(1, level);

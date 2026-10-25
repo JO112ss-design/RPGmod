@@ -26,8 +26,8 @@ public final class JobStats {
         JobDefs.Job job = data.jobDef();
         if (job == null) return m;
         job.base().forEach((s, v) -> m.merge(s, v, Double::sum));
-        // health grows with the base job only up to Lv100; past it the advanced job's own growth takes over
-        job.perLevel().forEach((s, v) -> m.merge(s, v * ((s == JobStat.MAX_HEALTH ? Math.min(data.level(), 100) : data.level()) - 1), Double::sum));
+        // the base job's growth goes on with the character level (the advanced job's adds to it)
+        job.perLevel().forEach((s, v) -> m.merge(s, v * (data.level() - 1), Double::sum));
         SkillPanel panel = data.panel();
         for (int id : data.unlocked()) {
             SkillPanel.Node n = panel.node(id);
@@ -46,6 +46,10 @@ public final class JobStats {
         m.put(JobStat.COOLDOWN_REDUCTION, Math.min(50, m.get(JobStat.COOLDOWN_REDUCTION)));
         return m;
     }
+
+    /** Max health per mastered job (multiplier on the total). */
+    public static final double MASTERY_HEALTH = 0.02;
+    private static final Identifier MASTERY_ID = Identifier.fromNamespaceAndPath(RpgMod.MODID, "job/mastery_health");
 
     private record Mapping(JobStat stat, Holder<Attribute> attribute, AttributeModifier.Operation op, double scale) {}
 
@@ -68,6 +72,13 @@ public final class JobStats {
             double v = stats.getOrDefault(mp.stat(), 0.0) * mp.scale();
             if (v == 0) inst.removeModifier(id);
             else inst.addOrUpdateTransientModifier(new AttributeModifier(id, v, mp.op()));
+        }
+        // every mastered job: +2% max health
+        AttributeInstance hp = player.getAttribute(Attributes.MAX_HEALTH);
+        if (hp != null) {
+            double bonus = MASTERY_HEALTH * data.masteredCount();
+            if (bonus <= 0) hp.removeModifier(MASTERY_ID);
+            else hp.addOrUpdateTransientModifier(new AttributeModifier(MASTERY_ID, bonus, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL));
         }
         if (player.getHealth() > player.getMaxHealth()) player.setHealth(player.getMaxHealth());
     }

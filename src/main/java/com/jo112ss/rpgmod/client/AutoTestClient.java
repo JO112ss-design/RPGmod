@@ -241,6 +241,8 @@ public final class AutoTestClient {
             case "mob:leap" -> 260;
             case "mob:golem" -> 1110;
             case "gem:checks" -> 140;
+            case "job:checks" -> 60;
+            case "job:screen" -> 70;
             case "perf" -> 1800;
             case "gem:socket" -> 70;
             case "gem:procs" -> 80;
@@ -281,7 +283,8 @@ public final class AutoTestClient {
             // (the advanced skills, healer spells and monster scenes above were checked in earlier runs)
             showSkills.clear();
             if ("all".equals(System.getProperty("rpgmod.showcase"))) showSkills.addAll(com.jo112ss.rpgmod.job.core.JobDefs.SKILLS.keySet());
-            showSkills.addAll(java.util.List.of("gem:checks"));
+            // job changes: logic checks, then the job change screen and the panel's mastery locks
+            showSkills.addAll(java.util.List.of("job:checks", "job:screen"));
             mc.options.gamma().set(1.0); // the night fight, brightly lit for the screenshots
             mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK);
             com.jo112ss.rpgmod.client.mob.MobOverlay.testSelf = true;
@@ -330,6 +333,23 @@ public final class AutoTestClient {
                 case 24 -> shot(mc, String.format("c%02d_charged", i));
                 case 26 -> mc.options.keyUse.setDown(false);
                 case 29 -> shot(mc, String.format("c%02d_released", i));
+                default -> { }
+            }
+            return;
+        }
+        if (entry.equals("job:screen")) { // the job change screen (both tabs) and the panel with mastery locks
+            switch (k) {
+                case 0 -> AutoTestServer.requestCast("job:screen");
+                case 10 -> mc.gui.setScreen(new com.jo112ss.rpgmod.client.job.JobSelectScreen(true));
+                case 14 -> { if (mc.gui.screen() instanceof com.jo112ss.rpgmod.client.job.JobSelectScreen js) js.testSelect(1); }
+                case 18 -> shot(mc, String.format("j%02d_change_base", i));
+                case 22 -> { if (mc.gui.screen() instanceof com.jo112ss.rpgmod.client.job.JobSelectScreen js) js.testSelect(4, true); }
+                case 26 -> shot(mc, String.format("j%02d_change_adv", i));
+                case 30 -> mc.gui.setScreen(new com.jo112ss.rpgmod.client.job.JobScreen(com.jo112ss.rpgmod.client.job.JobScreen.Tab.PANEL));
+                case 40 -> shot(mc, String.format("j%02d_panel", i));
+                case 44 -> mc.gui.setScreen(new com.jo112ss.rpgmod.client.job.JobScreen(com.jo112ss.rpgmod.client.job.JobScreen.Tab.STATUS));
+                case 52 -> shot(mc, String.format("j%02d_status", i));
+                case 60 -> mc.gui.setScreen(null);
                 default -> { }
             }
             return;

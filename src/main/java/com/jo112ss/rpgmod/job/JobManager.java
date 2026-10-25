@@ -51,6 +51,7 @@ public final class JobManager {
 
     public static void onLogin(ServerPlayer player) {
         JobData d = data(player);
+        d.migrateJobChange();
         if (d.panelOutdated()) {
             d.migrateLevelCap(JobConfig.maxLevel());
             d.resetPanel();
@@ -60,12 +61,12 @@ public final class JobManager {
             d.resetAdvPanel();
             player.sendSystemMessage(Component.translatable("rpgmod.job.adv_panel_migrated").withStyle(ChatFormatting.GOLD));
         }
-        // characters already at level 100 when the advanced jobs arrived are promoted on login
+        // an advanced job without its centre cell yet (older saves) gets it on login
         if (d.ensureAdvanced()) promote(player, d);
         JobStats.apply(player, d);
         d.setMana(Math.min(d.mana(), maxMana(player)));
         sync(player);
-        if (!d.hasJob()) PacketDistributor.sendToPlayer(player, new OpenJobSelectPayload());
+        if (!d.hasJob()) PacketDistributor.sendToPlayer(player, new OpenJobSelectPayload(false));
     }
 
     public static void onRespawn(ServerPlayer player) {
@@ -98,13 +99,14 @@ public final class JobManager {
 
     // ------------------------------------------------------------------ job choice
 
-    /** A job can be chosen once; only an operator command resets it. */
+    /** The first job (free); later changes need a job change book (see {@link #changeJob}). */
     public static void chooseJob(ServerPlayer player, String jobId) {
         JobData d = data(player);
         if (d.hasJob() || JobType.byId(jobId) == null) return;
         setJob(player, jobId);
         JobType type = JobType.byId(jobId);
-        giveStarterKit(player, type);
+        d.claimKit(jobId);
+        giveStarterKit(player, type, true);
         player.sendSystemMessage(Component.translatable("rpgmod.job.chosen",
                 Component.translatable("rpgmod.job." + jobId).withColor(type.color())));
         player.level().playSound(null, player.blockPosition(), SoundEvents.PLAYER_LEVELUP, SoundSource.PLAYERS, 0.8F, 1.2F);
@@ -115,7 +117,7 @@ public final class JobManager {
      * wizards and healers a staff, rangers a bow, everyone else their first melee weapon), 64 arrows
      * for bow users, a forging anvil and a socket table.
      */
-    private static void giveStarterKit(ServerPlayer player, JobType type) {
+    private static void giveStarterKit(ServerPlayer player, JobType type, boolean full) {
         WeaponType weapon = switch (type) {
             case WIZARD, HEALER -> WeaponType.STAFF; // the healer's heals are cast from the staff
             case RANGER -> WeaponType.BOW;
@@ -125,8 +127,10 @@ public final class JobManager {
         kit.add(new ItemStack(ModItems.get(weapon, com.jo112ss.rpgmod.item.WeaponMaterial.COPPER)));
         for (WeaponType w : type.weapons) if (w != weapon) kit.add(new ItemStack(ModItems.get(w, com.jo112ss.rpgmod.item.WeaponMaterial.COPPER)));
         if (type.weapons.contains(WeaponType.BOW)) kit.add(new ItemStack(net.minecraft.world.item.Items.ARROW, 64));
-        kit.add(new ItemStack(com.jo112ss.rpgmod.registry.ModRegistries.FORGING_ANVIL_ITEM.get()));
-        kit.add(new ItemStack(com.jo112ss.rpgmod.registry.ModRegistries.SOCKET_TABLE_ITEM.get()));
+        if (full) { // the tables only with the very first job
+            kit.add(new ItemStack(com.jo112ss.rpgmod.registry.ModRegistries.FORGING_ANVIL_ITEM.get()));
+            kit.add(new ItemStack(com.jo112ss.rpgmod.registry.ModRegistries.SOCKET_TABLE_ITEM.get()));
+        }
         List<String> names = kit.stream().map(s -> s.getCount() + " " + s.getItem()).toList();
         for (ItemStack stack : kit) {
             if (!player.getInventory().add(stack)) player.drop(stack, false, net.minecraft.util.Prediction.SERVER_ONLY);
@@ -135,6 +139,100 @@ public final class JobManager {
         if (com.jo112ss.rpgmod.devtest.AutoTestServer.ENABLED) {
             com.jo112ss.rpgmod.RpgMod.LOGGER.info("[AUTOTEST] starter kit {}: {}", type.id, names);
         }
+    }
+
+    // ------------------------------------------------------------------ job change (job change book)
+
+    /** The base job behind a job id: itself for a base job, its base for an advanced job (null if unknown). */
+    public static JobType baseOf(String id) {
+        JobType t = JobType.byId(id);
+        if (t != null) return t;
+        for (JobType b : JobType.values()) {
+            JobDefs.Job adv = JobDefs.advancedOf(b.id);
+            if (adv != null && adv.id().equals(id)) return b;
+        }
+        return null;
+    }
+
+    /** Why this job cannot be picked with a book right now (a lang key), or null if it can. */
+    public static String changeProblem(JobData d, String id) {
+        JobType base = baseOf(id);
+        if (base == null || !d.hasJob()) return "rpgmod.jobchange.unknown";
+        boolean adv = JobType.byId(id) == null;
+        if (d.displayJobId().equals(id)) return "rpgmod.jobchange.current";
+        if (adv && !d.mastered(base.id)) return "rpgmod.jobchange.need_mastery";
+        return null;
+    }
+
+    /** The job change book the player would spend: the held one first, then any in the inventory. */
+    public static ItemStack findBook(Player player) {
+        for (net.minecraft.world.InteractionHand h : net.minecraft.world.InteractionHand.values()) {
+            ItemStack s = player.getItemInHand(h);
+            if (s.is(ModRegistries.JOB_BOOK.get())) return s;
+        }
+        var inv = player.getInventory();
+        for (int i = 0; i < inv.getContainerSize(); i++) {
+            ItemStack s = inv.getItem(i);
+            if (s.is(ModRegistries.JOB_BOOK.get())) return s;
+        }
+        return ItemStack.EMPTY;
+    }
+
+    /**
+     * Changes job with a job change book: any base job, or the advanced job of a mastered one.
+     * Level, experience, mastery and skill books stay; each job keeps its own panels.
+     */
+    public static void changeJob(ServerPlayer player, String id) {
+        JobData d = data(player);
+        String problem = changeProblem(d, id);
+        if (problem != null) {
+            tell(player, problem);
+            return;
+        }
+        ItemStack book = findBook(player);
+        if (book.isEmpty() && !player.hasInfiniteMaterials()) {
+            tell(player, "rpgmod.jobchange.no_book");
+            return;
+        }
+        JobType base = baseOf(id);
+        boolean adv = JobType.byId(id) == null;
+        if (!player.hasInfiniteMaterials()) book.shrink(1);
+        String from = d.displayJobId();
+        d.switchTo(base.id, adv);
+        if (d.claimKit(base.id)) giveStarterKit(player, base, false);
+        JobStats.apply(player, d);
+        d.setMana(Math.min(d.mana(), maxMana(player)));
+        JobDefs.Job now = JobDefs.job(d.displayJobId());
+        if (com.jo112ss.rpgmod.devtest.AutoTestServer.ENABLED) {
+            com.jo112ss.rpgmod.RpgMod.LOGGER.info("[AUTOTEST] job change {} -> {} (level {}, mastery {}%)", from, d.displayJobId(), d.level(), d.masteryPercent(base.id));
+        }
+        if (adv) {
+            d.ensureAdvanced();
+            promote(player, d);
+            return;
+        }
+        player.sendSystemMessage(Component.translatable("rpgmod.jobchange.done", Component.translatable("rpgmod.job." + now.id()).withColor(now.color()),
+                d.masteryPercent(base.id)).withStyle(ChatFormatting.GOLD));
+        player.level().playSound(null, player.blockPosition(), SoundEvents.BOOK_PAGE_TURN, SoundSource.PLAYERS, 1.0F, 0.8F);
+        player.level().playSound(null, player.blockPosition(), SoundEvents.PLAYER_LEVELUP, SoundSource.PLAYERS, 0.7F, 1.2F);
+        com.jo112ss.rpgmod.job.fx.ServerFx.of("level_up", player.position()).follow(player).color(now.color()).send((ServerLevel) player.level());
+        sync(player);
+    }
+
+    /** First time a job is mastered: a job change book, and everyone hears of it. */
+    private static void onMastered(ServerPlayer player, JobData d) {
+        if (!d.claimMasteryReward(d.jobId())) return;
+        ItemStack book = new ItemStack(ModRegistries.JOB_BOOK.get());
+        if (!player.getInventory().add(book)) player.drop(book, false, net.minecraft.util.Prediction.SERVER_ONLY);
+        JobDefs.Job base = d.jobDef();
+        Component name = Component.translatable("rpgmod.job." + base.id()).withColor(base.color());
+        player.level().getServer().getPlayerList().broadcastSystemMessage(
+                Component.translatable("rpgmod.jobchange.mastered_all", player.getDisplayName(), name).withStyle(ChatFormatting.GOLD), false);
+        JobDefs.Job adv = JobDefs.advancedOf(base.id());
+        player.sendSystemMessage(Component.translatable("rpgmod.jobchange.mastered", name,
+                adv == null ? Component.empty() : Component.translatable("rpgmod.job." + adv.id()).withColor(adv.color())).withStyle(ChatFormatting.GOLD));
+        player.level().playSound(null, player.blockPosition(), SoundEvents.UI_TOAST_CHALLENGE_COMPLETE, SoundSource.PLAYERS, 1.0F, 1.2F);
+        JobStats.apply(player, d); // mastered jobs add max health
     }
 
     public static void setJob(ServerPlayer player, String jobId) {
@@ -169,6 +267,7 @@ public final class JobManager {
         if (!d.hasJob()) return;
         int gained = d.addExp(amount, JobConfig.maxLevel());
         if (gained > 0 && d.ensureAdvanced()) promote(player, d);
+        if (d.mastered(d.jobId())) onMastered(player, d);
         if (gained > 0) {
             JobStats.apply(player, d);
             d.setMana(maxMana(player));
@@ -189,6 +288,11 @@ public final class JobManager {
         if (panel == null) return;
         SkillPanel.Node node = panel.node(nodeId);
         if (node == null || !panel.isReachable(node, d.unlocked(adv))) return;
+        int need = adv ? 0 : SkillPanel.masteryNeeded(node);
+        if (d.masteryPercent(d.jobId()) < need) {
+            tell(player, "rpgmod.job.need_mastery", need);
+            return;
+        }
         if (d.freePoints(adv) < node.cost()) {
             tell(player, "rpgmod.job.not_enough_points");
             return;
