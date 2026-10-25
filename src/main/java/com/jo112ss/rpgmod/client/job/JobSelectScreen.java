@@ -240,7 +240,7 @@ public class JobSelectScreen extends Screen {
         Ui.glyph(g, font, locked ? "?" : job.glyph(), cx + 1, y + dy(19, 14), compact() ? 1.1f : 1.35f, locked ? Ui.DIM : Ui.TEXT);
         Component name = soon ? Component.translatable("rpgmod.jobchange.soon") : locked ? Component.translatable("rpgmod.jobchange.hidden")
                 : Component.translatable("rpgmod.job." + job.id());
-        fitText(g, name, cx, y + dy(33, 25), CARD_W - 4, 1f, sel ? Ui.argb(c) : locked ? Ui.DIM : Ui.TEXT);
+        fitText(g, name, cx, y + dy(33, 24), CARD_W - 4, 1f, sel ? Ui.argb(c) : locked ? Ui.DIM : Ui.TEXT);
         if (!change) {
             fitText(g, Component.translatable("rpgmod.job." + job.id() + ".role"), cx, y + dy(47, 34), CARD_W - 4, 0.75f, Ui.DIM);
             return;
@@ -257,16 +257,16 @@ public class JobSelectScreen extends Screen {
                 if (d.mastered(b)) done++;
                 sum += d.masteryPercent(b);
             }
-            int bx = x + 5, bw = CARD_W - 10, by = y + dy(55, 41);
+            int bx = x + 5, bw = CARD_W - 10, by = y + dy(55, 42);
             g.fill(bx, by, bx + bw, by + 3, 0xFF0B0D12);
             g.fill(bx, by, bx + Math.round(bw * sum / 200f), by + 3, done == 2 ? Ui.GOLD : Ui.EXP);
-            fitText(g, Component.translatable("rpgmod.jobchange.hybrid_count", done), cx, y + dy(45, 33), CARD_W - 4, 0.75f, locked ? Ui.BAD : Ui.GOLD);
+            fitText(g, Component.translatable("rpgmod.jobchange.hybrid_count", done), cx, y + dy(45, 35), CARD_W - 4, 0.75f, locked ? Ui.BAD : Ui.GOLD);
         } else {
             int pct = JobClient.data().masteryPercent(base.id);
-            int bx = x + 5, bw = CARD_W - 10, by = y + dy(55, 41);
+            int bx = x + 5, bw = CARD_W - 10, by = y + dy(55, 42);
             g.fill(bx, by, bx + bw, by + 3, 0xFF0B0D12);
             g.fill(bx, by, bx + Math.round(bw * pct / 100f), by + 3, pct >= 100 ? Ui.GOLD : Ui.EXP);
-            fitText(g, Component.translatable("rpgmod.jobchange.mastery_pct", pct), cx, y + dy(45, 33), CARD_W - 4, 0.75f, locked ? Ui.BAD : pct >= 100 ? Ui.GOLD : Ui.DIM);
+            fitText(g, Component.translatable("rpgmod.jobchange.mastery_pct", pct), cx, y + dy(45, 35), CARD_W - 4, 0.75f, locked ? Ui.BAD : pct >= 100 ? Ui.GOLD : Ui.DIM);
         }
     }
 
