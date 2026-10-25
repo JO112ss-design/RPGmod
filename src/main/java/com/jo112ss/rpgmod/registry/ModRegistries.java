@@ -64,6 +64,11 @@ public final class ModRegistries {
             ENTITIES.registerEntityType("golem_pillar", com.jo112ss.rpgmod.mob.boss.GolemPillar::new, net.minecraft.world.entity.MobCategory.MONSTER,
                     b -> b.sized(1.0F, 2.6F).clientTrackingRange(10).fireImmune());
 
+    /** Things skills set down for a while (pirate's cannon, keg and flag, the lancer's thrown spear). */
+    public static final DeferredHolder<net.minecraft.world.entity.EntityType<?>, net.minecraft.world.entity.EntityType<com.jo112ss.rpgmod.job.SkillProp>> SKILL_PROP =
+            ENTITIES.registerEntityType("skill_prop", com.jo112ss.rpgmod.job.SkillProp::new, net.minecraft.world.entity.MobCategory.MISC,
+                    b -> b.sized(0.8F, 0.8F).clientTrackingRange(8).updateInterval(1).noSave().noSummon());
+
     public static final DeferredHolder<MenuType<?>, MenuType<ForgeMenu>> FORGE_MENU = MENUS.register("forge",
             () -> IMenuTypeExtension.create((windowId, inv, buf) -> new ForgeMenu(windowId, inv)));
 

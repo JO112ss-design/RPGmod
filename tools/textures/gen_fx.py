@@ -411,4 +411,15 @@ pixel('skull', [
     '................'],
     {'w': (235, 225, 245, 255), 'k': (40, 10, 50, 255)})
 
+# ---------------------------------------------------------------- music note (tintable, like the soft shapes)
+n = 32 * SS
+img = Image.new('RGBA', (n, n), (255, 255, 255, 0))
+d = ImageDraw.Draw(img)
+W = (255, 255, 255, 255)
+d.ellipse([n * 0.14, n * 0.62, n * 0.50, n * 0.88], fill=W)                      # head
+d.rectangle([n * 0.42, n * 0.12, n * 0.50, n * 0.76], fill=W)                     # stem
+d.polygon([(n * 0.46, n * 0.12), (n * 0.84, n * 0.30), (n * 0.80, n * 0.44), (n * 0.46, n * 0.27)], fill=W)  # flag
+img = img.filter(ImageFilter.GaussianBlur(SS * 0.4))
+save(img, 'note', 32)
+
 print('wrote sprites to', os.path.abspath(OUT))

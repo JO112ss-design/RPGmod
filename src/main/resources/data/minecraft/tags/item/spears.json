@@ -1,0 +1,10 @@
+{
+  "replace": false,
+  "values": [
+    "rpgmod:copper_spear",
+    "rpgmod:iron_spear",
+    "rpgmod:gold_spear",
+    "rpgmod:diamond_spear",
+    "rpgmod:netherite_spear"
+  ]
+}

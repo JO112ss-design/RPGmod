@@ -145,7 +145,7 @@ public final class SkillExecutor {
             case "card_throw" -> cardThrow(c);
             case "coin_toss", "dice_roll", "all_in", "jackpot" -> gamble(c);
             case "roulette" -> roulette(c);
-            default -> AdvSkills.has(def.id()) ? AdvSkills.run(c) : generic(c);
+            default -> AdvSkills.has(def.id()) ? AdvSkills.run(c) : NewJobSkills.has(def.id()) ? NewJobSkills.run(c) : generic(c);
         };
     }
 

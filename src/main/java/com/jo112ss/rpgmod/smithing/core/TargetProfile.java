@@ -46,5 +46,13 @@ public record TargetProfile(double[] partWeights) {
     public static final TargetProfile SHIELD = new TargetProfile(new double[] {0.6, 1.2, 1.6, 1.2, 0.6});
     /** Arrows: head / shaft / fletching. The iron head takes the work. */
     public static final TargetProfile ARROW = new TargetProfile(new double[] {1.5, 0.7, 0.5});
+    /** Gunblade: muzzle / bayonet / barrel / lock / stock. The barrel and its lock take the work. */
+    public static final TargetProfile GUNBLADE = new TargetProfile(new double[] {0.6, 1.2, 1.6, 1.3, 0.6});
+    /** Spear: point / head / socket / upper shaft / lower shaft. */
+    public static final TargetProfile SPEAR = new TargetProfile(new double[] {1.3, 1.6, 0.9, 0.5, 0.4});
+    /** Knuckles: studs / plate / grip. */
+    public static final TargetProfile KNUCKLE = new TargetProfile(new double[] {1.5, 1.1, 0.6});
+    /** Lute: pegbox / neck / body / bridge / tail. */
+    public static final TargetProfile LUTE = new TargetProfile(new double[] {0.6, 0.9, 1.6, 1.2, 0.6});
     public static final TargetProfile BOOTS = new TargetProfile(new double[] {0.9, 1.4, 1.4, 0.9});
 }

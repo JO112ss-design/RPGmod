@@ -5,7 +5,7 @@ import com.jo112ss.rpgmod.job.core.JobDefs;
 import java.util.List;
 
 /**
- * The eight jobs and the weapon types that activate their skills. Stats and skills are in
+ * The twelve jobs and the weapon types that activate their skills. Stats and skills are in
  * {@link JobDefs}; this enum only adds what needs Minecraft types.
  */
 public enum JobType {
@@ -16,7 +16,11 @@ public enum JobType {
     HEALER("healer", List.of(WeaponType.STAFF, WeaponType.MACE)),
     ASSASSIN("assassin", List.of(WeaponType.DAGGER)),
     ENCHANTER("enchanter", List.of(WeaponType.STAFF, WeaponType.DAGGER)),
-    GAMBLER("gambler", List.of(WeaponType.DAGGER, WeaponType.BOW));
+    GAMBLER("gambler", List.of(WeaponType.DAGGER, WeaponType.BOW)),
+    PIRATE("pirate", List.of(WeaponType.GUNBLADE)),
+    LANCER("lancer", List.of(WeaponType.SPEAR)),
+    MONK("monk", List.of(WeaponType.KNUCKLE)),
+    BARD("bard", List.of(WeaponType.LUTE));
 
     public final String id;
     public final List<WeaponType> weapons;

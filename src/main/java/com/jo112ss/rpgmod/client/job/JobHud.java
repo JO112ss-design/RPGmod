@@ -89,6 +89,8 @@ public final class JobHud {
             g.text(font, k, x + (SLOT - font.width(k)) / 2, y + SLOT + 2, Ui.DIM, true);
         }
 
+        NewJobHud.render(g, delta, d);
+
         // spell charge gauge under the crosshair
         if (mc.player.isUsingItem() && mc.player.getUseItem().getItem() instanceof com.jo112ss.rpgmod.item.RpgStaffItem) {
             SkillDef sp = com.jo112ss.rpgmod.job.JobManager.selectedSpell(mc.player, mc.player.getUseItem());

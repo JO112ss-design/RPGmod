@@ -186,3 +186,79 @@ def venom(d):
 
 
 icon('venom', venom)
+
+
+# ---- pirate, lancer, monk, bard
+def note(d, col):
+    d.ellipse([3, 11, 8, 15], fill=col)
+    d.rectangle([7, 3, 8, 13], fill=col)
+    d.polygon([(8, 3), (14, 6), (13, 8), (8, 6)], fill=col)
+
+
+def jolly_roger(d):
+    d.rectangle([3, 2, 4, 16], fill=(120, 85, 50, 255))
+    d.rectangle([5, 3, 15, 10], fill=(25, 25, 30, 255))
+    d.ellipse([8, 4, 12, 8], fill=(236, 232, 220, 255))
+    d.point([(9, 6), (11, 6)], fill=(25, 25, 30, 255))
+    d.line([(7, 9), (13, 9)], fill=(236, 232, 220, 255))
+
+
+def counter_stance(d):
+    d.line([(3, 15), (15, 3)], fill=(200, 160, 110, 255), width=2)
+    d.polygon([(15, 3), (11, 4), (14, 7)], fill=(230, 230, 240, 255))
+    d.arc([2, 2, 16, 16], 200, 340, fill=(255, 220, 140, 255), width=2)
+
+
+def parry(d):
+    d.ellipse([3, 6, 11, 14], fill=(240, 190, 120, 255), outline=(140, 90, 40, 255))
+    d.arc([5, 2, 17, 14], 270, 30, fill=(255, 240, 200, 255), width=2)
+
+
+def untouchable(d):
+    for i, a in enumerate((90, 160, 255)):
+        d.line([(2, 5 + i * 4), (10, 5 + i * 4)], fill=(255, 224, 176, a), width=1)
+    d.ellipse([10, 5, 15, 13], fill=(255, 224, 176, 255))
+
+
+def diamond_body(d):
+    d.polygon([(9, 2), (15, 7), (9, 16), (3, 7)], fill=(255, 210, 122, 255), outline=(150, 100, 30, 255))
+    d.line([(3, 7), (15, 7)], fill=(255, 245, 200, 255))
+
+
+def meditate(d):
+    d.ellipse([7, 2, 11, 6], fill=(255, 230, 160, 255))
+    d.polygon([(4, 15), (9, 7), (14, 15)], fill=(240, 200, 120, 255))
+    d.line([(3, 15), (15, 15)], fill=(200, 150, 80, 255), width=2)
+
+
+def war_song(d):
+    note(d, (255, 112, 80, 255))
+    d.line([(12, 11), (16, 15)], fill=(230, 230, 240, 255), width=1)
+
+
+def guard_song(d):
+    note(d, (112, 160, 255, 255))
+    d.polygon([(11, 10), (16, 10), (16, 13), (13.5, 16), (11, 13)], fill=(200, 215, 255, 255))
+
+
+def heal_song(d):
+    note(d, (112, 255, 144, 255))
+    d.rectangle([13, 10, 14, 16], fill=(230, 255, 230, 255))
+    d.rectangle([11, 12, 16, 13], fill=(230, 255, 230, 255))
+
+
+def wind_song(d):
+    note(d, (176, 255, 224, 255))
+    d.arc([10, 9, 17, 15], 180, 360, fill=(230, 255, 245, 255))
+
+
+def performing(d):
+    d.ellipse([3, 7, 12, 16], fill=(160, 100, 50, 255), outline=(90, 55, 25, 255))
+    d.line([(10, 9), (16, 2)], fill=(120, 80, 40, 255), width=2)
+    d.ellipse([6, 10, 9, 13], fill=(40, 25, 15, 255))
+
+
+for n, f in [('jolly_roger', jolly_roger), ('counter_stance', counter_stance), ('parry', parry), ('untouchable', untouchable),
+             ('diamond_body', diamond_body), ('meditate', meditate), ('war_song', war_song), ('guard_song', guard_song),
+             ('heal_song', heal_song), ('wind_song', wind_song), ('performing', performing)]:
+    icon(n, f)

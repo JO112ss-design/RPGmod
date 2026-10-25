@@ -52,14 +52,22 @@ public class ForgeScreen extends AbstractContainerScreen<ForgeMenu> {
     private static final int BAR_X = 40, BAR_Y = 148, BAR_W = 176, BAR_H = 12;
     private static final int BTN_Y = 170;
     // select stage
-    private static final int TYPE_X = 10, TYPE_Y = 24, TYPE_W = 38, TYPE_H = 22, TYPE_STEP = 40, TYPES_PER_ROW = 6;
+    private static final int TYPE_X = 8, TYPE_Y = 24, TYPE_W = 22, TYPE_H = 22, TYPE_STEP = 24, TYPES_PER_ROW = 10;
     private static final int MAT_X = 10, MAT_Y = 78, MAT_W = 56, MAT_H = 18, MAT_STEP = 60;
     private static final int PREVIEW_Y = 102;
 
-    /** Weapons on the first row, armor on the second; the shield and the arrows end the armor row. */
+    /** The ten weapons on the first row, armor on the second; the shield and the arrows end the armor row. */
     private static int slot(int i) {
         var t = ForgeableWeapons.TYPES.get(i);
-        return t == com.jo112ss.rpgmod.item.WeaponType.ARROW ? 11 : t == com.jo112ss.rpgmod.item.WeaponType.SHIELD ? 10 : i;
+        if (t == com.jo112ss.rpgmod.item.WeaponType.ARROW) return TYPES_PER_ROW + 5;
+        if (t == com.jo112ss.rpgmod.item.WeaponType.SHIELD) return TYPES_PER_ROW + 4;
+        if (t.isArmor()) return TYPES_PER_ROW + t.ordinal() - com.jo112ss.rpgmod.item.WeaponType.HELMET.ordinal();
+        int k = 0;
+        for (int j = 0; j < i; j++) {
+            var u = ForgeableWeapons.TYPES.get(j);
+            if (!u.isArmor() && u != com.jo112ss.rpgmod.item.WeaponType.SHIELD && u != com.jo112ss.rpgmod.item.WeaponType.ARROW) k++;
+        }
+        return k;
     }
 
     private static int tabX(int i) {
@@ -327,7 +335,7 @@ public class ForgeScreen extends AbstractContainerScreen<ForgeMenu> {
             inset(g, x + tx, y + ty, x + tx + TYPE_W, y + ty + TYPE_H, chosen ? 0xFF3D2E22 : hover ? 0xFF2F2621 : C_BG_INNER);
             if (chosen) g.outline(x + tx, y + ty, TYPE_W, TYPE_H, C_EMBER);
             com.jo112ss.rpgmod.item.WeaponType t = ForgeableWeapons.TYPES.get(i);
-            g.item(new ItemStack(com.jo112ss.rpgmod.item.ModItems.get(t, ForgeableWeapons.MATERIALS.get(chosenMat))), x + tx + 11, y + ty + 3);
+            g.item(new ItemStack(com.jo112ss.rpgmod.item.ModItems.get(t, ForgeableWeapons.MATERIALS.get(chosenMat))), x + tx + 3, y + ty + 3);
             if (hover) g.setTooltipForNextFrame(font, Component.translatable("rpgmod.type." + t.id), mouseX, mouseY);
         }
         for (int i = 0; i < ForgeableWeapons.MATERIALS.size(); i++) {

@@ -108,4 +108,39 @@ public final class ModEffects {
     public static final DeferredHolder<MobEffect, MobEffect> VENOM = EFFECTS.register("venom", com.jo112ss.rpgmod.job.Venom.Effect::new);
     /** Bishop: damage taken -30% and harmful effects wash off. */
     public static final DeferredHolder<MobEffect, MobEffect> SANCTUM = marker("sanctum", MobEffectCategory.BENEFICIAL, 0xFFF0B0);
+
+    // ------------------------------------------------------------------ pirate, lancer, monk, bard (read by job.NewJobHooks)
+
+    /** Pirate's flag: +20% damage dealt. */
+    public static final DeferredHolder<MobEffect, MobEffect> JOLLY_ROGER = marker("jolly_roger", MobEffectCategory.BENEFICIAL, 0x2E86C1);
+    /** Lancer: half damage taken, and enemies that come close or strike are hit back. */
+    public static final DeferredHolder<MobEffect, MobEffect> COUNTER_STANCE = marker("counter_stance", MobEffectCategory.BENEFICIAL, 0xC0703A);
+    /** Monk: the next melee hit taken is turned aside and answered. */
+    public static final DeferredHolder<MobEffect, MobEffect> PARRY = marker("parry", MobEffectCategory.BENEFICIAL, 0xFFC070);
+    /** Monk: untouchable for a moment (the shrinking step). */
+    public static final DeferredHolder<MobEffect, MobEffect> UNTOUCHABLE = marker("untouchable", MobEffectCategory.BENEFICIAL, 0xFFE0B0);
+    /** Monk ultimate: -80% damage taken, no knockback, hits build ki. */
+    public static final DeferredHolder<MobEffect, MobEffect> DIAMOND_BODY = EFFECTS.register("diamond_body",
+            () -> new Simple(MobEffectCategory.BENEFICIAL, 0xFFD27A)
+                    .addAttributeModifier(Attributes.KNOCKBACK_RESISTANCE, id("diamond_body"), AttributeModifier.Operation.ADD_VALUE, amp -> 1.0));
+    /** Monk: meditating (cannot move). */
+    public static final DeferredHolder<MobEffect, MobEffect> MEDITATE = EFFECTS.register("meditate",
+            () -> new Simple(MobEffectCategory.BENEFICIAL, 0xF0E0B0)
+                    .addAttributeModifier(Attributes.MOVEMENT_SPEED, id("meditate"), AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL, amp -> -1.0)
+                    .addAttributeModifier(Attributes.JUMP_STRENGTH, id("meditate_jump"), AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL, amp -> -1.0));
+    /** Bard's war song: +3% damage dealt per level. */
+    public static final DeferredHolder<MobEffect, MobEffect> WAR_SONG = marker("war_song", MobEffectCategory.BENEFICIAL, 0xFF7050);
+    /** Bard's guard song: -3% damage taken per level. */
+    public static final DeferredHolder<MobEffect, MobEffect> GUARD_SONG = marker("guard_song", MobEffectCategory.BENEFICIAL, 0x70A0FF);
+    /** Bard's healing song (the healing itself comes from the performance). */
+    public static final DeferredHolder<MobEffect, MobEffect> HEAL_SONG = marker("heal_song", MobEffectCategory.BENEFICIAL, 0x70FF90);
+    /** Bard's wind song: +4% movement and +3% attack speed per level. */
+    public static final DeferredHolder<MobEffect, MobEffect> WIND_SONG = EFFECTS.register("wind_song",
+            () -> new Simple(MobEffectCategory.BENEFICIAL, 0xB0FFE0)
+                    .addAttributeModifier(Attributes.MOVEMENT_SPEED, id("wind_song"), AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL, amp -> 0.04 * (amp + 1))
+                    .addAttributeModifier(Attributes.ATTACK_SPEED, id("wind_song_attack"), AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL, amp -> 0.03 * (amp + 1)));
+    /** Bard: playing (slower, cannot attack). */
+    public static final DeferredHolder<MobEffect, MobEffect> PERFORMING = EFFECTS.register("performing",
+            () -> new Simple(MobEffectCategory.NEUTRAL, 0x48C9B0)
+                    .addAttributeModifier(Attributes.MOVEMENT_SPEED, id("performing"), AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL, amp -> -0.3));
 }

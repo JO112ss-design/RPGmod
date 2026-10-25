@@ -25,6 +25,10 @@ public final class JobActionHandler {
                 com.jo112ss.rpgmod.job.DualWield.strike(player, p.arg());
                 return;
             }
+            case JobActionPayload.JUDGE_NOTE -> { // limited by the notes that have come so far
+                com.jo112ss.rpgmod.job.Bard.judge(player, p.arg());
+                return;
+            }
             default -> { }
         }
         long now = System.currentTimeMillis();

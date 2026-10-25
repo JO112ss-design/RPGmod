@@ -622,7 +622,8 @@ public final class JobManager {
     /** Magic attack of the held staff's material (0 when not holding a staff). */
     public static double staffMagic(Player player) {
         var item = player.getMainHandItem().getItem();
-        if (ModItems.typeOf(item) != WeaponType.STAFF) return 0;
+        var type = ModItems.typeOf(item);
+        if (type == null || !type.magical()) return 0; // staffs and lutes
         var mat = ModItems.materialOf(item);
         return mat == null ? 0 : mat.staffMagic();
     }
@@ -630,7 +631,8 @@ public final class JobManager {
     /** The held staff's material multiplier on the whole magic attack (1 without a staff). */
     public static double staffMultiplier(Player player) {
         var item = player.getMainHandItem().getItem();
-        if (ModItems.typeOf(item) != WeaponType.STAFF) return 1;
+        var type = ModItems.typeOf(item);
+        if (type == null || !type.magical()) return 1;
         var mat = ModItems.materialOf(item);
         return mat == null ? 1 : mat.multiplier;
     }

@@ -9,12 +9,21 @@ def write(path, obj):
 
 MATS = ['copper', 'iron', 'gold', 'diamond', 'netherite']
 INGOT = {'copper': 'minecraft:copper_ingot', 'iron': 'minecraft:iron_ingot', 'gold': 'minecraft:gold_ingot', 'diamond': 'minecraft:diamond'}
-MELEE = ['dagger', 'mace', 'hammer', 'staff']
+MELEE = ['dagger', 'mace', 'hammer', 'staff', 'gunblade', 'spear', 'knuckle', 'lute']
 
 # ---- models
 for m in MATS:
     for t in MELEE:
         n = f'{m}_{t}'
+        if t == 'spear':
+            # the vanilla spear models (flat in the inventory, the long spear in hand)
+            v = 'minecraft:item/' + {'gold': 'golden'}.get(m, m) + '_spear'
+            write(f'{A}/items/{n}.json', {'model': {
+                'type': 'minecraft:select', 'property': 'minecraft:display_context',
+                'cases': [{'when': ['gui', 'ground', 'fixed', 'on_shelf'], 'model': {'type': 'minecraft:model', 'model': v}}],
+                'fallback': {'type': 'minecraft:model', 'model': v + '_in_hand'}},
+                'swap_animation_scale': 1.95})
+            continue
         write(f'{A}/models/item/{n}.json', {'parent': 'minecraft:item/handheld', 'textures': {'layer0': f'rpgmod:item/{n}'}})
         write(f'{A}/items/{n}.json', {'model': {'type': 'minecraft:model', 'model': f'rpgmod:item/{n}'}})
     n = f'{m}_bow'
@@ -44,6 +53,10 @@ PATTERNS = {
     'mace': ([' I ', 'III', ' S '], {'I': None, 'S': 'minecraft:stick'}),
     'hammer': (['III', 'ISI', ' S '], {'I': None, 'S': 'minecraft:stick'}),
     'staff': (['A', 'I', 'S'], {'A': 'minecraft:glass', 'I': None, 'S': 'minecraft:stick'}),
+    'gunblade': ([' II', 'GI ', 'S  '], {'I': None, 'G': 'minecraft:gunpowder', 'S': 'minecraft:stick'}),
+    'spear': (['  I', ' S ', 'S  '], {'I': None, 'S': 'minecraft:stick'}),
+    'knuckle': (['ILI'], {'I': None, 'L': 'minecraft:leather'}),
+    'lute': ([' I ', 'SIS', 'PPP'], {'I': None, 'S': 'minecraft:string', 'P': '#minecraft:planks'}),
 }
 for m, ingot in INGOT.items():
     for t, (pat, key) in PATTERNS.items():
@@ -69,13 +82,16 @@ for tag in ['sharp_weapon', 'weapon', 'melee_weapon', 'fire_aspect']:
 shields = [f'rpgmod:{m}_shield' for m in SHIELD_MATS]
 write(f'{D}/minecraft/tags/item/enchantable/durability.json', {'replace': False, 'values': melee + bows + shields})
 write(f'{D}/minecraft/tags/item/enchantable/bow.json', {'replace': False, 'values': bows})
+spears = [f'rpgmod:{m}_spear' for m in MATS]
+write(f'{D}/minecraft/tags/item/spears.json', {'replace': False, 'values': spears})
+write(f'{D}/minecraft/tags/item/enchantable/lunge.json', {'replace': False, 'values': spears})
 write(f'{D}/minecraft/tags/item/enchantable/vanishing.json', {'replace': False, 'values': melee + bows + shields})
 
 # ---- lang
 JA_M = {'copper': '銅', 'iron': '鉄', 'gold': '金', 'diamond': 'ダイヤモンド', 'netherite': 'ネザライト'}
 EN_M = {'copper': 'Copper', 'iron': 'Iron', 'gold': 'Golden', 'diamond': 'Diamond', 'netherite': 'Netherite'}
-JA_T = {'shield': '盾', 'sword': '剣', 'dagger': '短剣', 'mace': 'メイス', 'hammer': 'ハンマー', 'staff': '魔法の杖', 'bow': '弓', 'arrow': '矢'}
-EN_T = {'shield': 'Shield', 'sword': 'Sword', 'dagger': 'Dagger', 'mace': 'Mace', 'hammer': 'Hammer', 'staff': 'Magic Staff', 'bow': 'Bow', 'arrow': 'Arrows'}
+JA_T = {'shield': '盾', 'sword': '剣', 'dagger': '短剣', 'mace': 'メイス', 'hammer': 'ハンマー', 'staff': '魔法の杖', 'bow': '弓', 'arrow': '矢', 'gunblade': '銃剣', 'spear': '槍', 'knuckle': 'ナックル', 'lute': 'リュート'}
+EN_T = {'shield': 'Shield', 'sword': 'Sword', 'dagger': 'Dagger', 'mace': 'Mace', 'hammer': 'Hammer', 'staff': 'Magic Staff', 'bow': 'Bow', 'arrow': 'Arrows', 'gunblade': 'Gunblade', 'spear': 'Spear', 'knuckle': 'Knuckles', 'lute': 'Lute'}
 JA_ARMOR = {'helmet': 'ヘルメット', 'chestplate': 'チェストプレート', 'leggings': 'レギンス', 'boots': 'ブーツ'}
 EN_ARMOR = {'helmet': 'Helmet', 'chestplate': 'Chestplate', 'leggings': 'Leggings', 'boots': 'Boots'}
 PARTS_JA = {'sword': ['切先', '前部', '中央', '後部', '根元'], 'dagger': ['切先', '刃', '根元'],
@@ -83,13 +99,15 @@ PARTS_JA = {'sword': ['切先', '前部', '中央', '後部', '根元'], 'dagger
             'staff': ['杖頭', '飾り', '柄上', '柄中', '柄下'], 'bow': ['上弭', '上リム', '握り', '下リム', '下弭'],
             'helmet': ['左頬', '左側面', '頭頂', '右側面', '右頬'], 'chestplate': ['左肩', '左胸', '胸中央', '右胸', '右肩'],
             'leggings': ['左裾', '左腿', '腰', '右腿', '右裾'], 'boots': ['左つま先', '左かかと', '右かかと', '右つま先'], 'arrow': ['矢じり', '矢柄', '矢羽根'],
-            'shield': ['左縁', '左面', '中央', '右面', '右縁']}
+            'shield': ['左縁', '左面', '中央', '右面', '右縁'], 'gunblade': ['銃口', '銃剣', '銃身', '機関部', '銃床'],
+            'spear': ['穂先', '刃', '口金', '柄上', '柄下'], 'knuckle': ['突起', '甲板', '握り'], 'lute': ['糸倉', '棹', '胴', '駒', '尾']}
 PARTS_EN = {'sword': ['Tip', 'Fore', 'Middle', 'Rear', 'Base'], 'dagger': ['Tip', 'Blade', 'Base'],
             'mace': ['Tip', 'Head', 'Neck', 'Upper shaft', 'Lower shaft'], 'hammer': ['Face', 'Head', 'Neck', 'Handle'],
             'staff': ['Head', 'Ornament', 'Upper shaft', 'Middle shaft', 'Lower shaft'], 'bow': ['Upper tip', 'Upper limb', 'Grip', 'Lower limb', 'Lower tip'],
             'helmet': ['Left cheek', 'Left side', 'Crown', 'Right side', 'Right cheek'], 'chestplate': ['Left shoulder', 'Left chest', 'Centre', 'Right chest', 'Right shoulder'],
             'leggings': ['Left hem', 'Left thigh', 'Waist', 'Right thigh', 'Right hem'], 'boots': ['Left toe', 'Left heel', 'Right heel', 'Right toe'], 'arrow': ['Head', 'Shaft', 'Fletching'],
-            'shield': ['Left rim', 'Left face', 'Boss', 'Right face', 'Right rim']}
+            'shield': ['Left rim', 'Left face', 'Boss', 'Right face', 'Right rim'], 'gunblade': ['Muzzle', 'Bayonet', 'Barrel', 'Lock', 'Stock'],
+            'spear': ['Point', 'Head', 'Socket', 'Upper shaft', 'Lower shaft'], 'knuckle': ['Studs', 'Plate', 'Grip'], 'lute': ['Pegbox', 'Neck', 'Body', 'Bridge', 'Tail']}
 JA_MAT_SHORT = {'copper': '銅', 'iron': '鉄', 'gold': '金', 'diamond': 'ダイヤ'}
 EN_MAT_SHORT = {'copper': 'Copper', 'iron': 'Iron', 'gold': 'Gold', 'diamond': 'Diamond'}
 for lang, M, T, P, MS, extra in (

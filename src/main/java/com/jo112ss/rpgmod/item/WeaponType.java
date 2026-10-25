@@ -19,6 +19,14 @@ public enum WeaponType {
     HAMMER("hammer", 18.0F, -3.3F, 5, List.of(new Extra(() -> Items.STICK, 2)), TargetProfile.HAMMER, 2, 123),
     STAFF("staff", 4.5F, -2.6F, 1, List.of(new Extra(() -> Items.STICK, 1), new Extra(() -> Items.GLASS, 1)), TargetProfile.STAFF, 2, 123),
     BOW("bow", 0, 0, 2, List.of(new Extra(() -> Items.BOW, 1)), TargetProfile.BOW, 2, 155),
+    /** Pirate: a bayonet you stab with and a gun you fire with right click (see GunbladeItem). */
+    GUNBLADE("gunblade", 7.5F, -2.6F, 3, List.of(new Extra(() -> Items.GUNPOWDER, 1), new Extra(() -> Items.STICK, 1)), TargetProfile.GUNBLADE, 2, 155),
+    /** Lancer: hits harder and reaches further (+1.5 blocks). */
+    SPEAR("spear", 10.5F, -2.9F, 2, List.of(new Extra(() -> Items.STICK, 2)), TargetProfile.SPEAR, 2, 155),
+    /** Monk: light and fast. */
+    KNUCKLE("knuckle", 4.5F, -1.2F, 2, List.of(new Extra(() -> Items.LEATHER, 1)), TargetProfile.KNUCKLE, 40, 85),
+    /** Bard: a lute - magic attack like a staff, played with the songs. */
+    LUTE("lute", 3.0F, -2.4F, 2, List.of(new Extra(() -> Items.STRING, 2), new Extra(() -> Items.OAK_PLANKS, 2)), TargetProfile.LUTE, 2, 155),
     HELMET("helmet", 0, 0, 5, List.of(), TargetProfile.HELMET, 10, 140),
     CHESTPLATE("chestplate", 0, 0, 8, List.of(), TargetProfile.CHESTPLATE, 10, 140),
     LEGGINGS("leggings", 0, 0, 7, List.of(), TargetProfile.LEGGINGS, 10, 140),
@@ -62,6 +70,11 @@ public enum WeaponType {
     /** Armor and shields roll from the armor option pool. */
     public boolean defensive() {
         return isArmor() || this == SHIELD;
+    }
+
+    /** Weapons that carry magic attack (and roll the magic forging options): staffs and lutes. */
+    public boolean magical() {
+        return this == STAFF || this == LUTE;
     }
 
     /** Vanilla items (swords and armor) are not registered by this mod. */

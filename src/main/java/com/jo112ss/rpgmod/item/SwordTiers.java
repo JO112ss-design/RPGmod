@@ -21,7 +21,8 @@ import net.neoforged.neoforge.event.ModifyDefaultComponentsEvent;
 public final class SwordTiers {
     private SwordTiers() {}
 
-    private static final WeaponType[] MELEE = {WeaponType.SWORD, WeaponType.DAGGER, WeaponType.MACE, WeaponType.HAMMER, WeaponType.STAFF};
+    private static final WeaponType[] MELEE = {WeaponType.SWORD, WeaponType.DAGGER, WeaponType.MACE, WeaponType.HAMMER, WeaponType.STAFF,
+            WeaponType.GUNBLADE, WeaponType.SPEAR, WeaponType.KNUCKLE, WeaponType.LUTE};
     /** The material multiplier's modifier on a weapon (monsters' gear cancels most of it). */
     public static final net.minecraft.resources.Identifier MATERIAL_ID = net.minecraft.resources.Identifier.fromNamespaceAndPath(RpgMod.MODID, "material_power");
 

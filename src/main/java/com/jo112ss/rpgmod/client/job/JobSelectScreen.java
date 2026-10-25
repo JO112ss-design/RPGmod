@@ -26,7 +26,7 @@ import net.minecraft.world.item.ItemStack;
  */
 public class JobSelectScreen extends Screen {
     private static final int W = 320, H = 252;
-    private static final int CARD_W = 72, CARD_H = 62, GAP = 6, CARDS_Y = 30;
+    private static final int CARD_W = 48, CARD_H = 62, GAP = 4, CARDS_Y = 30, PER_ROW = 6;
 
     private final boolean change;
     private boolean advTab;
@@ -53,9 +53,21 @@ public class JobSelectScreen extends Screen {
         return JobDefs.job(idOf(i));
     }
 
-    /** Lang key of why card i cannot be picked (current job, not mastered), or null. */
+    /** Lang key of why card i cannot be picked (current job, not mastered, no advanced job yet), or null. */
     private String problem(int i) {
-        return change ? com.jo112ss.rpgmod.job.JobManager.changeProblem(JobClient.data(), idOf(i)) : null;
+        if (!change) return null;
+        if (advTab && JobDefs.advancedOf(JobType.values()[i].id) == null) return "rpgmod.jobchange.no_advanced";
+        return com.jo112ss.rpgmod.job.JobManager.changeProblem(JobClient.data(), idOf(i));
+    }
+
+    /** Text centred at cx, shrunk to fit maxWidth (and at most {@code scale}). */
+    private void fitText(GuiGraphicsExtractor g, Component text, int cx, int y, int maxWidth, float scale, int color) {
+        float s = Math.min(scale, maxWidth / (float) Math.max(1, font.width(text)));
+        g.pose().pushMatrix();
+        g.pose().translate(cx, y);
+        g.pose().scale(s, s);
+        g.text(font, text, -font.width(text) / 2, 0, color, false);
+        g.pose().popMatrix();
     }
 
     private void updateConfirm() {
@@ -103,11 +115,11 @@ public class JobSelectScreen extends Screen {
     }
 
     private int cardX(int i) {
-        return left + 7 + (i % 4) * (CARD_W + GAP);
+        return left + 7 + (i % PER_ROW) * (CARD_W + GAP);
     }
 
     private int cardY(int i) {
-        return top + CARDS_Y + (i / 4) * (CARD_H + GAP);
+        return top + CARDS_Y + (i / PER_ROW) * (CARD_H + GAP);
     }
 
     @Override
@@ -177,36 +189,34 @@ public class JobSelectScreen extends Screen {
         boolean sel = i == selected;
         if (sel || hover) y -= 2;
         String problem = problem(i);
-        boolean locked = "rpgmod.jobchange.need_mastery".equals(problem);
+        boolean soon = "rpgmod.jobchange.no_advanced".equals(problem);
+        boolean locked = "rpgmod.jobchange.need_mastery".equals(problem) || soon;
         boolean current = "rpgmod.jobchange.current".equals(problem);
         int c = locked ? 0x50555F : job.color(); // a locked advanced job gives nothing away, not even its colour
+        int cx = x + CARD_W / 2;
         g.fill(x, y, x + CARD_W, y + CARD_H, sel ? Ui.argb(c) : hover ? Ui.EDGE_LIGHT : Ui.EDGE);
         g.fillGradient(x + 1, y + 1, x + CARD_W - 1, y + CARD_H - 1, Ui.mix(Ui.argb(c), 0xFF14161C, 0.78f), 0xFF0E1015);
         g.fill(x + 1, y + 1, x + CARD_W - 1, y + 3, Ui.argb(c));
-        Ui.disc(g, x + CARD_W / 2, y + 20, 13, Ui.mix(Ui.argb(c), 0xFF000000, 0.35f));
-        Ui.circle(g, x + CARD_W / 2, y + 20, 13, Ui.argb(c), 1);
-        Ui.glyph(g, font, locked ? "?" : job.glyph(), x + CARD_W / 2 + 1, y + 21, 1.6f, locked ? Ui.DIM : Ui.TEXT);
-        Component name = locked ? Component.translatable("rpgmod.jobchange.hidden") : Component.translatable("rpgmod.job." + job.id());
-        g.centeredText(font, font.substrByWidth(name, CARD_W - 4).getString(), x + CARD_W / 2, y + (change ? 36 : 38), sel ? Ui.argb(c) : locked ? Ui.DIM : Ui.TEXT);
+        Ui.disc(g, cx, y + 18, 11, Ui.mix(Ui.argb(c), 0xFF000000, 0.35f));
+        Ui.circle(g, cx, y + 18, 11, Ui.argb(c), 1);
+        Ui.glyph(g, font, locked ? "?" : job.glyph(), cx + 1, y + 19, 1.35f, locked ? Ui.DIM : Ui.TEXT);
+        Component name = soon ? Component.translatable("rpgmod.jobchange.soon") : locked ? Component.translatable("rpgmod.jobchange.hidden")
+                : Component.translatable("rpgmod.job." + job.id());
+        fitText(g, name, cx, y + 33, CARD_W - 4, 1f, sel ? Ui.argb(c) : locked ? Ui.DIM : Ui.TEXT);
         if (!change) {
-            Component role = Component.translatable("rpgmod.job." + job.id() + ".role");
-            g.centeredText(font, role, x + CARD_W / 2, y + 50, Ui.DIM);
+            fitText(g, Component.translatable("rpgmod.job." + job.id() + ".role"), cx, y + 47, CARD_W - 4, 0.75f, Ui.DIM);
             return;
         }
+        if (soon) return;
         // job change: current job / mastery of the base job (the key to its advanced job)
         if (current) {
-            g.centeredText(font, Component.translatable("rpgmod.jobchange.current_tag"), x + CARD_W / 2, y + 50, Ui.GOLD);
+            fitText(g, Component.translatable("rpgmod.jobchange.current_tag"), cx, y + 47, CARD_W - 4, 0.8f, Ui.GOLD);
         } else {
             int pct = JobClient.data().masteryPercent(base.id);
-            int bx = x + 6, bw = CARD_W - 12, by = y + 55;
+            int bx = x + 5, bw = CARD_W - 10, by = y + 55;
             g.fill(bx, by, bx + bw, by + 3, 0xFF0B0D12);
             g.fill(bx, by, bx + Math.round(bw * pct / 100f), by + 3, pct >= 100 ? Ui.GOLD : Ui.EXP);
-            Component m = Component.translatable("rpgmod.jobchange.mastery_pct", pct);
-            g.pose().pushMatrix();
-            g.pose().translate(x + CARD_W / 2f, y + 46f);
-            g.pose().scale(0.8f, 0.8f);
-            g.text(font, m, -font.width(m) / 2, 0, locked ? Ui.BAD : pct >= 100 ? Ui.GOLD : Ui.DIM, false);
-            g.pose().popMatrix();
+            fitText(g, Component.translatable("rpgmod.jobchange.mastery_pct", pct), cx, y + 45, CARD_W - 4, 0.75f, locked ? Ui.BAD : pct >= 100 ? Ui.GOLD : Ui.DIM);
         }
     }
 
@@ -221,10 +231,12 @@ public class JobSelectScreen extends Screen {
         JobType job = JobType.values()[selected];
         JobDefs.Job def = defOf(selected);
         String problem = problem(selected);
-        boolean hidden = "rpgmod.jobchange.need_mastery".equals(problem);
-        g.text(font, hidden ? Component.translatable("rpgmod.jobchange.hidden") : Component.translatable("rpgmod.job." + def.id()), x + 6, y + 5,
-                hidden ? Ui.DIM : Ui.argb(def.color()), true);
-        Component desc = "rpgmod.jobchange.need_mastery".equals(problem)
+        boolean soon = "rpgmod.jobchange.no_advanced".equals(problem);
+        boolean hidden = "rpgmod.jobchange.need_mastery".equals(problem) || soon;
+        g.text(font, soon ? Component.translatable("rpgmod.jobchange.soon") : hidden ? Component.translatable("rpgmod.jobchange.hidden")
+                : Component.translatable("rpgmod.job." + def.id()), x + 6, y + 5, hidden ? Ui.DIM : Ui.argb(def.color()), true);
+        Component desc = soon ? Component.translatable("rpgmod.jobchange.soon_desc", Component.translatable("rpgmod.job." + job.id))
+                : "rpgmod.jobchange.need_mastery".equals(problem)
                 ? Component.translatable("rpgmod.jobchange.locked_desc", Component.translatable("rpgmod.job." + job.id), JobClient.data().masteryPercent(job.id))
                 : Component.translatable("rpgmod.job." + def.id() + ".desc");
         g.textWithWordWrap(font, desc, x + 6, y + 17, 172, problem != null && !"rpgmod.jobchange.current".equals(problem) ? Ui.BAD : Ui.TEXT, false);

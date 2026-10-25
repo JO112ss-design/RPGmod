@@ -20,6 +20,7 @@ public record JobActionPayload(int action, int arg, String text) implements Cust
     public static final int LEFT_CAST = 9;     // arg = 1 left click pressed, 0 released (spellmaster)
     public static final int OFFHAND_ATTACK = 10; // arg = entity id or -1 (nightblade's off-hand blade)
     public static final int CHANGE_JOB = 11;   // text = base or advanced job id (spends a job change book)
+    public static final int JUDGE_NOTE = 12;   // arg = 2 perfect, 1 good, 0 miss (bard's song)
 
     public static final Type<JobActionPayload> TYPE = new Type<>(Identifier.fromNamespaceAndPath(RpgMod.MODID, "job_action"));
 

@@ -16,5 +16,6 @@ public final class BossClient {
         event.registerEntityRenderer(ModRegistries.KING_SLIME.get(), KingSlimeRenderer::new);
         event.registerEntityRenderer(ModRegistries.GOLEM.get(), GolemRenderer::new);
         event.registerEntityRenderer(ModRegistries.GOLEM_PILLAR.get(), GolemPillarRenderer::new);
+        event.registerEntityRenderer(ModRegistries.SKILL_PROP.get(), com.jo112ss.rpgmod.client.job.SkillPropRenderer::new);
     }
 }

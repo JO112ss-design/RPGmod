@@ -30,7 +30,7 @@ public final class Fx {
     public enum S {
         GLOW, FLARE, ORB, SPARK, RING, WAVE, STREAK, BEAM, SLASH, SHARD, CROSS, PETAL, FEATHER, SMOKE, HEX,
         CIRCLE_ARCANE, CIRCLE_HOLY, CIRCLE_HEX, CIRCLE_CLOCK, CIRCLE_NATURE,
-        RUNE0, RUNE1, RUNE2, RUNE3, COIN, CARD, DICE, SKULL;
+        RUNE0, RUNE1, RUNE2, RUNE3, COIN, CARD, DICE, SKULL, NOTE;
 
         final Identifier id = Identifier.fromNamespaceAndPath(RpgMod.MODID, "fx_" + name().toLowerCase());
 

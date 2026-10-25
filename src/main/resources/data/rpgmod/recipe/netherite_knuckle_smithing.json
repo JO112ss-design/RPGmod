@@ -1,0 +1,9 @@
+{
+  "type": "minecraft:smithing_transform",
+  "template": "minecraft:netherite_upgrade_smithing_template",
+  "base": "rpgmod:diamond_knuckle",
+  "addition": "minecraft:netherite_ingot",
+  "result": {
+    "id": "rpgmod:netherite_knuckle"
+  }
+}

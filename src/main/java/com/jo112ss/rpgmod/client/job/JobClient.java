@@ -76,6 +76,12 @@ public final class JobClient {
         Minecraft mc = Minecraft.getInstance();
         if (mc.player == null) return;
         // on the attack button (the default), the left-hand spell takes it over; bound elsewhere, attacks stay
+        if (event.isAttack() && BardClient.performing()) { // the bard's notes, not an attack
+            event.setCanceled(true);
+            event.setSwingHand(false);
+            BardClient.click();
+            return;
+        }
         if (event.isAttack() && leftCasting() && JobKeys.LEFT_SPELL.getKey().equals(mc.options.keyAttack.getKey())) {
             event.setCanceled(true);
             event.setSwingHand(false);
@@ -96,6 +102,7 @@ public final class JobClient {
     public static void onTick(ClientTickEvent.Post event) {
         Minecraft mc = Minecraft.getInstance();
         tickLeftCast(mc);
+        BardClient.tick();
         if (pendingSelect && mc.player != null && mc.gui.screen() == null && mc.player.tickCount > 20) {
             pendingSelect = false;
             if (!data().hasJob()) mc.gui.setScreen(new JobSelectScreen(false));

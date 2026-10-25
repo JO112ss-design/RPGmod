@@ -50,7 +50,7 @@ public final class JobDefs {
     public static final Map<String, Job> JOBS = new LinkedHashMap<>();
 
     /** Jobs whose skills scale with magic attack (staff + own magic) instead of attack (weapon + own). */
-    public static final java.util.Set<String> MAGIC_JOBS = java.util.Set.of("wizard", "healer", "enchanter", "spellmaster", "runemaster", "bishop");
+    public static final java.util.Set<String> MAGIC_JOBS = java.util.Set.of("wizard", "healer", "enchanter", "spellmaster", "runemaster", "bishop", "bard");
 
     /** Spells, and every skill of the caster jobs, use magic attack. */
     public static boolean isMagic(SkillDef def) {
@@ -69,7 +69,7 @@ public final class JobDefs {
 
     /** Skills whose power is not a damage ratio although their effect type usually is (and the reverse). */
     private static final java.util.Set<String> NO_POWER_LINE = java.util.Set.of();
-    private static final java.util.Set<String> DAMAGE_TOO = java.util.Set.of("decoy", "reprisal", "grand_rune");
+    private static final java.util.Set<String> DAMAGE_TOO = java.util.Set.of("decoy", "reprisal", "grand_rune", "counter_stance", "parry");
     /** Damage skills that keep their ratio (see SKILL_DAMAGE): the wizard's plain bolt is its normal attack. */
     private static final java.util.Set<String> UNSCALED = java.util.Set.of("magic_bolt", "reprisal"); // reprisal: 15% of attack, as asked
 
@@ -204,6 +204,64 @@ public final class JobDefs {
                 List.of(
                         skill("jackpot", SkillKind.ULTIMATE, SkillEffect.GAMBLE, 90, 35, 8, 10, 15, List.of(), 0, "当"),
                         skill("roulette", SkillKind.ULTIMATE, SkillEffect.BUFF, 90, 35, 0, 0, 12, List.of(), 0, "輪")),
+                List.of());
+        // ---- Pirate: a gunblade - shots from range, the bayonet up close (and it reloads the gun)
+        job("pirate", 0x2E86C1, "海", List.of(JobStat.ATTACK_DAMAGE, JobStat.CRIT_CHANCE, JobStat.MAX_HEALTH, JobStat.ATTACK_SPEED),
+                stats(JobStat.MAX_HEALTH, 3, JobStat.ATTACK_DAMAGE, 4, JobStat.CRIT_CHANCE, 3), stats(JobStat.ATTACK_DAMAGE, 0.6, JobStat.MAX_HEALTH, hpGrow(0.9, 3)),
+                List.of(
+                        skill("boarding_shot", SkillKind.ACTIVE, SkillEffect.DASH, 7, 11, 2.4, 3.5, 0, List.of(), 0, "撃"),
+                        skill("quick_draw", SkillKind.ACTIVE, SkillEffect.SHOT, 10, 14, 1.2, 32, 0, List.of(), 0, "速"),
+                        skill("cannon", SkillKind.ACTIVE, SkillEffect.SHOT, 18, 21, 1.6, 16, 10, List.of(), 0, "砲"),
+                        skill("powder_keg", SkillKind.ACTIVE, SkillEffect.WHIRL, 12, 14, 3.0, 3.5, 0, List.of(), 0, "樽"),
+                        skill("grapple", SkillKind.ACTIVE, SkillEffect.DASH, 9, 11, 0.8, 20, 0, List.of(), 0, "鉤"),
+                        skill("rum", SkillKind.ACTIVE, SkillEffect.BUFF, 30, 14, 0, 0, 8, List.of("minecraft:haste"), 1, "酒")),
+                List.of(
+                        skill("broadside", SkillKind.ULTIMATE, SkillEffect.WHIRL, 90, 42, 2.0, 7, 4, List.of(), 0, "斉"),
+                        skill("jolly_roger", SkillKind.ULTIMATE, SkillEffect.BUFF, 90, 35, 0, 10, 15, List.of(), 0, "旗")),
+                List.of());
+        // ---- Lancer: long reach and charges; hits from the far end of the spear count for more
+        job("lancer", 0xC0703A, "槍", List.of(JobStat.ATTACK_DAMAGE, JobStat.MAX_HEALTH, JobStat.ARMOR, JobStat.MOVEMENT_SPEED),
+                stats(JobStat.MAX_HEALTH, 4, JobStat.ATTACK_DAMAGE, 6), stats(JobStat.ATTACK_DAMAGE, 0.6, JobStat.MAX_HEALTH, hpGrow(1.0, 4)),
+                List.of(
+                        skill("lance_charge", SkillKind.ACTIVE, SkillEffect.DASH, 8, 11, 2.0, 8, 0, List.of(), 0, "突"),
+                        skill("spear_throw", SkillKind.ACTIVE, SkillEffect.BOLT, 9, 13, 2.6, 24, 0, List.of(), 0, "投"),
+                        skill("spear_sweep", SkillKind.ACTIVE, SkillEffect.SWEEP, 8, 11, 1.8, 5.5, 0, List.of(), 0, "薙"),
+                        skill("leap_thrust", SkillKind.ACTIVE, SkillEffect.WHIRL, 12, 14, 2.6, 2.5, 0, List.of(), 0, "跳"),
+                        skill("counter_stance", SkillKind.ACTIVE, SkillEffect.BUFF, 14, 11, 3.0, 5, 2, List.of(), 0, "構"),
+                        skill("rapid_thrust", SkillKind.ACTIVE, SkillEffect.SWEEP, 10, 14, 0.7, 6, 0, List.of(), 0, "連")),
+                List.of(
+                        skill("dragon_fang", SkillKind.ULTIMATE, SkillEffect.WHIRL, 90, 42, 6.0, 6, 0, List.of(), 0, "竜"),
+                        skill("spear_rain", SkillKind.ULTIMATE, SkillEffect.WHIRL, 90, 42, 0.9, 6, 3, List.of(), 0, "雨")),
+                List.of());
+        // ---- Monk: fast fists; hits build ki, the big moves spend it
+        job("monk", 0xE67E22, "拳", List.of(JobStat.ATTACK_DAMAGE, JobStat.ATTACK_SPEED, JobStat.CRIT_CHANCE, JobStat.MOVEMENT_SPEED),
+                stats(JobStat.MAX_HEALTH, 2, JobStat.ATTACK_DAMAGE, 4, JobStat.ATTACK_SPEED, 10, JobStat.MOVEMENT_SPEED, 5),
+                stats(JobStat.ATTACK_DAMAGE, 0.6, JobStat.MAX_HEALTH, hpGrow(1.0, 2)),
+                List.of(
+                        skill("combo", SkillKind.ACTIVE, SkillEffect.SWEEP, 5, 7, 0.9, 3.5, 0, List.of(), 0, "拳"),
+                        skill("ki_blast", SkillKind.ACTIVE, SkillEffect.SWEEP, 8, 11, 1.0, 4, 0, List.of(), 0, "勁"),
+                        skill("parry", SkillKind.ACTIVE, SkillEffect.BUFF, 10, 7, 1.5, 0, 1.2, List.of(), 0, "流"),
+                        skill("whirl_kick", SkillKind.ACTIVE, SkillEffect.WHIRL, 9, 11, 1.5, 3.5, 0, List.of(), 0, "脚"),
+                        skill("meditate", SkillKind.ACTIVE, SkillEffect.BUFF, 25, 7, 0, 0, 3, List.of(), 0, "瞑"),
+                        skill("shrink_step", SkillKind.ACTIVE, SkillEffect.DASH, 7, 7, 1.2, 7, 0, List.of(), 0, "縮")),
+                List.of(
+                        skill("hundred_fists", SkillKind.ULTIMATE, SkillEffect.SWEEP, 90, 42, 0.45, 4, 3, List.of(), 0, "百"),
+                        skill("diamond_body", SkillKind.ULTIMATE, SkillEffect.BUFF, 90, 35, 0, 0, 6, List.of(), 0, "剛")),
+                List.of());
+        // ---- Bard: songs around the party, stronger the better they are played (the note lane)
+        job("bard", 0x48C9B0, "詩", List.of(JobStat.MAX_MANA, JobStat.MAGIC_ATTACK, JobStat.MANA_REGEN, JobStat.COOLDOWN_REDUCTION, JobStat.MAX_HEALTH),
+                stats(JobStat.MAX_MANA, 50, JobStat.MAGIC_ATTACK, 3, JobStat.MANA_REGEN, 0.5),
+                stats(JobStat.MAGIC_ATTACK, 0.6, JobStat.ATTACK_DAMAGE, 0.3, JobStat.MAX_MANA, 1, JobStat.MAX_HEALTH, hpGrow(0.6, 0)),
+                List.of(
+                        skill("war_song", SkillKind.ACTIVE, SkillEffect.BUFF, 3, 14, 0, 6, 12, List.of(), 0, "戦"),
+                        skill("heal_song", SkillKind.ACTIVE, SkillEffect.BUFF, 3, 18, 0, 6, 12, List.of(), 0, "癒"),
+                        skill("guard_song", SkillKind.ACTIVE, SkillEffect.BUFF, 3, 14, 0, 6, 12, List.of(), 0, "守"),
+                        skill("wind_song", SkillKind.ACTIVE, SkillEffect.BUFF, 3, 14, 0, 6, 12, List.of(), 0, "風"),
+                        skill("discord", SkillKind.ACTIVE, SkillEffect.DEBUFF, 3, 18, 0.5, 6, 12, List.of(), 0, "乱"),
+                        skill("lullaby", SkillKind.ACTIVE, SkillEffect.DEBUFF, 3, 18, 0, 6, 12, List.of("minecraft:slowness", "rpgmod:attack_down"), 3, "眠")),
+                List.of(
+                        skill("grand_concert", SkillKind.ULTIMATE, SkillEffect.BUFF, 90, 50, 0, 10, 10, List.of(), 0, "奏"),
+                        skill("finale", SkillKind.ULTIMATE, SkillEffect.WHIRL, 90, 42, 3.0, 10, 0, List.of(), 0, "幕")),
                 List.of());
     }
 

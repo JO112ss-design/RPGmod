@@ -39,7 +39,8 @@ public final class ForgeTooltips {
                     String.format("%.2f", bow.material().multiplier)).withStyle(ChatFormatting.DARK_GREEN));
         }
         net.minecraft.world.item.Item it = event.getItemStack().getItem();
-        if (com.jo112ss.rpgmod.item.ModItems.typeOf(it) == com.jo112ss.rpgmod.item.WeaponType.STAFF) {
+        var wt = com.jo112ss.rpgmod.item.ModItems.typeOf(it);
+        if (wt != null && wt.magical()) {
             var mat = com.jo112ss.rpgmod.item.ModItems.materialOf(it);
             if (mat != null) tip.add(Math.min(1, tip.size()), Component.translatable("rpgmod.tooltip.staff_bonus",
                     String.format("%.0f", mat.staffMagic()), String.format("%.2f", mat.multiplier)).withStyle(ChatFormatting.LIGHT_PURPLE));

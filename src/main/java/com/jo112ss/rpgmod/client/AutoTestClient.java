@@ -217,6 +217,23 @@ public final class AutoTestClient {
             case "wildcard" -> new int[] {10, 30};
             case "radiant_lance", "switcheroo", "vanish", "shadow_run", "decapitate", "phase_shift", "holy_nova" -> new int[] {3};
             case "mob:dragonhp" -> new int[] {100, 140};
+            case "nj:pirate", "nj:lancer", "nj:monk" -> new int[] {8};
+            case "boarding_shot" -> new int[] {4, 9};
+            case "quick_draw", "spear_sweep", "ki_blast", "whirl_kick", "shrink_step", "grapple", "finale" -> new int[] {3};
+            case "cannon" -> new int[] {12, 44};
+            case "powder_keg" -> new int[] {20, 42};
+            case "broadside", "spear_rain" -> new int[] {12, 30};
+            case "lance_charge" -> new int[] {4};
+            case "spear_throw" -> new int[] {6, 16};
+            case "leap_thrust" -> new int[] {8, 18};
+            case "counter_stance", "jolly_roger" -> new int[] {10};
+            case "rapid_thrust" -> new int[] {7};
+            case "dragon_fang" -> new int[] {10, 24};
+            case "combo" -> new int[] {5};
+            case "parry", "rum" -> new int[] {6};
+            case "meditate", "hundred_fists" -> new int[] {20};
+            case "war_song", "heal_song", "guard_song", "wind_song", "discord", "lullaby" -> new int[] {30};
+            case "grand_concert" -> new int[] {25};
             case "mob:downed" -> new int[] {50, 120, 200};
             case "mob:stairs" -> new int[] {60, 300, 550, 700};
             case "mob:exit" -> new int[] {60, 200, 340, 480};
@@ -244,6 +261,9 @@ public final class AutoTestClient {
             case "job:checks" -> 60;
             case "bal:checks" -> 40;
             case "job:screen" -> 70;
+            case "nj:pirate", "nj:lancer", "nj:monk" -> 70;
+            case "bard:play" -> 300;
+            case "cannon", "jolly_roger", "broadside", "spear_rain" -> 60;
             case "perf" -> 1800;
             case "gem:socket" -> 70;
             case "gem:procs" -> 80;
@@ -287,7 +307,17 @@ public final class AutoTestClient {
             // job changes: logic checks, then the job change screen and the panel's mastery locks
             showSkills.clear(); // the 500-health rebalance: numbers by level, damage and healing paths
             if ("all".equals(System.getProperty("rpgmod.showcase"))) showSkills.addAll(com.jo112ss.rpgmod.job.core.JobDefs.SKILLS.keySet());
-            showSkills.addAll(java.util.List.of("bal:checks", "fp:magic_bolt", "power_slash", "job:checks"));
+            showSkills.clear(); // the four new jobs: every skill, the gun, spear tips, ki, the parry and the bard's note lane
+            if ("all".equals(System.getProperty("rpgmod.showcase"))) showSkills.addAll(com.jo112ss.rpgmod.job.core.JobDefs.SKILLS.keySet());
+            for (String job : new String[] {"pirate", "lancer", "monk", "bard"}) {
+                showSkills.add("nj:" + job);
+                if (job.equals("bard")) showSkills.add("bard:play");
+                var j = com.jo112ss.rpgmod.job.core.JobDefs.job(job);
+                showSkills.addAll(j.actives());
+                showSkills.addAll(j.ultimates());
+            }
+            showSkills.add("nj:restore");
+            showSkills.add("job:screen");
             mc.options.gamma().set(1.0); // the night fight, brightly lit for the screenshots
             mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK);
             com.jo112ss.rpgmod.client.mob.MobOverlay.testSelf = true;
@@ -354,6 +384,23 @@ public final class AutoTestClient {
                 case 52 -> shot(mc, String.format("j%02d_status", i));
                 case 60 -> mc.gui.setScreen(null);
                 default -> { }
+            }
+            return;
+        }
+        if (entry.equals("bard:play")) { // a song played on the note lane: on time, missing every seventh note
+            if (k == 0) {
+                mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK);
+                AutoTestServer.requestCast("war_song");
+            }
+            var d = com.jo112ss.rpgmod.client.job.JobClient.data();
+            if (k > 4 && com.jo112ss.rpgmod.client.job.BardClient.performing()) {
+                long since = mc.level.getGameTime() - d.songStart() - com.jo112ss.rpgmod.job.Bard.LEAD;
+                long note = since / com.jo112ss.rpgmod.job.Bard.BEAT;
+                if (since >= 0 && since % com.jo112ss.rpgmod.job.Bard.BEAT == 0 && note % 7 != 6) com.jo112ss.rpgmod.client.job.BardClient.click();
+            }
+            if (k == 60 || k == 150 || k == 275) {
+                RpgMod.LOGGER.info("[AUTOTEST] bard lane k={} points={} song={} ends in {}", k, d.songPoints(), d.song(), d.songEnd() - mc.level.getGameTime());
+                shot(mc, String.format("b%02d_lane_%d", i, k));
             }
             return;
         }

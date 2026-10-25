@@ -112,8 +112,77 @@ def bow(m, pull=None):
         put(im, nx, ny, (240, 240, 240)); put(im, nx + 1, ny, (230, 60, 60)); put(im, nx, ny + 1, (230, 60, 60))
     outline(im); return im
 
+def gunblade(m):
+    L, M, D = MATS[m]; im = Image.new('RGBA', (16, 16))
+    # stock (wood) at the bottom left
+    for x, y in ((1, 13), (2, 13), (1, 14), (2, 14), (3, 12), (2, 12), (3, 13), (4, 12), (4, 11), (3, 11)):
+        put(im, x, y, WOOD[1] if (x + y) % 3 else WOOD[2])
+    put(im, 1, 12, WOOD[0]); put(im, 2, 11, WOOD[0])
+    # barrel along the diagonal
+    for x in range(4, 11):
+        y = 15 - x - 1
+        put(im, x, y, (70, 70, 78)); put(im, x + 1, y, (40, 40, 46)); put(im, x, y - 1, (110, 110, 120))
+    # lock and trigger
+    put(im, 5, 12, D); put(im, 6, 12, M); put(im, 6, 13, (40, 40, 46))
+    # bayonet (material) at the muzzle
+    for x in range(11, 15):
+        y = 15 - x - 1
+        put(im, x, y, M); put(im, x, y - 1, L)
+    put(im, 15, 0, L); put(im, 10, 5, D); put(im, 11, 5, D)
+    outline(im); return im
+
+def spear(m):
+    L, M, D = MATS[m]; im = Image.new('RGBA', (16, 16))
+    handle(im, 1, 9); put(im, 0, 15, D)
+    for x, y in ((9, 5), (10, 5)): put(im, x, y, D)  # socket
+    # leaf-shaped head
+    for x, y in ((10, 4), (11, 4), (11, 3), (12, 3), (12, 2), (13, 2), (13, 1), (14, 1)): put(im, x, y, M)
+    for x, y in ((10, 3), (11, 2), (12, 1), (13, 0)): put(im, x, y, L)
+    for x, y in ((11, 5), (12, 4), (13, 3), (14, 2)): put(im, x, y, D)
+    put(im, 15, 0, L)
+    outline(im); return im
+
+def knuckle(m):
+    L, M, D = MATS[m]; im = Image.new('RGBA', (16, 16))
+    # plate with four finger rings, seen from the front
+    for x in range(2, 14):
+        for y in range(4, 9):
+            put(im, x, y, M)
+    for x in range(2, 14): put(im, x, 4, L); put(im, x, 8, D)
+    for i in range(4):
+        cx = 3 + i * 3
+        put(im, cx, 6, (0, 0, 0, 0)); put(im, cx + 1, 6, (0, 0, 0, 0))
+        put(im, cx, 3, L); put(im, cx + 1, 3, M)  # studs
+    # grip bar below
+    for x in range(4, 12): put(im, x, 10, D); put(im, x, 11, M)
+    put(im, 3, 9, D); put(im, 12, 9, D)
+    outline(im); return im
+
+def lute(m):
+    L, M, D = MATS[m]; im = Image.new('RGBA', (16, 16))
+    # pear-shaped body (wood) at the bottom left
+    cx, cy = 5, 10
+    for y in range(16):
+        for x in range(16):
+            if ((x - cx) / 4.3) ** 2 + ((y - cy) / 4.3) ** 2 <= 1:
+                put(im, x, y, WOOD[0] if x + y < 13 else WOOD[1] if x + y < 17 else WOOD[2])
+    for x, y in ((5, 10), (4, 10), (5, 9), (6, 10), (5, 11)): put(im, x, y, (40, 26, 14))  # sound hole
+    for x, y in ((4, 9), (6, 11)): put(im, x, y, M)  # rose rim
+    put(im, 7, 12, D); put(im, 8, 12, M)  # bridge
+    # neck towards the top right, frets in the material colour
+    for x in range(8, 13):
+        y = 15 - x - 1 - 1
+        put(im, x, y, WOOD[2]); put(im, x, y - 1, WOOD[1])
+        if x % 2 == 0: put(im, x, y - 1, M)
+    # pegbox bent back
+    put(im, 13, 1, WOOD[2]); put(im, 14, 1, WOOD[2]); put(im, 14, 2, WOOD[1])
+    put(im, 13, 0, L); put(im, 15, 1, L); put(im, 15, 3, L)
+    outline(im); return im
+
 for m in MATS:
     dagger(m).save(f'{ITEM}/{m}_dagger.png')
+    gunblade(m).save(f'{ITEM}/{m}_gunblade.png')  # spears use the vanilla spear models
+    knuckle(m).save(f'{ITEM}/{m}_knuckle.png'); lute(m).save(f'{ITEM}/{m}_lute.png')
     mace(m).save(f'{ITEM}/{m}_mace.png')
     hammer(m).save(f'{ITEM}/{m}_hammer.png')
     staff(m).save(f'{ITEM}/{m}_staff.png')
@@ -186,7 +255,65 @@ def g_bow(m):
     d.rectangle([0, 30, 5, 36], fill=rgba(D)); d.rectangle([154, 30, 159, 36], fill=rgba(D))
     return im
 
+def g_gunblade(m):
+    L, M, D = MATS[m]; im = Image.new('RGBA', (160, 40)); d = ImageDraw.Draw(im)
+    # bayonet (tip at the left)
+    for x in range(2, 42):
+        hw = max(1, min(5, int(5 * (x - 2) / 14)))
+        d.line([(x, 14 - hw), (x, 14 + hw)], fill=rgba(M)); put(im, x, 14 - hw, L); put(im, x, 14 + hw, D)
+    d.rectangle([40, 10, 46, 18], fill=rgba(D))
+    # barrel and lock (dark steel with material bands)
+    d.rectangle([44, 10, 112, 19], fill=rgba((70, 70, 78))); d.line([(44, 10), (112, 10)], fill=rgba((120, 120, 130))); d.line([(44, 19), (112, 19)], fill=rgba((36, 36, 42)))
+    for bx in (60, 84, 104): d.rectangle([bx, 9, bx + 3, 20], fill=rgba(M)); d.line([(bx, 9), (bx + 3, 9)], fill=rgba(L))
+    d.rectangle([108, 8, 126, 24], fill=rgba(M)); d.rectangle([108, 8, 126, 10], fill=rgba(L)); d.rectangle([112, 20, 118, 30], fill=rgba(D))
+    d.arc([106, 22, 122, 36], 0, 180, fill=rgba(D), width=2)  # trigger guard
+    # stock (wood)
+    d.polygon([(126, 10), (157, 16), (157, 34), (140, 34), (126, 24)], fill=rgba(WOOD[1]))
+    d.line([(126, 10), (157, 16)], fill=rgba(WOOD[0])); d.line([(140, 34), (157, 34)], fill=rgba(WOOD[2]))
+    return im
+
+def g_spear(m):
+    L, M, D = MATS[m]; im = Image.new('RGBA', (160, 40)); d = ImageDraw.Draw(im)
+    shaft(d, 56, 156); d.rectangle([152, 16, 157, 24], fill=rgba(D))
+    for bx in (90, 120): d.rectangle([bx, 16, bx + 2, 24], fill=rgba(D))
+    d.polygon([(2, 20), (24, 8), (46, 16), (46, 24), (24, 32)], fill=rgba(M))
+    d.line([(2, 20), (24, 8), (46, 16)], fill=rgba(L)); d.line([(2, 20), (24, 32), (46, 24)], fill=rgba(D)); d.line([(6, 20), (44, 20)], fill=rgba(L))
+    d.rectangle([44, 14, 60, 26], fill=rgba(D)); d.rectangle([44, 14, 60, 16], fill=rgba(M))
+    return im
+
+def g_knuckle(m):
+    L, M, D = MATS[m]; im = Image.new('RGBA', (160, 40)); d = ImageDraw.Draw(im)
+    # studs (left), plate with finger rings (middle), grip (right) - work area x 40..125
+    for i in range(4):
+        sy = 4 + i * 9
+        d.polygon([(40, sy + 4), (52, sy), (52, sy + 8)], fill=rgba(L))
+    d.rectangle([50, 2, 102, 38], fill=rgba(M)); d.line([(50, 2), (102, 2)], fill=rgba(L)); d.line([(50, 38), (102, 38)], fill=rgba(D))
+    for i in range(4):
+        cy = 6 + i * 9
+        d.ellipse([62, cy - 1, 90, cy + 7], fill=(0, 0, 0, 0), outline=rgba(D))
+    d.rectangle([102, 8, 124, 32], fill=rgba((110, 72, 40))); d.rectangle([102, 8, 104, 32], fill=rgba(D))
+    for y in range(10, 31, 4): d.line([(105, y), (123, y)], fill=rgba((80, 50, 28)))
+    return im
+
+def g_lute(m):
+    L, M, D = MATS[m]; im = Image.new('RGBA', (160, 40)); d = ImageDraw.Draw(im)
+    # pegbox (left) bent back, with pegs in the material colour
+    d.polygon([(2, 12), (24, 15), (24, 25), (2, 22)], fill=rgba(WOOD[2]))
+    for px in (6, 12, 18): d.rectangle([px, 8, px + 2, 12], fill=rgba(M)); d.rectangle([px, 22, px + 2, 27], fill=rgba(M))
+    # neck with frets
+    d.rectangle([24, 15, 74, 25], fill=rgba(WOOD[1])); d.line([(24, 15), (74, 15)], fill=rgba(WOOD[0]))
+    for fx in range(30, 74, 7): d.line([(fx, 15), (fx, 25)], fill=rgba(M))
+    # pear body, rose and bridge
+    d.ellipse([66, 1, 150, 39], fill=rgba(WOOD[0])); d.arc([66, 1, 150, 39], 20, 160, fill=rgba(WOOD[2]), width=3)
+    d.ellipse([90, 12, 106, 28], fill=rgba((40, 26, 14))); d.ellipse([88, 10, 108, 30], outline=rgba(M), width=2)
+    d.rectangle([128, 14, 134, 26], fill=rgba(M)); d.line([(128, 14), (134, 14)], fill=rgba(L))
+    d.rectangle([146, 16, 157, 24], fill=rgba(D))
+    for y in (17, 19, 21, 23): d.line([(20, y), (146, y)], fill=STRING)
+    return im
+
 for m in ('copper', 'iron', 'gold', 'diamond'):
+    g_gunblade(m).save(f'{GUI}/gunblade_{m}.png'); g_spear(m).save(f'{GUI}/spear_{m}.png')
+    g_knuckle(m).save(f'{GUI}/knuckle_{m}.png'); g_lute(m).save(f'{GUI}/lute_{m}.png')
     g_dagger(m).save(f'{GUI}/dagger_{m}.png'); g_mace(m).save(f'{GUI}/mace_{m}.png')
     g_hammer(m).save(f'{GUI}/hammer_{m}.png'); g_staff(m).save(f'{GUI}/staff_{m}.png'); g_bow(m).save(f'{GUI}/bow_{m}.png')
 print('ok')

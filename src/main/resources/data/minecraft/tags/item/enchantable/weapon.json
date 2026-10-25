@@ -20,6 +20,26 @@
     "rpgmod:iron_staff",
     "rpgmod:gold_staff",
     "rpgmod:diamond_staff",
-    "rpgmod:netherite_staff"
+    "rpgmod:netherite_staff",
+    "rpgmod:copper_gunblade",
+    "rpgmod:iron_gunblade",
+    "rpgmod:gold_gunblade",
+    "rpgmod:diamond_gunblade",
+    "rpgmod:netherite_gunblade",
+    "rpgmod:copper_spear",
+    "rpgmod:iron_spear",
+    "rpgmod:gold_spear",
+    "rpgmod:diamond_spear",
+    "rpgmod:netherite_spear",
+    "rpgmod:copper_knuckle",
+    "rpgmod:iron_knuckle",
+    "rpgmod:gold_knuckle",
+    "rpgmod:diamond_knuckle",
+    "rpgmod:netherite_knuckle",
+    "rpgmod:copper_lute",
+    "rpgmod:iron_lute",
+    "rpgmod:gold_lute",
+    "rpgmod:diamond_lute",
+    "rpgmod:netherite_lute"
   ]
 }

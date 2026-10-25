@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "pattern": [
+    " I ",
+    "SIS",
+    "PPP"
+  ],
+  "key": {
+    "I": "minecraft:gold_ingot",
+    "S": "minecraft:string",
+    "P": "#minecraft:planks"
+  },
+  "result": {
+    "id": "rpgmod:gold_lute",
+    "count": 1
+  }
+}

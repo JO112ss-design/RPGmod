@@ -1,0 +1,15 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "pattern": [
+    "ILI"
+  ],
+  "key": {
+    "I": "minecraft:iron_ingot",
+    "L": "minecraft:leather"
+  },
+  "result": {
+    "id": "rpgmod:iron_knuckle",
+    "count": 1
+  }
+}

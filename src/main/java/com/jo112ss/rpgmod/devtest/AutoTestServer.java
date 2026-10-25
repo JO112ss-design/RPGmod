@@ -152,6 +152,10 @@ public final class AutoTestServer {
                 JobChangeTests.scene(level, player, id.substring(4));
                 return;
             }
+            if (id.startsWith("nj:")) {
+                NewJobTests.scene(level, player, id.substring(3), targets);
+                return;
+            }
             if (id.startsWith("gem:")) {
                 GemTests.scene(level, player, id.substring(4), targets);
                 return;

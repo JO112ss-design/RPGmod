@@ -54,6 +54,19 @@ public final class JobData {
     private final Set<String> kitGiven = new TreeSet<>();
     /** Panels of the jobs not in use, kept for when the player comes back to them. */
     private final Map<String, Saved> saved = new HashMap<>();
+    /** Monk's ki (0..{@link #MAX_KI}); not saved, synced for the HUD. */
+    private int ki;
+    public static final int MAX_KI = 5;
+    /** Rounds in the pirate's gun; not saved (a full gun after relogging), synced for the HUD. */
+    private int ammo = MAG;
+    public static final int MAG = 6;
+    /** Game time the gun is loaded again (0 = not reloading). */
+    private long reloadEnd;
+    /** Bard: the song being played ("" = none), when it started and ends (game time), and how well it is played (0..20). */
+    private String song = "";
+    private long songStart, songEnd;
+    private int songPoints;
+    public static final int MAX_SONG_POINTS = 20;
     /** Save format: 0 = before job changes (the job had its own level), 1 = character level + mastery. */
     private int dataVersion = DATA_VERSION;
     public static final int DATA_VERSION = 1;
@@ -127,6 +140,13 @@ public final class JobData {
                     buf.writeUtf(k);
                     buf.writeVarLong(v);
                 });
+                buf.writeVarInt(d.ki);
+                buf.writeVarInt(d.ammo);
+                buf.writeVarLong(d.reloadEnd);
+                buf.writeUtf(d.song);
+                buf.writeVarLong(d.songStart);
+                buf.writeVarLong(d.songEnd);
+                buf.writeVarInt(d.songPoints);
             },
             buf -> {
                 JobData d = new JobData();
@@ -147,6 +167,13 @@ public final class JobData {
                 d.advanced = buf.readBoolean();
                 int m = Math.min(buf.readVarInt(), 64);
                 for (int k = 0; k < m; k++) d.mastery.put(buf.readUtf(), buf.readVarLong());
+                d.ki = buf.readVarInt();
+                d.ammo = buf.readVarInt();
+                d.reloadEnd = buf.readVarLong();
+                d.song = buf.readUtf();
+                d.songStart = buf.readVarLong();
+                d.songEnd = buf.readVarLong();
+                d.songPoints = buf.readVarInt();
                 return d;
             });
 
@@ -493,6 +520,56 @@ public final class JobData {
 
     public void setResting(boolean resting) {
         this.resting = resting;
+    }
+
+    public int ki() {
+        return ki;
+    }
+
+    public void setKi(int ki) {
+        this.ki = Math.max(0, Math.min(MAX_KI, ki));
+    }
+
+    public int ammo() {
+        return ammo;
+    }
+
+    public void setAmmo(int ammo) {
+        this.ammo = Math.max(0, Math.min(MAG, ammo));
+    }
+
+    public long reloadEnd() {
+        return reloadEnd;
+    }
+
+    public void setReloadEnd(long at) {
+        this.reloadEnd = at;
+    }
+
+    public String song() {
+        return song;
+    }
+
+    public long songStart() {
+        return songStart;
+    }
+
+    public long songEnd() {
+        return songEnd;
+    }
+
+    public int songPoints() {
+        return songPoints;
+    }
+
+    public void setSong(String song, long start, long end) {
+        this.song = song == null ? "" : song;
+        this.songStart = start;
+        this.songEnd = end;
+    }
+
+    public void setSongPoints(int points) {
+        this.songPoints = Math.max(0, Math.min(MAX_SONG_POINTS, points));
     }
 
     public int coatMode() {

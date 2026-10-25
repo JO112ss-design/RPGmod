@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "pattern": [
+    " II",
+    "GI ",
+    "S  "
+  ],
+  "key": {
+    "I": "minecraft:copper_ingot",
+    "G": "minecraft:gunpowder",
+    "S": "minecraft:stick"
+  },
+  "result": {
+    "id": "rpgmod:copper_gunblade",
+    "count": 1
+  }
+}
