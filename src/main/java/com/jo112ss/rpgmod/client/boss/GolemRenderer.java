@@ -77,20 +77,20 @@ public class GolemRenderer extends MobRenderer<Golem, GolemRenderState, GolemMod
             case CHASE -> {
                 if (state.walkAnimationSpeed >= 0.01F) {
                     float wp = state.walkAnimationPos + 6.0F;
-                    poseStack.mulPose(Axis.ZP.rotationDegrees(4.0F * (Math.abs(wp % 13.0F - 6.5F) - 3.25F) / 3.25F));
+                    poseStack.rotateDegrees(Axis.ZP, 4.0F * (Math.abs(wp % 13.0F - 6.5F) - 3.25F) / 3.25F);
                 }
             }
-            case SLAM -> poseStack.mulPose(Axis.XP.rotationDegrees(-16F * Math.min(1, t / 3F)));
-            case CHARGE_AIM -> poseStack.mulPose(Axis.XP.rotationDegrees(-12F * Math.min(1, t / 10F)));
-            case CHARGE -> poseStack.mulPose(Axis.XP.rotationDegrees(-22F));
-            case SWEEP_UP -> poseStack.mulPose(Axis.YP.rotationDegrees(-35F * Math.min(1, t / 10F)));
-            case SWEEP -> poseStack.mulPose(Axis.YP.rotationDegrees(Mth.lerp(Math.min(1, t / 3F), -35F, 45F)));
+            case SLAM -> poseStack.rotateDegrees(Axis.XP, -16F * Math.min(1, t / 3F));
+            case CHARGE_AIM -> poseStack.rotateDegrees(Axis.XP, -12F * Math.min(1, t / 10F));
+            case CHARGE -> poseStack.rotateDegrees(Axis.XP, -22F);
+            case SWEEP_UP -> poseStack.rotateDegrees(Axis.YP, -35F * Math.min(1, t / 10F));
+            case SWEEP -> poseStack.rotateDegrees(Axis.YP, Mth.lerp(Math.min(1, t / 3F), -35F, 45F));
             case OVERHEAT -> {
                 float k = Math.min(1, t / 8F);
                 poseStack.translate(0, -0.45F * k * Golem.SCALE, 0);
-                poseStack.mulPose(Axis.XP.rotationDegrees(-14F * k));
+                poseStack.rotateDegrees(Axis.XP, -14F * k);
             }
-            case LEAVE -> poseStack.mulPose(Axis.ZP.rotationDegrees(Math.min(1, t / 70F) * 12F));
+            case LEAVE -> poseStack.rotateDegrees(Axis.ZP, Math.min(1, t / 70F) * 12F);
             default -> { }
         }
     }
