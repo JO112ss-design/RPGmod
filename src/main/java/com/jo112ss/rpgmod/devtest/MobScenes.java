@@ -448,6 +448,14 @@ final class MobScenes {
             player.getFoodData().setFoodLevel(20);
         }
         if (g != null && g.isAlive() && dummy != null && dummy.isAlive() && g.getTarget() != dummy) g.setTarget(dummy);
+        // film from the side, a fixed distance from the golem (not during the portraits)
+        if (g != null && g.isAlive() && t > 56 && !(t >= 466 && t < 472)) {
+            Vec3 at = g.position().add(-1, 0, -15);
+            Vec3 look = g.position().add(0, g.getBbHeight() * 0.45, 0).subtract(at.add(0, 1.6, 0));
+            float yaw = (float) Math.toDegrees(Math.atan2(-look.x, look.z));
+            float pitch = (float) -Math.toDegrees(Math.atan2(look.y, Math.hypot(look.x, look.z)));
+            if (player.position().distanceToSqr(at) > 0.25 || t % 20 == 0) tp(player, at, yaw, pitch);
+        }
         if (g != null && g.isAlive()) {
             if (t % 2 == 0) golemStates.merge(g.state().name(), 1, Integer::sum);
             if (t % 20 == 0) {

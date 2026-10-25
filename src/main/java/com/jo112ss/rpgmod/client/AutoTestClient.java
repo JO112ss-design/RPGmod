@@ -281,7 +281,8 @@ public final class AutoTestClient {
             // (the advanced skills, healer spells and monster scenes above were checked in earlier runs)
             showSkills.clear();
             if ("all".equals(System.getProperty("rpgmod.showcase"))) showSkills.addAll(com.jo112ss.rpgmod.job.core.JobDefs.SKILLS.keySet());
-            showSkills.addAll(java.util.List.of("mob:golem"));
+            showSkills.addAll(java.util.List.of("fp:mob:golem"));
+            mc.options.gamma().set(1.0); // the night fight, brightly lit for the screenshots
             mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK);
             com.jo112ss.rpgmod.client.mob.MobOverlay.testSelf = true;
             mc.options.particles().set(net.minecraft.server.level.ParticleStatus.ALL);

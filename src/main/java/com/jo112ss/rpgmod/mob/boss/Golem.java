@@ -275,9 +275,16 @@ public class Golem extends Monster implements BloodMoonBoss {
         switch (state) {
             case CHASE -> chase(sl);
             case SLAM_UP -> slamUp(sl);
-            case SLAM, ROAR, ARMOUR -> {
+            case SLAM, ROAR -> {
                 hold();
                 if (stateTicks >= stateLength) moveDone();
+            }
+            case ARMOUR -> { // back to the fight (no overheat right after raising the armour)
+                hold();
+                if (stateTicks >= stateLength) {
+                    setState(State.CHASE, 0);
+                    nextMove = 20;
+                }
             }
             case QUAKE -> quake(sl);
             case THROW_UP -> throwUp(sl);
