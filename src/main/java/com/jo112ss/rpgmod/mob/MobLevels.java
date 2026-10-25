@@ -36,7 +36,7 @@ public final class MobLevels {
     private MobLevels() {}
 
     /** The Ender Dragon is a fixed level: it is the final fight, not a roll of the dice. */
-    public static final int DRAGON_LEVEL = 100;
+    public static final int DRAGON_LEVEL = 200;
 
     private static final Identifier HP = id("level_health"), SPEED = id("level_speed"), FLY = id("level_fly_speed"), KB = id("level_knockback"), FOLLOW = id("level_follow");
 

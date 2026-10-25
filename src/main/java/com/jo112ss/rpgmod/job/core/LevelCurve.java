@@ -22,7 +22,12 @@ public final class LevelCurve {
      */
     public static long expToNext(int level) {
         double base = 15 + 2.5 * level + level * (double) level / 8.0;
-        return Math.round(base * earlyMultiplier(level) * SCALE);
+        return Math.round(base * earlyMultiplier(level) * SCALE * stageMultiplier(level));
+    }
+
+    /** Levels up to 100 cost half (the base job goes by quicker), the advanced job's 1.5 times. */
+    public static double stageMultiplier(int level) {
+        return level < ADVANCED_AT ? 0.5 : 1.5;
     }
 
     /** Every level costs this much more than the curve above (a longer climb to 100). */

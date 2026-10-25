@@ -64,7 +64,7 @@ public final class MobConfig {
         B.pop().push("bloodMoon");
     }
     public static final ModConfigSpec.BooleanValue BLOOD_MOON = B.comment("Blood moon nights with a boss").define("enabled", true);
-    public static final ModConfigSpec.IntValue BLOOD_MOON_DAYS = B.comment("A blood moon rises on the night of every Nth day").defineInRange("everyDays", 10, 1, 1000);
+    public static final ModConfigSpec.IntValue BLOOD_MOON_DAYS = B.comment("A blood moon (and its boss) comes on the night of every Nth day").defineInRange("everyNthDay", 5, 1, 1000);
     public static final ModConfigSpec.DoubleValue BLOOD_MOON_SPAWNS = B.comment("Share of normal monster spawns during a blood moon").defineInRange("spawnRate", 0.2, 0, 1);
     public static final ModConfigSpec.BooleanValue DAY_TITLE = B.comment("Show 'Day N' every morning").define("dayTitle", true);
     public static final ModConfigSpec.DoubleValue KING_HEALTH = B.comment("King Slime health at level 1 for one player (grows with level like other monsters)").defineInRange("kingSlimeBaseHealth", 800.0, 1, 100000);
@@ -83,7 +83,7 @@ public final class MobConfig {
     }
 
     public static int bloodMoonDays() {
-        return SPEC.isLoaded() ? BLOOD_MOON_DAYS.get() : 10;
+        return SPEC.isLoaded() ? BLOOD_MOON_DAYS.get() : 5;
     }
 
     public static double bloodMoonSpawns() {

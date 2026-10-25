@@ -32,7 +32,7 @@ import net.neoforged.neoforge.event.tick.ServerTickEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
 
 /**
- * Days and blood moons. Every morning everyone sees "Day N". On the night of every 10th day (by
+ * Days and blood moons. Every morning everyone sees "Day N". On the night of every 5th day (by
  * default) a blood moon rises: the sky turns red, nobody can sleep, ordinary monsters mostly stop
  * spawning, and the King Slime appears near one random player in the overworld. It leaves at dawn
  * if it is still alive.
