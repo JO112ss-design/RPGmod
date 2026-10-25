@@ -127,12 +127,13 @@ public final class JobManager {
         if (type.weapons.contains(WeaponType.BOW)) kit.add(new ItemStack(net.minecraft.world.item.Items.ARROW, 64));
         kit.add(new ItemStack(com.jo112ss.rpgmod.registry.ModRegistries.FORGING_ANVIL_ITEM.get()));
         kit.add(new ItemStack(com.jo112ss.rpgmod.registry.ModRegistries.SOCKET_TABLE_ITEM.get()));
+        List<String> names = kit.stream().map(s -> s.getCount() + " " + s.getItem()).toList();
         for (ItemStack stack : kit) {
             if (!player.getInventory().add(stack)) player.drop(stack, false, net.minecraft.util.Prediction.SERVER_ONLY);
         }
         player.sendSystemMessage(Component.translatable("rpgmod.job.starter_kit").withStyle(ChatFormatting.GREEN));
         if (com.jo112ss.rpgmod.devtest.AutoTestServer.ENABLED) {
-            com.jo112ss.rpgmod.RpgMod.LOGGER.info("[AUTOTEST] starter kit {}: {}", type.id, kit.stream().map(s -> s.getCount() + " " + s.getItem()).toList());
+            com.jo112ss.rpgmod.RpgMod.LOGGER.info("[AUTOTEST] starter kit {}: {}", type.id, names);
         }
     }
 
