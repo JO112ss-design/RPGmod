@@ -750,7 +750,7 @@
   "rpgmod.jobchange.title": "Change job",
   "rpgmod.jobchange.tab_base": "Base",
   "rpgmod.jobchange.tab_adv": "Advanced",
-  "rpgmod.jobchange.cost": "Uses one book (your level stays)",
+  "rpgmod.jobchange.cost": "Uses 1 book, keeps your level",
   "rpgmod.jobchange.choose": "Change to this job",
   "rpgmod.jobchange.confirm": "Sure? Click again",
   "rpgmod.jobchange.current": "That is your job already",
@@ -767,6 +767,6 @@
   "rpgmod.job.need_mastery": "Needs %1$s%% mastery",
   "rpgmod.node.need_mastery": "Opens at %1$s%% mastery (now %2$s%%)",
   "rpgmod.jobscreen.mastery": "Mastery",
-  "rpgmod.jobscreen.mastered_bonus": " %1$s mastered (HP +%2$s%%)",
+  "rpgmod.jobscreen.mastered_bonus": "%1$s mastered (HP +%2$s%%)",
   "rpgmod.jobscreen.adv_waiting": "%1$s advanced points (for an advanced job)"
 }

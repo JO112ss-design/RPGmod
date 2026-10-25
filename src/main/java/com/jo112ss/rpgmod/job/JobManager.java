@@ -160,7 +160,7 @@ public final class JobManager {
         if (base == null || !d.hasJob()) return "rpgmod.jobchange.unknown";
         boolean adv = JobType.byId(id) == null;
         if (d.displayJobId().equals(id)) return "rpgmod.jobchange.current";
-        if (adv && !d.mastered(base.id)) return "rpgmod.jobchange.need_mastery";
+        if (adv && (!d.mastered(base.id) || d.level() < com.jo112ss.rpgmod.job.core.LevelCurve.ADVANCED_AT)) return "rpgmod.jobchange.need_mastery";
         return null;
     }
 

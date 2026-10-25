@@ -351,11 +351,13 @@ public class JobScreen extends Screen {
         }
         // mastery of the base job: opens its outer skills, its ultimates and its advanced job
         int pct = d.masteryPercent(job.id);
-        Ui.bar(g, font, cx + 6, cy + 186, cw - 12, 10, (float) d.masteryFraction(job.id), pct >= 100 ? Ui.GOLD : 0xFFB09CFF, pct + "%");
-        Component mLabel = Component.translatable("rpgmod.jobscreen.mastery");
-        if (d.masteredCount() > 0) mLabel = mLabel.copy().append(Component.translatable("rpgmod.jobscreen.mastered_bonus", d.masteredCount(),
-                Math.round(d.masteredCount() * com.jo112ss.rpgmod.job.JobStats.MASTERY_HEALTH * 100)));
-        g.text(font, font.substrByWidth(mLabel, cw - 12).getString(), cx + 6, cy + 175, Ui.DIM, false);
+        g.text(font, Component.translatable("rpgmod.jobscreen.mastery"), cx + 6, cy + 174, Ui.DIM, false);
+        Ui.bar(g, font, cx + 6, cy + 184, cw - 12, 10, (float) d.masteryFraction(job.id), pct >= 100 ? Ui.GOLD : 0xFFB09CFF, pct + "%");
+        if (d.masteredCount() > 0) {
+            Component bonus = Component.translatable("rpgmod.jobscreen.mastered_bonus", d.masteredCount(),
+                    Math.round(d.masteredCount() * com.jo112ss.rpgmod.job.JobStats.MASTERY_HEALTH * 100));
+            g.text(font, font.substrByWidth(bonus, cw - 12).getString(), cx + 6, cy + 197, Ui.GOLD, false);
+        }
 
         // stat table
         int sx = left + 128, sy = top + 40, sw = W - 136;

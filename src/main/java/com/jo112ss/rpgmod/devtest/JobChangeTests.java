@@ -177,8 +177,11 @@ final class JobChangeTests {
         pd.setMastery("ranger", Math.round(LevelCurve.masteryExp() * 0.45));
         pd.setMastery("healer", Math.round(LevelCurve.masteryExp() * 0.8));
         p.getInventory().add(new ItemStack(ModRegistries.JOB_BOOK.get()));
+        // the panel shot: a job half way to mastery, so the outer skills show what they need
+        pd.addBonusPoints(-pd.bonusPoints());
+        pd.switchTo("ranger", false);
         JobStats.apply(p, pd);
         JobManager.sync(p);
-        log("screen setup: {} mastered={}", pd.displayJobId(), pd.masteredCount());
+        log("screen setup: {} mastery {}% mastered={}", pd.displayJobId(), pd.masteryPercent("ranger"), pd.masteredCount());
     }
 }

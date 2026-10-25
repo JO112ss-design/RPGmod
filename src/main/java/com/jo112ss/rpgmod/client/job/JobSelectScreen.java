@@ -187,7 +187,7 @@ public class JobSelectScreen extends Screen {
         Ui.circle(g, x + CARD_W / 2, y + 20, 13, Ui.argb(c), 1);
         Ui.glyph(g, font, locked ? "?" : job.glyph(), x + CARD_W / 2 + 1, y + 21, 1.6f, locked ? Ui.DIM : Ui.TEXT);
         Component name = Component.translatable("rpgmod.job." + job.id());
-        g.centeredText(font, font.substrByWidth(name, CARD_W - 4).getString(), x + CARD_W / 2, y + 38, sel ? Ui.argb(c) : locked ? Ui.DIM : Ui.TEXT);
+        g.centeredText(font, font.substrByWidth(name, CARD_W - 4).getString(), x + CARD_W / 2, y + (change ? 36 : 38), sel ? Ui.argb(c) : locked ? Ui.DIM : Ui.TEXT);
         if (!change) {
             Component role = Component.translatable("rpgmod.job." + job.id() + ".role");
             g.centeredText(font, role, x + CARD_W / 2, y + 50, Ui.DIM);
@@ -198,13 +198,13 @@ public class JobSelectScreen extends Screen {
             g.centeredText(font, Component.translatable("rpgmod.jobchange.current_tag"), x + CARD_W / 2, y + 50, Ui.GOLD);
         } else {
             int pct = JobClient.data().masteryPercent(base.id);
-            int bx = x + 8, bw = CARD_W - 16, by = y + 52;
-            g.fill(bx, by, bx + bw, by + 4, 0xFF0B0D12);
-            g.fill(bx, by, bx + Math.round(bw * pct / 100f), by + 4, pct >= 100 ? Ui.GOLD : Ui.EXP);
-            Component m = Component.translatable(locked ? "rpgmod.jobchange.locked_pct" : "rpgmod.jobchange.mastery_pct", pct);
+            int bx = x + 6, bw = CARD_W - 12, by = y + 55;
+            g.fill(bx, by, bx + bw, by + 3, 0xFF0B0D12);
+            g.fill(bx, by, bx + Math.round(bw * pct / 100f), by + 3, pct >= 100 ? Ui.GOLD : Ui.EXP);
+            Component m = Component.translatable("rpgmod.jobchange.mastery_pct", pct);
             g.pose().pushMatrix();
-            g.pose().translate(x + CARD_W / 2f, y + 46.5f);
-            g.pose().scale(0.6f, 0.6f);
+            g.pose().translate(x + CARD_W / 2f, y + 46f);
+            g.pose().scale(0.8f, 0.8f);
             g.text(font, m, -font.width(m) / 2, 0, locked ? Ui.BAD : pct >= 100 ? Ui.GOLD : Ui.DIM, false);
             g.pose().popMatrix();
         }

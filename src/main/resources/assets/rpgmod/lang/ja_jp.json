@@ -750,7 +750,7 @@
   "rpgmod.jobchange.title": "転職",
   "rpgmod.jobchange.tab_base": "基本職",
   "rpgmod.jobchange.tab_adv": "上位職",
-  "rpgmod.jobchange.cost": "転職の書を1冊使います（レベルはそのまま）",
+  "rpgmod.jobchange.cost": "書を1冊使う（レベルはそのまま）",
   "rpgmod.jobchange.choose": "この職業に転職する",
   "rpgmod.jobchange.confirm": "本当に？もう一度押す",
   "rpgmod.jobchange.current": "今の職業です",
@@ -767,6 +767,6 @@
   "rpgmod.job.need_mastery": "熟練度%1$s%%で覚えられます",
   "rpgmod.node.need_mastery": "熟練度%1$s%%で解放（今 %2$s%%）",
   "rpgmod.jobscreen.mastery": "熟練度",
-  "rpgmod.jobscreen.mastered_bonus": " 極めた職%1$s（HP+%2$s%%）",
+  "rpgmod.jobscreen.mastered_bonus": "極めた職 %1$s（HP+%2$s%%）",
   "rpgmod.jobscreen.adv_waiting": "上位職のポイント %1$s（上位職になると使える）"
 }

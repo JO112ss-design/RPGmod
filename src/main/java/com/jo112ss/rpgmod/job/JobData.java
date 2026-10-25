@@ -520,17 +520,20 @@ public final class JobData {
     }
 
     /**
-     * Saves from before job changes: the job and its level become the character's, the job counts
-     * as mastered (its book already "paid"), and a character at level 100+ keeps its advanced job.
+     * Saves from before job changes: the job and its level become the character's and the job's
+     * mastery is all the experience it took to get there - full from level 100, so those characters
+     * keep their advanced job (and their book counts as given).
      */
     public boolean migrateJobChange() {
         if (dataVersion >= DATA_VERSION) return false;
         dataVersion = DATA_VERSION;
         if (!hasJob()) return false;
-        mastery.put(job, LevelCurve.masteryExp());
-        masteryRewarded.add(job);
+        long earned = exp;
+        for (int l = 1; l < level && l < LevelCurve.ADVANCED_AT; l++) earned += LevelCurve.expToNext(l);
+        setMastery(job, level >= LevelCurve.ADVANCED_AT ? LevelCurve.masteryExp() : earned);
         kitGiven.add(job);
         advanced = level >= LevelCurve.ADVANCED_AT && JobDefs.advancedOf(job) != null;
+        if (advanced) masteryRewarded.add(job);
         return true;
     }
 
