@@ -10,10 +10,11 @@ import net.minecraft.world.entity.monster.Enemy;
  * monsters doing that several times a second made the server fall behind. So for monsters:
  *
  * <ul>
- *   <li>a search looks at about 200-700 nodes depending on how far the goal is (a far goal gets a
+ *   <li>a search looks at about 160-500 nodes depending on how far the goal is (a far goal gets a
  *       partial path towards it, renewed as the monster walks);</li>
- *   <li>a new path is only searched every few ticks: 5 close up, up to 2 seconds far away, longer
- *       after a search that could not reach the goal. In between the monster keeps its current path.</li>
+ *   <li>a new path is only searched every few ticks: 5 close up, up to 2 seconds far away, and
+ *       about twice as long after a search that could not reach the goal (a player shut in a house).
+ *       In between the monster keeps its current path.</li>
  * </ul>
  */
 public final class PathBudget {
@@ -28,7 +29,7 @@ public final class PathBudget {
 
     /** Nodes a search may visit for a goal this far away. */
     public static int nodes(double dist) {
-        return (int) Math.max(200, Math.min(700, 150 + dist * 12));
+        return (int) Math.max(160, Math.min(500, 120 + dist * 10));
     }
 
     /** Multiplier for the navigation's own node limit (follow range x 16) to get {@link #nodes}. */
@@ -40,6 +41,6 @@ public final class PathBudget {
     /** Ticks before the next search may run. */
     public static int interval(double dist, boolean reached) {
         int t = dist < 6 ? 5 : dist < 16 ? 10 : dist < 40 ? 20 : 40;
-        return reached ? t : t + 20;
+        return reached ? t : t * 2 + 20;
     }
 }

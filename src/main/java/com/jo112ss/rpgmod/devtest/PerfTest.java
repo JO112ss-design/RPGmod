@@ -73,6 +73,12 @@ final class PerfTest {
         List<Mob> mobs = new ArrayList<>();
         var r = level.getRandom();
         Object[][] kinds = {{EntityTypes.ZOMBIE, 40}, {EntityTypes.SKELETON, 15}, {EntityTypes.CREEPER, 15}, {EntityTypes.SPIDER, 10}};
+        // first the same time with no monsters, for comparison
+        start(server.getRunningThread());
+        SkillTasks.later(9, () -> {
+            stop();
+            RpgMod.LOGGER.info("[AUTOTEST] perf: baseline without monsters {} ms over {} ticks", String.format("%.2f", tickSum / 1e6 / Math.max(1, ticks)), ticks);
+        });
         SkillTasks.later(10, () -> {
             for (Object[] k : kinds) {
                 for (int i = 0; i < (int) k[1]; i++) {
