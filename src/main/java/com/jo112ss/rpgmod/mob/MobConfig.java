@@ -20,7 +20,7 @@ public final class MobConfig {
     public static final ModConfigSpec.DoubleValue PLAYER_ARMOR_K = B.comment("K for players (bigger = armour less effective; 80: copper set -20%, iron -38%, netherite -66% at Lv1 and -71% at Lv100)").defineInRange("playerArmorReductionK", 80.0, 1, 10000);
     public static final ModConfigSpec.DoubleValue MONSTER_ARMOR_K = B.comment("K for monsters (their random gear counts for less)").defineInRange("monsterArmorK", 80.0, 1, 10000);
     public static final ModConfigSpec.DoubleValue GEAR_WEAPON = B.comment("Share of a monster's weapon attack that counts").defineInRange("monsterWeaponEffect", 0.25, 0, 1);
-    public static final ModConfigSpec.IntValue ZOMBIE_RANGE = B.comment("How far zombies notice and follow players (blocks)").defineInRange("zombieFollowRange", 128, 8, 512);
+    public static final ModConfigSpec.IntValue ZOMBIE_RANGE = B.comment("How far zombies, creepers, spiders and skeletons notice and follow players, through walls (blocks)").defineInRange("monsterSenseRange", 64, 8, 512);
 
     static {
         B.push("overworld");
@@ -186,7 +186,7 @@ public final class MobConfig {
     }
 
     public static int zombieRange() {
-        return SPEC.isLoaded() ? ZOMBIE_RANGE.get() : 128;
+        return SPEC.isLoaded() ? ZOMBIE_RANGE.get() : 64;
     }
 
     public static boolean smartAi() {

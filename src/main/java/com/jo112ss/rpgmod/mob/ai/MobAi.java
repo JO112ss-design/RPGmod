@@ -92,7 +92,7 @@ public final class MobAi {
         return e instanceof AbstractSkeleton && !(e instanceof WitherSkeleton);
     }
 
-    /** Monsters that sense players through walls from the zombies' range (128 blocks by default). */
+    /** Monsters that sense players through walls from the zombies' range (64 blocks by default). */
     public static boolean sensesFar(Entity e) {
         return isBuilderZombie(e) || e instanceof Creeper || e instanceof Spider || isOverworldSkeleton(e);
     }

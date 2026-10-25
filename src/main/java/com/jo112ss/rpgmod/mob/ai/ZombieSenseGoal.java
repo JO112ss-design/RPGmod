@@ -7,7 +7,7 @@ import net.minecraft.world.entity.player.Player;
 
 /**
  * Zombies (and creepers, spiders and skeletons) sense players anywhere within their follow range
- * (128 blocks by default), through walls, floors and caves alike, and never lose them for being out
+ * (64 blocks by default), through walls, floors and caves alike, and never lose them for being out
  * of sight. Runs ahead of vanilla's "must see the player" goal. Spiders keep their vanilla daytime
  * calm: in bright light they do not pick a target.
  */

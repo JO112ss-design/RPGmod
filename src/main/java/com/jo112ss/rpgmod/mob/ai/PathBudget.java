@@ -5,7 +5,7 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.monster.Enemy;
 
 /**
- * Keeps monster pathfinding cheap. With a 128-block follow range every path search may look at
+ * Keeps monster pathfinding cheap. With a long follow range (64 blocks, 128 before) every path search may look at
  * 2048 nodes, and a target behind walls (unreachable) uses all of them every time - dozens of
  * monsters doing that several times a second made the server fall behind. So for monsters:
  *
