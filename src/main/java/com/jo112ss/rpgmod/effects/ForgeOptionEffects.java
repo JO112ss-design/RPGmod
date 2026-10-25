@@ -137,6 +137,8 @@ public final class ForgeOptionEffects {
             weapon = player.getMainHandItem(); // melee
         } else if (event.getSource().getDirectEntity() instanceof AbstractArrow arrow && arrow.getWeaponItem() != null) {
             ItemStack bow = arrow.getWeaponItem();
+            // players' attack is on a x3 scale (monsters have x3 health): the arrow's own damage too
+            if (bow.getItem() instanceof net.minecraft.world.item.ProjectileWeaponItem) event.setAmount(event.getAmount() * 3);
             double mult = 1;
             if (bow.getItem() instanceof RpgBowItem rpgBow) {
                 // material bonus, scaled by draw strength (arrow speed 3 = full draw)
@@ -180,7 +182,6 @@ public final class ForgeOptionEffects {
         if (!(event.getEntity() instanceof AbstractArrow arrow) || !(arrow.getOwner() instanceof Player player)) return;
         ItemStack bow = arrow.getWeaponItem();
         if (bow == null || !(bow.getItem() instanceof net.minecraft.world.item.ProjectileWeaponItem)) return;
-        arrow.setBaseDamage(arrow.getBaseDamage() * 3); // players' attack is on a x3 scale (monsters have x3 health)
         double own = ownAttack(player, bow);
         if (Math.abs(own) < 1e-4) return;
         double drawn = Math.min(1.0, arrow.getDeltaMovement().length() / 3.0);
