@@ -276,10 +276,17 @@ public final class BuilderGoal extends Goal {
         if (digTime >= digNeed) {
             BlockPos p = digPos;
             resetDig();
-            sl.destroyBlock(p, true, mob);
+            // plain stone, deepslate and dirt break without dropping (heaps of items made the game lag)
+            sl.destroyBlock(p, !noDrop(s), mob);
             dugBlocks++;
             cooldown = 1;
         }
+    }
+
+    /** Blocks a digging zombie breaks without leaving an item: stone and deepslate (and their cobble), dirt. */
+    public static boolean noDrop(net.minecraft.world.level.block.state.BlockState s) {
+        return s.is(net.minecraft.tags.BlockTags.BASE_STONE_OVERWORLD) || s.is(net.minecraft.tags.BlockTags.DIRT)
+                || s.is(net.minecraft.world.level.block.Blocks.COBBLESTONE) || s.is(net.minecraft.world.level.block.Blocks.COBBLED_DEEPSLATE);
     }
 
     private void resetDig() {
