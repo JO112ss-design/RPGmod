@@ -128,8 +128,10 @@ final class NewJobTests {
             LivingEntity near = dummies.get(4);
             SkillTasks.later(25, () -> {
                 float a = near.getHealth();
+                float charge = p.getAttackStrengthScale(0.5F);
                 p.attack(near);
-                log("hybrid: spellblade sword hit with {} took {} (on fire {})", com.jo112ss.rpgmod.job.MoreJobSkills.element(p), String.format("%.1f", a - near.getHealth()), near.isOnFire());
+                log("hybrid: spellblade sword hit with {} took {} (on fire {}, charge {}, held {})", com.jo112ss.rpgmod.job.MoreJobSkills.element(p),
+                        String.format("%.1f", a - near.getHealth()), near.isOnFire(), String.format("%.2f", charge), p.getMainHandItem().getItem());
                 d.setMastery("fighter", fw);
                 d.setMastery("wizard", wz);
             });

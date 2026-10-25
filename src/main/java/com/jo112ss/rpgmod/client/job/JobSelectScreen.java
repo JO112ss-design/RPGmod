@@ -27,7 +27,17 @@ import net.minecraft.world.item.ItemStack;
 public class JobSelectScreen extends Screen {
     private static final int W = 320;
     private int H = 252;
-    private static final int CARD_W = 48, CARD_H = 62, GAP = 4, CARDS_Y = 30, PER_ROW = 6;
+    private int cardH = 62;
+
+    private boolean compact() {
+        return cardH < 60;
+    }
+
+    /** A y offset inside a card: normal, or on the compact cards. */
+    private int dy(int normal, int small) {
+        return compact() ? small : normal;
+    }
+    private static final int CARD_W = 48, GAP = 4, CARDS_Y = 30, PER_ROW = 6;
 
     private final boolean change;
     private boolean advTab;
@@ -67,7 +77,8 @@ public class JobSelectScreen extends Screen {
 
     /** Window height for the current tab (a third row of cards for the hybrid jobs). */
     private void layout() {
-        H = 252 + (rows() - 2) * (CARD_H + GAP);
+        cardH = rows() > 2 ? 46 : 62; // three rows: compact cards so the window still fits
+        H = CARDS_Y + rows() * (cardH + GAP) + 90;
         left = (width - W) / 2;
         top = (height - H) / 2;
         if (confirm != null) confirm.setPosition(left + W - 148, top + H - 24);
@@ -144,7 +155,7 @@ public class JobSelectScreen extends Screen {
     }
 
     private int cardY(int i) {
-        return top + CARDS_Y + (i / PER_ROW) * (CARD_H + GAP);
+        return top + CARDS_Y + (i / PER_ROW) * (cardH + GAP);
     }
 
     @Override
@@ -165,7 +176,7 @@ public class JobSelectScreen extends Screen {
                 }
             }
             for (int i = 0; i < count(); i++) {
-                if (event.x() >= cardX(i) && event.x() < cardX(i) + CARD_W && event.y() >= cardY(i) && event.y() < cardY(i) + CARD_H) {
+                if (event.x() >= cardX(i) && event.x() < cardX(i) + CARD_W && event.y() >= cardY(i) && event.y() < cardY(i) + cardH) {
                     if (selected != i) {
                         selected = i;
                         confirming = false;
@@ -212,7 +223,7 @@ public class JobSelectScreen extends Screen {
         JobType base = baseOfCard(i);
         JobDefs.Job job = defOf(i);
         int x = cardX(i), y = cardY(i) + Math.round((1 - intro) * (10 + i * 3));
-        boolean hover = mouseX >= x && mouseX < x + CARD_W && mouseY >= y && mouseY < y + CARD_H;
+        boolean hover = mouseX >= x && mouseX < x + CARD_W && mouseY >= y && mouseY < y + cardH;
         boolean sel = i == selected;
         if (sel || hover) y -= 2;
         String problem = problem(i);
@@ -221,23 +232,23 @@ public class JobSelectScreen extends Screen {
         boolean current = "rpgmod.jobchange.current".equals(problem);
         int c = locked ? 0x50555F : job.color(); // a locked advanced job gives nothing away, not even its colour
         int cx = x + CARD_W / 2;
-        g.fill(x, y, x + CARD_W, y + CARD_H, sel ? Ui.argb(c) : hover ? Ui.EDGE_LIGHT : Ui.EDGE);
-        g.fillGradient(x + 1, y + 1, x + CARD_W - 1, y + CARD_H - 1, Ui.mix(Ui.argb(c), 0xFF14161C, 0.78f), 0xFF0E1015);
+        g.fill(x, y, x + CARD_W, y + cardH, sel ? Ui.argb(c) : hover ? Ui.EDGE_LIGHT : Ui.EDGE);
+        g.fillGradient(x + 1, y + 1, x + CARD_W - 1, y + cardH - 1, Ui.mix(Ui.argb(c), 0xFF14161C, 0.78f), 0xFF0E1015);
         g.fill(x + 1, y + 1, x + CARD_W - 1, y + 3, Ui.argb(c));
-        Ui.disc(g, cx, y + 18, 11, Ui.mix(Ui.argb(c), 0xFF000000, 0.35f));
-        Ui.circle(g, cx, y + 18, 11, Ui.argb(c), 1);
-        Ui.glyph(g, font, locked ? "?" : job.glyph(), cx + 1, y + 19, 1.35f, locked ? Ui.DIM : Ui.TEXT);
+        Ui.disc(g, cx, y + dy(18, 13), compact() ? 9 : 11, Ui.mix(Ui.argb(c), 0xFF000000, 0.35f));
+        Ui.circle(g, cx, y + dy(18, 13), compact() ? 9 : 11, Ui.argb(c), 1);
+        Ui.glyph(g, font, locked ? "?" : job.glyph(), cx + 1, y + dy(19, 14), compact() ? 1.1f : 1.35f, locked ? Ui.DIM : Ui.TEXT);
         Component name = soon ? Component.translatable("rpgmod.jobchange.soon") : locked ? Component.translatable("rpgmod.jobchange.hidden")
                 : Component.translatable("rpgmod.job." + job.id());
-        fitText(g, name, cx, y + 33, CARD_W - 4, 1f, sel ? Ui.argb(c) : locked ? Ui.DIM : Ui.TEXT);
+        fitText(g, name, cx, y + dy(33, 25), CARD_W - 4, 1f, sel ? Ui.argb(c) : locked ? Ui.DIM : Ui.TEXT);
         if (!change) {
-            fitText(g, Component.translatable("rpgmod.job." + job.id() + ".role"), cx, y + 47, CARD_W - 4, 0.75f, Ui.DIM);
+            fitText(g, Component.translatable("rpgmod.job." + job.id() + ".role"), cx, y + dy(47, 34), CARD_W - 4, 0.75f, Ui.DIM);
             return;
         }
         if (soon) return;
         // job change: current job / mastery of the base job (the key to its advanced job)
         if (current) {
-            fitText(g, Component.translatable("rpgmod.jobchange.current_tag"), cx, y + 47, CARD_W - 4, 0.8f, Ui.GOLD);
+            fitText(g, Component.translatable("rpgmod.jobchange.current_tag"), cx, y + dy(47, 34), CARD_W - 4, 0.8f, Ui.GOLD);
         } else if (base == null) { // a hybrid job: how many of its two base jobs are mastered
             var d = JobClient.data();
             java.util.List<String> two = JobDefs.HYBRIDS.get(job.id());
@@ -246,21 +257,21 @@ public class JobSelectScreen extends Screen {
                 if (d.mastered(b)) done++;
                 sum += d.masteryPercent(b);
             }
-            int bx = x + 5, bw = CARD_W - 10, by = y + 55;
+            int bx = x + 5, bw = CARD_W - 10, by = y + dy(55, 41);
             g.fill(bx, by, bx + bw, by + 3, 0xFF0B0D12);
             g.fill(bx, by, bx + Math.round(bw * sum / 200f), by + 3, done == 2 ? Ui.GOLD : Ui.EXP);
-            fitText(g, Component.translatable("rpgmod.jobchange.hybrid_count", done), cx, y + 45, CARD_W - 4, 0.75f, locked ? Ui.BAD : Ui.GOLD);
+            fitText(g, Component.translatable("rpgmod.jobchange.hybrid_count", done), cx, y + dy(45, 33), CARD_W - 4, 0.75f, locked ? Ui.BAD : Ui.GOLD);
         } else {
             int pct = JobClient.data().masteryPercent(base.id);
-            int bx = x + 5, bw = CARD_W - 10, by = y + 55;
+            int bx = x + 5, bw = CARD_W - 10, by = y + dy(55, 41);
             g.fill(bx, by, bx + bw, by + 3, 0xFF0B0D12);
             g.fill(bx, by, bx + Math.round(bw * pct / 100f), by + 3, pct >= 100 ? Ui.GOLD : Ui.EXP);
-            fitText(g, Component.translatable("rpgmod.jobchange.mastery_pct", pct), cx, y + 45, CARD_W - 4, 0.75f, locked ? Ui.BAD : pct >= 100 ? Ui.GOLD : Ui.DIM);
+            fitText(g, Component.translatable("rpgmod.jobchange.mastery_pct", pct), cx, y + dy(45, 33), CARD_W - 4, 0.75f, locked ? Ui.BAD : pct >= 100 ? Ui.GOLD : Ui.DIM);
         }
     }
 
     private void drawDetail(GuiGraphicsExtractor g) {
-        int x = left + 8, y = top + CARDS_Y + rows() * (CARD_H + GAP) + 2;
+        int x = left + 8, y = top + CARDS_Y + rows() * (cardH + GAP) + 2;
         int w = W - 16, h = 56;
         Ui.inset(g, x, y, w, h);
         if (selected < 0) {
