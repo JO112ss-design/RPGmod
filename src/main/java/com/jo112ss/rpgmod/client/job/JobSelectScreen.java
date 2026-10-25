@@ -25,7 +25,8 @@ import net.minecraft.world.item.ItemStack;
  * Choosing needs two clicks.
  */
 public class JobSelectScreen extends Screen {
-    private static final int W = 320, H = 252;
+    private static final int W = 320;
+    private int H = 252;
     private static final int CARD_W = 48, CARD_H = 62, GAP = 4, CARDS_Y = 30, PER_ROW = 6;
 
     private final boolean change;
@@ -41,12 +42,35 @@ public class JobSelectScreen extends Screen {
         this.change = change;
     }
 
+    /** Number of cards on the current tab: the base jobs, or their advanced jobs followed by the hybrid jobs. */
+    private int count() {
+        return advTab ? JobType.BASE.size() + JobType.HYBRIDS.size() : JobType.BASE.size();
+    }
+
+    /** The base job behind card i (null for a hybrid job). */
+    private JobType baseOfCard(int i) {
+        return i < JobType.BASE.size() ? JobType.BASE.get(i) : null;
+    }
+
     /** Job id of card i on the current tab. */
     private String idOf(int i) {
-        JobType base = JobType.values()[i];
+        if (i >= JobType.BASE.size()) return JobType.HYBRIDS.get(i - JobType.BASE.size()).id;
+        JobType base = JobType.BASE.get(i);
         if (!advTab) return base.id;
         JobDefs.Job adv = JobDefs.advancedOf(base.id);
         return adv == null ? base.id : adv.id();
+    }
+
+    private int rows() {
+        return (count() + PER_ROW - 1) / PER_ROW;
+    }
+
+    /** Window height for the current tab (a third row of cards for the hybrid jobs). */
+    private void layout() {
+        H = 252 + (rows() - 2) * (CARD_H + GAP);
+        left = (width - W) / 2;
+        top = (height - H) / 2;
+        if (confirm != null) confirm.setPosition(left + W - 148, top + H - 24);
     }
 
     private JobDefs.Job defOf(int i) {
@@ -56,7 +80,8 @@ public class JobSelectScreen extends Screen {
     /** Lang key of why card i cannot be picked (current job, not mastered, no advanced job yet), or null. */
     private String problem(int i) {
         if (!change) return null;
-        if (advTab && JobDefs.advancedOf(JobType.values()[i].id) == null) return "rpgmod.jobchange.no_advanced";
+        JobType base = baseOfCard(i);
+        if (advTab && base != null && JobDefs.advancedOf(base.id) == null) return "rpgmod.jobchange.no_advanced";
         return com.jo112ss.rpgmod.job.JobManager.changeProblem(JobClient.data(), idOf(i));
     }
 
@@ -82,8 +107,7 @@ public class JobSelectScreen extends Screen {
 
     @Override
     protected void init() {
-        left = (width - W) / 2;
-        top = (height - H) / 2;
+        layout();
         openedAt = System.currentTimeMillis();
         confirm = addRenderableWidget(Button.builder(Component.translatable("rpgmod.jobselect.choose"), b -> onConfirm())
                 .bounds(left + W - 148, top + H - 24, 140, 18).build());
@@ -97,6 +121,7 @@ public class JobSelectScreen extends Screen {
 
     public void testSelect(int i, boolean adv) {
         advTab = adv && change;
+        layout();
         selected = i;
         confirming = false;
         updateConfirm();
@@ -110,7 +135,7 @@ public class JobSelectScreen extends Screen {
             return;
         }
         if (change) JobClient.send(JobActionPayload.CHANGE_JOB, 0, idOf(selected));
-        else JobClient.send(JobActionPayload.CHOOSE_JOB, 0, JobType.values()[selected].id);
+        else JobClient.send(JobActionPayload.CHOOSE_JOB, 0, idOf(selected));
         onClose();
     }
 
@@ -130,6 +155,8 @@ public class JobSelectScreen extends Screen {
                     if (event.x() >= tabX(t) && event.x() < tabX(t) + 56 && event.y() >= top + 5 && event.y() < top + 19) {
                         if (advTab != (t == 1)) {
                             advTab = t == 1;
+                            if (selected >= count()) selected = -1;
+                            layout();
                             confirming = false;
                             updateConfirm();
                         }
@@ -137,7 +164,7 @@ public class JobSelectScreen extends Screen {
                     }
                 }
             }
-            for (int i = 0; i < JobType.values().length; i++) {
+            for (int i = 0; i < count(); i++) {
                 if (event.x() >= cardX(i) && event.x() < cardX(i) + CARD_W && event.y() >= cardY(i) && event.y() < cardY(i) + CARD_H) {
                     if (selected != i) {
                         selected = i;
@@ -174,7 +201,7 @@ public class JobSelectScreen extends Screen {
         g.text(font, sub, left + 10, top + H - 19, change ? Ui.DIM : Ui.GOLD, false);
 
         float intro = Math.min(1f, (System.currentTimeMillis() - openedAt) / 400f);
-        for (int i = 0; i < JobType.values().length; i++) {
+        for (int i = 0; i < count(); i++) {
             drawCard(g, i, mouseX, mouseY, intro);
         }
         drawDetail(g);
@@ -182,7 +209,7 @@ public class JobSelectScreen extends Screen {
     }
 
     private void drawCard(GuiGraphicsExtractor g, int i, int mouseX, int mouseY, float intro) {
-        JobType base = JobType.values()[i];
+        JobType base = baseOfCard(i);
         JobDefs.Job job = defOf(i);
         int x = cardX(i), y = cardY(i) + Math.round((1 - intro) * (10 + i * 3));
         boolean hover = mouseX >= x && mouseX < x + CARD_W && mouseY >= y && mouseY < y + CARD_H;
@@ -211,6 +238,18 @@ public class JobSelectScreen extends Screen {
         // job change: current job / mastery of the base job (the key to its advanced job)
         if (current) {
             fitText(g, Component.translatable("rpgmod.jobchange.current_tag"), cx, y + 47, CARD_W - 4, 0.8f, Ui.GOLD);
+        } else if (base == null) { // a hybrid job: how many of its two base jobs are mastered
+            var d = JobClient.data();
+            java.util.List<String> two = JobDefs.HYBRIDS.get(job.id());
+            int done = 0, sum = 0;
+            for (String b : two) {
+                if (d.mastered(b)) done++;
+                sum += d.masteryPercent(b);
+            }
+            int bx = x + 5, bw = CARD_W - 10, by = y + 55;
+            g.fill(bx, by, bx + bw, by + 3, 0xFF0B0D12);
+            g.fill(bx, by, bx + Math.round(bw * sum / 200f), by + 3, done == 2 ? Ui.GOLD : Ui.EXP);
+            fitText(g, Component.translatable("rpgmod.jobchange.hybrid_count", done), cx, y + 45, CARD_W - 4, 0.75f, locked ? Ui.BAD : Ui.GOLD);
         } else {
             int pct = JobClient.data().masteryPercent(base.id);
             int bx = x + 5, bw = CARD_W - 10, by = y + 55;
@@ -221,14 +260,14 @@ public class JobSelectScreen extends Screen {
     }
 
     private void drawDetail(GuiGraphicsExtractor g) {
-        int x = left + 8, y = top + CARDS_Y + 2 * (CARD_H + GAP) + 2;
+        int x = left + 8, y = top + CARDS_Y + rows() * (CARD_H + GAP) + 2;
         int w = W - 16, h = 56;
         Ui.inset(g, x, y, w, h);
         if (selected < 0) {
             g.centeredText(font, Component.translatable("rpgmod.jobselect.hint"), x + w / 2, y + h / 2 - 4, Ui.DIM);
             return;
         }
-        JobType job = JobType.values()[selected];
+        JobType job = JobType.byId(com.jo112ss.rpgmod.job.JobManager.baseOf(idOf(selected)).id);
         JobDefs.Job def = defOf(selected);
         String problem = problem(selected);
         boolean soon = "rpgmod.jobchange.no_advanced".equals(problem);
@@ -236,6 +275,10 @@ public class JobSelectScreen extends Screen {
         g.text(font, soon ? Component.translatable("rpgmod.jobchange.soon") : hidden ? Component.translatable("rpgmod.jobchange.hidden")
                 : Component.translatable("rpgmod.job." + def.id()), x + 6, y + 5, hidden ? Ui.DIM : Ui.argb(def.color()), true);
         Component desc = soon ? Component.translatable("rpgmod.jobchange.soon_desc", Component.translatable("rpgmod.job." + job.id))
+                : "rpgmod.jobchange.need_mastery".equals(problem) && job.hybrid
+                ? Component.translatable("rpgmod.jobchange.hybrid_locked", Component.translatable("rpgmod.job." + JobDefs.HYBRIDS.get(job.id).get(0)),
+                        Component.translatable("rpgmod.job." + JobDefs.HYBRIDS.get(job.id).get(1)),
+                        JobClient.data().masteryPercent(JobDefs.HYBRIDS.get(job.id).get(0)), JobClient.data().masteryPercent(JobDefs.HYBRIDS.get(job.id).get(1)))
                 : "rpgmod.jobchange.need_mastery".equals(problem)
                 ? Component.translatable("rpgmod.jobchange.locked_desc", Component.translatable("rpgmod.job." + job.id), JobClient.data().masteryPercent(job.id))
                 : Component.translatable("rpgmod.job." + def.id() + ".desc");

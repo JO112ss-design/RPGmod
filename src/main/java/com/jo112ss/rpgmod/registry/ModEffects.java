@@ -139,6 +139,38 @@ public final class ModEffects {
             () -> new Simple(MobEffectCategory.BENEFICIAL, 0xB0FFE0)
                     .addAttributeModifier(Attributes.MOVEMENT_SPEED, id("wind_song"), AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL, amp -> 0.04 * (amp + 1))
                     .addAttributeModifier(Attributes.ATTACK_SPEED, id("wind_song_attack"), AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL, amp -> 0.03 * (amp + 1)));
+    // ------------------------------------------------------------------ captain, champion, dragoon, maestro and the hybrid jobs
+
+    /** Champion: every melee hit taken while it lasts is dodged and answered. */
+    public static final DeferredHolder<MobEffect, MobEffect> FORESIGHT = marker("foresight", MobEffectCategory.BENEFICIAL, 0xFFB070);
+    /** Champion: +4% damage dealt per point of ki. */
+    public static final DeferredHolder<MobEffect, MobEffect> BATTLE_AURA = marker("battle_aura", MobEffectCategory.BENEFICIAL, 0xFF8030);
+    /** Maestro's hero: +30% damage dealt. */
+    public static final DeferredHolder<MobEffect, MobEffect> HEROIC = marker("heroic", MobEffectCategory.BENEFICIAL, 0xFFD050);
+    /** Maestro: the next song plays alongside the current one. */
+    public static final DeferredHolder<MobEffect, MobEffect> DUET = marker("duet", MobEffectCategory.BENEFICIAL, 0x5FD3BC);
+    /** Spellsinger's flame melody: hits burn and deal +3% per level. */
+    public static final DeferredHolder<MobEffect, MobEffect> FLAME_SONG = marker("flame_song", MobEffectCategory.BENEFICIAL, 0xFF7A30);
+    /** Spellblade: -30% damage taken, and the element strikes back at attackers. */
+    public static final DeferredHolder<MobEffect, MobEffect> SPELL_GUARD = marker("spell_guard", MobEffectCategory.BENEFICIAL, 0x8C7CFF);
+    /** Sentinel: -40% damage taken, no knockback. */
+    public static final DeferredHolder<MobEffect, MobEffect> IMMOVABLE = EFFECTS.register("immovable",
+            () -> new Simple(MobEffectCategory.BENEFICIAL, 0xC0B080)
+                    .addAttributeModifier(Attributes.KNOCKBACK_RESISTANCE, id("immovable"), AttributeModifier.Operation.ADD_VALUE, amp -> 1.0));
+    /** Sentinel: the next melee hit taken is blocked and answered. */
+    public static final DeferredHolder<MobEffect, MobEffect> COUNTER_LANCE = marker("counter_lance", MobEffectCategory.BENEFICIAL, 0xE0C080);
+    /** Sentinel's fortress: -50% damage taken. */
+    public static final DeferredHolder<MobEffect, MobEffect> FORTRESS = marker("fortress", MobEffectCategory.BENEFICIAL, 0xF0D890);
+    /** Shadow hunter: the next hit is a sure crit and hits 60% harder. */
+    public static final DeferredHolder<MobEffect, MobEffect> AMBUSH = marker("ambush", MobEffectCategory.BENEFICIAL, 0x4A5A80);
+    /** Shadow hunter's night hunt (on the hunter), and its marked prey (+50% damage from the hunter). */
+    public static final DeferredHolder<MobEffect, MobEffect> NIGHT_HUNT = marker("night_hunt", MobEffectCategory.BENEFICIAL, 0x2A3050);
+    public static final DeferredHolder<MobEffect, MobEffect> HUNTED = marker("hunted", MobEffectCategory.HARMFUL, 0xC03040);
+    /** Treasure hunter: monsters killed drop extra treasure. */
+    public static final DeferredHolder<MobEffect, MobEffect> TREASURE = marker("treasure", MobEffectCategory.BENEFICIAL, 0xD4AF37);
+    /** Treasure hunter: each hit is doubled or halved (luck helps). */
+    public static final DeferredHolder<MobEffect, MobEffect> DOUBLE_DOWN = marker("double_down", MobEffectCategory.BENEFICIAL, 0xE8C040);
+
     /** Bard: playing (slower, cannot attack). */
     public static final DeferredHolder<MobEffect, MobEffect> PERFORMING = EFFECTS.register("performing",
             () -> new Simple(MobEffectCategory.NEUTRAL, 0x48C9B0)

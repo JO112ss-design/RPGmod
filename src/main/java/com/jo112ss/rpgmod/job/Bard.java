@@ -42,6 +42,8 @@ public final class Bard {
         final Ctx c;
         int judged;
         boolean encore;
+        /** Maestro's duet: a second song playing along (null = none). */
+        String second;
 
         Perf(Ctx c) {
             this.c = c;
@@ -52,7 +54,8 @@ public final class Bard {
 
     public static boolean isSong(String id) {
         return switch (id) {
-            case "war_song", "heal_song", "guard_song", "wind_song", "discord", "lullaby" -> true;
+            case "war_song", "heal_song", "guard_song", "wind_song", "discord", "lullaby",
+                 "flame_melody", "haste_tune", "mana_chord", "seal_melody", "thunder_tune" -> true;
             default -> false;
         };
     }
@@ -65,6 +68,11 @@ public final class Bard {
             case "wind_song" -> 0xB0FFE0;
             case "discord" -> 0xC060FF;
             case "lullaby" -> 0xF0B0FF;
+            case "flame_melody" -> 0xFF8A40;
+            case "haste_tune" -> 0xA0F0FF;
+            case "mana_chord" -> 0x6A8CFF;
+            case "seal_melody" -> 0xB070E0;
+            case "thunder_tune" -> 0xFFF07A;
             default -> COLOR;
         };
     }
@@ -88,8 +96,15 @@ public final class Bard {
         ServerPlayer p = c.p();
         JobData d = JobManager.data(p);
         long now = p.level().getGameTime();
+        Perf old = PERF.get(p.getUUID());
+        boolean duet = old != null && performing(p) && p.hasEffect(ModEffects.DUET) && !d.song().equals(c.def().id());
+        String second = duet ? d.song() : null;
         d.setSong(c.def().id(), now, now + LEAD + seconds * 20L);
-        PERF.put(p.getUUID(), new Perf(c));
+        Perf perf = new Perf(c);
+        perf.second = second;
+        PERF.put(p.getUUID(), perf);
+        if (duet) p.sendSystemMessage(Component.translatable("rpgmod.bard.duet", Component.translatable("rpgmod.skill." + second),
+                Component.translatable("rpgmod.skill." + c.def().id())).withStyle(ChatFormatting.AQUA), true);
         JobManager.sync(p);
         ServerFx.of("x_ring", p.position()).a(radius(d.songPoints())).b(1).color(songColor(c.def().id())).send(c.level());
         ServerFx.of("n_notes", p.position()).follow(p).a(1.5).color(songColor(c.def().id())).send(c.level());
@@ -137,7 +152,7 @@ public final class Bard {
         if (perf == null) return;
         JobData d = JobManager.data(p);
         long now = p.level().getGameTime();
-        if (d.song().isEmpty() || !p.isAlive() || !"bard".equals(d.jobId())) {
+        if (d.song().isEmpty() || !p.isAlive() || !d.songJob()) {
             stop(p);
             return;
         }
@@ -157,7 +172,10 @@ public final class Bard {
         long t = now - d.songStart();
         if (t % 20 == 0) {
             p.addEffect(new MobEffectInstance(ModEffects.PERFORMING, 30, 0, false, false, true));
-            if (t >= LEAD) pulse(perf.c, p, d.song(), d.songPoints());
+            if (t >= LEAD) {
+                pulse(perf.c, p, d.song(), d.songPoints());
+                if (perf.second != null) pulse(perf.c, p, perf.second, d.songPoints());
+            }
         }
     }
 
@@ -178,7 +196,7 @@ public final class Bard {
             case "discord" -> {
                 List<LivingEntity> foes = SkillExecutor.enemies(p, p.position(), r);
                 for (LivingEntity e : foes) {
-                    SkillExecutor.hurt(c, e, (float) (c.dmg(1) * f), SkillExecutor.magic(c));
+                    SkillExecutor.hurt(c, e, (float) (songPower(c, song) * f), SkillExecutor.magic(c));
                     e.addEffect(new MobEffectInstance(ModEffects.ARMOR_BREAK, 30, 0), p);
                 }
                 if (!foes.isEmpty()) ServerFx.of("hit", p.position()).color(color).a(0.8).points(foes).send(level);
@@ -189,9 +207,71 @@ public final class Bard {
                     e.addEffect(new MobEffectInstance(ModEffects.ATTACK_DOWN, 30, f >= 0.9 ? 1 : 0), p);
                 }
             }
+            // spellsinger: magic on the party's weapons
+            case "flame_melody" -> allies(p, r, a -> a.addEffect(new MobEffectInstance(ModEffects.FLAME_SONG, 30, amp, true, true), p));
+            case "haste_tune" -> allies(p, r, a -> {
+                a.addEffect(new MobEffectInstance(MobEffects.HASTE, 30, f >= 0.9 ? 1 : 0, true, true), p);
+                a.addEffect(new MobEffectInstance(MobEffects.SPEED, 30, f >= 0.9 ? 1 : 0, true, true), p);
+            });
+            case "mana_chord" -> allies(p, r, a -> JobManager.restoreMana(a, JobManager.maxMana(a) * 0.02 * f));
+            case "seal_melody" -> {
+                for (LivingEntity e : SkillExecutor.enemies(p, p.position(), r)) {
+                    e.addEffect(new MobEffectInstance(ModEffects.EXPOSED, 30, f >= 0.9 ? 1 : 0), p);
+                    e.addEffect(new MobEffectInstance(MobEffects.SLOWNESS, 30, 0), p);
+                }
+            }
+            case "thunder_tune" -> {
+                List<LivingEntity> foes = SkillExecutor.enemies(p, p.position(), r);
+                if (!foes.isEmpty()) {
+                    LivingEntity e = foes.get(p.getRandom().nextInt(foes.size()));
+                    SkillExecutor.hurt(c, e, (float) (songPower(c, song) * f), SkillExecutor.magic(c));
+                    ServerFx.of("x_strike", e.position()).a(1).color(color).point(e.position().add(0, e.getBbHeight() * 0.5, 0)).send(level);
+                    level.playSound(null, e.blockPosition(), SoundEvents.LIGHTNING_BOLT_IMPACT, SoundSource.PLAYERS, 0.5F, 1.6F);
+                }
+            }
             default -> { }
         }
         ServerFx.of("n_song", p.position()).follow(p).a(r).b(f).color(color).send(level);
+    }
+
+    /** A song's damage per second before the strength: its own ratio x the magic attack when it started. */
+    private static double songPower(Ctx c, String song) {
+        var def = com.jo112ss.rpgmod.job.core.JobDefs.skill(song);
+        return def == null ? 0 : def.power() * c.power();
+    }
+
+    /** The bard's songs, and the spellsinger's, in the order modulation walks through them. */
+    private static final List<String> BARD_SONGS = List.of("war_song", "heal_song", "guard_song", "wind_song", "discord", "lullaby");
+    private static final List<String> SINGER_SONGS = List.of("flame_melody", "haste_tune", "mana_chord", "seal_melody", "thunder_tune");
+
+    /** Maestro's modulation: the next song, same time left and points, plus a little. */
+    static boolean modulate(Ctx c) {
+        ServerPlayer p = c.p();
+        JobData d = JobManager.data(p);
+        if (!performing(p)) {
+            SkillExecutor.fail(p, "rpgmod.bard.not_playing");
+            return false;
+        }
+        List<String> order = SINGER_SONGS.contains(d.song()) ? SINGER_SONGS : BARD_SONGS;
+        String next = order.get((order.indexOf(d.song()) + 1) % order.size());
+        d.setSong(next, d.songStart(), d.songEnd());
+        d.setSongPoints(d.songPoints() + 4);
+        JobManager.sync(p);
+        p.sendSystemMessage(Component.translatable("rpgmod.bard.modulated", Component.translatable("rpgmod.skill." + next)).withStyle(ChatFormatting.AQUA), true);
+        ServerFx.of("x_ring", p.position()).a(radius(d.songPoints())).b(2).color(songColor(next)).send(c.level());
+        ServerFx.of("n_notes", p.position()).follow(p).a(1).color(songColor(next)).send(c.level());
+        p.level().playSound(null, p.blockPosition(), SoundEvents.NOTE_BLOCK_CHIME.value(), SoundSource.PLAYERS, 1.0F, 1.5F);
+        return true;
+    }
+
+    /** Spellsinger's grand concerto: the weapon songs at full strength (every second while it lasts). */
+    static void concerto(ServerPlayer p, double r, int ticks) {
+        for (ServerPlayer a : SkillExecutor.allies(p, r)) {
+            a.addEffect(new MobEffectInstance(ModEffects.FLAME_SONG, ticks, 5, true, true), p);
+            a.addEffect(new MobEffectInstance(MobEffects.HASTE, ticks, 1, true, true), p);
+            a.addEffect(new MobEffectInstance(MobEffects.SPEED, ticks, 1, true, true), p);
+            JobManager.restoreMana(a, JobManager.maxMana(a) * 0.024);
+        }
     }
 
     static void allies(ServerPlayer p, double r, java.util.function.Consumer<ServerPlayer> each) {

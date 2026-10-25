@@ -30,7 +30,7 @@ public final class JobHud {
         if (!d.hasJob()) return;
         Font font = mc.font;
         int sw = g.guiWidth(), sh = g.guiHeight();
-        int[] order = d.isAdvanced() ? new int[] {0, 1, 3, 2} : new int[] {0, 1, 2};
+        int[] order = d.hasSlot3() ? new int[] {0, 1, 3, 2} : new int[] {0, 1, 2};
         int x0 = sw - order.length * (SLOT + 4) - 6, y0 = sh - SLOT - 14;
         long now = mc.level.getGameTime();
         Map<JobStat, Double> st = JobStats.compute(d);

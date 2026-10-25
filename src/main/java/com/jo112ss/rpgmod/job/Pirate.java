@@ -41,11 +41,19 @@ public final class Pirate {
     static final Map<UUID, Long> FLAG_UNTIL = new HashMap<>();
     /** Keg entity id -> what it does when it goes off. */
     static final Map<Integer, Runnable> KEGS = new HashMap<>();
-    /** Owner -> their cannon (one each). */
+    /** Owner -> their cannon (one each), and the captain's second one. */
     static final Map<UUID, SkillProp> CANNONS = new HashMap<>();
+    static final Map<UUID, SkillProp> CANNONS2 = new HashMap<>();
+    /** Owner -> game time their cannons fire as fast as they can until (captain's fleet barrage). */
+    static final Map<UUID, Long> BARRAGE_UNTIL = new HashMap<>();
+
+    static boolean barrage(ServerPlayer p) {
+        Long until = BARRAGE_UNTIL.get(p.getUUID());
+        return until != null && until > p.level().getGameTime();
+    }
 
     public static boolean isPirate(Player p) {
-        return "pirate".equals(JobManager.data(p).jobId());
+        return JobManager.data(p).gunJob();
     }
 
     public static boolean holdsGun(Player p) {
@@ -176,6 +184,9 @@ public final class Pirate {
         FLAG_UNTIL.remove(id);
         SkillProp c = CANNONS.remove(id);
         if (c != null) c.discard();
+        SkillProp c2 = CANNONS2.remove(id);
+        if (c2 != null) c2.discard();
+        BARRAGE_UNTIL.remove(id);
     }
 
     /** The flag's attack bonus for players around it. */

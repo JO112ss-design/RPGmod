@@ -50,7 +50,7 @@ public final class JobDefs {
     public static final Map<String, Job> JOBS = new LinkedHashMap<>();
 
     /** Jobs whose skills scale with magic attack (staff + own magic) instead of attack (weapon + own). */
-    public static final java.util.Set<String> MAGIC_JOBS = java.util.Set.of("wizard", "healer", "enchanter", "spellmaster", "runemaster", "bishop", "bard");
+    public static final java.util.Set<String> MAGIC_JOBS = java.util.Set.of("wizard", "healer", "enchanter", "spellmaster", "runemaster", "bishop", "bard", "maestro", "spellsinger");
 
     /** Spells, and every skill of the caster jobs, use magic attack. */
     public static boolean isMagic(SkillDef def) {
@@ -69,7 +69,8 @@ public final class JobDefs {
 
     /** Skills whose power is not a damage ratio although their effect type usually is (and the reverse). */
     private static final java.util.Set<String> NO_POWER_LINE = java.util.Set.of();
-    private static final java.util.Set<String> DAMAGE_TOO = java.util.Set.of("decoy", "reprisal", "grand_rune", "counter_stance", "parry");
+    private static final java.util.Set<String> DAMAGE_TOO = java.util.Set.of("decoy", "reprisal", "grand_rune", "counter_stance", "parry",
+            "foresight", "counter_lance", "symphony", "mimic");
     /** Damage skills that keep their ratio (see SKILL_DAMAGE): the wizard's plain bolt is its normal attack. */
     private static final java.util.Set<String> UNSCALED = java.util.Set.of("magic_bolt", "reprisal"); // reprisal: 15% of attack, as asked
 
@@ -382,11 +383,165 @@ public final class JobDefs {
                         skill("holy_bolt", S, SkillEffect.BOLT, 0.8, 8, 1.6, 28, 0, List.of(), 0, "聖"),
                         skill("holy_nova", S, SkillEffect.WHIRL, 10, 40, 3.0, 7, 0, List.of(), 0, "輝"),
                         skill("light_pillar", S, SkillEffect.WHIRL, 14, 50, 1.0, 3, 0, List.of(), 0, "柱")));
+        // ---- Captain: two cannons, a crew to command, heavy shots
+        advanced("pirate", "captain", 0x1F5F99, "船", List.of(JobStat.ATTACK_DAMAGE, JobStat.CRIT_CHANCE, JobStat.ATTACK_SPEED, JobStat.MAX_HEALTH),
+                stats(JobStat.CRIT_CHANCE, 0.05),
+                List.of(
+                        skill("twin_cannon", A, SkillEffect.SHOT, 20, 25, 1.6, 16, 12, List.of(), 0, "双"),
+                        skill("scattershot", A, SkillEffect.SWEEP, 7, 18, 0.55, 8, 0, List.of(), 0, "散"),
+                        skill("anchor_throw", A, SkillEffect.WHIRL, 12, 20, 2.2, 4, 0, List.of(), 0, "錨"),
+                        skill("rally", A, SkillEffect.BUFF, 25, 20, 0, 10, 10, List.of("minecraft:haste", "minecraft:speed"), 1, "令"),
+                        skill("deadshot", A, SkillEffect.SHOT, 10, 18, 5.0, 48, 0, List.of(), 0, "狙")),
+                List.of(
+                        skill("fleet_barrage", U, SkillEffect.WHIRL, 100, 45, 1.4, 9, 5, List.of(), 0, "艦")),
+                List.of());
+        // ---- Champion: seven ki and the secret arts that spend it
+        advanced("monk", "champion", 0xC0561A, "覇", List.of(JobStat.ATTACK_DAMAGE, JobStat.ATTACK_SPEED, JobStat.CRIT_CHANCE, JobStat.MAX_HEALTH),
+                stats(JobStat.CRIT_CHANCE, 0.05),
+                List.of(
+                        skill("rising_dragon", A, SkillEffect.SWEEP, 8, 18, 2.6, 3.5, 0, List.of(), 0, "昇"),
+                        skill("ki_wave", A, SkillEffect.BOLT, 10, 20, 1.2, 18, 0, List.of(), 0, "波"),
+                        skill("iron_mountain", A, SkillEffect.DASH, 9, 18, 2.4, 6, 0, List.of(), 0, "靠"),
+                        skill("foresight", A, SkillEffect.BUFF, 18, 15, 1.2, 0, 3, List.of(), 0, "見"),
+                        skill("battle_aura", A, SkillEffect.BUFF, 30, 20, 0, 0, 12, List.of(), 0, "闘")),
+                List.of(
+                        skill("peerless", U, SkillEffect.SWEEP, 100, 45, 1.2, 5, 0, List.of(), 0, "無")),
+                List.of());
+        // ---- Dragoon: fights from the sky
+        advanced("lancer", "dragoon", 0x8A3A2A, "竜", List.of(JobStat.ATTACK_DAMAGE, JobStat.MAX_HEALTH, JobStat.MOVEMENT_SPEED, JobStat.CRIT_CHANCE),
+                stats(),
+                List.of(
+                        skill("high_jump", A, SkillEffect.WHIRL, 10, 18, 3.2, 3.5, 0, List.of(), 0, "跳"),
+                        skill("dragon_spear", A, SkillEffect.BOLT, 9, 18, 2.8, 24, 0, List.of(), 0, "爆"),
+                        skill("dragon_scale", A, SkillEffect.BUFF, 25, 18, 0, 0, 10, List.of("minecraft:resistance"), 1, "鱗"),
+                        skill("spiral_lance", A, SkillEffect.SWEEP, 9, 18, 1.0, 6, 0, List.of(), 0, "螺"),
+                        skill("sky_step", A, SkillEffect.DASH, 5, 10, 0, 0, 0, List.of(), 0, "天")),
+                List.of(
+                        skill("dragon_king", U, SkillEffect.WHIRL, 100, 45, 8.0, 8, 0, List.of(), 0, "王")),
+                List.of());
+        // ---- Maestro: songs on top of songs
+        advanced("bard", "maestro", 0x2FA38C, "指", List.of(JobStat.MAX_MANA, JobStat.MAGIC_ATTACK, JobStat.MANA_REGEN, JobStat.COOLDOWN_REDUCTION),
+                stats(JobStat.MAX_MANA, 0.5),
+                List.of(
+                        skill("duet", A, SkillEffect.BUFF, 20, 25, 0, 0, 12, List.of(), 0, "二"),
+                        skill("modulate", A, SkillEffect.BUFF, 4, 8, 0, 0, 0, List.of(), 0, "転"),
+                        skill("heroic_song", A, SkillEffect.BUFF, 30, 30, 0, 12, 10, List.of("minecraft:resistance", "minecraft:speed"), 0, "英"),
+                        skill("requiem", A, SkillEffect.HEAL, 40, 35, 0, 10, 10, List.of(), 0, "鎮"),
+                        skill("shock_chord", A, SkillEffect.WHIRL, 8, 20, 2.4, 6, 0, List.of(), 0, "響")),
+                List.of(
+                        skill("symphony", U, SkillEffect.BUFF, 100, 60, 0.5, 10, 12, List.of(), 0, "楽")),
+                List.of());
         // fusion spells (spellmaster, a charged spell in each hand): never learnt, the power listed
         // here is replaced by 1.2 x the two fused spells' worth (see SpellCasting)
         skill("steam_burst", S, SkillEffect.WHIRL, 0, 0, 6.0, 6, 3, List.of(), 0, "蒸");
         skill("plasma_ray", S, SkillEffect.BOLT, 0, 0, 7.0, 40, 6, List.of(), 0, "電");
         skill("frost_tempest", S, SkillEffect.WHIRL, 0, 0, 6.0, 7, 5, List.of(), 0, "凍");
+    }
+
+    // ------------------------------------------------------------------ hybrid jobs (two mastered base jobs)
+
+    /** Hybrid job id -> its two base jobs. */
+    public static final Map<String, List<String>> HYBRIDS = new LinkedHashMap<>();
+
+    static {
+        // A hybrid job takes nothing from its base jobs: its own stats, growth (over every level) and one
+        // panel for all of its points, with no mastery needed. Six skills and two ultimates each,
+        // a little stronger than a base job's, and three skill slots like an advanced job.
+        SkillKind A = SkillKind.ACTIVE, U = SkillKind.ULTIMATE;
+        // ---- Spellblade: an element on the sword; skills scale with attack + magic attack
+        hybrid("spellblade", "fighter", "wizard", 0x6C5CE7, "閃", List.of(JobStat.ATTACK_DAMAGE, JobStat.MAGIC_ATTACK, JobStat.MAX_HEALTH, JobStat.CRIT_CHANCE),
+                stats(JobStat.MAX_HEALTH, 4, JobStat.ATTACK_DAMAGE, 4, JobStat.MAGIC_ATTACK, 4),
+                stats(JobStat.ATTACK_DAMAGE, 0.45, JobStat.MAGIC_ATTACK, 0.45, JobStat.MAX_HEALTH, hpGrow(0.9, 4)),
+                List.of(
+                        skill("element_shift", A, SkillEffect.BUFF, 2, 0, 0, 0, 0, List.of(), 0, "属"),
+                        skill("magic_slash", A, SkillEffect.BOLT, 6, 14, 2.4, 16, 0, List.of(), 0, "斬"),
+                        skill("thunder_thrust", A, SkillEffect.DASH, 8, 16, 2.2, 8, 0, List.of(), 0, "雷"),
+                        skill("frost_blade", A, SkillEffect.SWEEP, 9, 16, 2.0, 4.5, 2, List.of("minecraft:slowness"), 3, "氷"),
+                        skill("flame_wheel", A, SkillEffect.WHIRL, 10, 18, 1.8, 4.5, 0, List.of(), 0, "炎"),
+                        skill("spell_guard", A, SkillEffect.BUFF, 20, 18, 0, 0, 6, List.of(), 0, "護")),
+                List.of(
+                        skill("arcane_edge", U, SkillEffect.SWEEP, 90, 45, 7.0, 8, 0, List.of(), 0, "極"),
+                        skill("elemental_burst", U, SkillEffect.WHIRL, 90, 45, 2.2, 7, 0, List.of(), 0, "解")));
+        // ---- Qi master: fists, and ki that heals
+        hybrid("qi_master", "healer", "monk", 0xE0A040, "功", List.of(JobStat.ATTACK_DAMAGE, JobStat.MAX_HEALTH, JobStat.ATTACK_SPEED, JobStat.COOLDOWN_REDUCTION),
+                stats(JobStat.MAX_HEALTH, 4, JobStat.ATTACK_DAMAGE, 4, JobStat.ATTACK_SPEED, 5),
+                stats(JobStat.ATTACK_DAMAGE, 0.6, JobStat.MAX_HEALTH, hpGrow(1.0, 4)),
+                List.of(
+                        skill("qi_bullet", A, SkillEffect.BOLT, 3, 7, 1.2, 18, 0, List.of(), 0, "弾"),
+                        skill("refine_qi", A, SkillEffect.BUFF, 15, 7, 0, 0, 4, List.of("minecraft:regeneration"), 1, "練"),
+                        skill("healing_palm", A, SkillEffect.HEAL, 10, 14, 1.0, 4, 0, List.of(), 0, "掌"),
+                        skill("hard_qi", A, SkillEffect.BUFF, 20, 14, 0, 0, 8, List.of(), 0, "硬"),
+                        skill("qi_burst", A, SkillEffect.SWEEP, 9, 14, 1.8, 4, 0, List.of(), 0, "勁"),
+                        skill("flowing_step", A, SkillEffect.DASH, 7, 7, 1.0, 6, 0, List.of(), 0, "流")),
+                List.of(
+                        skill("heaven_earth", U, SkillEffect.HEAL, 90, 42, 2.0, 8, 0, List.of(), 0, "天"),
+                        skill("blooming_fists", U, SkillEffect.SWEEP, 90, 42, 0.5, 4, 3, List.of(), 0, "花")));
+        // ---- Sentinel: spear in one hand, shield in the other
+        hybrid("sentinel", "paladin", "lancer", 0xB8A060, "哨", List.of(JobStat.ARMOR, JobStat.MAX_HEALTH, JobStat.ATTACK_DAMAGE, JobStat.COOLDOWN_REDUCTION),
+                stats(JobStat.MAX_HEALTH, 6, JobStat.ARMOR, 4, JobStat.ATTACK_DAMAGE, 4),
+                stats(JobStat.ATTACK_DAMAGE, 0.6, JobStat.MAX_HEALTH, hpGrow(1.2, 6)),
+                List.of(
+                        skill("guard_thrust", A, SkillEffect.SWEEP, 6, 11, 1.6, 5, 0, List.of(), 0, "突"),
+                        skill("shield_charge", A, SkillEffect.DASH, 8, 11, 1.8, 7, 2, List.of("minecraft:slowness"), 4, "盾"),
+                        skill("immovable", A, SkillEffect.BUFF, 25, 14, 0, 0, 6, List.of(), 0, "動"),
+                        skill("spear_wall", A, SkillEffect.WHIRL, 20, 18, 0.6, 3.5, 8, List.of(), 0, "衾"),
+                        skill("counter_lance", A, SkillEffect.BUFF, 12, 11, 2.6, 0, 3, List.of(), 0, "返"),
+                        skill("provoke", A, SkillEffect.DEBUFF, 15, 11, 0, 10, 6, List.of(), 0, "挑")),
+                List.of(
+                        skill("fortress", U, SkillEffect.BUFF, 90, 42, 0, 8, 10, List.of(), 0, "砦"),
+                        skill("holy_lance", U, SkillEffect.SWEEP, 90, 42, 6.0, 12, 0, List.of(), 0, "聖")));
+        // ---- Spellsinger: songs that put magic on the party's weapons
+        hybrid("spellsinger", "enchanter", "bard", 0x9A6AD8, "律", List.of(JobStat.MAGIC_ATTACK, JobStat.MAX_MANA, JobStat.MANA_REGEN, JobStat.COOLDOWN_REDUCTION),
+                stats(JobStat.MAX_MANA, 50, JobStat.MAGIC_ATTACK, 4, JobStat.MANA_REGEN, 0.5),
+                stats(JobStat.MAGIC_ATTACK, 0.6, JobStat.ATTACK_DAMAGE, 0.3, JobStat.MAX_MANA, 1, JobStat.MAX_HEALTH, hpGrow(0.6, 0)),
+                List.of(
+                        skill("flame_melody", A, SkillEffect.BUFF, 3, 14, 0, 6, 12, List.of(), 0, "炎"),
+                        skill("haste_tune", A, SkillEffect.BUFF, 3, 14, 0, 6, 12, List.of(), 0, "速"),
+                        skill("mana_chord", A, SkillEffect.BUFF, 3, 14, 0, 6, 12, List.of(), 0, "魔"),
+                        skill("seal_melody", A, SkillEffect.DEBUFF, 3, 18, 0, 6, 12, List.of(), 0, "封"),
+                        skill("thunder_tune", A, SkillEffect.DEBUFF, 3, 18, 1.2, 6, 12, List.of(), 0, "雷"),
+                        skill("resonance", A, SkillEffect.BUFF, 30, 30, 0, 10, 0, List.of(), 0, "共")),
+                List.of(
+                        skill("grand_concerto", U, SkillEffect.BUFF, 90, 50, 0, 10, 10, List.of(), 0, "奏"),
+                        skill("sealing_chord", U, SkillEffect.WHIRL, 90, 42, 3.5, 10, 0, List.of(), 0, "曲")));
+        // ---- Shadow hunter: unseen, then the shot to the weak spot
+        hybrid("shadow_hunter", "assassin", "ranger", 0x3A4A6A, "影", List.of(JobStat.ATTACK_DAMAGE, JobStat.CRIT_CHANCE, JobStat.MOVEMENT_SPEED, JobStat.ATTACK_SPEED),
+                stats(JobStat.ATTACK_DAMAGE, 4, JobStat.CRIT_CHANCE, 5, JobStat.MOVEMENT_SPEED, 5),
+                stats(JobStat.ATTACK_DAMAGE, 0.6, JobStat.CRIT_CHANCE, 0.05, JobStat.MAX_HEALTH, hpGrow(1.0, 0)),
+                List.of(
+                        skill("vital_shot", A, SkillEffect.SHOT, 8, 14, 3.0, 40, 0, List.of(), 0, "急"),
+                        skill("stealth", A, SkillEffect.STEALTH, 15, 14, 0, 0, 4, List.of(), 0, "隠"),
+                        skill("shadow_arrow", A, SkillEffect.DEBUFF, 12, 14, 1.4, 30, 3, List.of(), 0, "縫"),
+                        skill("hunter_trap", A, SkillEffect.DEBUFF, 14, 14, 2.0, 2.5, 20, List.of(), 0, "罠"),
+                        skill("shadow_leap", A, SkillEffect.BACKSTEP, 6, 7, 0, 0, 3, List.of(), 0, "跳"),
+                        skill("fan_knives", A, SkillEffect.SWEEP, 7, 11, 0.9, 8, 0, List.of(), 0, "扇")),
+                List.of(
+                        skill("night_hunt", U, SkillEffect.BUFF, 90, 40, 0, 30, 10, List.of(), 0, "夜"),
+                        skill("shadow_rain", U, SkillEffect.SHOT, 90, 40, 1.0, 6, 3, List.of(), 0, "雨")));
+        // ---- Treasure hunter: lucky cannons and loot
+        hybrid("treasure_hunter", "gambler", "pirate", 0xD4AF37, "宝", List.of(JobStat.LUCK, JobStat.ATTACK_DAMAGE, JobStat.CRIT_CHANCE, JobStat.MAX_HEALTH),
+                stats(JobStat.ATTACK_DAMAGE, 4, JobStat.LUCK, 1, JobStat.CRIT_CHANCE, 3),
+                stats(JobStat.ATTACK_DAMAGE, 0.6, JobStat.LUCK, 0.02, JobStat.MAX_HEALTH, hpGrow(0.9, 0)),
+                List.of(
+                        skill("gamble_cannon", A, SkillEffect.SHOT, 9, 14, 2.0, 24, 0, List.of(), 0, "博"),
+                        skill("coin_shot", A, SkillEffect.SWEEP, 7, 14, 0.5, 8, 0, List.of(), 0, "銭"),
+                        skill("mimic", A, SkillEffect.BUFF, 20, 18, 2.0, 3, 8, List.of(), 0, "箱"),
+                        skill("steal", A, SkillEffect.SWEEP, 12, 11, 1.2, 4, 0, List.of(), 0, "盗"),
+                        skill("lucky_compass", A, SkillEffect.BUFF, 60, 20, 0, 0, 60, List.of("minecraft:luck"), 1, "羅"),
+                        skill("double_down", A, SkillEffect.BUFF, 20, 14, 0, 0, 6, List.of(), 0, "倍")),
+                List.of(
+                        skill("treasure_rain", U, SkillEffect.WHIRL, 90, 42, 1.2, 7, 3, List.of(), 0, "財"),
+                        skill("golden_cannon", U, SkillEffect.SHOT, 90, 42, 9.0, 40, 0, List.of(), 0, "金")));
+    }
+
+    private static void hybrid(String id, String baseA, String baseB, int color, String glyph, List<JobStat> panelStats, Map<JobStat, Double> base,
+                               Map<JobStat, Double> perLevel, List<SkillDef> actives, List<SkillDef> ultimates) {
+        job(id, color, glyph, panelStats, base, perLevel, actives, ultimates, List.of());
+        HYBRIDS.put(id, List.of(baseA, baseB));
+    }
+
+    public static boolean isHybrid(String id) {
+        return HYBRIDS.containsKey(id);
     }
 
     private static void advanced(String base, String id, int color, String glyph, List<JobStat> panelStats, Map<JobStat, Double> perLevel,

@@ -49,19 +49,30 @@ final class NewJobTests {
             case "lancer" -> lancer(level, p, dummies);
             case "monk" -> monk(level, p, dummies);
             case "bard" -> become(p, "bard");
-            default -> log("unknown scene {}", name);
+            case "hybrids" -> hybrids(level, p, dummies);
+            default -> {
+                if (JobDefs.isAdvanced(name)) become(p, JobDefs.BASE_OF.get(name), true);
+                else if (JobDefs.job(name) != null) become(p, name);
+                else log("unknown scene {}", name);
+            }
         }
     }
 
     private static void become(ServerPlayer p, String job) {
+        become(p, job, false);
+    }
+
+    private static void become(ServerPlayer p, String job, boolean adv) {
         JobData d = JobManager.data(p);
         if (startJob == null) {
             startJob = d.jobId();
             startAdv = d.isAdvanced();
         }
-        d.switchTo(job, false);
+        d.switchTo(job, adv);
+        d.ensureAdvanced();
         JobType type = JobType.byId(job);
         p.getInventory().setItem(6, new ItemStack(ModItems.get(type.weapons.get(0), WeaponMaterial.IRON)));
+        if (type == JobType.SENTINEL) p.setItemSlot(net.minecraft.world.entity.EquipmentSlot.OFFHAND, new ItemStack(ModItems.get(com.jo112ss.rpgmod.item.WeaponType.SHIELD, WeaponMaterial.IRON)));
         p.getInventory().setSelectedSlot(6);
         JobStats.apply(p, d);
         JobManager.sync(p);
@@ -94,6 +105,35 @@ final class NewJobTests {
             p.attack(t);
             log("gun: bayonet hit loads a round {} -> {}", before, d.ammo());
         });
+    }
+
+    /** Hybrid jobs: the unlock, the points, the panel without mastery locks, the spellblade's element on sword hits. */
+    private static void hybrids(ServerLevel level, ServerPlayer p, List<? extends LivingEntity> dummies) {
+        JobData d = JobManager.data(p);
+        long fw = d.mastery("fighter"), wz = d.mastery("wizard");
+        d.setMastery("fighter", com.jo112ss.rpgmod.job.core.LevelCurve.masteryExp());
+        d.setMastery("wizard", 0);
+        String half = JobManager.changeProblem(d, "spellblade");
+        d.setMastery("wizard", com.jo112ss.rpgmod.job.core.LevelCurve.masteryExp());
+        String both = JobManager.changeProblem(d, "spellblade");
+        become(p, "spellblade");
+        var panel = d.panel();
+        com.jo112ss.rpgmod.job.core.SkillPanel.Node outer = null;
+        for (var n : panel.nodes()) if (n.type() == com.jo112ss.rpgmod.job.core.SkillPanel.NodeType.ULTIMATE) outer = n;
+        log("hybrid: needs one mastered -> {}, both -> {}; spellblade hybrid={} slot3={} points {} (level {}) waiting adv {} ultimate needs mastery? {}",
+                half, both, d.isHybrid(), d.hasSlot3(), d.totalPoints(), d.level(), d.waitingAdvPoints(), outer == null ? "-" : "no (hybrid)");
+        log("hybrid: spellblade skill attack {} = attack {} + own magic {}", String.format("%.1f", JobManager.spellbladeAttack(p)),
+                String.format("%.1f", JobManager.physicalAttack(p)), String.format("%.1f", JobStats.compute(d).get(com.jo112ss.rpgmod.job.core.JobStat.MAGIC_ATTACK)));
+        if (dummies.size() >= 5) {
+            LivingEntity near = dummies.get(4);
+            SkillTasks.later(25, () -> {
+                float a = near.getHealth();
+                p.attack(near);
+                log("hybrid: spellblade sword hit with {} took {} (on fire {})", com.jo112ss.rpgmod.job.MoreJobSkills.element(p), String.format("%.1f", a - near.getHealth()), near.isOnFire());
+                d.setMastery("fighter", fw);
+                d.setMastery("wizard", wz);
+            });
+        }
     }
 
     private static void lancer(ServerLevel level, ServerPlayer p, List<? extends LivingEntity> dummies) {

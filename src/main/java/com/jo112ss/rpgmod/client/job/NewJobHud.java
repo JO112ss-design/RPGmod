@@ -22,8 +22,14 @@ public final class NewJobHud {
         if (mc.player == null || mc.level == null) return;
         int sw = g.guiWidth(), sh = g.guiHeight();
         String job = d.jobId();
-        if ("pirate".equals(job) && ModItems.typeOf(mc.player.getMainHandItem().getItem()) == WeaponType.GUNBLADE) ammo(g, mc, d, sw, sh);
-        if ("monk".equals(job)) ki(g, d, sw, sh);
+        if (d.gunJob() && ModItems.typeOf(mc.player.getMainHandItem().getItem()) == WeaponType.GUNBLADE) ammo(g, mc, d, sw, sh);
+        if (d.kiJob()) ki(g, d, sw, sh);
+        if ("spellblade".equals(job)) { // the sword's element
+            int el = Math.floorMod(d.coatMode(), 3);
+            Component t = Component.translatable("rpgmod.spellblade.element." + el);
+            int col = 0xFF000000 | com.jo112ss.rpgmod.job.MoreJobSkills.ELEMENT_COLORS[el];
+            g.centeredText(mc.font, t, sw / 2, sh / 2 + 10, col);
+        }
         if (BardClient.performing()) lane(g, mc, d, sw, sh);
     }
 
@@ -51,13 +57,14 @@ public final class NewJobHud {
 
     private static void ki(GuiGraphicsExtractor g, JobData d, int sw, int sh) {
         int cx = sw / 2, y = sh / 2 + 10;
-        int w = JobData.MAX_KI * 6 - 2;
+        int max = d.maxKi();
+        int w = max * 6 - 2;
         int x0 = cx - w / 2;
-        for (int i = 0; i < JobData.MAX_KI; i++) {
+        for (int i = 0; i < max; i++) {
             int x = x0 + i * 6;
             g.fill(x, y, x + 4, y + 4, 0x90000000);
             if (i < d.ki()) {
-                int col = d.ki() >= JobData.MAX_KI ? 0xFFFFF0A0 : 0xFFFFB040;
+                int col = d.ki() >= max ? 0xFFFFF0A0 : 0xFFFFB040;
                 g.fill(x + 1, y, x + 3, y + 4, col);
                 g.fill(x, y + 1, x + 4, y + 3, col);
             }

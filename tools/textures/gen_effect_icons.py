@@ -262,3 +262,82 @@ for n, f in [('jolly_roger', jolly_roger), ('counter_stance', counter_stance), (
              ('diamond_body', diamond_body), ('meditate', meditate), ('war_song', war_song), ('guard_song', guard_song),
              ('heal_song', heal_song), ('wind_song', wind_song), ('performing', performing)]:
     icon(n, f)
+
+
+# ---- captain, champion, dragoon, maestro and the hybrid jobs: a coloured badge with a simple mark
+def badge(col, mark):
+    dk = tuple(max(0, int(v * 0.45)) for v in col[:3]) + (255,)
+    lt = tuple(min(255, int(v * 0.6 + 110)) for v in col[:3]) + (255,)
+
+    def draw(d):
+        d.ellipse([2, 2, 15, 15], fill=dk, outline=col)
+        mark(d, lt)
+    return draw
+
+
+def m_eye(d, c):
+    d.ellipse([4, 6, 13, 11], outline=c)
+    d.ellipse([7, 7, 10, 10], fill=c)
+
+
+def m_flame(d, c):
+    d.polygon([(8.5, 3), (12, 9), (11, 13), (8.5, 14), (6, 13), (5, 9)], fill=c)
+
+
+def m_star(d, c):
+    d.polygon([(8.5, 3), (10, 7), (14, 7.5), (11, 10), (12, 14), (8.5, 11.5), (5, 14), (6, 10), (3, 7.5), (7, 7)], fill=c)
+
+
+def m_notes(d, c):
+    for x in (5, 10):
+        d.ellipse([x - 1, 10, x + 2, 13], fill=c)
+        d.line([(x + 2, 4), (x + 2, 12)], fill=c)
+    d.line([(7, 4), (12, 4)], fill=c, width=2)
+
+
+def m_shield(d, c):
+    d.polygon([(5, 4), (12, 4), (12, 9), (8.5, 14), (5, 9)], fill=c)
+
+
+def m_spear(d, c):
+    d.line([(4, 13), (12, 5)], fill=c, width=2)
+    d.polygon([(13, 3), (10, 4), (12, 7)], fill=c)
+
+
+def m_tower(d, c):
+    d.rectangle([5, 6, 12, 14], fill=c)
+    for x in (5, 8, 11):
+        d.rectangle([x, 4, x + 1, 6], fill=c)
+
+
+def m_dagger(d, c):
+    d.line([(5, 12), (12, 5)], fill=c, width=2)
+    d.line([(4, 9), (8, 13)], fill=c)
+
+
+def m_moon(d, c):
+    d.ellipse([4, 4, 13, 13], fill=c)
+    d.ellipse([7, 3, 15, 11], fill=(30, 36, 60, 255))
+
+
+def m_target(d, c):
+    d.ellipse([4, 4, 13, 13], outline=c)
+    d.ellipse([7, 7, 10, 10], fill=c)
+
+
+def m_coin(d, c):
+    d.ellipse([4, 4, 13, 13], fill=c)
+    d.rectangle([8, 6, 9, 11], fill=(150, 110, 20, 255))
+
+
+def m_two(d, c):
+    d.ellipse([3, 6, 9, 12], outline=c)
+    d.ellipse([8, 6, 14, 12], outline=c)
+
+
+for n, col, mk in [('foresight', (255, 176, 112, 255), m_eye), ('battle_aura', (255, 128, 48, 255), m_flame), ('heroic', (255, 208, 80, 255), m_star),
+                   ('duet', (95, 211, 188, 255), m_notes), ('flame_song', (255, 122, 48, 255), m_flame), ('spell_guard', (140, 124, 255, 255), m_shield),
+                   ('immovable', (192, 176, 128, 255), m_tower), ('counter_lance', (224, 192, 128, 255), m_spear), ('fortress', (240, 216, 144, 255), m_tower),
+                   ('ambush', (74, 90, 128, 255), m_dagger), ('night_hunt', (90, 100, 160, 255), m_moon), ('hunted', (192, 48, 64, 255), m_target),
+                   ('treasure', (212, 175, 55, 255), m_coin), ('double_down', (232, 192, 64, 255), m_two)]:
+    icon(n, badge(col, mk))

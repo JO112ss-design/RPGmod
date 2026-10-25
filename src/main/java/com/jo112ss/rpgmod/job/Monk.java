@@ -27,7 +27,7 @@ public final class Monk {
     private static final Map<UUID, Long> DIAMOND_LAST = new HashMap<>();
 
     public static boolean isMonk(Player p) {
-        return "monk".equals(JobManager.data(p).jobId());
+        return JobManager.data(p).kiJob();
     }
 
     public static boolean holdsKnuckles(Player p) {
@@ -41,10 +41,10 @@ public final class Monk {
     public static void add(ServerPlayer p, int n) {
         JobData d = JobManager.data(p);
         LAST.put(p.getUUID(), p.level().getGameTime());
-        if (n <= 0 || d.ki() >= JobData.MAX_KI) return;
+        if (n <= 0 || d.ki() >= d.maxKi()) return;
         d.setKi(d.ki() + n);
         ServerFx.of("n_ki", p.position()).follow(p).b(d.ki()).color(0xFFD27A).send((ServerLevel) p.level());
-        if (d.ki() >= JobData.MAX_KI) p.level().playSound(null, p.blockPosition(), SoundEvents.AMETHYST_BLOCK_CHIME, SoundSource.PLAYERS, 0.8F, 1.6F);
+        if (d.ki() >= d.maxKi()) p.level().playSound(null, p.blockPosition(), SoundEvents.AMETHYST_BLOCK_CHIME, SoundSource.PLAYERS, 0.8F, 1.6F);
         JobManager.sync(p);
     }
 

@@ -234,6 +234,20 @@ public final class AutoTestClient {
             case "meditate", "hundred_fists" -> new int[] {20};
             case "war_song", "heal_song", "guard_song", "wind_song", "discord", "lullaby" -> new int[] {30};
             case "grand_concert" -> new int[] {25};
+            case "high_jump" -> new int[] {10, 30};
+            case "dragon_king" -> new int[] {16, 40};
+            case "fleet_barrage" -> new int[] {14, 50};
+            case "anchor_throw" -> new int[] {8, 20};
+            case "twin_cannon" -> new int[] {14, 50};
+            case "peerless" -> new int[] {6, 18};
+            case "deadshot" -> new int[] {12};
+            case "mimic" -> new int[] {10, 40};
+            case "gamble_cannon", "golden_cannon" -> new int[] {6, 16};
+            case "shadow_rain", "treasure_rain" -> new int[] {12, 30};
+            case "spear_wall", "requiem", "fortress", "night_hunt" -> new int[] {12};
+            case "elemental_burst" -> new int[] {2, 12, 22};
+            case "symphony", "grand_concerto" -> new int[] {25};
+            case "magic_slash", "ki_wave", "holy_lance", "vital_shot", "scattershot", "shock_chord" -> new int[] {3};
             case "mob:downed" -> new int[] {50, 120, 200};
             case "mob:stairs" -> new int[] {60, 300, 550, 700};
             case "mob:exit" -> new int[] {60, 200, 340, 480};
@@ -261,7 +275,10 @@ public final class AutoTestClient {
             case "job:checks" -> 60;
             case "bal:checks" -> 40;
             case "job:screen" -> 70;
-            case "nj:pirate", "nj:lancer", "nj:monk" -> 70;
+            case "nj:pirate", "nj:lancer", "nj:monk", "nj:hybrids" -> 70;
+            case "dragon_king", "twin_cannon", "mimic" -> 70;
+            case "high_jump" -> 60;
+            case "fleet_barrage", "symphony", "grand_concerto" -> 110;
             case "bard:play" -> 300;
             case "cannon", "jolly_roger", "broadside", "spear_rain" -> 60;
             case "perf" -> 1800;
@@ -309,9 +326,11 @@ public final class AutoTestClient {
             if ("all".equals(System.getProperty("rpgmod.showcase"))) showSkills.addAll(com.jo112ss.rpgmod.job.core.JobDefs.SKILLS.keySet());
             showSkills.clear(); // the four new jobs: every skill, the gun, spear tips, ki, the parry and the bard's note lane
             if ("all".equals(System.getProperty("rpgmod.showcase"))) showSkills.addAll(com.jo112ss.rpgmod.job.core.JobDefs.SKILLS.keySet());
-            for (String job : new String[] {"pirate", "lancer", "monk", "bard"}) {
+            showSkills.clear(); // the four advanced jobs and the six hybrid jobs: every skill, the hybrid unlock and points
+            if ("all".equals(System.getProperty("rpgmod.showcase"))) showSkills.addAll(com.jo112ss.rpgmod.job.core.JobDefs.SKILLS.keySet());
+            showSkills.add("nj:hybrids");
+            for (String job : new String[] {"captain", "champion", "dragoon", "maestro", "spellblade", "qi_master", "sentinel", "spellsinger", "shadow_hunter", "treasure_hunter"}) {
                 showSkills.add("nj:" + job);
-                if (job.equals("bard")) showSkills.add("bard:play");
                 var j = com.jo112ss.rpgmod.job.core.JobDefs.job(job);
                 showSkills.addAll(j.actives());
                 showSkills.addAll(j.ultimates());

@@ -73,7 +73,8 @@ public final class NewJobSkills {
             case "hundred_fists" -> hundredFists(c);
             case "diamond_body" -> diamondBody(c);
             // bard
-            case "war_song", "heal_song", "guard_song", "wind_song", "discord", "lullaby" -> Bard.start(c, (int) Math.round(c.def().duration()));
+            case "war_song", "heal_song", "guard_song", "wind_song", "discord", "lullaby",
+                 "flame_melody", "haste_tune", "mana_chord", "seal_melody", "thunder_tune" -> Bard.start(c, (int) Math.round(c.def().duration()));
             case "grand_concert" -> grandConcert(c);
             case "finale" -> finale(c);
             default -> false;
@@ -82,11 +83,11 @@ public final class NewJobSkills {
 
     private static final int PIRATE = Pirate.COLOR, LANCE = 0xE0B070, KI = 0xFFC860, IRON = 0x404448;
 
-    private static Vec3 mid(LivingEntity e) {
+    static Vec3 mid(LivingEntity e) {
         return e.position().add(0, e.getBbHeight() * 0.5, 0);
     }
 
-    private static LivingEntity nearest(List<LivingEntity> list, Vec3 to) {
+    static LivingEntity nearest(List<LivingEntity> list, Vec3 to) {
         LivingEntity best = null;
         double bd = Double.MAX_VALUE;
         for (LivingEntity e : list) {
@@ -100,7 +101,7 @@ public final class NewJobSkills {
     }
 
     /** A random spot within {@code r} of {@code o} - half the time next to one of the enemies there. */
-    private static Vec3 spotIn(Ctx c, Vec3 o, double r, List<LivingEntity> foes) {
+    static Vec3 spotIn(Ctx c, Vec3 o, double r, List<LivingEntity> foes) {
         var rnd = c.p().getRandom();
         if (!foes.isEmpty() && rnd.nextBoolean()) {
             LivingEntity e = foes.get(rnd.nextInt(foes.size()));
@@ -111,7 +112,7 @@ public final class NewJobSkills {
     }
 
     /** Area blast (cannonballs, kegs): falls off to 60% at the edge, throws enemies out. */
-    private static List<LivingEntity> blast(Ctx c, Vec3 at, double r, float damage, int style, int color) {
+    static List<LivingEntity> blast(Ctx c, Vec3 at, double r, float damage, int style, int color) {
         List<LivingEntity> hit = enemies(c.p(), at, r);
         for (LivingEntity e : hit) {
             double fall = 1 - 0.4 * Math.min(1, horizontal(e.position(), at) / r);
@@ -186,7 +187,7 @@ public final class NewJobSkills {
     }
 
     /** A spot beside the player (to the right with {@code side} > 0), on the ground if there is any below. */
-    private static Vec3 beside(Ctx c, double side, double ahead) {
+    static Vec3 beside(Ctx c, double side, double ahead) {
         ServerPlayer p = c.p();
         Vec3 want = p.position().add(Fx3.right(c.flat()).scale(side)).add(c.flat().scale(ahead));
         // not into a wall: stop short of the first block on the way
@@ -198,13 +199,21 @@ public final class NewJobSkills {
 
     /** Sets down a cannon beside you that shells the nearest enemy every 1.5s (0.75s under the flag). */
     private static boolean cannon(Ctx c) {
+        placeCannon(c, beside(c, 1.6, 0.8), Pirate.CANNONS, 1);
+        return true;
+    }
+
+    /**
+     * A cannon at {@code at} (one per player in {@code store}) that shells the nearest enemy for the
+     * skill's duration; {@code shells} per shot (the captain's twin cannon fires two).
+     */
+    static void placeCannon(Ctx c, Vec3 at, Map<UUID, SkillProp> store, int shells) {
         ServerPlayer p = c.p();
-        Vec3 at = beside(c, 1.6, 0.8);
-        SkillProp old = Pirate.CANNONS.remove(p.getUUID());
+        SkillProp old = store.remove(p.getUUID());
         if (old != null) old.discard();
         int life = ticks(c.def().duration());
         SkillProp gun = SkillProp.create(c.level(), SkillProp.CANNON, at, p.getYRot(), life + 5);
-        Pirate.CANNONS.put(p.getUUID(), gun);
+        store.put(p.getUUID(), gun);
         ServerFx.of("x_ring", at).a(1.5).b(1).color(0xC0C0C0).send(c.level());
         sound(c, at, SoundEvents.ANVIL_LAND, 0.6F, 0.7F);
         sound(c, at, SoundEvents.CHAIN_PLACE, 1.0F, 0.8F);
@@ -216,24 +225,30 @@ public final class NewJobSkills {
                     ServerFx.of("x_burst", gun.position().add(0, 0.5, 0)).a(1).b(3).color(0x808080).send(c.level());
                     gun.discard();
                 }
-                Pirate.CANNONS.remove(p.getUUID(), gun);
+                store.remove(p.getUUID(), gun);
                 return true;
             }
             LivingEntity t = Pirate.cannonTarget(p, gun, range);
             if (t != null && age % 2 == 0) gun.aimAt(mid(t));
             if (age >= next[0] && t != null) {
-                next[0] = age + (Pirate.flagUp(p) ? 15 : 30);
-                Vec3 dir = mid(t).subtract(gun.position().add(0, 0.95, 0)).normalize();
-                Vec3 muzzle = gun.position().add(0, 0.95, 0).add(dir.scale(0.9));
-                ServerFx.of("n_cannon_fire", muzzle).vec(dir).send(c.level());
-                ServerFx.of("x_bolt", muzzle).vec(dir.scale(1.4)).a(range + 2).b(0.32).color(0x303030).follow(t).send(c.level());
-                sound(c, muzzle, SoundEvents.GENERIC_EXPLODE, 1.2F, 1.4F);
-                projectile(c, muzzle, dir, 1.4, range + 2, t, 0.25, (e, hitAt, d) -> blast(c, hitAt, 2.0, c.dmg(1), 0, 0xFF8030),
-                        (endAt, d, wall) -> blast(c, endAt, 2.0, c.dmg(1), 0, 0xFF8030));
+                next[0] = age + (Pirate.barrage(p) ? 6 : Pirate.flagUp(p) ? 15 : 30);
+                for (int s = 0; s < shells; s++) {
+                    Vec3 aim = mid(t).add(s == 0 ? Vec3.ZERO : new Vec3(p.getRandom().nextGaussian() * 0.8, 0, p.getRandom().nextGaussian() * 0.8));
+                    Vec3 dir = aim.subtract(gun.position().add(0, 0.95, 0)).normalize();
+                    Vec3 muzzle = gun.position().add(0, 0.95, 0).add(dir.scale(0.9));
+                    LivingEntity follow = s == 0 ? t : null;
+                    SkillTasks.later(s * 4, () -> {
+                        if (gun.isRemoved()) return;
+                        ServerFx.of("n_cannon_fire", muzzle).vec(dir).send(c.level());
+                        ServerFx.of("x_bolt", muzzle).vec(dir.scale(1.4)).a(range + 2).b(0.32).color(0x303030).follow(follow).send(c.level());
+                        sound(c, muzzle, SoundEvents.GENERIC_EXPLODE, 1.2F, 1.4F);
+                        projectile(c, muzzle, dir, 1.4, range + 2, follow, 0.25, (e, hitAt, d) -> blast(c, hitAt, 2.0, c.dmg(1), 0, 0xFF8030),
+                                (endAt, d, wall) -> blast(c, endAt, 2.0, c.dmg(1), 0, 0xFF8030));
+                    });
+                }
             }
             return false;
         });
-        return true;
     }
 
     /** Throws a keg that goes off after 2s, or as soon as it is shot (half again as strong). */
@@ -710,7 +725,7 @@ public final class NewJobSkills {
                 sound(c, p.position(), SoundEvents.AMETHYST_BLOCK_CHIME, 0.6F, 1.0F + age * 0.01F);
             }
             if (age >= t - 1) {
-                Monk.add(p, JobData.MAX_KI);
+                Monk.add(p, JobManager.data(p).maxKi());
                 return true;
             }
             return false;

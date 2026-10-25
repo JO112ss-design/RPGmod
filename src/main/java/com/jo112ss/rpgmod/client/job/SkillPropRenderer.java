@@ -65,6 +65,9 @@ public class SkillPropRenderer extends EntityRenderer<SkillProp, SkillPropRender
             WeaponMaterial[] mats = WeaponMaterial.values();
             ItemStack spear = new ItemStack(ModItems.get(WeaponType.SPEAR, mats[Math.floorMod(entity.variant(), mats.length)]));
             items.updateForNonLiving(state.item, spear, ItemDisplayContext.FIXED, entity);
+        } else if (state.kind == SkillProp.CHEST || state.kind == SkillProp.ANCHOR) {
+            ItemStack block = new ItemStack(state.kind == SkillProp.CHEST ? net.minecraft.world.item.Items.CHEST : net.minecraft.world.item.Items.ANVIL);
+            items.updateForNonLiving(state.item, block, ItemDisplayContext.FIXED, entity);
         } else {
             state.item.clear();
         }
@@ -79,6 +82,13 @@ public class SkillPropRenderer extends EntityRenderer<SkillProp, SkillPropRender
             poseStack.rotateDegrees(Axis.YP, -(state.yaw + 90));
             poseStack.rotateDegrees(Axis.ZP, -state.pitch - 45);
             poseStack.scale(1.8F, 1.8F, 1.8F);
+            state.item.submit(poseStack, collector, state.lightCoords, OverlayTexture.NO_OVERLAY, state.outlineColor);
+        } else if (state.kind == SkillProp.CHEST || state.kind == SkillProp.ANCHOR) {
+            // a block-sized chest (the mimic, its lid snapping) or the captain's anchor (an anvil)
+            poseStack.translate(0, 0.45F, 0);
+            poseStack.rotateDegrees(Axis.YP, 180.0F - state.yaw);
+            if (state.kind == SkillProp.CHEST) poseStack.rotateDegrees(Axis.XP, Math.max(0, Mth.sin(state.ageInTicks * 0.5F)) * 8);
+            poseStack.scale(1.7F, 1.7F, 1.7F);
             state.item.submit(poseStack, collector, state.lightCoords, OverlayTexture.NO_OVERLAY, state.outlineColor);
         } else {
             PropModel model = state.kind == SkillProp.KEG ? keg : state.kind == SkillProp.FLAG ? flag : cannon;

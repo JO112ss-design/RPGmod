@@ -20,7 +20,7 @@ import net.minecraft.world.phys.Vec3;
  * and rolls on its own (on the server; clients follow every tick). Never saved; gone after its life.
  */
 public class SkillProp extends Entity {
-    public static final int CANNON = 0, KEG = 1, FLAG = 2, SPEAR = 3;
+    public static final int CANNON = 0, KEG = 1, FLAG = 2, SPEAR = 3, CHEST = 4, ANCHOR = 5;
     private static final EntityDataAccessor<Integer> DATA_KIND = SynchedEntityData.defineId(SkillProp.class, EntityDataSerializers.INT);
     /** Spear: the material index of the thrown spear. */
     private static final EntityDataAccessor<Integer> DATA_VARIANT = SynchedEntityData.defineId(SkillProp.class, EntityDataSerializers.INT);
@@ -53,7 +53,7 @@ public class SkillProp extends Entity {
 
     public void setKind(int kind) {
         this.entityData.set(DATA_KIND, kind);
-        this.noPhysics = kind != KEG;
+        this.noPhysics = kind != KEG && kind != ANCHOR;
     }
 
     public int variant() {
@@ -79,13 +79,13 @@ public class SkillProp extends Entity {
     @Override
     public void onSyncedDataUpdated(EntityDataAccessor<?> key) {
         super.onSyncedDataUpdated(key);
-        if (DATA_KIND.equals(key)) this.noPhysics = kind() != KEG;
+        if (DATA_KIND.equals(key)) this.noPhysics = kind() != KEG && kind() != ANCHOR;
     }
 
     @Override
     public void tick() {
         super.tick();
-        if (kind() == KEG && !this.level().isClientSide()) { // clients may not move it: they follow the server's updates
+        if ((kind() == KEG || kind() == ANCHOR) && !this.level().isClientSide()) { // clients may not move it: they follow the server's updates
             Vec3 v = this.getDeltaMovement();
             if (!this.onGround()) v = v.add(0, -0.05, 0);
             this.move(MoverType.SELF, v);

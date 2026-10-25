@@ -57,9 +57,28 @@ public final class JobData {
     /** Monk's ki (0..{@link #MAX_KI}); not saved, synced for the HUD. */
     private int ki;
     public static final int MAX_KI = 5;
+    /** The champion holds more ki. */
+    public static final int CHAMPION_KI = 7;
     /** Rounds in the pirate's gun; not saved (a full gun after relogging), synced for the HUD. */
     private int ammo = MAG;
     public static final int MAG = 6;
+
+    /** Jobs with the gun, ki, the lute's songs, the spear's tip (base jobs and the hybrids built on them). */
+    public boolean gunJob() {
+        return "pirate".equals(job) || "treasure_hunter".equals(job);
+    }
+
+    public boolean kiJob() {
+        return "monk".equals(job) || "qi_master".equals(job);
+    }
+
+    public boolean songJob() {
+        return "bard".equals(job) || "spellsinger".equals(job);
+    }
+
+    public boolean spearJob() {
+        return "lancer".equals(job) || "sentinel".equals(job);
+    }
     /** Game time the gun is loaded again (0 = not reloading). */
     private long reloadEnd;
     /** Bard: the song being played ("" = none), when it started and ends (game time), and how well it is played (0..20). */
@@ -239,9 +258,20 @@ public final class JobData {
         return java.util.Collections.unmodifiableSet(unlocked);
     }
 
-    /** Base panel points: one per level up to 100, plus skill books. */
+    /** Base panel points: one per level up to 100 (a hybrid job: every level), plus skill books. */
     public int totalPoints() {
+        if (isHybrid()) return LevelCurve.pointsForLevel(level) + bonusPoints;
         return LevelCurve.pointsForLevel(Math.min(level, LevelCurve.DEFAULT_MAX_LEVEL)) + bonusPoints;
+    }
+
+    /** A hybrid job: one panel for all its points, no mastery of its own, no advanced job. */
+    public boolean isHybrid() {
+        return hasJob() && JobDefs.isHybrid(job);
+    }
+
+    /** The third active slot: advanced and hybrid jobs. */
+    public boolean hasSlot3() {
+        return isAdvanced() || isHybrid();
     }
 
     // ---- advanced job (level 100+)
@@ -253,7 +283,7 @@ public final class JobData {
 
     /** Advanced points earned (level 100+) but waiting for an advanced job to spend them on. */
     public int waitingAdvPoints() {
-        return hasJob() && !isAdvanced() ? LevelCurve.advancedLevel(level) : 0;
+        return hasJob() && !isAdvanced() && !isHybrid() ? LevelCurve.advancedLevel(level) : 0;
     }
 
     // ---- mastery (per base job)
@@ -279,7 +309,7 @@ public final class JobData {
     /** Number of base jobs mastered (each one adds a little max health). */
     public int masteredCount() {
         int n = 0;
-        for (JobType t : JobType.values()) if (mastered(t.id)) n++;
+        for (JobType t : JobType.BASE) if (mastered(t.id)) n++;
         return n;
     }
 
@@ -399,7 +429,7 @@ public final class JobData {
             // spells live on the staff, not in skill slots
             if (!known.contains(slots[k]) || def == null || def.kind() == SkillKind.SPELL) slots[k] = "";
         }
-        if (!isAdvanced()) slots[3] = "";
+        if (!hasSlot3()) slots[3] = "";
     }
 
     public int bonusPoints() {
@@ -502,7 +532,7 @@ public final class JobData {
         if (!hasJob() || amount <= 0) return 0;
         long cap = LevelCurve.masteryExp();
         long m = mastery.getOrDefault(job, 0L);
-        if (m < cap) mastery.put(job, Math.min(cap, m + amount * LevelCurve.masteryRate(level)));
+        if (m < cap && !isHybrid()) mastery.put(job, Math.min(cap, m + amount * LevelCurve.masteryRate(level)));
         int gained = 0;
         exp += amount;
         while (level < maxLevel && exp >= expToNext()) {
@@ -527,7 +557,11 @@ public final class JobData {
     }
 
     public void setKi(int ki) {
-        this.ki = Math.max(0, Math.min(MAX_KI, ki));
+        this.ki = Math.max(0, Math.min(maxKi(), ki));
+    }
+
+    public int maxKi() {
+        return isAdvancedAs("champion") ? CHAMPION_KI : MAX_KI;
     }
 
     public int ammo() {

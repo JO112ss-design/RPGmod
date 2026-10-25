@@ -230,7 +230,7 @@ public class JobScreen extends Screen {
                 String clicked = skillCardAt(mx, my, skillList(d));
                 if (clicked != null && d.knows(clicked)) {
                     SkillDef def = JobDefs.skill(clicked);
-                    int slot = def.kind() == SkillKind.ULTIMATE ? 2 : (selectedSlot == 2 || (selectedSlot == 3 && !d.isAdvanced()) ? 0 : selectedSlot);
+                    int slot = def.kind() == SkillKind.ULTIMATE ? 2 : (selectedSlot == 2 || (selectedSlot == 3 && !d.hasSlot3()) ? 0 : selectedSlot);
                     JobClient.send(JobActionPayload.EQUIP_SKILL, slot, clicked);
                     return true;
                 }
@@ -683,7 +683,7 @@ public class JobScreen extends Screen {
 
     /** Slots in screen order: the actives (a third one with the advanced job), then the ultimate. */
     private static int[] slotOrder(JobData d) {
-        return d.isAdvanced() ? new int[] {0, 1, 3, 2} : new int[] {0, 1, 2};
+        return d.hasSlot3() ? new int[] {0, 1, 3, 2} : new int[] {0, 1, 2};
     }
 
     /** Every skill of the job shown (actives then ultimates), learnt or not: the base or the advanced job's. */

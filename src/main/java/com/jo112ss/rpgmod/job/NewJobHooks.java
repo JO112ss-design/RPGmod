@@ -59,16 +59,16 @@ public final class NewJobHooks {
             if (melee(src, sp) && !(victim instanceof Player)) {
                 WeaponType held = ModItems.typeOf(sp.getMainHandItem().getItem());
                 JobData d = JobManager.data(sp);
-                if (held == WeaponType.SPEAR && "lancer".equals(d.jobId())) {
+                if (held == WeaponType.SPEAR && d.spearJob()) {
                     double edge = sp.getEyePosition().distanceTo(victim.getBoundingBox().getCenter()) - victim.getBbWidth() / 2;
                     if (edge >= TIP_DISTANCE) {
                         amount *= (float) (1 + TIP_BONUS);
                         ServerFx.of("x_hit", victim.position().add(0, victim.getBbHeight() * 0.6, 0)).vec(victim.position().subtract(sp.position())).a(0.9).color(0xFFE0A0).send(level);
                         level.playSound(null, victim.blockPosition(), SoundEvents.SPEAR_HIT.value(), SoundSource.PLAYERS, 0.8F, 1.4F);
                     }
-                } else if (held == WeaponType.GUNBLADE && "pirate".equals(d.jobId())) {
+                } else if (held == WeaponType.GUNBLADE && d.gunJob()) {
                     Pirate.load(sp, 1);
-                } else if (held == WeaponType.KNUCKLE && "monk".equals(d.jobId())) {
+                } else if (held == WeaponType.KNUCKLE && d.kiJob()) {
                     Monk.add(sp, 1);
                 }
             }

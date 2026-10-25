@@ -127,6 +127,7 @@ public final class JobManager {
         kit.add(new ItemStack(ModItems.get(weapon, com.jo112ss.rpgmod.item.WeaponMaterial.COPPER)));
         for (WeaponType w : type.weapons) if (w != weapon) kit.add(new ItemStack(ModItems.get(w, com.jo112ss.rpgmod.item.WeaponMaterial.COPPER)));
         if (type.weapons.contains(WeaponType.BOW)) kit.add(new ItemStack(net.minecraft.world.item.Items.ARROW, 64));
+        if (type == JobType.SENTINEL) kit.add(new ItemStack(ModItems.get(WeaponType.SHIELD, com.jo112ss.rpgmod.item.WeaponMaterial.COPPER))); // spear and shield
         if (full) { // the tables only with the very first job
             kit.add(new ItemStack(com.jo112ss.rpgmod.registry.ModRegistries.FORGING_ANVIL_ITEM.get()));
             kit.add(new ItemStack(com.jo112ss.rpgmod.registry.ModRegistries.SOCKET_TABLE_ITEM.get()));
@@ -147,7 +148,7 @@ public final class JobManager {
     public static JobType baseOf(String id) {
         JobType t = JobType.byId(id);
         if (t != null) return t;
-        for (JobType b : JobType.values()) {
+        for (JobType b : JobType.BASE) {
             JobDefs.Job adv = JobDefs.advancedOf(b.id);
             if (adv != null && adv.id().equals(id)) return b;
         }
@@ -161,6 +162,9 @@ public final class JobManager {
         boolean adv = JobType.byId(id) == null;
         if (d.displayJobId().equals(id)) return "rpgmod.jobchange.current";
         if (adv && (!d.mastered(base.id) || d.level() < com.jo112ss.rpgmod.job.core.LevelCurve.ADVANCED_AT)) return "rpgmod.jobchange.need_mastery";
+        if (base.hybrid) { // both base jobs mastered
+            for (String b : JobDefs.HYBRIDS.get(base.id)) if (!d.mastered(b)) return "rpgmod.jobchange.need_mastery";
+        }
         return null;
     }
 
@@ -211,8 +215,9 @@ public final class JobManager {
             promote(player, d);
             return;
         }
-        player.sendSystemMessage(Component.translatable("rpgmod.jobchange.done", Component.translatable("rpgmod.job." + now.id()).withColor(now.color()),
-                d.masteryPercent(base.id)).withStyle(ChatFormatting.GOLD));
+        player.sendSystemMessage((base.hybrid ? Component.translatable("rpgmod.jobchange.done_hybrid", Component.translatable("rpgmod.job." + now.id()).withColor(now.color()))
+                : Component.translatable("rpgmod.jobchange.done", Component.translatable("rpgmod.job." + now.id()).withColor(now.color()),
+                d.masteryPercent(base.id))).withStyle(ChatFormatting.GOLD));
         player.level().playSound(null, player.blockPosition(), SoundEvents.BOOK_PAGE_TURN, SoundSource.PLAYERS, 1.0F, 0.8F);
         player.level().playSound(null, player.blockPosition(), SoundEvents.PLAYER_LEVELUP, SoundSource.PLAYERS, 0.7F, 1.2F);
         com.jo112ss.rpgmod.job.fx.ServerFx.of("level_up", player.position()).follow(player).color(now.color()).send((ServerLevel) player.level());
@@ -290,7 +295,7 @@ public final class JobManager {
         if (panel == null) return;
         SkillPanel.Node node = panel.node(nodeId);
         if (node == null || !panel.isReachable(node, d.unlocked(adv))) return;
-        int need = adv ? 0 : SkillPanel.masteryNeeded(node);
+        int need = adv || d.isHybrid() ? 0 : SkillPanel.masteryNeeded(node);
         if (d.masteryPercent(d.jobId()) < need) {
             tell(player, "rpgmod.job.need_mastery", need);
             return;
@@ -307,7 +312,7 @@ public final class JobManager {
             if (def != null && def.kind() == SkillKind.ACTIVE) {
                 if (d.slot(0).isEmpty()) d.setSlot(0, def.id());
                 else if (d.slot(1).isEmpty()) d.setSlot(1, def.id());
-                else if (d.isAdvanced() && d.slot(3).isEmpty()) d.setSlot(3, def.id());
+                else if (d.hasSlot3() && d.slot(3).isEmpty()) d.setSlot(3, def.id());
             } else if (def != null && def.kind() == SkillKind.ULTIMATE && d.slot(2).isEmpty()) {
                 d.setSlot(2, def.id());
             }
@@ -368,7 +373,7 @@ public final class JobManager {
 
     /** True for the active skill slots: 0, 1, and 3 once the advanced job is reached. */
     public static boolean activeSlot(JobData d, int slot) {
-        return slot == 0 || slot == 1 || (slot == 3 && d.isAdvanced());
+        return slot == 0 || slot == 1 || (slot == 3 && d.hasSlot3());
     }
 
     /** Puts a learnt skill into slot 0/1/3 (actives) or 2 (ultimate); an empty id clears the slot. */
@@ -583,6 +588,7 @@ public final class JobManager {
     public static double critChance(Player player, net.minecraft.world.damagesource.DamageSource source) {
         if (testForceCrit != null) return testForceCrit ? 100 : 0;
         if (player.hasEffect(com.jo112ss.rpgmod.registry.ModEffects.FORTUNE)) return 100; // roulette: every hit a crit
+        if (player.hasEffect(com.jo112ss.rpgmod.registry.ModEffects.AMBUSH)) return 100; // shadow hunter: the hit from hiding
         double rate = JobStats.compute(data(player)).get(JobStat.CRIT_CHANCE);
         var keen = player.getEffect(com.jo112ss.rpgmod.registry.ModEffects.KEEN); // berserker's roar
         if (keen != null) rate += 25 * (keen.getAmplifier() + 1);
@@ -690,7 +696,13 @@ public final class JobManager {
 
     /** The attack a skill scales with. */
     public static double skillAttack(Player player, SkillDef def) {
+        if ("spellblade".equals(def.job())) return spellbladeAttack(player);
         return JobDefs.isMagic(def) ? magicAttack(player) : physicalAttack(player);
+    }
+
+    /** The spellblade's skills: attack (weapon + own) plus its own magic attack. */
+    public static double spellbladeAttack(Player player) {
+        return physicalAttack(player) + JobStats.compute(data(player)).get(JobStat.MAGIC_ATTACK);
     }
 
 

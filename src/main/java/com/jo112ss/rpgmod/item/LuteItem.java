@@ -20,7 +20,7 @@ public class LuteItem extends Item {
 
     @Override
     public InteractionResult use(Level level, Player player, InteractionHand hand) {
-        if (hand != InteractionHand.MAIN_HAND || !"bard".equals(com.jo112ss.rpgmod.job.JobManager.data(player).jobId()) || Bard.performing(player)) {
+        if (hand != InteractionHand.MAIN_HAND || !com.jo112ss.rpgmod.job.JobManager.data(player).songJob() || Bard.performing(player)) {
             return InteractionResult.PASS;
         }
         if (!level.isClientSide() && player instanceof ServerPlayer sp) BardAttack.wave(sp);
