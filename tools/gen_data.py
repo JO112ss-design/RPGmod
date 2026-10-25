@@ -43,7 +43,7 @@ PATTERNS = {
     'dagger': (['I', 'S'], {'I': None, 'S': 'minecraft:stick'}),
     'mace': ([' I ', 'III', ' S '], {'I': None, 'S': 'minecraft:stick'}),
     'hammer': (['III', 'ISI', ' S '], {'I': None, 'S': 'minecraft:stick'}),
-    'staff': (['A', 'I', 'S'], {'A': 'minecraft:amethyst_shard', 'I': None, 'S': 'minecraft:stick'}),
+    'staff': (['A', 'I', 'S'], {'A': 'minecraft:glass', 'I': None, 'S': 'minecraft:stick'}),
 }
 for m, ingot in INGOT.items():
     for t, (pat, key) in PATTERNS.items():
