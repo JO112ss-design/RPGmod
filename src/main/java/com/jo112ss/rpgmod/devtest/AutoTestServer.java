@@ -140,6 +140,10 @@ public final class AutoTestServer {
                 mobScene(level, id.substring(4));
                 return;
             }
+            if (id.equals("perf")) {
+                PerfTest.run(level, player, 15);
+                return;
+            }
             if (id.startsWith("gem:")) {
                 GemTests.scene(level, player, id.substring(4), targets);
                 return;
