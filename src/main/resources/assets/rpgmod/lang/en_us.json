@@ -552,7 +552,7 @@
   "rpgmod.skill.shield_wall": "Shield Wall",
   "rpgmod.skill.shield_wall.desc": "Raises a wall of light 9 blocks wide just ahead: it stops enemy projectiles and holds monsters back.",
   "rpgmod.skill.reprisal": "Reprisal",
-  "rpgmod.skill.reprisal.desc": "For 8s, monsters hitting you in melee take 150% of your attack plus half their hit back.",
+  "rpgmod.skill.reprisal.desc": "For 8s, monsters hitting you in melee take 15% of your attack plus half their hit back.",
   "rpgmod.skill.bastion": "Bastion",
   "rpgmod.skill.bastion.desc": "Allies within 10 blocks get Resistance III (-60% damage) and absorption; for 12s your health cannot drop below 1.",
   "rpgmod.skill.snipe": "Snipe",

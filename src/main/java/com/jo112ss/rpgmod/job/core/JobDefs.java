@@ -240,7 +240,7 @@ public final class JobDefs {
                         skill("provoke_shield", A, SkillEffect.BUFF, 18, 15, 0, 12, 10, List.of(), 1, "挑"),
                         skill("cover", A, SkillEffect.BUFF, 25, 20, 0, 10, 10, List.of(), 0, "庇"),
                         skill("shield_wall", A, SkillEffect.BUFF, 25, 22, 0, 4, 8, List.of(), 0, "垣"),
-                        skill("reprisal", A, SkillEffect.BUFF, 20, 15, 1.5, 0, 8, List.of(), 0, "返")),
+                        skill("reprisal", A, SkillEffect.BUFF, 20, 15, 0.15, 0, 8, List.of(), 0, "返")),
                 List.of(
                         skill("bastion", U, SkillEffect.BUFF, 120, 42, 0, 10, 12, List.of("minecraft:resistance", "minecraft:absorption"), 2, "塞")),
                 List.of());
