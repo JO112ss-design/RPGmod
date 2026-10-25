@@ -106,14 +106,16 @@ public final class GemEffects {
         if (g.containsKey(GemSpecial.IGNITE) && !target.fireImmune()) {
             target.igniteForSeconds((float) GemSpecial.IGNITE.value);
         }
-        if (roll(sp, Gear.strength(g, GemSpecial.CHILL))) {
+        // bosses shrug off being slowed or frozen (like venom)
+        boolean boss = GemDrops.isBoss(target);
+        if (!boss && roll(sp, Gear.strength(g, GemSpecial.CHILL))) {
             target.addEffect(new MobEffectInstance(MobEffects.SLOWNESS, 60, 1), sp);
             level.sendParticles(ParticleTypes.SNOWFLAKE, target.getX(), target.getY() + target.getBbHeight() * 0.6, target.getZ(), 8, 0.3, 0.3, 0.3, 0.02);
         }
         if (roll(sp, Gear.strength(g, GemSpecial.VENOM))) {
             Venom.apply(target, 100, 0, sp);
         }
-        if (g.containsKey(GemSpecial.FREEZE) && roll(sp, GemSpecial.FREEZE.value)) freeze(level, target, sp);
+        if (!boss && g.containsKey(GemSpecial.FREEZE) && roll(sp, GemSpecial.FREEZE.value)) freeze(level, target, sp);
         if (g.containsKey(GemSpecial.MANA_DRAIN)) {
             long now = level.getGameTime();
             if (now >= MANA_NEXT.getOrDefault(sp.getUUID(), 0L)) {

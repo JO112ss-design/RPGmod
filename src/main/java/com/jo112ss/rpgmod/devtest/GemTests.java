@@ -242,6 +242,18 @@ final class GemTests {
         JobManager.testForceCrit = null;
         SkillTasks.later(3, () -> log("shockwave: target took {}, around {} and {}", before[0] - s0.getHealth(), before[1] - s1.getHealth(), before[2] - s2.getHealth()));
 
+        // bosses are not slowed or frozen
+        var kingT = ModRegistries.KING_SLIME.get().create(level, EntitySpawnReason.COMMAND);
+        if (kingT != null) {
+            kingT.snapTo(p.getX() - 4, p.getY(), p.getZ() + 4, 0, 0);
+            kingT.setNoAi(true);
+            level.addFreshEntity(kingT);
+            p.setItemSlot(EquipmentSlot.MAINHAND, gear(Items.NETHERITE_SWORD, Gem.of(GemSpecial.FREEZE), Gem.of(GemSpecial.CHILL), Gem.of(GemSpecial.IGNITE)));
+            hit(level, p, kingT, 4);
+            log("boss: slowness={} frozen ticks={} on fire={}", kingT.hasEffect(MobEffects.SLOWNESS), kingT.getTicksFrozen(), kingT.getRemainingFireTicks() > 0);
+            kingT.discard();
+        }
+
         // a boss always drops a gem
         var king = ModRegistries.KING_SLIME.get().create(level, EntitySpawnReason.COMMAND);
         if (king != null) {
