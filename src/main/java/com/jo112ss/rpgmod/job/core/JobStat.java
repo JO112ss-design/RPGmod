@@ -40,7 +40,7 @@ public enum JobStat {
     public double nodeAmount() {
         return switch (this) {
             case MAX_HEALTH -> 2;
-            case ATTACK_DAMAGE -> 0.4;
+            case ATTACK_DAMAGE -> 0.2; // halved again: weapon materials multiply it
             case ARMOR -> 1;
             case MOVEMENT_SPEED -> 1;
             case ATTACK_SPEED -> 1.5;
@@ -50,7 +50,7 @@ public enum JobStat {
             case MANA_REGEN -> 0.1;
             case COOLDOWN_REDUCTION -> 1.5;
             case CAST_SPEED -> 2;
-            case MAGIC_ATTACK -> 0.4;
+            case MAGIC_ATTACK -> 0.2;
         };
     }
 
