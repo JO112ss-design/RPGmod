@@ -17,7 +17,7 @@ import net.minecraft.world.item.ItemStack;
 
 /** Socket table: gear on the left, gem next to it, the gear's sockets below and the set button. */
 public class SocketScreen extends AbstractContainerScreen<SocketMenu> {
-    private static final int W = 176, H = 180;
+    private static final int W = 176, H = 186;
     private static final int ACCENT = 0xB070FF;
     private static final int SOCKET_Y = 62;
     private Button setBtn;

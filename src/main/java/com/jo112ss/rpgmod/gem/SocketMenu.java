@@ -22,7 +22,7 @@ public class SocketMenu extends AbstractContainerMenu {
     /** Experience levels it costs to set a gem. */
     public static final int COST = 5;
     public static final int GEAR_X = 35, GEAR_Y = 30, GEM_X = 71, GEM_Y = 30;
-    public static final int INV_Y = 96;
+    public static final int INV_Y = 102;
 
     private final ContainerLevelAccess access;
     private final Player player;
@@ -78,10 +78,10 @@ public class SocketMenu extends AbstractContainerMenu {
     /** Why the gem cannot be set right now (a translation key), or null if it can. */
     public static String problem(ItemStack gear, ItemStack gemStack, Player player) {
         if (gear.isEmpty()) return "rpgmod.socket.need_gear";
+        if (Sockets.free(gear) <= 0) return "rpgmod.socket.full";
         if (gemStack.isEmpty()) return "rpgmod.socket.need_gem";
         Gem gem = GemItems.gem(gemStack);
         if (gem == null) return "rpgmod.socket.blank_gem";
-        if (Sockets.free(gear) <= 0) return "rpgmod.socket.full";
         if (gem.rarity() == Gem.LEGENDARY) {
             for (Gem g : Sockets.gems(gear)) if (g.effect().equals(gem.effect())) return "rpgmod.socket.same_legendary";
         }

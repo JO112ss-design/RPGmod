@@ -240,8 +240,8 @@ public final class GemEffects {
         ItemStack ammo = arrow.getPickupItemStackOrigin().copyWithCount(1);
         if (ammo.isEmpty()) return;
         arrow.pickup = AbstractArrow.Pickup.CREATIVE_ONLY; // no second copy from picking it up
+        log("endless arrow: giving back {}", ammo);
         sp.getInventory().placeItemBackInInventory(ammo, net.minecraft.util.Prediction.SERVER_ONLY);
-        log("endless arrow: gave back {}", ammo);
     }
 
     private static void log(String msg, Object... args) {

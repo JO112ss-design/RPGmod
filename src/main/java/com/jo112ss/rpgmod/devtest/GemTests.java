@@ -57,7 +57,7 @@ final class GemTests {
     }
 
     static void hit(ServerLevel level, ServerPlayer p, LivingEntity t, float dmg) {
-        t.setInvulnerableTime(0);
+        t.damageCooldownTime = 0;
         t.hurtServer(level, p.damageSources().playerAttack(p), dmg);
     }
 
@@ -144,10 +144,13 @@ final class GemTests {
         double withHelmet = JobManager.critChance(p, null);
         double mana = JobManager.maxMana(p);
         log("crit chance {} -> sword gem {} -> + helmet gem {} ; max mana with helmet gem {}", base, withSword, withHelmet, mana);
-        p.setItemSlot(EquipmentSlot.HEAD, gear(Items.IRON_HELMET, new Gem("max_health", Gem.RARE, 4), new Gem("attack_damage", Gem.COMMON, 10)));
+        ItemStack legsBefore = p.getItemBySlot(EquipmentSlot.LEGS).copy();
+        double hp0 = p.getAttributeValue(Attributes.MAX_HEALTH), atk0 = p.getAttributeValue(Attributes.ATTACK_DAMAGE);
+        p.setItemSlot(EquipmentSlot.LEGS, gear(Items.IRON_LEGGINGS, new Gem("max_health", Gem.RARE, 4), new Gem("attack_damage", Gem.COMMON, 10)));
         SkillTasks.later(3, () -> {
-            log("helmet gems as attributes: max health {} attack {}", p.getAttributeValue(Attributes.MAX_HEALTH), String.format("%.2f", p.getAttributeValue(Attributes.ATTACK_DAMAGE)));
-            p.setItemSlot(EquipmentSlot.HEAD, ItemStack.EMPTY);
+            log("leggings gems as attributes: max health {} -> {} attack {} -> {}", hp0, p.getAttributeValue(Attributes.MAX_HEALTH),
+                    String.format("%.2f", atk0), String.format("%.2f", p.getAttributeValue(Attributes.ATTACK_DAMAGE)));
+            p.setItemSlot(EquipmentSlot.LEGS, legsBefore);
             SkillTasks.later(3, () -> log("without: max health {} attack {}", p.getAttributeValue(Attributes.MAX_HEALTH), String.format("%.2f", p.getAttributeValue(Attributes.ATTACK_DAMAGE))));
         });
 
@@ -205,24 +208,19 @@ final class GemTests {
         p.setHealth(p.getMaxHealth());
         Husk f = dummy(level, p, -2, 6, 500);
         float pf = p.getHealth(), ff = f.getHealth();
-        p.setInvulnerableTime(0);
+        p.damageCooldownTime = 0;
         p.hurtServer(level, level.damageSources().mobAttack(f), 8);
         log("thorns: player took {} husk took {} (20%)", pf - p.getHealth(), ff - f.getHealth());
-        p.setInvulnerableTime(0);
+        p.damageCooldownTime = 0;
         p.setHealth(5);
         p.hurtServer(level, level.damageSources().magic(), 100);
         log("phoenix: 100 damage at 5 HP -> health {} alive {} next at {}", p.getHealth(), p.isAlive(), p.getPersistentData().getLongOr(GemEffects.PHOENIX_NEXT, 0) - level.getGameTime());
-        p.setHealth(p.getMaxHealth());
-        p.setInvulnerableTime(0);
-        float h0 = p.getHealth();
-        p.causeFallDamage(10, 1, level.damageSources().fall());
-        float withBoots = h0 - p.getHealth();
+        var fall = new net.neoforged.neoforge.event.entity.living.LivingFallEvent(p, 10, 1);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.post(fall);
         p.setItemSlot(EquipmentSlot.FEET, ItemStack.EMPTY);
-        p.setHealth(p.getMaxHealth());
-        p.setInvulnerableTime(0);
-        h0 = p.getHealth();
-        p.causeFallDamage(10, 1, level.damageSources().fall());
-        log("acrobat: 10-block fall {} with the gem, {} without", withBoots, h0 - p.getHealth());
+        var fall2 = new net.neoforged.neoforge.event.entity.living.LivingFallEvent(p, 10, 1);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.post(fall2);
+        log("acrobat: fall damage multiplier {} with the gem, {} without", fall.getDamageMultiplier(), fall2.getDamageMultiplier());
 
         // tailwind: a kill gives speed
         Husk k = dummy(level, p, 1, 4, 2);
@@ -235,9 +233,25 @@ final class GemTests {
         JobManager.testForceCrit = true;
         Husk s0 = dummy(level, p, 0, 9, 500), s1 = dummy(level, p, 1.5, 9, 500), s2 = dummy(level, p, -1.5, 9.5, 500);
         p.setItemSlot(EquipmentSlot.MAINHAND, gear(Items.IRON_SWORD, Gem.of(GemSpecial.SHOCKWAVE)));
+        float[] before = {s0.getHealth(), s1.getHealth(), s2.getHealth()};
         hit(level, p, s0, 10);
         JobManager.testForceCrit = null;
-        SkillTasks.later(3, () -> log("shockwave: target {} around {} and {}", 500 - s0.getHealth(), 500 - s1.getHealth(), 500 - s2.getHealth()));
+        SkillTasks.later(3, () -> log("shockwave: target took {}, around {} and {}", before[0] - s0.getHealth(), before[1] - s1.getHealth(), before[2] - s2.getHealth()));
+
+        // a boss always drops a gem
+        var king = ModRegistries.KING_SLIME.get().create(level, EntitySpawnReason.COMMAND);
+        if (king != null) {
+            king.snapTo(p.getX() + 2, p.getY(), p.getZ(), 0, 0);
+            for (int i = 0; i < 3; i++) net.neoforged.neoforge.common.NeoForge.EVENT_BUS.post(new net.neoforged.neoforge.event.entity.living.LivingDeathEvent(king, p.damageSources().playerAttack(p)));
+            SkillTasks.later(2, () -> {
+                int n = 0;
+                for (var it : level.getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class, p.getBoundingBox().inflate(6), x -> Sockets.isGem(x.getItem()))) {
+                    n++;
+                    it.discard();
+                }
+                log("boss drops: {} gems from 3 king slime deaths", n);
+            });
+        }
 
         // endless arrows
         ItemStack bow = gear(com.jo112ss.rpgmod.item.ModItems.get(com.jo112ss.rpgmod.item.WeaponType.BOW, com.jo112ss.rpgmod.item.WeaponMaterial.IRON), Gem.of(GemSpecial.ENDLESS_ARROWS));
@@ -251,6 +265,7 @@ final class GemTests {
 
         // regeneration: every 5 s
         p.setItemSlot(EquipmentSlot.MAINHAND, gear(Items.IRON_SWORD, Gem.of(GemSpecial.REGENERATION)));
+        p.removeAllEffects();
         p.setHealth(10);
         SkillTasks.later(101, () -> {
             log("regeneration: 10 -> {} after 5 s (2% of {} = {})", p.getHealth(), p.getMaxHealth(), p.getMaxHealth() * 0.02);
