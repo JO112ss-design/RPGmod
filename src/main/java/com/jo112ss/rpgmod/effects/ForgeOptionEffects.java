@@ -156,7 +156,7 @@ public final class ForgeOptionEffects {
             return;
         }
 
-        double pen = com.jo112ss.rpgmod.gem.Gear.total(player, OptionType.ARMOR_PENETRATION, weapon) / 100.0;
+        double pen = (com.jo112ss.rpgmod.gem.Gear.total(player, OptionType.ARMOR_PENETRATION, weapon) + RpgBowItem.basePenetration(weapon)) / 100.0;
         if (pen > 0 && !com.jo112ss.rpgmod.mob.MobConfig.rpgArmor()) { // with RPG armour, Defense applies it
             float keep = (float) Math.max(0, 1 - pen);
             event.addReductionModifier(DamageContainer.Reduction.ARMOR, (container, reduction) -> reduction * keep);
@@ -174,7 +174,9 @@ public final class ForgeOptionEffects {
         if (source.getDirectEntity() == player) weapon = player.getMainHandItem();
         else if (source.getDirectEntity() instanceof AbstractArrow arrow && arrow.getWeaponItem() != null) weapon = arrow.getWeaponItem();
         else return 0;
-        return Math.min(1, com.jo112ss.rpgmod.gem.Gear.total(player, OptionType.ARMOR_PENETRATION, weapon) / 100.0);
+        // a material bow's own penetration only for its arrows (not when swung)
+        double base = source.getDirectEntity() instanceof AbstractArrow ? RpgBowItem.basePenetration(weapon) : 0;
+        return Math.min(1, (com.jo112ss.rpgmod.gem.Gear.total(player, OptionType.ARMOR_PENETRATION, weapon) + base) / 100.0);
     }
 
     private static final String OWN_ATTACK = "rpgmod_own_attack";

@@ -92,6 +92,16 @@ final class GemTests {
         for (var t : GemRoller.statPool()) ranges.append(t.id).append(' ').append(String.format("%.1f-%.1f", GemRoller.min(t), GemRoller.max(t))).append(", ");
         log("common ranges: {}", ranges);
 
+        // material bows pierce armour
+        StringBuilder pen = new StringBuilder();
+        for (var mat : com.jo112ss.rpgmod.item.WeaponMaterial.values()) {
+            ItemStack bowS = new ItemStack(com.jo112ss.rpgmod.item.ModItems.get(com.jo112ss.rpgmod.item.WeaponType.BOW, mat));
+            var ar = new net.minecraft.world.entity.projectile.arrow.Arrow(level, p, new ItemStack(Items.ARROW), bowS);
+            pen.append(mat.id).append('=').append(String.format("%.2f", com.jo112ss.rpgmod.effects.ForgeOptionEffects.armorPenetration(level.damageSources().arrow(ar, p)))).append(' ');
+            ar.discard();
+        }
+        log("bow penetration: {}", pen);
+
         // capacities
         log("capacity copper helmet {} iron sword {} gold dagger {} diamond chest {} netherite hammer {} vanilla shield {} netherite shield {} leather {} arrow {} bow(diamond) {}",
                 Sockets.capacity(new ItemStack(Items.COPPER_HELMET)), Sockets.capacity(new ItemStack(Items.IRON_SWORD)),

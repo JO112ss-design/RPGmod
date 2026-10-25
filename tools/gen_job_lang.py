@@ -259,6 +259,7 @@ UI = {  # key: (ja, en)
  'rpgmod.shield.back': ('盾が復活した', 'Shield is back'),
  'rpgmod.tooltip.shield_recover': ('耐久が0になると壊れずに%s秒使えなくなり、満タンで復活', 'At 0 durability it is knocked out for %s s instead of breaking, then comes back full'),
  'rpgmod.tooltip.shield_down': ('壊れている（最大%s秒で満タン復活）', 'Knocked out (back at full within %s s)'),
+ 'rpgmod.tooltip.bow_penetration': ('防具貫通 %s%%（矢が敵の防御を無視する割合）', 'Armour penetration %s%% (arrows ignore that share of armour)'),
  'rpgmod.tooltip.heavy': ('重量武器：通常攻撃のダメージ ×%s（スキルには影響なし）', 'Heavy weapon: normal hits x%s (skills unaffected)'),
  'rpgmod.jobscreen.toughness_short': ('強度%s', 'T%s'),
  'rpgmod.day.title': ('%s日目', 'Day %s'),

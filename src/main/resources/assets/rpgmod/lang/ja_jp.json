@@ -732,5 +732,6 @@
   "death.attack.rpgmod.gem": "%1$sは宝石の力で倒された",
   "death.attack.rpgmod.gem.player": "%1$sは%2$sの宝石の力で倒された",
   "rpgmod.gem.cap_percent": " 重ねて最大%s%%",
-  "rpgmod.gem.cap_seconds": " 重ねて最大%s秒"
+  "rpgmod.gem.cap_seconds": " 重ねて最大%s秒",
+  "rpgmod.tooltip.bow_penetration": "防具貫通 %s%%（矢が敵の防御を無視する割合）"
 }

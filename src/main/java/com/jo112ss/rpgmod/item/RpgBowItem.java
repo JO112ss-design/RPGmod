@@ -40,4 +40,14 @@ public class RpgBowItem extends BowItem {
     public int damageBonus() {
         return material.bowBonus;
     }
+
+    /** Armour penetration (%) every bow of this material has: copper 10, iron 15, gold 20, diamond 25, netherite 30. */
+    public int armorPenetration() {
+        return 10 + 5 * material.ordinal();
+    }
+
+    /** Base armour penetration (%) of a bow stack, 0 for anything else. */
+    public static double basePenetration(net.minecraft.world.item.ItemStack stack) {
+        return stack != null && stack.getItem() instanceof RpgBowItem b ? b.armorPenetration() : 0;
+    }
 }

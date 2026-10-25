@@ -732,5 +732,6 @@
   "death.attack.rpgmod.gem": "%1$s was struck by a gem",
   "death.attack.rpgmod.gem.player": "%1$s was struck by the gem of %2$s",
   "rpgmod.gem.cap_percent": " stacks up to %s%%",
-  "rpgmod.gem.cap_seconds": " stacks up to %s s"
+  "rpgmod.gem.cap_seconds": " stacks up to %s s",
+  "rpgmod.tooltip.bow_penetration": "Armour penetration %s%% (arrows ignore that share of armour)"
 }
