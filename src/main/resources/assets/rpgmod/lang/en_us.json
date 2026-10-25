@@ -730,5 +730,7 @@
   "rpgmod.gem.special.shockwave": "Shockwave: crits deal %s%% to enemies around",
   "rpgmod.gem.special.freeze": "Freeze: %s%% chance to freeze for 2 s on hit",
   "death.attack.rpgmod.gem": "%1$s was struck by a gem",
-  "death.attack.rpgmod.gem.player": "%1$s was struck by the gem of %2$s"
+  "death.attack.rpgmod.gem.player": "%1$s was struck by the gem of %2$s",
+  "rpgmod.gem.cap_percent": " stacks up to %s%%",
+  "rpgmod.gem.cap_seconds": " stacks up to %s s"
 }

@@ -365,6 +365,8 @@ UI = {  # key: (ja, en)
  'rpgmod.gem.sockets': ('ソケット %s/%s', 'Sockets %s/%s'),
  'rpgmod.gem.empty_socket': ('空きソケット', 'Empty socket'),
  'rpgmod.gem.phoenix_used': ('不死鳥の宝石が発動！（%s分後に再び発動可能）', 'Phoenix gem! (ready again in %s min)'),
+ 'rpgmod.gem.cap_percent': (' 重ねて最大%s%%', ' stacks up to %s%%'),
+ 'rpgmod.gem.cap_seconds': (' 重ねて最大%s秒', ' stacks up to %s s'),
  'rpgmod.gem.special.lifesteal': ('吸血：与えたダメージの%s%%を回復（5秒に1回）', 'Lifesteal: heal %s%% of damage dealt (once every 5 s)'),
  'rpgmod.gem.special.thorns': ('茨：近接攻撃で受けたダメージの%s%%を相手に返す', 'Thorns: return %s%% of melee damage taken'),
  'rpgmod.gem.special.chill': ('鈍化：攻撃時%s%%で相手を鈍足にする', 'Chill: %s%% chance to slow on hit'),

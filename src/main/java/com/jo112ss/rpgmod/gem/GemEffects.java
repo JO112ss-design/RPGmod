@@ -223,8 +223,8 @@ public final class GemEffects {
     @SubscribeEvent
     public static void onFall(LivingFallEvent event) {
         if (!(event.getEntity() instanceof Player p)) return;
-        int n = Gear.specials(p, null).getOrDefault(GemSpecial.ACROBAT, 0);
-        if (n > 0) event.setDamageMultiplier((float) (event.getDamageMultiplier() * Math.pow(1 - GemSpecial.ACROBAT.value / 100.0, n)));
+        double cut = Gear.strength(Gear.specials(p, null), GemSpecial.ACROBAT);
+        if (cut > 0) event.setDamageMultiplier((float) (event.getDamageMultiplier() * (1 - cut / 100.0)));
     }
 
     @SubscribeEvent

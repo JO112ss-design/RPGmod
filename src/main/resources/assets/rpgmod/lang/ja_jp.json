@@ -730,5 +730,7 @@
   "rpgmod.gem.special.shockwave": "衝撃波：会心時、周りの敵に%s%%のダメージ",
   "rpgmod.gem.special.freeze": "氷結：攻撃時%s%%で敵を2秒凍らせる",
   "death.attack.rpgmod.gem": "%1$sは宝石の力で倒された",
-  "death.attack.rpgmod.gem.player": "%1$sは%2$sの宝石の力で倒された"
+  "death.attack.rpgmod.gem.player": "%1$sは%2$sの宝石の力で倒された",
+  "rpgmod.gem.cap_percent": " 重ねて最大%s%%",
+  "rpgmod.gem.cap_seconds": " 重ねて最大%s秒"
 }

@@ -23,7 +23,12 @@ public final class GemText {
         }
         GemSpecial s = g.special();
         if (s == null) return Component.literal(g.effect()).withStyle(ChatFormatting.GRAY);
-        return Component.translatable("rpgmod.gem.special." + s.id, number(s.value)).withStyle(ChatFormatting.WHITE);
+        MutableComponent line = Component.translatable("rpgmod.gem.special." + s.id, number(s.value)).withStyle(ChatFormatting.WHITE);
+        if (s.rarity == Gem.RARE) { // rare effects add up when set more than once: show how far
+            line.append(Component.translatable(s.capInSeconds() ? "rpgmod.gem.cap_seconds" : "rpgmod.gem.cap_percent", number(s.cap))
+                    .withStyle(ChatFormatting.GRAY));
+        }
+        return line;
     }
 
     /** Socket line: a coloured gem mark, then the effect. */
