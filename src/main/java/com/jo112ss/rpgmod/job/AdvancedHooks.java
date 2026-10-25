@@ -131,7 +131,7 @@ public final class AdvancedHooks {
     private static void reprisal(ServerPlayer vp, ServerLevel level, DamageSource src, float amount) {
         if (!vp.hasEffect(ModEffects.REPRISAL) || !(src.getEntity() instanceof LivingEntity att) || att instanceof Player) return;
         if (src.getDirectEntity() != att || att.distanceTo(vp) > 6) return;
-        float back = REPRISAL_POWER.getOrDefault(vp.getUUID(), 0F) + amount * 0.5F;
+        float back = REPRISAL_POWER.getOrDefault(vp.getUUID(), 0F) + amount / 3F;
         SkillTasks.later(1, () -> {
             if (att.isAlive()) att.hurtServer(level, vp.damageSources().source(SKILL_MAGIC, vp, vp), back);
         });

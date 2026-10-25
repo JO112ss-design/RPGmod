@@ -552,7 +552,7 @@
   "rpgmod.skill.shield_wall": "シールドウォール",
   "rpgmod.skill.shield_wall.desc": "3ブロック前に幅9の光の壁を立てる。敵の飛び道具を止め、モンスターを通さない。",
   "rpgmod.skill.reprisal": "反撃",
-  "rpgmod.skill.reprisal.desc": "8秒間、近接攻撃してきた敵に「攻撃力の15%＋受けたダメージの半分」を返す。",
+  "rpgmod.skill.reprisal.desc": "8秒間、近接攻撃してきた敵に「攻撃力の15%＋受けたダメージの3分の1」を返す。",
   "rpgmod.skill.bastion": "不落の城塞",
   "rpgmod.skill.bastion.desc": "周囲10ブロックの味方に耐性III（被ダメ-60%）と衝撃吸収。自分は12秒間HPが1未満にならない。",
   "rpgmod.skill.snipe": "狙撃",

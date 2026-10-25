@@ -118,7 +118,7 @@ SKILLS = {  # id: (ja, ja desc, en, en desc)
  'provoke_shield': ('挑発の盾', '周囲12ブロックの敵を全部自分に向けさせ、防御力+16・防具強度+8。', 'Provoking Shield', 'Every monster within 12 blocks turns on you; armour +16 and toughness +8.'),
  'cover': ('かばう', '10秒間、周囲10ブロックの味方が受けるダメージの70%を代わりに受ける。', 'Cover', 'For 10s you take 70% of the damage meant for allies within 10 blocks.'),
  'shield_wall': ('シールドウォール', '3ブロック前に幅9の光の壁を立てる。敵の飛び道具を止め、モンスターを通さない。', 'Shield Wall', 'Raises a wall of light 9 blocks wide just ahead: it stops enemy projectiles and holds monsters back.'),
- 'reprisal': ('反撃', '8秒間、近接攻撃してきた敵に「攻撃力の15%＋受けたダメージの半分」を返す。', 'Reprisal', 'For 8s, monsters hitting you in melee take 15% of your attack plus half their hit back.'),
+ 'reprisal': ('反撃', '8秒間、近接攻撃してきた敵に「攻撃力の15%＋受けたダメージの3分の1」を返す。', 'Reprisal', 'For 8s, monsters hitting you in melee take 15% of your attack plus a third of their hit back.'),
  'bastion': ('不落の城塞', '周囲10ブロックの味方に耐性III（被ダメ-60%）と衝撃吸収。自分は12秒間HPが1未満にならない。', 'Bastion', 'Allies within 10 blocks get Resistance III (-60% damage) and absorption; for 12s your health cannot drop below 1.'),
  'snipe': ('狙撃', '0.5秒狙いを定め、照準の先へ防御無視の一撃（射程64）。', 'Snipe', 'Aim for half a second, then a shot that ignores armour along your crosshair (64 blocks).'),
  'rapid_fire': ('速射', '狙った方向へ1秒ほどで8本の矢を連射する。', 'Rapid Fire', 'Fires eight arrows in about a second wherever you aim.'),
