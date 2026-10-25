@@ -94,7 +94,7 @@ public final class JobDefs {
                         skill("taunt", SkillKind.ACTIVE, SkillEffect.BUFF, 16, 11, 0, 10, 6, List.of("minecraft:resistance"), 0, "挑")),
                 List.of(
                         skill("berserk", SkillKind.ULTIMATE, SkillEffect.BUFF, 90, 35, 0, 0, 15, List.of("minecraft:strength", "minecraft:speed"), 1, "狂"),
-                        skill("earthshatter", SkillKind.ULTIMATE, SkillEffect.WHIRL, 90, 42, 5.0, 7, 4, List.of("minecraft:slowness"), 1, "砕")),
+                        skill("earthshatter", SkillKind.ULTIMATE, SkillEffect.WHIRL, 90, 42, 8.0, 7, 4, List.of("minecraft:slowness"), 1, "砕")),
                 List.of());
         // ---- Ranger: bows
         job("ranger", 0x5CB85C, "弓", List.of(JobStat.ATTACK_DAMAGE, JobStat.MOVEMENT_SPEED, JobStat.CRIT_CHANCE),
@@ -122,7 +122,7 @@ public final class JobDefs {
                         skill("holy_wave", SkillKind.ACTIVE, SkillEffect.SWEEP, 10, 14, 2.0, 10, 0, List.of(), 0, "波")),
                 List.of(
                         skill("divine_aegis", SkillKind.ULTIMATE, SkillEffect.BUFF, 100, 42, 0, 8, 12, List.of("minecraft:resistance", "minecraft:absorption"), 1, "盾"),
-                        skill("judgement", SkillKind.ULTIMATE, SkillEffect.WHIRL, 90, 42, 2.5, 6.5, 0, List.of(), 0, "審")),
+                        skill("judgement", SkillKind.ULTIMATE, SkillEffect.WHIRL, 90, 42, 6.0, 6.5, 0, List.of(), 0, "審")),
                 List.of());
         // ---- Wizard: spells on the staff, skills 1/2 for mana and mobility
         job("wizard", 0x7B68EE, "魔", List.of(JobStat.MAX_MANA, JobStat.MAGIC_ATTACK, JobStat.COOLDOWN_REDUCTION, JobStat.CAST_SPEED, JobStat.MANA_REGEN),
@@ -141,11 +141,11 @@ public final class JobDefs {
                         skill("magic_bolt", SkillKind.SPELL, SkillEffect.BOLT, 0.3, 5, 1.1, 28, 0, List.of(), 0, "弾"),
                         skill("flame_burst", SkillKind.SPELL, SkillEffect.WHIRL, 6, 28, 2.1, 7, 4, List.of(), 0, "炎"),
                         skill("frost_nova", SkillKind.SPELL, SkillEffect.DEBUFF, 8, 28, 1.5, 6, 6, List.of("minecraft:slowness"), 2, "氷"),
-                        skill("thunder", SkillKind.SPELL, SkillEffect.LIGHTNING, 10, 42, 3.3, 28, 0, List.of(), 0, "雷"),
+                        skill("thunder", SkillKind.SPELL, SkillEffect.LIGHTNING, 10, 42, 4.5, 28, 0, List.of(), 0, "雷"),
                         skill("arcane_shield", SkillKind.SPELL, SkillEffect.BUFF, 20, 35, 0, 0, 15, List.of("minecraft:absorption", "minecraft:resistance"), 1, "護"),
                         skill("arcane_missiles", SkillKind.SPELL, SkillEffect.BOLT, 5, 26, 0.75, 24, 0, List.of(), 0, "矢"),
                         skill("blizzard", SkillKind.SPELL, SkillEffect.DEBUFF, 14, 49, 0.525, 4, 2, List.of("minecraft:slowness"), 1, "嵐"),
-                        skill("gravity", SkillKind.SPELL, SkillEffect.WHIRL, 12, 42, 2.4, 5, 0, List.of(), 0, "重")));
+                        skill("gravity", SkillKind.SPELL, SkillEffect.WHIRL, 12, 42, 3.6, 5, 0, List.of(), 0, "重")));
         // ---- Healer: heals (spells charged on the staff) and buffs
         job("healer", 0x5BC0DE, "癒", List.of(JobStat.MAX_MANA, JobStat.MAGIC_ATTACK, JobStat.MANA_REGEN, JobStat.MAX_HEALTH),
                 stats(JobStat.MAX_MANA, 40, JobStat.MAGIC_ATTACK, 3), stats(JobStat.MAGIC_ATTACK, 0.6, JobStat.ATTACK_DAMAGE, 0.6, JobStat.MAX_MANA, 0.75, JobStat.MAX_HEALTH, hpGrow(0.6, 0)),
@@ -199,7 +199,7 @@ public final class JobDefs {
                         skill("lucky_shot", SkillKind.ACTIVE, SkillEffect.SHOT, 6, 7, 2.0, 0, 0, List.of(), 0, "幸"),
                         skill("dice_roll", SkillKind.ACTIVE, SkillEffect.GAMBLE, 12, 11, 3.0, 6, 8, List.of(), 0, "骰"),
                         skill("all_in", SkillKind.ACTIVE, SkillEffect.GAMBLE, 20, 18, 5.0, 8, 10, List.of(), 0, "賭"),
-                        skill("russian_roulette", SkillKind.ACTIVE, SkillEffect.SHOT, 2, 4, 10.0, 16, 0, List.of(), 0, "銃"),
+                        skill("russian_roulette", SkillKind.ACTIVE, SkillEffect.SHOT, 3, 4, 6.0, 16, 0, List.of(), 0, "銃"),
                         skill("card_throw", SkillKind.ACTIVE, SkillEffect.SHOT, 9, 11, 1.8, 16, 0, List.of(), 0, "札")),
                 List.of(
                         skill("jackpot", SkillKind.ULTIMATE, SkillEffect.GAMBLE, 90, 35, 8, 10, 15, List.of(), 0, "当"),

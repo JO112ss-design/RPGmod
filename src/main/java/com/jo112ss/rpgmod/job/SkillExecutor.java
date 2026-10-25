@@ -610,7 +610,7 @@ public final class SkillExecutor {
             Vec3 at = target != null && target.isAlive() ? target.position() : start;
             List<LivingEntity> hit = enemies(c.p, at, 2.5);
             for (LivingEntity e : hit) {
-                float amount = c.dmg(e == target || target == null ? 1 : 0.5) * (isUndead(e) ? 1.5F : 1);
+                float amount = c.dmg(e == target || target == null ? 1 : 0.5);
                 hurt(c, e, amount, magic(c));
                 pushAway(e, at, 0.3, 0.25);
             }
@@ -631,7 +631,7 @@ public final class SkillExecutor {
         SkillTasks.later(16, () -> {
             List<LivingEntity> hit = enemies(c.p, o, r);
             for (LivingEntity e : hit) {
-                hurt(c, e, c.dmg(1) * (isUndead(e) ? 1.5F : 1), magic(c));
+                hurt(c, e, c.dmg(1), magic(c));
                 pushAway(e, o, 0.3, 0.45);
             }
             ServerFx.of("judgement_strike", o).a(r).points(hit).send(c.level);
@@ -683,7 +683,7 @@ public final class SkillExecutor {
                 for (LivingEntity e : enemies(c.p, o, r)) {
                     e.addEffect(new MobEffectInstance(MobEffects.SLOWNESS, 30, 0), c.p);
                     // the holy ground burns the enemies standing on it
-                    hurt(c, e, c.dmg(0.25) * (isUndead(e) ? 1.5F : 1), magic(c));
+                    hurt(c, e, c.dmg(0.25), magic(c));
                 }
                 sound(c, o, SoundEvents.AMETHYST_BLOCK_CHIME, 0.7F, 1.2F);
             }
@@ -1480,7 +1480,7 @@ public final class SkillExecutor {
         }
         // and a burst of holy light that hurts the enemies around (more so the undead)
         List<LivingEntity> foes = enemies(c.p, c.p.position(), c.def.radius());
-        for (LivingEntity e : foes) hurt(c, e, c.dmg(5) * (isUndead(e) ? 1.5F : 1), magic(c));
+        for (LivingEntity e : foes) hurt(c, e, c.dmg(5), magic(c));
         ServerFx.of("purify", c.p.position()).follow(c.p).a(c.def.radius()).points(others(c.p, allies)).send(c.level);
         if (!foes.isEmpty()) ServerFx.of("judgement_strike", c.p.position()).a(c.def.radius()).points(foes).send(c.level);
         sound(c, SoundEvents.ZOMBIE_VILLAGER_CURE, 1.8F);

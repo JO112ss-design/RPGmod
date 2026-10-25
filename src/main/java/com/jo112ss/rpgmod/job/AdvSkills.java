@@ -776,7 +776,7 @@ public final class AdvSkills {
             if (e.getBoundingBox().inflate(0.6).clip(eye, end).isPresent()) hit.add(e);
         }
         for (LivingEntity e : hit) {
-            hurt(c, e, c.dmg(1) * (holy && isUndead(e) ? 1.5F : 1), magic(c));
+            hurt(c, e, c.dmg(1), magic(c));
             push(e, look, 0.4, 0.15);
         }
         ServerFx.of("x_beam", c.hand()).vec(end).a(0.7).color(color).points(hit).send(c.level());
