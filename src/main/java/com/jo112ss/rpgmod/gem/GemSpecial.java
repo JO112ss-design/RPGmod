@@ -2,40 +2,44 @@ package com.jo112ss.rpgmod.gem;
 
 /**
  * Gem effects beyond plain stats. Rare ones stack (each copy adds its value, up to a cap);
- * legendary ones either are there or not.
+ * legendary ones either are there or not. Values were cut to about a third of the first version;
+ * lifesteal and mana drain work at most once every {@link #HEAL_COOLDOWN} ticks.
  */
 public enum GemSpecial {
-    /** Heals this % of the damage dealt. */
-    LIFESTEAL("lifesteal", Gem.RARE, 3, 12),
+    /** Heals this % of the damage dealt (once every 5 s). */
+    LIFESTEAL("lifesteal", Gem.RARE, 3, 9),
     /** Melee hits taken: this % goes back to the attacker. */
-    THORNS("thorns", Gem.RARE, 20, 60),
+    THORNS("thorns", Gem.RARE, 7, 21),
     /** % chance to slow the target (Slowness II, 3 s). */
-    CHILL("chill", Gem.RARE, 15, 45),
+    CHILL("chill", Gem.RARE, 5, 15),
     /** % chance to poison the target (venom, 5 s). */
-    VENOM("venom", Gem.RARE, 10, 30),
+    VENOM("venom", Gem.RARE, 3, 9),
     /** +% damage while at half health or less. */
-    DESPERATION("desperation", Gem.RARE, 15, 45),
-    /** Seconds of Speed II after a kill. */
-    TAILWIND("tailwind", Gem.RARE, 3, 9),
+    DESPERATION("desperation", Gem.RARE, 5, 15),
+    /** Seconds of Speed I after a kill. */
+    TAILWIND("tailwind", Gem.RARE, 2, 6),
     /** % less fall damage (each copy cuts what is left). */
-    ACROBAT("acrobat", Gem.RARE, 50, 100),
+    ACROBAT("acrobat", Gem.RARE, 17, 100),
 
     /** Sets the target on fire for this many seconds. */
-    IGNITE("ignite", Gem.LEGENDARY, 4, 4),
+    IGNITE("ignite", Gem.LEGENDARY, 2, 2),
     /** Arrows are not used up. */
     ENDLESS_ARROWS("endless_arrows", Gem.LEGENDARY, 0, 0),
-    /** Each hit restores this % of max MP (at most twice a second). */
+    /** A hit restores this % of max MP (once every 5 s). */
     MANA_DRAIN("mana_drain", Gem.LEGENDARY, 3, 3),
     /** % chance that lightning strikes the target for half the hit again. */
-    THUNDER("thunder", Gem.LEGENDARY, 15, 15),
-    /** A lethal hit leaves 1 HP instead, once every this many seconds. */
-    PHOENIX("phoenix", Gem.LEGENDARY, 300, 300),
+    THUNDER("thunder", Gem.LEGENDARY, 5, 5),
+    /** A lethal hit leaves 1 HP instead, once every this many minutes. */
+    PHOENIX("phoenix", Gem.LEGENDARY, 15, 15),
     /** Heals this % of max health every 5 seconds. */
-    REGENERATION("regeneration", Gem.LEGENDARY, 2, 2),
+    REGENERATION("regeneration", Gem.LEGENDARY, 0.7, 0.7),
     /** On a critical hit, enemies around the target take this % of it. */
-    SHOCKWAVE("shockwave", Gem.LEGENDARY, 50, 50),
+    SHOCKWAVE("shockwave", Gem.LEGENDARY, 17, 17),
     /** % chance to freeze the target in place for 2 seconds. */
-    FREEZE("freeze", Gem.LEGENDARY, 20, 20);
+    FREEZE("freeze", Gem.LEGENDARY, 7, 7);
+
+    /** Ticks between two lifesteal heals or mana drains. */
+    public static final int HEAL_COOLDOWN = 100;
 
     public final String id;
     public final int rarity;

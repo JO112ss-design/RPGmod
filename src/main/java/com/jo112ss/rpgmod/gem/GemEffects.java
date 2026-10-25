@@ -55,6 +55,7 @@ public final class GemEffects {
     /** Set while a gem deals its own damage, so that damage does not set off more gems. */
     private static boolean busy;
     private static final Map<UUID, Long> MANA_NEXT = new HashMap<>();
+    private static final Map<UUID, Long> STEAL_NEXT = new HashMap<>();
 
     /** Dev test only: every chance-based gem triggers. */
     public static boolean testAlways;
@@ -116,7 +117,7 @@ public final class GemEffects {
         if (g.containsKey(GemSpecial.MANA_DRAIN)) {
             long now = level.getGameTime();
             if (now >= MANA_NEXT.getOrDefault(sp.getUUID(), 0L)) {
-                MANA_NEXT.put(sp.getUUID(), now + 10);
+                MANA_NEXT.put(sp.getUUID(), now + GemSpecial.HEAL_COOLDOWN);
                 JobManager.restoreMana(sp, JobManager.maxMana(sp) * GemSpecial.MANA_DRAIN.value / 100.0);
                 level.sendParticles(ParticleTypes.WITCH, sp.getX(), sp.getY() + 1.2, sp.getZ(), 4, 0.3, 0.3, 0.3, 0.02);
             }
@@ -175,7 +176,11 @@ public final class GemEffects {
         // lifesteal on the attacker
         if (src.getEntity() instanceof ServerPlayer sp && event.getEntity() != sp && !ownDamage(src)) {
             double steal = Gear.strength(Gear.specials(sp, weapon(src)), GemSpecial.LIFESTEAL);
-            if (steal > 0) sp.heal((float) (dealt * steal / 100.0));
+            long now = sp.level().getGameTime();
+            if (steal > 0 && now >= STEAL_NEXT.getOrDefault(sp.getUUID(), 0L)) {
+                STEAL_NEXT.put(sp.getUUID(), now + GemSpecial.HEAL_COOLDOWN);
+                sp.heal((float) (dealt * steal / 100.0));
+            }
         }
         // thorns on the one hit: melee only
         if (event.getEntity() instanceof ServerPlayer victim && src.getEntity() instanceof LivingEntity attacker
@@ -197,14 +202,14 @@ public final class GemEffects {
         if (event.getNewDamage() <= room || !Gear.has(p, GemSpecial.PHOENIX)) return;
         long now = level.getGameTime();
         if (now < p.getPersistentData().getLongOr(PHOENIX_NEXT, 0L)) return;
-        p.getPersistentData().putLong(PHOENIX_NEXT, now + (long) GemSpecial.PHOENIX.value * 20);
+        p.getPersistentData().putLong(PHOENIX_NEXT, now + (long) (GemSpecial.PHOENIX.value * 60 * 20));
         event.setNewDamage(Math.max(0, room));
         p.addEffect(new MobEffectInstance(MobEffects.RESISTANCE, 40, 3));
         p.addEffect(new MobEffectInstance(MobEffects.REGENERATION, 100, 1));
         level.sendParticles(ParticleTypes.FLAME, p.getX(), p.getY() + 1, p.getZ(), 40, 0.5, 0.8, 0.5, 0.08);
         level.sendParticles(ParticleTypes.TOTEM_OF_UNDYING, p.getX(), p.getY() + 1, p.getZ(), 30, 0.5, 0.8, 0.5, 0.3);
         level.playSound(null, p.blockPosition(), SoundEvents.TOTEM_USE, SoundSource.PLAYERS, 0.8F, 1.2F);
-        p.sendSystemMessage(Component.translatable("rpgmod.gem.phoenix_used", (int) GemSpecial.PHOENIX.value / 60).withStyle(ChatFormatting.GOLD), true);
+        p.sendSystemMessage(Component.translatable("rpgmod.gem.phoenix_used", (int) GemSpecial.PHOENIX.value).withStyle(ChatFormatting.GOLD), true);
         log("phoenix saved {} at {}", p.getName().getString(), p.getHealth());
     }
 
@@ -212,7 +217,7 @@ public final class GemEffects {
     public static void onKill(LivingDeathEvent event) {
         if (!(event.getSource().getEntity() instanceof ServerPlayer sp) || event.getEntity() == sp) return;
         double secs = Gear.strength(Gear.specials(sp, weapon(event.getSource())), GemSpecial.TAILWIND);
-        if (secs > 0) sp.addEffect(new MobEffectInstance(MobEffects.SPEED, (int) (secs * 20), 1));
+        if (secs > 0) sp.addEffect(new MobEffectInstance(MobEffects.SPEED, (int) (secs * 20), 0));
     }
 
     @SubscribeEvent
@@ -250,5 +255,6 @@ public final class GemEffects {
 
     public static void forget(UUID id) {
         MANA_NEXT.remove(id);
+        STEAL_NEXT.remove(id);
     }
 }

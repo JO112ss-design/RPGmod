@@ -86,7 +86,11 @@ final class GemTests {
         }
         log("rarity in 20000: normal {}/{}/{} boss {}/{}/{}; rare gems that are special {}", normal[0], normal[1], normal[2], boss[0], boss[1], boss[2], specialsOfRare);
         Gem c = GemRoller.roll(Gem.COMMON, r), rr = GemRoller.stat(com.jo112ss.rpgmod.smithing.core.OptionType.CRIT_CHANCE, Gem.RARE, r);
-        log("sample common {} {} / rare crit {} (forge range 2-5)", c.effect(), c.value(), rr.value());
+        log("sample common {} {} / rare crit {} (forge range 2-5, common gem 0.7-1.7, rare 1-3.3); old gem 9 counts {}", c.effect(), c.value(), rr.value(),
+                new Gem("attack_damage", Gem.COMMON, 9, 1).statValue());
+        StringBuilder ranges = new StringBuilder();
+        for (var t : GemRoller.statPool()) ranges.append(t.id).append(' ').append(String.format("%.1f-%.1f", GemRoller.min(t), GemRoller.max(t))).append(", ");
+        log("common ranges: {}", ranges);
 
         // capacities
         log("capacity copper helmet {} iron sword {} gold dagger {} diamond chest {} netherite hammer {} vanilla shield {} netherite shield {} leather {} arrow {} bow(diamond) {}",

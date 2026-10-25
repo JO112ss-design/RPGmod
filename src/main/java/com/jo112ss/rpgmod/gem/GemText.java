@@ -17,7 +17,7 @@ public final class GemText {
     public static MutableComponent effect(Gem g) {
         OptionType t = g.option();
         if (t != null) {
-            String v = "+" + number(g.value()) + (t.percent ? "%" : "");
+            String v = "+" + number(g.statValue()) + (t.percent ? "%" : "");
             return Component.translatable("rpgmod.option." + t.id).withStyle(ChatFormatting.AQUA)
                     .append(Component.literal(" " + v).withStyle(ChatFormatting.WHITE));
         }

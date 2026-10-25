@@ -29,7 +29,7 @@ public final class Gear {
         double sum = 0;
         ForgedData d = ForgeOptionEffects.data(stack);
         if (d != null) sum += d.get(type);
-        for (Gem g : Sockets.gems(stack)) if (type.id.equals(g.effect())) sum += g.value();
+        for (Gem g : Sockets.gems(stack)) if (type.id.equals(g.effect())) sum += g.statValue();
         return sum;
     }
 
@@ -38,7 +38,7 @@ public final class Gear {
         Map<OptionType, Double> m = new EnumMap<>(OptionType.class);
         ForgedData d = ForgeOptionEffects.data(stack);
         if (d != null) for (ForgedData.Option o : d.options()) if (o.type() != null) m.merge(o.type(), o.value(), Double::sum);
-        for (Gem g : Sockets.gems(stack)) if (g.option() != null) m.merge(g.option(), g.value(), Double::sum);
+        for (Gem g : Sockets.gems(stack)) if (g.option() != null) m.merge(g.option(), g.statValue(), Double::sum);
         return m;
     }
 
