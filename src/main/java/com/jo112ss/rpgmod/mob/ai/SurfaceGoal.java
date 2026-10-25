@@ -110,7 +110,13 @@ public final class SurfaceGoal extends Goal {
             }
         }
         if (goals.isEmpty()) return null;
-        Path p = mob.getNavigation().createPath(goals, 1);
+        PathBudget.bypass = true; // this one decides whether there is a way out: a full search, now
+        Path p;
+        try {
+            p = mob.getNavigation().createPath(goals, 1);
+        } finally {
+            PathBudget.bypass = false;
+        }
         if (com.jo112ss.rpgmod.devtest.AutoTestServer.ENABLED) {
             com.jo112ss.rpgmod.RpgMod.LOGGER.info("[AUTOTEST] exit path goals={} -> {}", goals.size(),
                     p == null ? "null" : "nodes=" + p.getNodeCount() + " reach=" + p.canReach() + " end=" + p.getEndNode());
