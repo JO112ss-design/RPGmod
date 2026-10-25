@@ -75,34 +75,45 @@ final class BalanceTests {
         Husk armoured = dummy(level, p, -3, 0);
         armoured.setItemSlot(EquipmentSlot.CHEST, new ItemStack(Items.DIAMOND_CHESTPLATE));
         armoured.setItemSlot(EquipmentSlot.LEGS, new ItemStack(Items.DIAMOND_LEGGINGS));
-        JobManager.testForceCrit = false;
-        float b0 = bare.getHealth(), a0 = armoured.getHealth();
-        bare.hurtServer(level, p.damageSources().playerAttack(p), 10);
-        var magic = p.damageSources().source(net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.DAMAGE_TYPE,
-                net.minecraft.resources.Identifier.fromNamespaceAndPath(RpgMod.MODID, "skill_magic")), p, p);
-        armoured.hurtServer(level, magic, 10);
-        JobManager.testForceCrit = null;
-        log("hit 10: bare took {} (level power x{}), magic vs diamond armour ({}% reduction) took {}", String.format("%.1f", b0 - bare.getHealth()),
-                String.format("%.2f", JobManager.levelPower(p)), Math.round(com.jo112ss.rpgmod.mob.Defense.reduction(armoured) * 100), String.format("%.1f", a0 - armoured.getHealth()));
-        bare.discard();
-        armoured.discard();
+        // hit two ticks later, once the dummies' armour counts
+        SkillTasks.later(3, () -> {
+            JobManager.testForceCrit = false;
+            float b0 = bare.getHealth(), a0 = armoured.getHealth();
+            bare.damageCooldownTime = 0;
+            bare.hurtServer(level, p.damageSources().playerAttack(p), 10);
+            var magic = p.damageSources().source(net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.DAMAGE_TYPE,
+                    net.minecraft.resources.Identifier.fromNamespaceAndPath(RpgMod.MODID, "skill_magic")), p, p);
+            armoured.damageCooldownTime = 0;
+            armoured.hurtServer(level, magic, 10);
+            JobManager.testForceCrit = null;
+            log("hit 10: bare ({}% reduction) took {} (level power x{}), magic vs diamond armour ({}% reduction) took {} (x{} expected)",
+                    Math.round(com.jo112ss.rpgmod.mob.Defense.reduction(bare) * 100), String.format("%.1f", b0 - bare.getHealth()),
+                    String.format("%.2f", JobManager.levelPower(p)), Math.round(com.jo112ss.rpgmod.mob.Defense.reduction(armoured) * 100),
+                    String.format("%.1f", a0 - armoured.getHealth()), String.format("%.1f", 10 * JobManager.levelPower(p) * (1 - com.jo112ss.rpgmod.mob.Defense.reduction(armoured))));
+            bare.discard();
+            armoured.discard();
 
-        // health scale: vanilla heals and damage with nobody behind it grow with max health
-        var mode = p.gameMode();
-        p.setGameMode(net.minecraft.world.level.GameType.SURVIVAL);
-        p.setHealth(p.getMaxHealth() * 0.5F);
-        float h0 = p.getHealth();
-        p.heal(2);
-        float h1 = p.getHealth();
-        HealthScale.heal(p, 2);
-        float h2 = p.getHealth();
-        p.damageCooldownTime = 0;
-        p.hurtServer(level, level.damageSources().fall(), 3);
-        float h3 = p.getHealth();
-        log("health scale x{}: vanilla heal 2 -> +{}, mod heal 2 -> +{}, fall 3 -> -{}", String.format("%.1f", HealthScale.factor(p)),
-                String.format("%.1f", h1 - h0), String.format("%.1f", h2 - h1), String.format("%.1f", h2 - h3));
-        p.setHealth(p.getMaxHealth());
-        p.setGameMode(mode);
+            // health scale: vanilla heals and damage with nobody behind it grow with max health
+            var mode = p.gameMode();
+            boolean inv = p.getAbilities().invulnerable;
+            p.setGameMode(net.minecraft.world.level.GameType.SURVIVAL);
+            p.getAbilities().invulnerable = false;
+            p.removeAllEffects();
+            p.setHealth(p.getMaxHealth() * 0.5F);
+            float h0 = p.getHealth();
+            p.heal(2);
+            float h1 = p.getHealth();
+            HealthScale.heal(p, 2);
+            float h2 = p.getHealth();
+            p.damageCooldownTime = 0;
+            p.hurtServer(level, level.damageSources().fall(), 3);
+            float h3 = p.getHealth();
+            log("health scale x{}: vanilla heal 2 -> +{}, mod heal 2 -> +{}, fall 3 -> -{}", String.format("%.1f", HealthScale.factor(p)),
+                    String.format("%.1f", h1 - h0), String.format("%.1f", h2 - h1), String.format("%.1f", h2 - h3));
+            p.setHealth(p.getMaxHealth());
+            p.getAbilities().invulnerable = inv;
+            p.setGameMode(mode);
+        });
 
         // a levelled zombie's hit on the player, by level (raw, before armour)
         SkillTasks.later(2, () -> log("zombie hit (3) raw: Lv1 {} Lv100 {} Lv199 {}", String.format("%.0f", 3 * MobLevelMath.damageMultiplier(r, 1)),
