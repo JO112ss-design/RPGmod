@@ -123,7 +123,7 @@ final class NewJobTests {
         p.setGameMode(net.minecraft.world.level.GameType.SURVIVAL);
         boolean inv = p.getAbilities().invulnerable;
         p.getAbilities().invulnerable = false;
-        SkillTasks.later(40, () -> {
+        SkillTasks.later(64, () -> {
             p.setGameMode(mode);
             p.getAbilities().invulnerable = inv;
         });
@@ -148,12 +148,14 @@ final class NewJobTests {
             float plain = hp - p.getHealth();
             p.setHealth(p.getMaxHealth());
             SkillExecutor.execute(p, JobDefs.skill("diamond_body"), 1);
-            float hp2 = p.getHealth();
-            p.setInvulnerableTime(0);
-            p.hurtServer(level, level.damageSources().mobAttack(near), 20);
-            log("diamond body: a hit took {} plain, {} with it", String.format("%.1f", plain), String.format("%.1f", hp2 - p.getHealth()));
-            p.removeEffect(ModEffects.DIAMOND_BODY);
-            p.setHealth(p.getMaxHealth());
+            // the next hit after the damage cooldown (hits within it only count above the last one)
+            SkillTasks.later(24, () -> {
+                float hp2 = p.getHealth();
+                p.hurtServer(level, level.damageSources().mobAttack(near), 20);
+                log("diamond body: a hit took {} plain, {} with it", String.format("%.1f", plain), String.format("%.1f", hp2 - p.getHealth()));
+                p.removeEffect(ModEffects.DIAMOND_BODY);
+                p.setHealth(p.getMaxHealth());
+            });
         });
     }
 }

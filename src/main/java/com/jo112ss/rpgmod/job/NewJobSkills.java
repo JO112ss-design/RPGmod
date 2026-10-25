@@ -185,11 +185,21 @@ public final class NewJobSkills {
         return true;
     }
 
-    /** Sets down a cannon that shells the nearest enemy every 1.5s (0.75s under the flag). */
+    /** A spot beside the player (to the right with {@code side} > 0), on the ground if there is any below. */
+    private static Vec3 beside(Ctx c, double side, double ahead) {
+        ServerPlayer p = c.p();
+        Vec3 want = p.position().add(Fx3.right(c.flat()).scale(side)).add(c.flat().scale(ahead));
+        // not into a wall: stop short of the first block on the way
+        BlockHitResult wall = c.level().clip(new ClipContext(p.position().add(0, 0.5, 0), want.add(0, 0.5, 0), ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, p));
+        if (wall.getType() != HitResult.Type.MISS) want = p.position().add(wall.getLocation().subtract(p.position().add(0, 0.5, 0)).scale(0.7));
+        BlockHitResult down = c.level().clip(new ClipContext(want.add(0, 1, 0), want.add(0, -4, 0), ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, p));
+        return down.getType() == HitResult.Type.MISS ? want : down.getLocation();
+    }
+
+    /** Sets down a cannon beside you that shells the nearest enemy every 1.5s (0.75s under the flag). */
     private static boolean cannon(Ctx c) {
         ServerPlayer p = c.p();
-        Vec3 at = aimPoint(c, 4);
-        if (at.distanceTo(p.position()) < 1.2) at = p.position().add(c.flat().scale(1.5));
+        Vec3 at = beside(c, 1.6, 0.8);
         SkillProp old = Pirate.CANNONS.remove(p.getUUID());
         if (old != null) old.discard();
         int life = ticks(c.def().duration());
@@ -326,7 +336,7 @@ public final class NewJobSkills {
     private static boolean jollyRoger(Ctx c) {
         ServerPlayer p = c.p();
         int life = ticks(c.def().duration());
-        Vec3 at = p.position();
+        Vec3 at = beside(c, -1.3, 0.3);
         SkillProp flag = SkillProp.create(c.level(), SkillProp.FLAG, at, p.getYRot() + 90, life);
         Pirate.FLAG_UNTIL.put(p.getUUID(), c.level().getGameTime() + life);
         double r = c.def().radius();

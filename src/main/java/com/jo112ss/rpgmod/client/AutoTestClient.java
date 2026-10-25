@@ -424,6 +424,8 @@ public final class AutoTestClient {
         }
         boolean fp = entry.startsWith("fp:");
         String id = fp ? entry.substring(3) : entry;
+        // the new jobs: hold the job's weapon on this side too (the server puts it in slot 7), for the HUD
+        if (k == 4 && entry.startsWith("nj:") && !entry.equals("nj:restore")) mc.player.getInventory().setSelectedSlot(6);
         if (k == 0) {
             mc.options.setCameraType(fp ? net.minecraft.client.CameraType.FIRST_PERSON : net.minecraft.client.CameraType.THIRD_PERSON_BACK);
             AutoTestServer.requestCast(id);
