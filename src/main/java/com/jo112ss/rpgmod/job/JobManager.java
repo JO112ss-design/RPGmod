@@ -111,8 +111,9 @@ public final class JobManager {
     }
 
     /**
-     * Starting gear when a job is chosen: a copper weapon of the job (wizards a staff, rangers a bow,
-     * everyone else their first melee weapon) and one forging anvil.
+     * Starting gear when a job is chosen: every weapon kind of the job in copper (the main one first:
+     * wizards and healers a staff, rangers a bow, everyone else their first melee weapon), 64 arrows
+     * for bow users, a forging anvil and a socket table.
      */
     private static void giveStarterKit(ServerPlayer player, JobType type) {
         WeaponType weapon = switch (type) {
@@ -120,13 +121,18 @@ public final class JobManager {
             case RANGER -> WeaponType.BOW;
             default -> type.weapons.stream().filter(w -> w != WeaponType.STAFF && w != WeaponType.BOW).findFirst().orElse(type.weapons.get(0));
         };
-        for (ItemStack stack : List.of(new ItemStack(ModItems.get(weapon, com.jo112ss.rpgmod.item.WeaponMaterial.COPPER)),
-                new ItemStack(com.jo112ss.rpgmod.registry.ModRegistries.FORGING_ANVIL_ITEM.get()))) {
+        List<ItemStack> kit = new java.util.ArrayList<>();
+        kit.add(new ItemStack(ModItems.get(weapon, com.jo112ss.rpgmod.item.WeaponMaterial.COPPER)));
+        for (WeaponType w : type.weapons) if (w != weapon) kit.add(new ItemStack(ModItems.get(w, com.jo112ss.rpgmod.item.WeaponMaterial.COPPER)));
+        if (type.weapons.contains(WeaponType.BOW)) kit.add(new ItemStack(net.minecraft.world.item.Items.ARROW, 64));
+        kit.add(new ItemStack(com.jo112ss.rpgmod.registry.ModRegistries.FORGING_ANVIL_ITEM.get()));
+        kit.add(new ItemStack(com.jo112ss.rpgmod.registry.ModRegistries.SOCKET_TABLE_ITEM.get()));
+        for (ItemStack stack : kit) {
             if (!player.getInventory().add(stack)) player.drop(stack, false, net.minecraft.util.Prediction.SERVER_ONLY);
         }
         player.sendSystemMessage(Component.translatable("rpgmod.job.starter_kit").withStyle(ChatFormatting.GREEN));
         if (com.jo112ss.rpgmod.devtest.AutoTestServer.ENABLED) {
-            com.jo112ss.rpgmod.RpgMod.LOGGER.info("[AUTOTEST] starter kit {}: {} + anvil", type.id, ModItems.get(weapon, com.jo112ss.rpgmod.item.WeaponMaterial.COPPER));
+            com.jo112ss.rpgmod.RpgMod.LOGGER.info("[AUTOTEST] starter kit {}: {}", type.id, kit.stream().map(s -> s.getCount() + " " + s.getItem()).toList());
         }
     }
 

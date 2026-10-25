@@ -155,7 +155,7 @@
   "rpgmod.skill.arrow_rain": "アローレイン",
   "rpgmod.skill.arrow_rain.desc": "狙った範囲に2秒間矢の雨を降らせる。",
   "rpgmod.skill.eagle_eye": "鷹の目",
-  "rpgmod.skill.eagle_eye.desc": "攻撃力・移動速度・暗視を得る。",
+  "rpgmod.skill.eagle_eye.desc": "攻撃力・移動速度・暗視を得る。鷹の目の矢を40本もらう（捨てたりチェストに入れると消える）。",
   "rpgmod.skill.shield_bash": "盾打ち",
   "rpgmod.skill.shield_bash.desc": "前方の敵を打ち据えて押し返し、鈍らせる。",
   "rpgmod.skill.holy_guard": "聖なる守り",
@@ -743,5 +743,7 @@
   "rpgmod.boss.golem.armour_broken": "岩の鎧が砕けた！",
   "rpgmod.boss.golem.armour_bar": "岩の鎧（被ダメ半分）",
   "rpgmod.boss.golem.left": "夜が明け、ゴーレムは崩れて地面に還っていった…",
-  "rpgmod.boss.golem.defeated": "ゴーレムを倒した！（%s）"
+  "rpgmod.boss.golem.defeated": "ゴーレムを倒した！（%s）",
+  "item.rpgmod.eagle_arrow": "鷹の目の矢",
+  "rpgmod.eagle_arrow.lore": "捨てたりチェストに入れると消える"
 }

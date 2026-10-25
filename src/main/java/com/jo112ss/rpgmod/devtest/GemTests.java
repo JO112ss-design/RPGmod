@@ -92,6 +92,24 @@ final class GemTests {
         for (var t : GemRoller.statPool()) ranges.append(t.id).append(' ').append(String.format("%.1f-%.1f", GemRoller.min(t), GemRoller.max(t))).append(", ");
         log("common ranges: {}", ranges);
 
+        // eagle-eye arrows: vanish when thrown out or left in a chest
+        {
+            int before = p.getInventory().countItem(Items.ARROW);
+            com.jo112ss.rpgmod.item.TempArrows.give(p);
+            int after = p.getInventory().countItem(Items.ARROW);
+            ItemStack thrown = com.jo112ss.rpgmod.item.TempArrows.make(5);
+            var ie = new net.minecraft.world.entity.item.ItemEntity(level, p.getX(), p.getY(), p.getZ(), thrown);
+            boolean added = level.addFreshEntity(ie);
+            var box = new net.minecraft.world.SimpleContainer(27);
+            var menu = net.minecraft.world.inventory.ChestMenu.threeRows(99, p.getInventory(), box);
+            box.setItem(3, com.jo112ss.rpgmod.item.TempArrows.make(10));
+            box.setItem(4, new ItemStack(Items.ARROW, 7));
+            net.neoforged.neoforge.common.NeoForge.EVENT_BUS.post(new net.neoforged.neoforge.event.entity.player.PlayerContainerEvent.Close(p, menu));
+            log("eagle arrows: arrows {} -> {} (temp {}), thrown one spawned={}, chest after close: temp slot {} normal slot {}", before, after,
+                    com.jo112ss.rpgmod.item.TempArrows.is(com.jo112ss.rpgmod.item.TempArrows.make(1)), added, box.getItem(3).getCount(), box.getItem(4).getCount());
+            for (int i = 0; i < p.getInventory().getContainerSize(); i++) if (com.jo112ss.rpgmod.item.TempArrows.is(p.getInventory().getItem(i))) p.getInventory().setItem(i, ItemStack.EMPTY);
+        }
+
         // material bows pierce armour
         StringBuilder pen = new StringBuilder();
         for (var mat : com.jo112ss.rpgmod.item.WeaponMaterial.values()) {

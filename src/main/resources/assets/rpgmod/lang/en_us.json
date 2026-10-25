@@ -155,7 +155,7 @@
   "rpgmod.skill.arrow_rain": "Arrow Rain",
   "rpgmod.skill.arrow_rain.desc": "Arrows rain on the aimed area for two seconds.",
   "rpgmod.skill.eagle_eye": "Eagle Eye",
-  "rpgmod.skill.eagle_eye.desc": "Gain strength, speed and night vision.",
+  "rpgmod.skill.eagle_eye.desc": "Gain strength, speed and night vision, and 40 eagle-eye arrows (they vanish if thrown away or put in a chest).",
   "rpgmod.skill.shield_bash": "Shield Bash",
   "rpgmod.skill.shield_bash.desc": "Bash enemies in front, pushing them back and slowing them.",
   "rpgmod.skill.holy_guard": "Holy Guard",
@@ -743,5 +743,7 @@
   "rpgmod.boss.golem.armour_broken": "The stone armour shattered!",
   "rpgmod.boss.golem.armour_bar": "Stone armour (half damage)",
   "rpgmod.boss.golem.left": "Dawn breaks and the Golem crumbles back into the ground...",
-  "rpgmod.boss.golem.defeated": "The Golem was defeated! (%s)"
+  "rpgmod.boss.golem.defeated": "The Golem was defeated! (%s)",
+  "item.rpgmod.eagle_arrow": "Eagle-Eye Arrow",
+  "rpgmod.eagle_arrow.lore": "Vanishes if thrown away or put in a chest"
 }

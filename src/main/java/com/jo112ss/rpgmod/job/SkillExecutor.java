@@ -79,7 +79,10 @@ public final class SkillExecutor {
             case "piercing_shot" -> piercingShot(c);
             case "explosive_arrow" -> explosiveArrow(c);
             case "arrow_rain" -> arrowRain(c);
-            case "eagle_eye" -> selfBuff(c, "eagle_eye", SoundEvents.PHANTOM_FLAP, 1.3F);
+            case "eagle_eye" -> {
+                com.jo112ss.rpgmod.item.TempArrows.give(c.p);
+                yield selfBuff(c, "eagle_eye", SoundEvents.PHANTOM_FLAP, 1.3F);
+            }
             // paladin
             case "shield_bash" -> shieldBash(c);
             case "holy_guard" -> partyBuff(c, "holy_guard", SoundEvents.BEACON_POWER_SELECT, 1.2F);
