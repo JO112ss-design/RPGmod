@@ -760,7 +760,7 @@
   "rpgmod.jobchange.no_book": "転職の書がありません",
   "rpgmod.jobchange.mastery_pct": "熟練度 %1$s%%",
   "rpgmod.jobchange.locked_pct": "未解放（熟練度 %1$s%%）",
-  "rpgmod.jobchange.locked_desc": "%1$sの熟練度が100%%になると選べます（今 %2$s%%）。熟練度は、その職業でいる間に得た経験値で上がります。",
+  "rpgmod.jobchange.locked_desc": "%1$sを極めた先にある上位職。熟練度が100%%になると正体がわかり、選べるようになります（今 %2$s%%）。",
   "rpgmod.jobchange.done": "%1$sに転職しました（熟練度 %2$s%%）",
   "rpgmod.jobchange.mastered": "%1$sを極めた！ 転職の書を手に入れた。使うと%2$sに転職できる",
   "rpgmod.jobchange.mastered_all": "%1$sが%2$sを極めた！",
@@ -768,5 +768,6 @@
   "rpgmod.node.need_mastery": "熟練度%1$s%%で解放（今 %2$s%%）",
   "rpgmod.jobscreen.mastery": "熟練度",
   "rpgmod.jobscreen.mastered_bonus": "極めた職 %1$s（HP+%2$s%%）",
-  "rpgmod.jobscreen.adv_waiting": "上位職のポイント %1$s（上位職になると使える）"
+  "rpgmod.jobscreen.adv_waiting": "上位職のポイント %1$s（上位職になると使える）",
+  "rpgmod.jobchange.hidden": "？？？"
 }

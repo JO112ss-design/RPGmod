@@ -760,7 +760,7 @@
   "rpgmod.jobchange.no_book": "You have no Job Change Book",
   "rpgmod.jobchange.mastery_pct": "Mastery %1$s%%",
   "rpgmod.jobchange.locked_pct": "Locked (mastery %1$s%%)",
-  "rpgmod.jobchange.locked_desc": "Opens when %1$s reaches 100%% mastery (now %2$s%%). Mastery grows with the experience earned as that job.",
+  "rpgmod.jobchange.locked_desc": "The advanced job beyond the %1$s. Master it (100%%) to reveal and choose it (now %2$s%%).",
   "rpgmod.jobchange.done": "You are now a %1$s (mastery %2$s%%)",
   "rpgmod.jobchange.mastered": "%1$s mastered! You got a Job Change Book - use it to become a %2$s",
   "rpgmod.jobchange.mastered_all": "%1$s has mastered the %2$s!",
@@ -768,5 +768,6 @@
   "rpgmod.node.need_mastery": "Opens at %1$s%% mastery (now %2$s%%)",
   "rpgmod.jobscreen.mastery": "Mastery",
   "rpgmod.jobscreen.mastered_bonus": "%1$s mastered (HP +%2$s%%)",
-  "rpgmod.jobscreen.adv_waiting": "%1$s advanced points (for an advanced job)"
+  "rpgmod.jobscreen.adv_waiting": "%1$s advanced points (for an advanced job)",
+  "rpgmod.jobchange.hidden": "???"
 }

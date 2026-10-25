@@ -179,14 +179,14 @@ public class JobSelectScreen extends Screen {
         String problem = problem(i);
         boolean locked = "rpgmod.jobchange.need_mastery".equals(problem);
         boolean current = "rpgmod.jobchange.current".equals(problem);
-        int c = locked ? Ui.mix(Ui.argb(job.color()), 0xFF30343C, 0.7f) & 0xFFFFFF : job.color();
+        int c = locked ? 0x50555F : job.color(); // a locked advanced job gives nothing away, not even its colour
         g.fill(x, y, x + CARD_W, y + CARD_H, sel ? Ui.argb(c) : hover ? Ui.EDGE_LIGHT : Ui.EDGE);
         g.fillGradient(x + 1, y + 1, x + CARD_W - 1, y + CARD_H - 1, Ui.mix(Ui.argb(c), 0xFF14161C, 0.78f), 0xFF0E1015);
         g.fill(x + 1, y + 1, x + CARD_W - 1, y + 3, Ui.argb(c));
         Ui.disc(g, x + CARD_W / 2, y + 20, 13, Ui.mix(Ui.argb(c), 0xFF000000, 0.35f));
         Ui.circle(g, x + CARD_W / 2, y + 20, 13, Ui.argb(c), 1);
         Ui.glyph(g, font, locked ? "?" : job.glyph(), x + CARD_W / 2 + 1, y + 21, 1.6f, locked ? Ui.DIM : Ui.TEXT);
-        Component name = Component.translatable("rpgmod.job." + job.id());
+        Component name = locked ? Component.translatable("rpgmod.jobchange.hidden") : Component.translatable("rpgmod.job." + job.id());
         g.centeredText(font, font.substrByWidth(name, CARD_W - 4).getString(), x + CARD_W / 2, y + (change ? 36 : 38), sel ? Ui.argb(c) : locked ? Ui.DIM : Ui.TEXT);
         if (!change) {
             Component role = Component.translatable("rpgmod.job." + job.id() + ".role");
@@ -220,8 +220,10 @@ public class JobSelectScreen extends Screen {
         }
         JobType job = JobType.values()[selected];
         JobDefs.Job def = defOf(selected);
-        g.text(font, Component.translatable("rpgmod.job." + def.id()), x + 6, y + 5, Ui.argb(def.color()), true);
         String problem = problem(selected);
+        boolean hidden = "rpgmod.jobchange.need_mastery".equals(problem);
+        g.text(font, hidden ? Component.translatable("rpgmod.jobchange.hidden") : Component.translatable("rpgmod.job." + def.id()), x + 6, y + 5,
+                hidden ? Ui.DIM : Ui.argb(def.color()), true);
         Component desc = "rpgmod.jobchange.need_mastery".equals(problem)
                 ? Component.translatable("rpgmod.jobchange.locked_desc", Component.translatable("rpgmod.job." + job.id), JobClient.data().masteryPercent(job.id))
                 : Component.translatable("rpgmod.job." + def.id() + ".desc");
@@ -238,7 +240,7 @@ public class JobSelectScreen extends Screen {
         // bonuses
         // bonuses flow left to right under the weapons and skills, wrapping onto a second row
         int maxX = x + w - 6, bx = wx, row = 0;
-        for (Map.Entry<JobStat, Double> e : def.base().entrySet()) {
+        for (Map.Entry<JobStat, Double> e : hidden ? Map.<JobStat, Double>of().entrySet() : def.base().entrySet()) {
             double val = e.getValue();
             String num = Math.abs(val - Math.round(val)) < 0.01 ? String.valueOf(Math.round(val)) : String.format("%.1f", val);
             String v = "+" + num + (e.getKey().percent ? "%" : "");
@@ -254,6 +256,13 @@ public class JobSelectScreen extends Screen {
         // signature skills: first skill and ultimates
         int sx = x + w - 6 - 3 * 18;
         g.text(font, Component.translatable("rpgmod.jobselect.skills"), sx, y + 5, Ui.DIM, false);
+        if (hidden) { // still a secret: three empty frames
+            for (int k = 0; k < 3; k++) {
+                Ui.inset(g, sx + 18 * k, y + 15, 16, 16);
+                g.centeredText(font, "?", sx + 18 * k + 8, y + 19, Ui.DIM);
+            }
+            return;
+        }
         if (!def.actives().isEmpty()) Ui.skillIcon(g, font, sx, y + 15, 16, JobDefs.skill(def.actives().get(0)), false);
         for (int k = 0; k < def.ultimates().size() && k < 2; k++) {
             Ui.skillIcon(g, font, sx + 18 * (k + 1), y + 15, 16, JobDefs.skill(def.ultimates().get(k)), false);
