@@ -46,6 +46,7 @@ public record Gem(String effect, int rarity, double value, int ver) {
         rarity = Math.max(COMMON, Math.min(LEGENDARY, rarity));
         effect = OptionType.current(effect); // armour penetration gems became attack gems
         if (OptionType.ATTACK_DAMAGE.id.equals(effect)) effect = OptionType.ATTACK_FLAT.id; // attack gems give flat attack
+        if (OptionType.MAGIC_POWER.id.equals(effect)) effect = OptionType.MAGIC_FLAT.id; // magic gems give flat magic attack
     }
 
     /** What a stat gem adds: a whole number, at least 1 (old gems from before the cut count a third, rounded). */

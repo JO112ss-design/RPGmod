@@ -315,7 +315,7 @@
   "rpgmod.job.reset_done": "スキルパネルをリセットしました（ポイント %s）",
   "rpgmod.job.panel_migrated": "スキルパネルが新しくなったため、ポイントを返却しました",
   "rpgmod.job.bow_restricted": "この弓はレンジャーとギャンブラーしか使えません",
-  "rpgmod.option.magic_power": "魔法威力",
+  "rpgmod.option.magic_power": "魔法攻撃力",
   "rpgmod.option.cast_speed": "詠唱時間短縮",
   "rpgmod.stat.cast_speed": "詠唱短縮",
   "rpgmod.stat.magic_power": "魔法威力",
@@ -772,5 +772,6 @@
   "rpgmod.jobchange.hidden": "？？？",
   "rpgmod.stat.level_power": "レベル補正",
   "rpgmod.tooltip.weapon_mult": "攻撃力全体 ×%s（レベルの攻撃力も含めて）",
-  "rpgmod.option.attack_flat": "攻撃力"
+  "rpgmod.option.attack_flat": "攻撃力",
+  "rpgmod.option.magic_flat": "魔法攻撃力"
 }

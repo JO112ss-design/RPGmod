@@ -312,6 +312,8 @@ UI = {  # key: (ja, en)
  'rpgmod.jobscreen.power.heal': ('回復 %1$s×%2$s%%（今 %3$s）', 'Heal %1$s x%2$s%% (now %3$s)'),
  'rpgmod.tooltip.staff_bonus': ('魔法攻撃力 %1$s、魔法攻撃力全体 ×%2$s', 'Magic Attack %1$s, all magic attack x%2$s'),
  'rpgmod.option.attack_flat': ('攻撃力', 'Attack'),
+ 'rpgmod.option.magic_flat': ('魔法攻撃力', 'Magic Attack'),
+ 'rpgmod.option.magic_power': ('魔法攻撃力', 'Magic Attack'),
  'rpgmod.tooltip.weapon_mult': ('攻撃力全体 ×%s（レベルの攻撃力も含めて）', 'All attack x%s (your own included)'),
  'rpgmod.gamble.lucky': ('ラッキー！', 'Lucky!'),
  'rpgmod.gamble.jackpot': ('大当たり！周囲に大ダメージ', 'Jackpot! Big damage around you'),

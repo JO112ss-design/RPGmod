@@ -29,7 +29,9 @@ public enum OptionType {
     MAX_MANA("max_mana", 1, false, 10, 25, 5, 12),
     MANA_REGEN("mana_regen", 0.1, true, 8, 20, 4, 10),
     // gems only (forging never rolls it): flat attack, on the x3 attack scale
-    ATTACK_FLAT("attack_flat", 1, false, NaN(), NaN(), NaN(), NaN());
+    ATTACK_FLAT("attack_flat", 1, false, NaN(), NaN(), NaN(), NaN()),
+    // gems only: flat magic attack, the casters' counterpart of ATTACK_FLAT
+    MAGIC_FLAT("magic_flat", 1, false, NaN(), NaN(), NaN(), NaN());
 
     public final String id;
     public final double step;

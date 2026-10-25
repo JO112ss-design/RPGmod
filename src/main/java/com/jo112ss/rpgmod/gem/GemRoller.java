@@ -23,11 +23,13 @@ public final class GemRoller {
 
     /**
      * Stat options a gem can carry: every forging option but durability (gear no longer wears out)
-     * and attack % - attack gems give flat attack instead.
+     * and attack / magic attack % - those gems give flat attack / magic attack instead.
      */
     public static List<OptionType> statPool() {
         List<OptionType> out = new ArrayList<>();
-        for (OptionType t : OptionType.values()) if (t != OptionType.DURABILITY && t != OptionType.ATTACK_DAMAGE) out.add(t);
+        for (OptionType t : OptionType.values()) {
+            if (t != OptionType.DURABILITY && t != OptionType.ATTACK_DAMAGE && t != OptionType.MAGIC_POWER) out.add(t);
+        }
         return out;
     }
 
@@ -39,12 +41,12 @@ public final class GemRoller {
      * range (weapon range when it has one, else armour), rounded.
      */
     public static double min(OptionType t) {
-        if (t == OptionType.ATTACK_FLAT) return ATTACK_MIN;
+        if (t == OptionType.ATTACK_FLAT || t == OptionType.MAGIC_FLAT) return ATTACK_MIN;
         return Math.max(1, Math.round((Double.isNaN(t.weaponMin) ? t.armorMin : t.weaponMin) / 3));
     }
 
     public static double max(OptionType t) {
-        if (t == OptionType.ATTACK_FLAT) return ATTACK_MAX;
+        if (t == OptionType.ATTACK_FLAT || t == OptionType.MAGIC_FLAT) return ATTACK_MAX;
         return Math.max(min(t), Math.round((Double.isNaN(t.weaponMax) ? t.armorMax : t.weaponMax) / 3));
     }
 

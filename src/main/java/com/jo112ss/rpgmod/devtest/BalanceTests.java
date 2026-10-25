@@ -84,6 +84,29 @@ final class BalanceTests {
         var oldAtk = new com.jo112ss.rpgmod.gem.Gem("attack_damage", com.jo112ss.rpgmod.gem.Gem.COMMON, 2.4, 2);
         var oldHp = new com.jo112ss.rpgmod.gem.Gem("max_health", com.jo112ss.rpgmod.gem.Gem.COMMON, 0.5, 2);
         log("gems (common/rare) whole={} {}; old attack gem -> {} {}; old hp gem -> {} {}%", whole, gems, oldAtk.effect(), oldAtk.statValue(), oldHp.effect(), oldHp.statValue());
+        var oldMagic = new com.jo112ss.rpgmod.gem.Gem("magic_power", com.jo112ss.rpgmod.gem.Gem.RARE, 3.6, 3);
+        log("old magic power gem -> {} {}", oldMagic.effect(), oldMagic.statValue());
+        // armour tier bonus on the piece: the item's own armour line, a player and a monster wearing it
+        ItemStack chest = new ItemStack(Items.NETHERITE_CHESTPLATE);
+        double[] line = {0};
+        chest.forEachModifier(EquipmentSlot.CHEST, (attr, mod) -> { if (attr.is(Attributes.ARMOR)) line[0] += mod.amount(); });
+        var zc = EntityTypes.ZOMBIE.create(level, EntitySpawnReason.COMMAND);
+        ItemStack prevChest = p.getItemBySlot(EquipmentSlot.CHEST).copy();
+        double pArmor0 = p.getAttributeValue(Attributes.ARMOR);
+        p.setItemSlot(EquipmentSlot.CHEST, chest.copy());
+        if (zc != null) {
+            zc.snapTo(p.getX() + 5, p.getY(), p.getZ(), 0, 0);
+            zc.setNoAi(true);
+            level.addFreshEntity(zc);
+            for (EquipmentSlot s : new EquipmentSlot[] {EquipmentSlot.HEAD, EquipmentSlot.CHEST, EquipmentSlot.LEGS, EquipmentSlot.FEET}) zc.setItemSlot(s, ItemStack.EMPTY);
+            zc.setItemSlot(EquipmentSlot.CHEST, chest.copy());
+        }
+        SkillTasks.later(3, () -> {
+            log("netherite chestplate: item armour line {} (vanilla 8 + tier 20); player armour {} -> {}; zombie wearing it {} (only vanilla)", line[0],
+                    String.format("%.1f", pArmor0), String.format("%.1f", p.getAttributeValue(Attributes.ARMOR)), zc == null ? -1 : zc.getAttributeValue(Attributes.ARMOR));
+            p.setItemSlot(EquipmentSlot.CHEST, prevChest);
+            if (zc != null) zc.discard();
+        });
         // a zombie at level 199: health past vanilla's 1024
         var z = EntityTypes.ZOMBIE.create(level, EntitySpawnReason.COMMAND);
         if (z != null) {

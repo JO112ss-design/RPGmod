@@ -360,48 +360,6 @@ public final class JobManager {
         }
     }
 
-    private static final net.minecraft.resources.Identifier TIER_ARMOR_ID =
-            net.minecraft.resources.Identifier.fromNamespaceAndPath(com.jo112ss.rpgmod.RpgMod.MODID, "armor_tier_bonus");
-    private static final WeaponType[] ARMOR_PIECES = {WeaponType.HELMET, WeaponType.CHESTPLATE, WeaponType.LEGGINGS, WeaponType.BOOTS};
-    private static final net.minecraft.world.entity.EquipmentSlot[] ARMOR_SLOTS = {net.minecraft.world.entity.EquipmentSlot.HEAD,
-            net.minecraft.world.entity.EquipmentSlot.CHEST, net.minecraft.world.entity.EquipmentSlot.LEGS, net.minecraft.world.entity.EquipmentSlot.FEET};
-    /**
-     * Extra armour per piece (helmet, chest, legs, boots) for players: iron +13, gold +34, diamond +44,
-     * netherite +66 for all four - a full set is then worth iron 28, gold 45, diamond 64, netherite 86.
-     */
-    private static final int[][] TIER_ARMOR = {
-            {0, 0, 0, 0}, // copper
-            {3, 4, 4, 2}, // iron
-            {8, 10, 9, 7}, // gold
-            {10, 14, 11, 9}, // diamond
-            {15, 20, 17, 14}, // netherite
-    };
-
-    /** Higher-tier armour worn by a player is worth more than its vanilla value (monsters never get this). */
-    public static void updateArmorTier(ServerPlayer player) {
-        var inst = player.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.ARMOR);
-        if (inst == null) return;
-        int bonus = 0;
-        for (int i = 0; i < 4; i++) {
-            var worn = player.getItemBySlot(ARMOR_SLOTS[i]).getItem();
-            for (com.jo112ss.rpgmod.item.WeaponMaterial mat : com.jo112ss.rpgmod.item.WeaponMaterial.values()) {
-                if (ModItems.get(ARMOR_PIECES[i], mat) == worn) {
-                    bonus += TIER_ARMOR[Math.min(mat.ordinal(), TIER_ARMOR.length - 1)][i];
-                    break;
-                }
-            }
-        }
-        var current = inst.getModifier(TIER_ARMOR_ID);
-        if (bonus > 0) {
-            if (current == null || current.amount() != bonus) {
-                inst.addOrUpdateTransientModifier(new net.minecraft.world.entity.ai.attributes.AttributeModifier(TIER_ARMOR_ID, bonus,
-                        net.minecraft.world.entity.ai.attributes.AttributeModifier.Operation.ADD_VALUE));
-            }
-        } else if (current != null) {
-            inst.removeModifier(TIER_ARMOR_ID);
-        }
-    }
-
     /** Material bows can only be drawn by jobs that use bows. */
     public static boolean canUseBow(Player player) {
         JobData d = data(player);
@@ -701,7 +659,8 @@ public final class JobManager {
         double own = JobStats.compute(data(player)).get(JobStat.MAGIC_ATTACK);
         double gear = gearOption(player, com.jo112ss.rpgmod.smithing.core.OptionType.MAGIC_POWER);
         double overload = player.hasEffect(com.jo112ss.rpgmod.registry.ModEffects.OVERLOAD) ? 1.5 : 1; // spellmaster
-        return (3 + staffMagic(player) + own) * staffMultiplier(player) * (1 + gear / 100.0) * overload;
+        double gems = gearOption(player, com.jo112ss.rpgmod.smithing.core.OptionType.MAGIC_FLAT); // magic attack gems
+        return (3 + staffMagic(player) + own + gems) * staffMultiplier(player) * (1 + gear / 100.0) * overload;
     }
 
     /**
