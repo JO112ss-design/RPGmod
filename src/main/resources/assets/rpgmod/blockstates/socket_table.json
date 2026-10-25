@@ -1,0 +1,8 @@
+{
+  "variants": {
+    "facing=north": { "model": "rpgmod:block/socket_table" },
+    "facing=east": { "model": "rpgmod:block/socket_table", "y": 90 },
+    "facing=south": { "model": "rpgmod:block/socket_table", "y": 180 },
+    "facing=west": { "model": "rpgmod:block/socket_table", "y": 270 }
+  }
+}

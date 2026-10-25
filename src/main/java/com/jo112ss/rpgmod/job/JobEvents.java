@@ -102,6 +102,7 @@ public final class JobEvents {
         double mult = JobManager.critMultiplier(sp, event.getSource());
         event.setAmount((float) (before * mult));
         showRpgCrit(sp, event.getEntity(), event.getAmount(), mult);
+        com.jo112ss.rpgmod.gem.GemEffects.onCrit(sp, event.getEntity(), event.getSource(), event.getAmount());
         if (com.jo112ss.rpgmod.devtest.AutoTestServer.ENABLED) {
             com.jo112ss.rpgmod.RpgMod.LOGGER.info("[AUTOTEST] rpg crit: {} x{} -> {}", before, mult, event.getAmount());
         }

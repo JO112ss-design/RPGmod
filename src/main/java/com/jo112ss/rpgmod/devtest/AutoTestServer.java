@@ -140,6 +140,10 @@ public final class AutoTestServer {
                 mobScene(level, id.substring(4));
                 return;
             }
+            if (id.startsWith("gem:")) {
+                GemTests.scene(level, player, id.substring(4), targets);
+                return;
+            }
             com.jo112ss.rpgmod.job.core.SkillDef def = com.jo112ss.rpgmod.job.core.JobDefs.skill(id);
             if (def != null) {
                 var job = com.jo112ss.rpgmod.job.JobType.byId(com.jo112ss.rpgmod.job.core.JobDefs.BASE_OF.getOrDefault(def.job(), def.job()));

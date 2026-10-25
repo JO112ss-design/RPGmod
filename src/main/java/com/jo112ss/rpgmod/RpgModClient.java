@@ -19,6 +19,7 @@ public class RpgModClient {
 
     private static void registerScreens(RegisterMenuScreensEvent event) {
         event.register(ModRegistries.FORGE_MENU.get(), ForgeScreen::new);
+        event.register(ModRegistries.SOCKET_MENU.get(), com.jo112ss.rpgmod.client.SocketScreen::new);
     }
 
     private static void registerLayers(net.neoforged.neoforge.client.event.RegisterGuiLayersEvent event) {

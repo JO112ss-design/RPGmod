@@ -57,6 +57,27 @@ public final class ModRegistries {
     public static final DeferredHolder<DataComponentType<?>, DataComponentType<ForgedData>> FORGED_DATA =
             DATA_COMPONENTS.registerComponentType("forged", b -> b.persistent(ForgedData.CODEC).networkSynchronized(ForgedData.STREAM_CODEC));
 
+    /** The gem of a gem item. */
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<com.jo112ss.rpgmod.gem.Gem>> GEM =
+            DATA_COMPONENTS.registerComponentType("gem", b -> b.persistent(com.jo112ss.rpgmod.gem.Gem.CODEC).networkSynchronized(com.jo112ss.rpgmod.gem.Gem.STREAM_CODEC));
+
+    /** Gems socketed into gear. */
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<com.jo112ss.rpgmod.gem.Sockets>> SOCKETS =
+            DATA_COMPONENTS.registerComponentType("sockets", b -> b.persistent(com.jo112ss.rpgmod.gem.Sockets.CODEC).networkSynchronized(com.jo112ss.rpgmod.gem.Sockets.STREAM_CODEC));
+
+    public static final DeferredItem<net.minecraft.world.item.Item> GEM_COMMON = ITEMS.registerSimpleItem("gem_common", p -> p.stacksTo(1));
+    public static final DeferredItem<net.minecraft.world.item.Item> GEM_RARE = ITEMS.registerSimpleItem("gem_rare", p -> p.stacksTo(1));
+    public static final DeferredItem<net.minecraft.world.item.Item> GEM_LEGENDARY = ITEMS.registerSimpleItem("gem_legendary", p -> p.stacksTo(1).fireResistant());
+
+    public static final DeferredBlock<com.jo112ss.rpgmod.gem.SocketTableBlock> SOCKET_TABLE = BLOCKS.registerBlock("socket_table",
+            com.jo112ss.rpgmod.gem.SocketTableBlock::new,
+            p -> p.mapColor(MapColor.COLOR_PURPLE).strength(3.5F, 1200.0F).requiresCorrectToolForDrops().sound(SoundType.AMETHYST));
+
+    public static final DeferredItem<BlockItem> SOCKET_TABLE_ITEM = ITEMS.registerSimpleBlockItem("socket_table", SOCKET_TABLE);
+
+    public static final DeferredHolder<MenuType<?>, MenuType<com.jo112ss.rpgmod.gem.SocketMenu>> SOCKET_MENU = MENUS.register("socket",
+            () -> IMenuTypeExtension.create((windowId, inv, buf) -> new com.jo112ss.rpgmod.gem.SocketMenu(windowId, inv)));
+
     public static final DeferredHolder<DataComponentType<?>, DataComponentType<com.jo112ss.rpgmod.job.SpellLoadout>> SPELL_LOADOUT =
             DATA_COMPONENTS.registerComponentType("spells", b -> b.persistent(com.jo112ss.rpgmod.job.SpellLoadout.CODEC)
                     .networkSynchronized(com.jo112ss.rpgmod.job.SpellLoadout.STREAM_CODEC));
@@ -97,6 +118,14 @@ public final class ModRegistries {
             .icon(() -> new ItemStack(FORGING_ANVIL_ITEM.get()))
             .displayItems((params, output) -> {
                 output.accept(FORGING_ANVIL_ITEM.get());
+                output.accept(SOCKET_TABLE_ITEM.get());
+                // one gem of every special effect, and one of every stat (rare, at its top value)
+                for (com.jo112ss.rpgmod.gem.GemSpecial s : com.jo112ss.rpgmod.gem.GemSpecial.values()) {
+                    output.accept(com.jo112ss.rpgmod.gem.GemItems.stack(com.jo112ss.rpgmod.gem.Gem.of(s)));
+                }
+                for (com.jo112ss.rpgmod.smithing.core.OptionType t : com.jo112ss.rpgmod.gem.GemRoller.statPool()) {
+                    output.accept(com.jo112ss.rpgmod.gem.GemItems.stack(new com.jo112ss.rpgmod.gem.Gem(t.id, com.jo112ss.rpgmod.gem.Gem.COMMON, com.jo112ss.rpgmod.gem.GemRoller.max(t))));
+                }
                 output.accept(SKILL_BOOK.get());
                 output.accept(HP_POTION.get());
                 output.accept(MP_POTION.get());

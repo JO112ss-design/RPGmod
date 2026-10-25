@@ -494,12 +494,12 @@ public final class JobManager {
         return true;
     }
 
-    /** Forged data of the weapon behind a hit: the bow for arrows, otherwise the main hand. */
-    private static com.jo112ss.rpgmod.smithing.ForgedData weaponData(Player player, net.minecraft.world.damagesource.DamageSource source) {
+    /** The weapon behind a hit: the bow for arrows, otherwise the main hand. */
+    private static ItemStack weaponOf(Player player, net.minecraft.world.damagesource.DamageSource source) {
         if (source != null && source.getDirectEntity() instanceof net.minecraft.world.entity.projectile.arrow.AbstractArrow arrow && arrow.getWeaponItem() != null) {
-            return com.jo112ss.rpgmod.effects.ForgeOptionEffects.data(arrow.getWeaponItem());
+            return arrow.getWeaponItem();
         }
-        return com.jo112ss.rpgmod.effects.ForgeOptionEffects.data(player.getMainHandItem());
+        return player.getMainHandItem();
     }
 
     /** Dev test only: force the RPG crit roll (null = normal). */
@@ -512,17 +512,16 @@ public final class JobManager {
         double rate = JobStats.compute(data(player)).get(JobStat.CRIT_CHANCE);
         var keen = player.getEffect(com.jo112ss.rpgmod.registry.ModEffects.KEEN); // berserker's roar
         if (keen != null) rate += 25 * (keen.getAmplifier() + 1);
-        var fd = weaponData(player, source);
-        if (fd != null) rate += fd.get(com.jo112ss.rpgmod.smithing.core.OptionType.CRIT_CHANCE);
+        rate += com.jo112ss.rpgmod.gem.Gear.total(player, com.jo112ss.rpgmod.smithing.core.OptionType.CRIT_CHANCE, weaponOf(player, source));
         return Math.min(100, rate);
     }
 
     /** RPG crit multiplier: 1.5 + forged crit damage. */
     public static double critMultiplier(Player player, net.minecraft.world.damagesource.DamageSource source) {
-        var fd = weaponData(player, source);
+        double critDmg = com.jo112ss.rpgmod.gem.Gear.total(player, com.jo112ss.rpgmod.smithing.core.OptionType.CRIT_DAMAGE, weaponOf(player, source));
         var fortune = player.getEffect(com.jo112ss.rpgmod.registry.ModEffects.FORTUNE);
         double luck = fortune == null ? 0 : 0.1 * (fortune.getAmplifier() + 1); // roulette: +10% per number
-        return 1.5 + luck + (fd == null ? 0 : fd.get(com.jo112ss.rpgmod.smithing.core.OptionType.CRIT_DAMAGE) / 100.0);
+        return 1.5 + luck + critDmg / 100.0;
     }
 
     /** Charge time in ticks after cast speed (skill panel + forged options, capped at -60%). */
@@ -537,20 +536,9 @@ public final class JobManager {
             net.minecraft.world.entity.EquipmentSlot.CHEST, net.minecraft.world.entity.EquipmentSlot.LEGS,
             net.minecraft.world.entity.EquipmentSlot.FEET};
 
-    /** Sum of a forged option over the held weapon and worn armor. */
+    /** Sum of an option (forged + socketed gems) over the held weapon, worn armour and an off-hand shield. */
     public static double gearOption(Player player, com.jo112ss.rpgmod.smithing.core.OptionType type) {
-        double sum = 0;
-        for (var slot : GEAR) {
-            var fd = com.jo112ss.rpgmod.effects.ForgeOptionEffects.data(player.getItemBySlot(slot));
-            if (fd != null) sum += fd.get(type);
-        }
-        // a forged shield in the off hand counts like armour (other off-hand items do not)
-        ItemStack off = player.getOffhandItem();
-        if (ModItems.typeOf(off.getItem()) == WeaponType.SHIELD) {
-            var fd = com.jo112ss.rpgmod.effects.ForgeOptionEffects.data(off);
-            if (fd != null) sum += fd.get(type);
-        }
-        return sum;
+        return com.jo112ss.rpgmod.gem.Gear.total(player, type, null);
     }
 
     public static double castSpeedPercent(Player player) {
@@ -575,8 +563,7 @@ public final class JobManager {
         ItemStack held = player.getMainHandItem();
         if (ModItems.typeOf(held.getItem()) == WeaponType.BOW) {
             double bow = 5 + (held.getItem() instanceof com.jo112ss.rpgmod.item.RpgBowItem rb ? rb.damageBonus() : 0);
-            var fd = com.jo112ss.rpgmod.effects.ForgeOptionEffects.data(held);
-            atk += bow * (1 + (fd == null ? 0 : fd.get(com.jo112ss.rpgmod.smithing.core.OptionType.ATTACK_DAMAGE) / 100.0));
+            atk += bow * (1 + com.jo112ss.rpgmod.gem.Gear.option(held, com.jo112ss.rpgmod.smithing.core.OptionType.ATTACK_DAMAGE) / 100.0);
         } else if (held.is(net.minecraft.world.item.Items.BOW) || held.is(net.minecraft.world.item.Items.CROSSBOW)) {
             atk += 5;
         }

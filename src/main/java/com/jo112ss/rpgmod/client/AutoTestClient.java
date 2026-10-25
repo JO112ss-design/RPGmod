@@ -195,6 +195,9 @@ public final class AutoTestClient {
             case "mob:items" -> new int[] {30, 60, 120, 190};
             case "mob:sense" -> new int[] {40, 200, 380};
             case "mob:leap" -> new int[] {30, 60, 90, 130, 200};
+            case "gem:checks" -> new int[] {20};
+            case "gem:socket" -> new int[] {20, 45};
+            case "gem:procs" -> new int[] {4, 12, 30};
             case "snipe" -> new int[] {6, 11};
             case "rapid_fire", "flurry", "card_storm" -> new int[] {10};
             case "dead_eye" -> new int[] {8, 20};
@@ -234,6 +237,9 @@ public final class AutoTestClient {
             case "mob:sense" -> 400;
             case "decoy" -> 120;
             case "mob:leap" -> 260;
+            case "gem:checks" -> 140;
+            case "gem:socket" -> 70;
+            case "gem:procs" -> 80;
             case "lcharge" -> 100;
             case "frost_tempest" -> 110;
             // lingering areas: let them run out before the next skill so its numbers are its own
@@ -267,8 +273,11 @@ public final class AutoTestClient {
             showSkills.addAll(java.util.List.of("steam_burst", "plasma_ray", "frost_tempest", "lcharge"));
             // healer: the new actives and the heals as spells
             showSkills.addAll(java.util.List.of("holy_light", "holy_barrier", "guardian_angel", "heal", "group_heal", "purify"));
-            // monsters: the leaping creeper, skeletons and creepers sensing through walls
-            showSkills.add("mob:leap");
+            // gems: logic checks, the socket table screen, gem effects on a dummy
+            // (the advanced skills, healer spells and monster scenes above were checked in earlier runs)
+            showSkills.clear();
+            if ("all".equals(System.getProperty("rpgmod.showcase"))) showSkills.addAll(com.jo112ss.rpgmod.job.core.JobDefs.SKILLS.keySet());
+            showSkills.addAll(java.util.List.of("gem:checks", "gem:socket", "gem:procs"));
             mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK);
             com.jo112ss.rpgmod.client.mob.MobOverlay.testSelf = true;
             mc.options.particles().set(net.minecraft.server.level.ParticleStatus.ALL);
@@ -291,6 +300,16 @@ public final class AutoTestClient {
             return;
         }
         String entry = showSkills.get(i);
+        if (entry.equals("gem:socket") && mc.gui.screen() instanceof com.jo112ss.rpgmod.client.SocketScreen ss) {
+            if (k == 30) mc.gameMode.handleInventoryButtonClick(ss.getMenu().containerId, 0); // set the gem
+            if (k == 50) {
+                for (Component line : Screen.getTooltipFromItem(mc, ss.getMenu().gear())) RpgMod.LOGGER.info("[AUTOTEST] socketed tooltip: {}", line.getString());
+                for (Component line : Screen.getTooltipFromItem(mc, com.jo112ss.rpgmod.gem.GemItems.stack(com.jo112ss.rpgmod.gem.Gem.of(com.jo112ss.rpgmod.gem.GemSpecial.PHOENIX)))) {
+                    RpgMod.LOGGER.info("[AUTOTEST] gem tooltip: {}", line.getString());
+                }
+            }
+            if (k == 60) mc.player.closeContainer();
+        }
         if (entry.equals("charge")) { // hold right click with the staff: charging circle, ready glow, release
             switch (k) {
                 case 0 -> {

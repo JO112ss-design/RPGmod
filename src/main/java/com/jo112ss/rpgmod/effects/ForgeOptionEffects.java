@@ -90,38 +90,28 @@ public final class ForgeOptionEffects {
 
     @SubscribeEvent
     public static void onItemAttributes(ItemAttributeModifierEvent event) {
-        ForgedData d = data(event.getItemStack());
-        if (d == null) return;
-        EquipmentSlotGroup group = slotGroup(event.getItemStack());
-        for (ForgedData.Option o : d.options()) {
-            OptionType type = o.type();
-            AttrBonus bonus = type == null ? null : ATTRIBUTE_OPTIONS.get(type);
+        ItemStack stack = event.getItemStack();
+        if (data(stack) == null && com.jo112ss.rpgmod.gem.Sockets.gems(stack).isEmpty()) return;
+        EquipmentSlotGroup group = slotGroup(stack);
+        // forged options and socketed stat gems together
+        for (Map.Entry<OptionType, Double> o : com.jo112ss.rpgmod.gem.Gear.options(stack).entrySet()) {
+            AttrBonus bonus = ATTRIBUTE_OPTIONS.get(o.getKey());
             if (bonus == null) continue;
-            event.addModifier(bonus.attribute(), new AttributeModifier(modifierId(type, group), o.value() * bonus.scale(), bonus.op()), group);
+            event.addModifier(bonus.attribute(), new AttributeModifier(modifierId(o.getKey(), group), o.getValue() * bonus.scale(), bonus.op()), group);
         }
     }
 
     /** Our options are listed in the forged tooltip section; hide the duplicate vanilla attribute lines. */
     @SubscribeEvent
     public static void onSkipAttributeTooltips(GatherSkippedAttributeTooltipsEvent event) {
-        if (data(event.getStack()) == null) return;
+        if (data(event.getStack()) == null && com.jo112ss.rpgmod.gem.Sockets.gems(event.getStack()).isEmpty()) return;
         EquipmentSlotGroup group = slotGroup(event.getStack());
         for (OptionType t : ATTRIBUTE_OPTIONS.keySet()) event.skipId(modifierId(t, group));
     }
 
-    /** Sum of an option over the worn armor pieces (and a forged shield in the off hand). */
+    /** Sum of an option (forged + gems) over the held weapon, worn armour and an off-hand shield. */
     private static double armorTotal(LivingEntity entity, OptionType type) {
-        double sum = 0;
-        for (EquipmentSlot slot : ARMOR_SLOTS) {
-            ForgedData d = data(entity.getItemBySlot(slot));
-            if (d != null) sum += d.get(type);
-        }
-        ItemStack off = entity.getOffhandItem();
-        if (com.jo112ss.rpgmod.item.ModItems.typeOf(off.getItem()) == com.jo112ss.rpgmod.item.WeaponType.SHIELD) {
-            ForgedData d = data(off);
-            if (d != null) sum += d.get(type);
-        }
-        return sum;
+        return com.jo112ss.rpgmod.gem.Gear.total(entity, type, null);
     }
 
     /** Forged armor on the player being hurt: general damage reduction and boss resistance. */
@@ -141,9 +131,9 @@ public final class ForgeOptionEffects {
     @SubscribeEvent
     public static void onIncomingDamage(LivingIncomingDamageEvent event) {
         if (!(event.getSource().getEntity() instanceof Player player)) return;
-        ForgedData d;
+        ItemStack weapon;
         if (event.getSource().getDirectEntity() == player) {
-            d = mainHandData(player); // melee
+            weapon = player.getMainHandItem(); // melee
         } else if (event.getSource().getDirectEntity() instanceof AbstractArrow arrow && arrow.getWeaponItem() != null) {
             ItemStack bow = arrow.getWeaponItem();
             if (bow.getItem() instanceof RpgBowItem rpgBow) {
@@ -151,8 +141,8 @@ public final class ForgeOptionEffects {
                 double drawn = Math.min(1.0, arrow.getDeltaMovement().length() / 3.0);
                 event.setAmount((float) (event.getAmount() + rpgBow.damageBonus() * drawn));
             }
-            d = data(bow);
-            if (d != null) applyRangedOptions(event, d, player);
+            weapon = bow;
+            applyRangedOptions(event, bow, player);
             // the shooter's own attack (job level, panel, strength...), taken when the arrow was loosed
             double own = arrow.getPersistentData().getDoubleOr(OWN_ATTACK, 0);
             if (own != 0) {
@@ -165,14 +155,13 @@ public final class ForgeOptionEffects {
         } else {
             return;
         }
-        if (d == null) return;
 
-        double pen = d.get(OptionType.ARMOR_PENETRATION) / 100.0;
+        double pen = com.jo112ss.rpgmod.gem.Gear.total(player, OptionType.ARMOR_PENETRATION, weapon) / 100.0;
         if (pen > 0 && !com.jo112ss.rpgmod.mob.MobConfig.rpgArmor()) { // with RPG armour, Defense applies it
             float keep = (float) Math.max(0, 1 - pen);
             event.addReductionModifier(DamageContainer.Reduction.ARMOR, (container, reduction) -> reduction * keep);
         }
-        double boss = d.get(OptionType.BOSS_DAMAGE) / 100.0;
+        double boss = com.jo112ss.rpgmod.gem.Gear.total(player, OptionType.BOSS_DAMAGE, weapon) / 100.0;
         if (boss > 0 && event.getEntity().is(Tags.EntityTypes.BOSSES)) {
             event.setAmount((float) (event.getAmount() * (1 + boss)));
         }
@@ -181,11 +170,11 @@ public final class ForgeOptionEffects {
     /** Armour penetration (0..1) of the forged weapon behind a player's hit: melee weapon or the bow of an arrow. */
     public static double armorPenetration(net.minecraft.world.damagesource.DamageSource source) {
         if (!(source.getEntity() instanceof Player player)) return 0;
-        ForgedData d;
-        if (source.getDirectEntity() == player) d = mainHandData(player);
-        else if (source.getDirectEntity() instanceof AbstractArrow arrow && arrow.getWeaponItem() != null) d = data(arrow.getWeaponItem());
+        ItemStack weapon;
+        if (source.getDirectEntity() == player) weapon = player.getMainHandItem();
+        else if (source.getDirectEntity() instanceof AbstractArrow arrow && arrow.getWeaponItem() != null) weapon = arrow.getWeaponItem();
         else return 0;
-        return d == null ? 0 : Math.min(1, d.get(OptionType.ARMOR_PENETRATION) / 100.0);
+        return Math.min(1, com.jo112ss.rpgmod.gem.Gear.total(player, OptionType.ARMOR_PENETRATION, weapon) / 100.0);
     }
 
     private static final String OWN_ATTACK = "rpgmod_own_attack";
@@ -233,16 +222,15 @@ public final class ForgeOptionEffects {
      * Options of a forged bow that vanilla attributes cannot carry to the arrow: attack damage %,
      * and a critical roll (arrows have no melee crit event).
      */
-    private static void applyRangedOptions(LivingIncomingDamageEvent event, ForgedData d, Player player) {
-        double atk = d.get(OptionType.ATTACK_DAMAGE) / 100.0;
+    private static void applyRangedOptions(LivingIncomingDamageEvent event, ItemStack bow, Player player) {
+        double atk = com.jo112ss.rpgmod.gem.Gear.option(bow, OptionType.ATTACK_DAMAGE) / 100.0;
         if (atk > 0) event.setAmount((float) (event.getAmount() * (1 + atk)));
     }
 
     @SubscribeEvent
     public static void onXpChange(PlayerXpEvent.XpChange event) {
         if (event.getAmount() <= 0 || !(event.getEntity() instanceof ServerPlayer player)) return;
-        ForgedData d = mainHandData(player);
-        double bonus = ((d == null ? 0 : d.get(OptionType.EXPERIENCE)) + armorTotal(player, OptionType.EXPERIENCE)) / 100.0;
+        double bonus = armorTotal(player, OptionType.EXPERIENCE) / 100.0;
         if (bonus <= 0) return;
         double scaled = event.getAmount() * (1 + bonus);
         int whole = (int) Math.floor(scaled);

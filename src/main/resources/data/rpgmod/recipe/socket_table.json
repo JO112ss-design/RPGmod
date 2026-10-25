@@ -1,0 +1,15 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "ADA",
+    "AIA",
+    " I "
+  ],
+  "key": {
+    "A": "minecraft:amethyst_shard",
+    "D": "minecraft:diamond",
+    "I": "minecraft:iron_ingot"
+  },
+  "result": { "id": "rpgmod:socket_table", "count": 1 }
+}

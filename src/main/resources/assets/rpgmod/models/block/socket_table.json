@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/orientable",
+  "textures": {
+    "top": "rpgmod:block/socket_table_top",
+    "front": "rpgmod:block/socket_table_front",
+    "side": "rpgmod:block/socket_table_side"
+  }
+}

@@ -3,6 +3,7 @@
   "values": [
     "rpgmod:skill",
     "rpgmod:skill_magic",
-    "rpgmod:venom"
+    "rpgmod:venom",
+    "rpgmod:gem"
   ]
 }

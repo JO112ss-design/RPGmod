@@ -1,6 +1,7 @@
 {
   "replace": false,
   "values": [
-    "rpgmod:venom"
+    "rpgmod:venom",
+    "rpgmod:gem"
   ]
 }
