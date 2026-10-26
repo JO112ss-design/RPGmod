@@ -16,6 +16,7 @@ public final class MobConfig {
     public static final ModConfigSpec.IntValue PLAYER_MAX = B.defineInRange("playerLevelBonusMax", 3, -1000, 1000);
     public static final ModConfigSpec.DoubleValue SPEED = B.comment("Movement speed multiplier for every hostile monster").defineInRange("monsterSpeedMultiplier", 1.5, 0.1, 10);
     public static final ModConfigSpec.BooleanValue EQUIPMENT = B.comment("Random armour and job weapons by level for hostile monsters except endermen and bosses (never dropped)").define("monsterEquipment", true);
+    public static final ModConfigSpec.BooleanValue SHOW_GEAR = B.comment("Show the armour and weapons monsters wear (off: they still wear them, unseen)").define("showMonsterGear", false);
     public static final ModConfigSpec.BooleanValue RPG_ARMOR = B.comment("RPG armour: reduction = defence / (defence + K), defence = armour x2 + toughness x2 (replaces the vanilla formula)").define("rpgArmor", true);
     public static final ModConfigSpec.DoubleValue PLAYER_ARMOR_K = B.comment("K for players (bigger = armour less effective; 80: copper set -20%, iron -41%, netherite -71% at Lv1 and -75% at Lv100)").defineInRange("playerArmorReductionK", 80.0, 1, 10000);
     public static final ModConfigSpec.DoubleValue MONSTER_ARMOR_K = B.comment("K for monsters (their random gear counts for less)").defineInRange("monsterArmorK", 80.0, 1, 10000);
@@ -201,6 +202,10 @@ public final class MobConfig {
 
     public static double weaponShare() {
         return SPEC.isLoaded() ? GEAR_WEAPON.get() : 0.45;
+    }
+
+    public static boolean showGear() {
+        return SPEC.isLoaded() && SHOW_GEAR.get();
     }
 
     public static boolean equipment() {

@@ -97,6 +97,7 @@ final class NewJobTests {
             case "ults" -> ults(level, p, dummies);
             case "elites" -> elites(level, p);
             case "revenants" -> revenants(level, p);
+            case "gear" -> hiddenGear(level, p);
             case "counter_lance" -> counterLance(level, p, dummies);
             case "wall", "unwall" -> wall(level, p, name.equals("wall"));
             default -> {
@@ -337,6 +338,49 @@ final class NewJobTests {
         });
         SkillTasks.later(300, () -> {
             for (var z : level.getEntitiesOfClass(net.minecraft.world.entity.monster.zombie.Husk.class, p.getBoundingBox().inflate(20))) z.discard();
+        });
+    }
+
+    /** Monsters in full gear: worn (armour and attack count) but not drawn. */
+    private static void hiddenGear(ServerLevel level, ServerPlayer p) {
+        Vec3 home = p.position();
+        Vec3 field = home.add(-120, 0, 0);
+        p.teleportTo(field.x, field.y, field.z);
+        SkillTasks.later(40, () -> {
+            for (var m : level.getEntitiesOfClass(net.minecraft.world.entity.Mob.class, p.getBoundingBox().inflate(40))) m.discard();
+            Vec3 face = Vec3.directionFromRotation(0, p.getYRot());
+            Vec3 side = new Vec3(-face.z, 0, face.x);
+            java.util.List<net.minecraft.world.entity.Mob> mobs = new java.util.ArrayList<>();
+            net.minecraft.world.entity.EntityType<?>[] types = {net.minecraft.world.entity.EntityTypes.ZOMBIE, net.minecraft.world.entity.EntityTypes.SKELETON,
+                    net.minecraft.world.entity.EntityTypes.PIGLIN_BRUTE, net.minecraft.world.entity.EntityTypes.HUSK};
+            com.jo112ss.rpgmod.mob.Elite.forceNext = 0;
+            for (int i = 0; i < types.length; i++) {
+                var m = (net.minecraft.world.entity.Mob) types[i].create(level, net.minecraft.world.entity.EntitySpawnReason.COMMAND);
+                Vec3 at = field.add(face.scale(5)).add(side.scale((i - 2) * 1.6));
+                m.snapTo(at.x, at.y, at.z, p.getYRot() + 180, 0);
+                m.setNoAi(true);
+                level.addFreshEntity(m);
+                m.setItemSlot(net.minecraft.world.entity.EquipmentSlot.HEAD, new ItemStack(net.minecraft.world.item.Items.DIAMOND_HELMET));
+                m.setItemSlot(net.minecraft.world.entity.EquipmentSlot.CHEST, new ItemStack(net.minecraft.world.item.Items.DIAMOND_CHESTPLATE));
+                m.setItemSlot(net.minecraft.world.entity.EquipmentSlot.LEGS, new ItemStack(net.minecraft.world.item.Items.IRON_LEGGINGS));
+                m.setItemSlot(net.minecraft.world.entity.EquipmentSlot.FEET, new ItemStack(net.minecraft.world.item.Items.GOLDEN_BOOTS));
+                m.setItemSlot(net.minecraft.world.entity.EquipmentSlot.MAINHAND, new ItemStack(i == 1 ? ModItems.get(com.jo112ss.rpgmod.item.WeaponType.BOW, WeaponMaterial.DIAMOND)
+                        : ModItems.get(i == 3 ? com.jo112ss.rpgmod.item.WeaponType.HAMMER : com.jo112ss.rpgmod.item.WeaponType.SWORD, WeaponMaterial.DIAMOND)));
+                mobs.add(m);
+            }
+            var party = RevenantSpawns.spawnGroup(level, field.add(face.scale(5)).add(side.scale(2 * 1.6)), List.of(Revenant.Role.WARRIOR));
+            for (var r : party) r.setNoAi(true);
+            com.jo112ss.rpgmod.mob.Elite.forceNext = null;
+            SkillTasks.later(10, () -> {
+                for (var m : mobs) log("gear: {} armour {} holds {} (head {})", m.getType().getDescriptionId(), m.getArmorValue(), m.getMainHandItem().getItem(),
+                        m.getItemBySlot(net.minecraft.world.entity.EquipmentSlot.HEAD).getItem());
+                for (var r : party) log("gear: revenant {} holds {}", r.role().id(), r.getMainHandItem().getItem());
+            });
+            SkillTasks.later(100, () -> {
+                for (var m : mobs) m.discard();
+                for (var r : party) r.discard();
+                p.teleportTo(home.x, home.y, home.z);
+            });
         });
     }
 
