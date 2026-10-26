@@ -100,6 +100,7 @@ final class NewJobTests {
             case "gear" -> hiddenGear(level, p);
             case "dungeon" -> dungeon(level, p);
             case "dgallery" -> dungeonGallery(level, p);
+            case "bosses" -> newBosses(level, p);
             case "counter_lance" -> counterLance(level, p, dummies);
             case "wall", "unwall" -> wall(level, p, name.equals("wall"));
             default -> {
@@ -340,6 +341,135 @@ final class NewJobTests {
         });
         SkillTasks.later(300, () -> {
             for (var z : level.getEntitiesOfClass(net.minecraft.world.entity.monster.zombie.Husk.class, p.getBoundingBox().inflate(20))) z.discard();
+        });
+    }
+
+    /** The Lich King and the Spider Queen: every move in turn, the enrage, the opening, the reward. */
+    private static void newBosses(ServerLevel level, ServerPlayer p) {
+        var mode = p.gameMode();
+        Vec3 home = p.position();
+        Vec3 field = home.add(0, 0, 160);
+        p.teleportTo(field.x, field.y, field.z);
+        p.setYRot(0);
+        p.setXRot(0);
+        p.setGameMode(net.minecraft.world.level.GameType.SURVIVAL);
+        p.getAbilities().invulnerable = false;
+        p.onUpdateAbilities();
+        boolean[] done = {false};
+        float[] lost = {0};
+        SkillTasks.run(age -> { // keep the tester standing, and count what the bosses take off
+            lost[0] += Math.max(0, p.getMaxHealth() - p.getHealth());
+            p.setHealth(p.getMaxHealth());
+            p.addEffect(new net.minecraft.world.effect.MobEffectInstance(net.minecraft.world.effect.MobEffects.RESISTANCE, 20, 3, false, false));
+            return done[0] || age > 1300;
+        });
+        com.jo112ss.rpgmod.mob.boss.BloodMoon.testKeep = true;
+        com.jo112ss.rpgmod.mob.boss.Lich[] lich = {null};
+        com.jo112ss.rpgmod.mob.boss.SpiderQueen[] queen = {null};
+        java.util.function.Function<net.minecraft.world.entity.EntityType<? extends net.minecraft.world.entity.Mob>, net.minecraft.world.entity.Mob> summon = type -> {
+            for (var m : level.getEntitiesOfClass(net.minecraft.world.entity.Mob.class, p.getBoundingBox().inflate(40))) m.discard();
+            var b = type.create(level, net.minecraft.world.entity.EntitySpawnReason.EVENT);
+            b.snapTo(field.x, field.y, field.z + 13, 180, 0);
+            b.setPersistenceRequired();
+            b.setData(com.jo112ss.rpgmod.registry.ModRegistries.MOB_LEVEL, 60);
+            level.addFreshEntity(b);
+            ((com.jo112ss.rpgmod.mob.boss.BloodMoonBoss) b).recomputeHealth(true);
+            b.setTarget(p);
+            log("bosses: {} Lv{} health {} toughness {} size {}x{}", b.getType().getDescriptionId(), com.jo112ss.rpgmod.mob.MobLevels.level(b),
+                    String.format("%.0f", b.getMaxHealth()), String.format("%.2f", ((com.jo112ss.rpgmod.mob.boss.BloodMoonBoss) b).toughness()),
+                    String.format("%.1f", b.getBbWidth()), String.format("%.1f", b.getBbHeight()));
+            return b;
+        };
+        java.util.function.Consumer<String> lm = m -> {
+            if (lich[0] == null) return;
+            lich[0].testMove(m);
+            log("bosses: lich {} -> state {}", m, lich[0].state());
+        };
+        java.util.function.Consumer<String> qm = m -> {
+            if (queen[0] == null) return;
+            queen[0].testMove(m);
+            log("bosses: queen {} -> state {}", m, queen[0].state());
+        };
+        // ---- the Lich King
+        SkillTasks.later(30, () -> lich[0] = (com.jo112ss.rpgmod.mob.boss.Lich) summon.apply(com.jo112ss.rpgmod.registry.ModRegistries.LICH.get()));
+        SkillTasks.later(60, () -> lm.accept("bolts"));
+        SkillTasks.later(100, () -> lm.accept("sigils"));
+        SkillTasks.later(160, () -> lm.accept("beam"));
+        SkillTasks.later(220, () -> lm.accept("summon"));
+        SkillTasks.later(268, () -> { // close in for the nova
+            p.teleportTo(field.x, field.y, lich[0].getZ() - 4);
+            lm.accept("nova");
+        });
+        SkillTasks.later(300, () -> lm.accept("blink"));
+        SkillTasks.later(312, () -> p.teleportTo(field.x, field.y, field.z));
+        SkillTasks.later(320, () -> {
+            lich[0].setHealth(lich[0].getMaxHealth() * 0.49F);
+            log("bosses: lich at 49% health");
+        });
+        SkillTasks.later(330, () -> log("bosses: lich phase {} state {} opening x{}", lich[0].phase(), lich[0].state(), lich[0].openingMultiplier()));
+        SkillTasks.later(380, () -> lm.accept("storm"));
+        SkillTasks.later(470, () -> {
+            lm.accept("drained");
+            log("bosses: lich drained opening x{}", lich[0].openingMultiplier());
+        });
+        SkillTasks.later(520, () -> {
+            var l = lich[0];
+            int minions = level.getEntitiesOfClass(Revenant.class, l.getBoundingBox().inflate(40)).size();
+            log("bosses: lich counters - orbs {} sigils {} nova hits {} beam hits {} summoned {} (alive {}) blinks {}; player lost {}", l.orbsFired, l.sigilsBurst,
+                    l.novaHits, l.beamHits, l.summoned, minions, l.blinks, String.format("%.0f", lost[0]));
+            lost[0] = 0;
+            l.hurtServer(level, p.damageSources().playerAttack(p), 1e7F);
+            if (l.isAlive()) l.setHealth(0);
+        });
+        SkillTasks.later(535, () -> log("bosses: lich dead {}, minions left {}, skill books {}", !lich[0].isAlive(),
+                level.getEntitiesOfClass(Revenant.class, p.getBoundingBox().inflate(60)).size(),
+                p.getInventory().countItem(com.jo112ss.rpgmod.registry.ModRegistries.SKILL_BOOK.get())));
+        // ---- the Spider Queen
+        SkillTasks.later(560, () -> queen[0] = (com.jo112ss.rpgmod.mob.boss.SpiderQueen) summon.apply(com.jo112ss.rpgmod.registry.ModRegistries.SPIDER_QUEEN.get()));
+        SkillTasks.later(585, () -> qm.accept("pounce"));
+        SkillTasks.later(625, () -> {
+            p.teleportTo(field.x, field.y, field.z);
+            qm.accept("webs");
+        });
+        SkillTasks.later(665, () -> qm.accept("spray"));
+        SkillTasks.later(715, () -> qm.accept("eggs"));
+        SkillTasks.later(800, () -> qm.accept("skitter"));
+        SkillTasks.later(840, () -> {
+            p.teleportTo(field.x, field.y, queen[0].getZ() - 3.5);
+            qm.accept("swipe");
+        });
+        SkillTasks.later(870, () -> {
+            p.teleportTo(field.x, field.y, field.z);
+            queen[0].setHealth(queen[0].getMaxHealth() * 0.49F);
+        });
+        SkillTasks.later(880, () -> log("bosses: queen phase {} state {} opening x{}", queen[0].phase(), queen[0].state(), queen[0].openingMultiplier()));
+        SkillTasks.later(925, () -> qm.accept("triple"));
+        SkillTasks.later(985, () -> {
+            p.teleportTo(field.x, field.y, field.z);
+            qm.accept("field");
+        });
+        SkillTasks.later(1050, () -> {
+            qm.accept("spent");
+            log("bosses: queen spent opening x{}", queen[0].openingMultiplier());
+        });
+        SkillTasks.later(1100, () -> {
+            var q = queen[0];
+            int brood = level.getEntitiesOfClass(net.minecraft.world.entity.monster.spider.CaveSpider.class, q.getBoundingBox().inflate(40)).size();
+            log("bosses: queen counters - pounce hits {} web hits {} spray hits {} hatched {} (alive {}) skitter hits {} swipe hits {} field slows {}; player lost {}",
+                    q.pounceHits, q.webHits, q.sprayHits, q.hatched, brood, q.skitterHits, q.swipeHits, q.fieldHits, String.format("%.0f", lost[0]));
+            q.hurtServer(level, p.damageSources().playerAttack(p), 1e7F);
+            if (q.isAlive()) q.setHealth(0);
+        });
+        SkillTasks.later(1115, () -> log("bosses: queen dead {}, brood left {}, skill books {}", !queen[0].isAlive(),
+                level.getEntitiesOfClass(net.minecraft.world.entity.monster.spider.CaveSpider.class, p.getBoundingBox().inflate(60)).size(),
+                p.getInventory().countItem(com.jo112ss.rpgmod.registry.ModRegistries.SKILL_BOOK.get())));
+        SkillTasks.later(1140, () -> {
+            for (var m : level.getEntitiesOfClass(net.minecraft.world.entity.Mob.class, p.getBoundingBox().inflate(60))) m.discard();
+            com.jo112ss.rpgmod.mob.boss.BloodMoon.testKeep = false;
+            p.removeAllEffects();
+            p.teleportTo(home.x, home.y, home.z);
+            p.setGameMode(mode);
+            done[0] = true;
         });
     }
 
