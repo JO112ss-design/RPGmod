@@ -816,11 +816,14 @@ public final class MoreJobSkills {
 
     public static final int[] ELEMENT_COLORS = {0xFF6A20, 0x9FE8FF, 0xFFF07A};
 
+    /** The spellblade's ice slows only this long (no freezing), so it cannot lock an enemy down. */
+    public static final int ICE_SLOW_TICKS = 10;
+
     /** What the element does to an enemy it hits (sword hits and skills). */
     static void elementHit(ServerPlayer p, ServerLevel level, LivingEntity e, int element, float damage) {
         switch (element) {
             case 0 -> e.igniteForSeconds(3);
-            case 1 -> e.addEffect(new MobEffectInstance(MobEffects.SLOWNESS, 40, 1), p);
+            case 1 -> e.addEffect(new MobEffectInstance(MobEffects.SLOWNESS, ICE_SLOW_TICKS, 1), p);
             default -> { // thunder: jumps to one more enemy
                 LivingEntity next = null;
                 double bd = 16;
@@ -912,8 +915,7 @@ public final class MoreJobSkills {
                     e -> isEnemy(p, e))) {
                 if (!done.add(e.getId())) continue;
                 hurt(c, e, c.dmg(0.8), melee(c));
-                e.addEffect(new MobEffectInstance(MobEffects.SLOWNESS, 60, 2), p);
-                e.setTicksFrozen(Math.max(e.getTicksFrozen(), e.getTicksRequiredToFreeze() + 60));
+                e.addEffect(new MobEffectInstance(MobEffects.SLOWNESS, ICE_SLOW_TICKS, 2), p);
                 ServerFx.of("x_hit", mid(e)).vec(dir).a(0.9).color(ELEMENT_COLORS[1]).send(c.level());
             }
             pos[0] = to;

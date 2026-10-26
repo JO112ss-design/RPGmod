@@ -221,8 +221,8 @@ public final class SpellbladeMagic {
             SkillTasks.later(delay, () -> {
                 if (!e.isAlive()) return;
                 noCrit(c, e, c.dmg(1));
-                e.addEffect(new MobEffectInstance(MobEffects.SLOWNESS, 40 + 30 * st, st), p);
-                e.setTicksFrozen(Math.max(e.getTicksFrozen(), e.getTicksRequiredToFreeze() + 40 * st));
+                // a short chill only, so enemies cannot be kept frozen in place
+                e.addEffect(new MobEffectInstance(MobEffects.SLOWNESS, MoreJobSkills.ICE_SLOW_TICKS, st), p);
             });
         }
         return true;

@@ -115,7 +115,7 @@ SKILLS = {  # id: (ja, ja desc, en, en desc)
  'symphony': ('交響曲', '12秒間、4つの歌を全力で奏で、周りの敵に毎秒ダメージ。', 'Symphony', 'For 12s, all four songs at full strength and damage to enemies around each second.'),
  # ---- spellblade
  'element_shift': ('属性切替', '剣の属性を 火→氷→雷 の順に切り替える。', 'Element Shift', 'Switch the sword\'s element: fire, ice, thunder.'),
- 'magic_slash': ('魔法剣・斬', '属性の斬撃を飛ばす。火＝回る炎の輪が最初に当たった所で爆発、氷＝幅広くゆっくり地面を這い全員を貫いて凍らせる、雷＝一瞬で最初の敵を斬り、さらに3体へ飛び移る。', 'Magic Slash', 'A flying slash of the element. Fire: a spinning wheel of flame that bursts on the first thing it meets. Ice: a wide, slow crescent along the ground, through everyone, freezing. Thunder: strikes the first enemy at once and jumps on to three more.'),
+ 'magic_slash': ('魔法剣・斬', '属性の斬撃を飛ばす。火＝回る炎の輪が最初に当たった所で爆発、氷＝幅広くゆっくり地面を這い全員を貫いて一瞬鈍らせる、雷＝一瞬で最初の敵を斬り、さらに3体へ飛び移る。', 'Magic Slash', 'A flying slash of the element. Fire: a spinning wheel of flame that bursts on the first thing it meets. Ice: a wide, slow crescent along the ground, through everyone, slowing them for a moment. Thunder: strikes the first enemy at once and jumps on to three more.'),
  'thunder_thrust': ('雷迅突', '雷になって一瞬で直線移動する（その間は無敵）。少し遅れて、通った道すべてに雷が落ちる。', 'Thunder Thrust', 'Become lightning and be at the end of the line at once (untouchable); a moment later lightning strikes all along the path.'),
  'mana_share': ('魔力譲渡', '最大MPの20%を消費し、その2倍のMPを周り（24ブロック）の味方全員に分け与える。自分は含まない。', 'Mana Share', 'Spend 20% of your maximum mana; every ally within 24 blocks gets twice that (not yourself).'),
  'mana_meditate': ('魔力瞑想', '座って瞑想し、MPの回復が大きく速まる（最大15秒）。もう一度使う・動く・攻撃する・他のスキルを使うと解除。', 'Mana Meditation', 'Sit and meditate: mana comes back much faster (up to 15s). Ends when used again, or when you move, attack or use another skill.'),

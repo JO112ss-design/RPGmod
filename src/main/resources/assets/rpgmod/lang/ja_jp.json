@@ -993,7 +993,7 @@
   "rpgmod.skill.element_shift": "属性切替",
   "rpgmod.skill.element_shift.desc": "剣の属性を 火→氷→雷 の順に切り替える。",
   "rpgmod.skill.magic_slash": "魔法剣・斬",
-  "rpgmod.skill.magic_slash.desc": "属性の斬撃を飛ばす。火＝回る炎の輪が最初に当たった所で爆発、氷＝幅広くゆっくり地面を這い全員を貫いて凍らせる、雷＝一瞬で最初の敵を斬り、さらに3体へ飛び移る。",
+  "rpgmod.skill.magic_slash.desc": "属性の斬撃を飛ばす。火＝回る炎の輪が最初に当たった所で爆発、氷＝幅広くゆっくり地面を這い全員を貫いて一瞬鈍らせる、雷＝一瞬で最初の敵を斬り、さらに3体へ飛び移る。",
   "rpgmod.skill.thunder_thrust": "雷迅突",
   "rpgmod.skill.thunder_thrust.desc": "雷になって一瞬で直線移動する（その間は無敵）。少し遅れて、通った道すべてに雷が落ちる。",
   "rpgmod.skill.frost_blade": "氷結剣",

@@ -993,7 +993,7 @@
   "rpgmod.skill.element_shift": "Element Shift",
   "rpgmod.skill.element_shift.desc": "Switch the sword's element: fire, ice, thunder.",
   "rpgmod.skill.magic_slash": "Magic Slash",
-  "rpgmod.skill.magic_slash.desc": "A flying slash of the element. Fire: a spinning wheel of flame that bursts on the first thing it meets. Ice: a wide, slow crescent along the ground, through everyone, freezing. Thunder: strikes the first enemy at once and jumps on to three more.",
+  "rpgmod.skill.magic_slash.desc": "A flying slash of the element. Fire: a spinning wheel of flame that bursts on the first thing it meets. Ice: a wide, slow crescent along the ground, through everyone, slowing them for a moment. Thunder: strikes the first enemy at once and jumps on to three more.",
   "rpgmod.skill.thunder_thrust": "Thunder Thrust",
   "rpgmod.skill.thunder_thrust.desc": "Become lightning and be at the end of the line at once (untouchable); a moment later lightning strikes all along the path.",
   "rpgmod.skill.frost_blade": "Frost Blade",
