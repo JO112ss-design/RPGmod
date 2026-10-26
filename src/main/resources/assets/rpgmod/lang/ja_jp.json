@@ -552,7 +552,7 @@
   "rpgmod.skill.feather_rune": "羽のルーン",
   "rpgmod.skill.feather_rune.desc": "周囲の味方が2分間、落下ダメージを受けなくなる。",
   "rpgmod.skill.grand_rune": "大ルーン陣",
-  "rpgmod.skill.grand_rune.desc": "足元に巨大な陣（半径12・15秒）。中の味方は力・耐性・速度・再生、敵は鈍化・弱体・攻撃低下とダメージ。",
+  "rpgmod.skill.grand_rune.desc": "足元に巨大な陣（半径24・15秒）。中の味方は力・耐性・速度・再生、敵は鈍化・弱体・攻撃低下とダメージ。",
   "rpgmod.skill.switcheroo": "すり替え",
   "rpgmod.skill.switcheroo.desc": "狙った敵と自分の位置を入れ替え、敵を3秒間ふらつかせる。",
   "rpgmod.skill.decoy": "分身",

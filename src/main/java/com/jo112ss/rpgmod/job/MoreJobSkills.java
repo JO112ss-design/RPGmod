@@ -585,7 +585,7 @@ public final class MoreJobSkills {
     }
 
     /** Dragon king: the fire left where you land, and how long it burns. */
-    static final double KING_FIRE = 5;
+    static final double KING_FIRE = 10;
     static final int KING_FIRE_TICKS = 80;
 
     /**
@@ -1756,8 +1756,8 @@ public final class MoreJobSkills {
         sound(c, SoundEvents.GENERIC_EXPLODE, 0.8F);
         sound(c, p.position(), SoundEvents.BELL_BLOCK, 1.0F, 1.2F);
         ProjectileEnd boom = (at, dd, wall) -> {
-            NewJobSkills.blast(c, at, lucky ? 4.5 : 3.5, c.dmg(lucky ? 1.5 : 1), 0, 0xFFD040);
-            ServerFx.of("u_golden_boom", at).a(lucky ? 3 : 2).send(c.level());
+            NewJobSkills.blast(c, at, lucky ? 9 : 7, c.dmg(lucky ? 1.5 : 1), 0, 0xFFD040);
+            ServerFx.of("u_golden_boom", at).a(lucky ? 6 : 4).send(c.level());
             if (lucky) p.sendSystemMessage(Component.translatable("rpgmod.treasure.lucky").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD), true);
         };
         projectile(c, start, dir, 1.2, c.def().radius(), target, 0.2, (e, at, dd) -> boom.end(at, dd, false), boom);

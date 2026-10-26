@@ -195,7 +195,7 @@ public final class UltSkills {
     static void symphonyNote(ServerPlayer p, int grade, int points) {
         SkillDef def = JobDefs.skill("symphony");
         Ctx c = new Ctx(p, (ServerLevel) p.level(), def, JobManager.powerMultiplier(p, def), 1.0);
-        double r = Bard.radius(points);
+        double r = Bard.radius(points) * 2; // the ultimate reaches twice as far as the songs
         List<LivingEntity> hit = enemies(p, p.position(), r);
         float dmg = c.dmg(grade == Bard.PERFECT ? 1.0 : 0.6);
         for (LivingEntity e : hit) {

@@ -1036,7 +1036,7 @@ public final class NewJobSkills {
         JobData d = JobManager.data(p);
         int points = Bard.performing(p) ? d.songPoints() : 0;
         double mult = 0.6 + 0.02 * points;
-        double r = Bard.radius(points);
+        double r = Bard.radius(points) * 2; // the ultimate reaches twice as far as the songs
         Vec3 o = p.position();
         List<LivingEntity> hit = enemies(p, o, r);
         for (LivingEntity e : hit) {

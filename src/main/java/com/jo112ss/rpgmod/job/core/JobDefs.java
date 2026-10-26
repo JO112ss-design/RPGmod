@@ -94,8 +94,8 @@ public final class JobDefs {
                         skill("intimidate", SkillKind.ACTIVE, SkillEffect.SWEEP, 8, 15, 1.0, 4.5, 8, List.of("rpgmod:attack_down"), 1, "圧"),
                         skill("taunt", SkillKind.ACTIVE, SkillEffect.BUFF, 8, 15, 0, 10, 6, List.of("minecraft:resistance"), 0, "挑")),
                 List.of(
-                        skill("berserk", SkillKind.ULTIMATE, SkillEffect.BUFF, 60, 40, 3.0, 7, 15, List.of(), 0, "神"),
-                        skill("earthshatter", SkillKind.ULTIMATE, SkillEffect.WHIRL, 60, 40, 8.0, 7, 4, List.of("minecraft:slowness"), 1, "砕")),
+                        skill("berserk", SkillKind.ULTIMATE, SkillEffect.BUFF, 60, 40, 3.0, 14, 15, List.of(), 0, "神"),
+                        skill("earthshatter", SkillKind.ULTIMATE, SkillEffect.WHIRL, 60, 40, 8.0, 14, 4, List.of("minecraft:slowness"), 1, "砕")),
                 List.of());
         // ---- Ranger: bows
         job("ranger", 0x5CB85C, "弓", List.of(JobStat.ATTACK_DAMAGE, JobStat.MOVEMENT_SPEED, JobStat.CRIT_CHANCE),
@@ -108,7 +108,7 @@ public final class JobDefs {
                         skill("piercing_shot", SkillKind.ACTIVE, SkillEffect.BOLT, 4, 15, 3.2, 30, 0, List.of(), 0, "貫"),
                         skill("explosive_arrow", SkillKind.ACTIVE, SkillEffect.SHOT, 5, 15, 2.4, 3, 0, List.of(), 0, "爆")),
                 List.of(
-                        skill("arrow_rain", SkillKind.ULTIMATE, SkillEffect.SHOT, 60, 40, 1.2, 5, 0, List.of(), 0, "雨"),
+                        skill("arrow_rain", SkillKind.ULTIMATE, SkillEffect.SHOT, 60, 40, 1.2, 10, 0, List.of(), 0, "雨"),
                         skill("eagle_eye", SkillKind.ULTIMATE, SkillEffect.BUFF, 60, 40, 0, 0, 15, List.of("minecraft:strength", "minecraft:speed", "minecraft:night_vision"), 1, "鷹")),
                 List.of());
         // ---- Paladin: front line, protects allies
@@ -123,7 +123,7 @@ public final class JobDefs {
                         skill("holy_wave", SkillKind.ACTIVE, SkillEffect.SWEEP, 5, 15, 2.0, 10, 0, List.of(), 0, "波")),
                 List.of(
                         skill("divine_aegis", SkillKind.ULTIMATE, SkillEffect.BUFF, 75, 40, 0, 24, 6, List.of(), 0, "盾"),
-                        skill("judgement", SkillKind.ULTIMATE, SkillEffect.WHIRL, 60, 40, 6.0, 6.5, 0, List.of(), 0, "審")),
+                        skill("judgement", SkillKind.ULTIMATE, SkillEffect.WHIRL, 60, 40, 6.0, 13, 0, List.of(), 0, "審")),
                 List.of());
         // ---- Wizard: spells on the staff, skills 1/2 for mana and mobility
         job("wizard", 0x7B68EE, "魔", List.of(JobStat.MAX_MANA, JobStat.MAGIC_ATTACK, JobStat.COOLDOWN_REDUCTION, JobStat.CAST_SPEED, JobStat.MANA_REGEN),
@@ -136,8 +136,8 @@ public final class JobDefs {
                         skill("quick_cast", SkillKind.ACTIVE, SkillEffect.BUFF, 30, 28, 0, 0, 12, List.of("rpgmod:quick_cast"), 0, "速"),
                         skill("chrono", SkillKind.ACTIVE, SkillEffect.BUFF, 45, 42, 0.5, 0, 0, List.of(), 0, "時")),
                 List.of(
-                        skill("meteor", SkillKind.ULTIMATE, SkillEffect.WHIRL, 100, 112, 9.0, 5.5, 5, List.of(), 0, "隕"),
-                        skill("time_warp", SkillKind.ULTIMATE, SkillEffect.DEBUFF, 90, 84, 0, 10, 3, List.of("minecraft:slowness", "minecraft:weakness"), 3, "止")),
+                        skill("meteor", SkillKind.ULTIMATE, SkillEffect.WHIRL, 100, 112, 9.0, 11, 5, List.of(), 0, "隕"),
+                        skill("time_warp", SkillKind.ULTIMATE, SkillEffect.DEBUFF, 90, 84, 0, 20, 3, List.of("minecraft:slowness", "minecraft:weakness"), 3, "止")),
                 List.of(
                         skill("magic_bolt", SkillKind.SPELL, SkillEffect.BOLT, 0.3, 5, 1.1, 28, 0, List.of(), 0, "弾"),
                         skill("flame_burst", SkillKind.SPELL, SkillEffect.WHIRL, 6, 28, 2.1, 7, 4, List.of(), 0, "炎"),
@@ -158,7 +158,7 @@ public final class JobDefs {
                         skill("holy_barrier", SkillKind.ACTIVE, SkillEffect.BUFF, 20, 28, 0, 8, 15, List.of(), 0, "盾"),
                         skill("guardian_angel", SkillKind.ACTIVE, SkillEffect.BUFF, 60, 35, 0, 12, 5, List.of(), 0, "天")),
                 List.of(
-                        skill("sanctuary", SkillKind.ULTIMATE, SkillEffect.HEAL, 100, 84, 2.8, 6, 0, List.of(), 0, "域"),
+                        skill("sanctuary", SkillKind.ULTIMATE, SkillEffect.HEAL, 100, 84, 2.8, 12, 0, List.of(), 0, "域"),
                         skill("guardian_light", SkillKind.ULTIMATE, SkillEffect.BUFF, 100, 84, 0, 10, 15, List.of(), 0, "光")),
                 List.of(
                         skill("heal", SkillKind.SPELL, SkillEffect.HEAL, 6, 21, 0.9, 4, 0, List.of(), 0, "癒"),
@@ -190,7 +190,7 @@ public final class JobDefs {
                         skill("binding_field", SkillKind.ACTIVE, SkillEffect.DEBUFF, 18, 35, 0, 4, 5, List.of("rpgmod:attack_down"), 0, "陣")),
                 List.of(
                         skill("grand_enchant", SkillKind.ULTIMATE, SkillEffect.BUFF, 100, 84, 0, 10, 30, List.of("minecraft:strength", "minecraft:resistance", "minecraft:speed"), 1, "極"),
-                        skill("hex", SkillKind.ULTIMATE, SkillEffect.DEBUFF, 90, 84, 1.2, 10, 10, List.of("minecraft:weakness", "minecraft:slowness"), 1, "呪")),
+                        skill("hex", SkillKind.ULTIMATE, SkillEffect.DEBUFF, 90, 84, 1.2, 20, 10, List.of("minecraft:weakness", "minecraft:slowness"), 1, "呪")),
                 List.of());
         // ---- Gambler: random results
         job("gambler", 0x1ABC9C, "賭", List.of(JobStat.CRIT_CHANCE, JobStat.ATTACK_DAMAGE, JobStat.LUCK, JobStat.COOLDOWN_REDUCTION),
@@ -203,7 +203,7 @@ public final class JobDefs {
                         skill("russian_roulette", SkillKind.ACTIVE, SkillEffect.SHOT, 2, 5, 6.0, 16, 0, List.of(), 0, "銃"),
                         skill("card_throw", SkillKind.ACTIVE, SkillEffect.SHOT, 4.5, 15, 1.8, 16, 0, List.of(), 0, "札")),
                 List.of(
-                        skill("jackpot", SkillKind.ULTIMATE, SkillEffect.GAMBLE, 60, 40, 8, 10, 15, List.of(), 0, "当"),
+                        skill("jackpot", SkillKind.ULTIMATE, SkillEffect.GAMBLE, 60, 40, 8, 20, 15, List.of(), 0, "当"),
                         skill("roulette", SkillKind.ULTIMATE, SkillEffect.BUFF, 60, 40, 0, 0, 12, List.of(), 0, "輪")),
                 List.of());
         // ---- Pirate: a gunblade - shots from range, the bayonet up close (and it reloads the gun)
@@ -217,7 +217,7 @@ public final class JobDefs {
                         skill("grapple", SkillKind.ACTIVE, SkillEffect.DASH, 4, 8, 0.8, 20, 0, List.of(), 0, "鉤"),
                         skill("rum", SkillKind.ACTIVE, SkillEffect.BUFF, 20, 15, 0, 0, 16, List.of("minecraft:haste"), 1, "酒")),
                 List.of(
-                        skill("broadside", SkillKind.ULTIMATE, SkillEffect.WHIRL, 60, 40, 1.2, 7, 4, List.of(), 0, "斉"),
+                        skill("broadside", SkillKind.ULTIMATE, SkillEffect.WHIRL, 60, 40, 1.2, 14, 4, List.of(), 0, "斉"),
                         skill("jolly_roger", SkillKind.ULTIMATE, SkillEffect.BUFF, 60, 40, 0, 10, 15, List.of(), 0, "旗")),
                 List.of());
         // ---- Lancer: long reach and charges; hits from the far end of the spear count for more
@@ -231,8 +231,8 @@ public final class JobDefs {
                         skill("counter_stance", SkillKind.ACTIVE, SkillEffect.BUFF, 7, 8, 3.0, 5, 2, List.of(), 0, "構"),
                         skill("rapid_thrust", SkillKind.ACTIVE, SkillEffect.SWEEP, 5, 15, 0.7, 6, 0, List.of(), 0, "連")),
                 List.of(
-                        skill("dragon_fang", SkillKind.ULTIMATE, SkillEffect.WHIRL, 60, 40, 6.0, 3, 3, List.of(), 0, "竜"),
-                        skill("spear_rain", SkillKind.ULTIMATE, SkillEffect.WHIRL, 60, 40, 0.9, 6, 3, List.of(), 0, "雨")),
+                        skill("dragon_fang", SkillKind.ULTIMATE, SkillEffect.WHIRL, 60, 40, 6.0, 6, 3, List.of(), 0, "竜"),
+                        skill("spear_rain", SkillKind.ULTIMATE, SkillEffect.WHIRL, 60, 40, 0.9, 12, 3, List.of(), 0, "雨")),
                 List.of());
         // ---- Monk: fast fists; hits build ki, the big moves spend it
         job("monk", 0xE67E22, "拳", List.of(JobStat.ATTACK_DAMAGE, JobStat.ATTACK_SPEED, JobStat.CRIT_CHANCE, JobStat.MOVEMENT_SPEED),
@@ -246,7 +246,7 @@ public final class JobDefs {
                         skill("meditate", SkillKind.ACTIVE, SkillEffect.BUFF, 10, 8, 0, 0, 3, List.of(), 0, "瞑"),
                         skill("shrink_step", SkillKind.ACTIVE, SkillEffect.DASH, 3.5, 8, 1.2, 7, 0, List.of(), 0, "縮")),
                 List.of(
-                        skill("hundred_fists", SkillKind.ULTIMATE, SkillEffect.SWEEP, 60, 40, 0.45, 4, 3, List.of(), 0, "百"),
+                        skill("hundred_fists", SkillKind.ULTIMATE, SkillEffect.SWEEP, 60, 40, 0.45, 8, 3, List.of(), 0, "百"),
                         skill("diamond_body", SkillKind.ULTIMATE, SkillEffect.BUFF, 75, 40, 0, 0, 6, List.of(), 0, "剛")),
                 List.of());
         // ---- Bard: songs around the party, stronger the better they are played (the note lane)
@@ -353,7 +353,7 @@ public final class JobDefs {
                         skill("night_sight", A, SkillEffect.BUFF, 60, 30, 0, 12, 300, List.of("minecraft:night_vision", "minecraft:water_breathing"), 0, "視"),
                         skill("feather_rune", A, SkillEffect.BUFF, 60, 30, 0, 12, 120, List.of("rpgmod:feather"), 0, "羽")),
                 List.of(
-                        skill("grand_rune", U, SkillEffect.BUFF, 120, 100, 0.6, 12, 15, List.of(), 0, "環")),
+                        skill("grand_rune", U, SkillEffect.BUFF, 120, 100, 0.6, 24, 15, List.of(), 0, "環")),
                 List.of());
         // ---- Joker: tricks - swaps, decoys and a loaded die
         advanced("gambler", "joker", 0x7A3FB0, "奇", List.of(JobStat.LUCK, JobStat.CRIT_CHANCE, JobStat.COOLDOWN_REDUCTION, JobStat.ATTACK_DAMAGE),
@@ -401,7 +401,7 @@ public final class JobDefs {
                         skill("rally", A, SkillEffect.BUFF, 20, 20, 0, 10, 20, List.of("minecraft:haste", "minecraft:speed"), 1, "令"),
                         skill("deadshot", A, SkillEffect.SHOT, 5, 15, 5.0, 48, 0, List.of(), 0, "狙")),
                 List.of(
-                        skill("fleet_barrage", U, SkillEffect.WHIRL, 60, 40, 1.4, 9, 5, List.of(), 0, "艦")),
+                        skill("fleet_barrage", U, SkillEffect.WHIRL, 60, 40, 1.4, 18, 5, List.of(), 0, "艦")),
                 List.of());
         // ---- Champion: seven ki and the secret arts that spend it
         advanced("monk", "champion", 0xC0561A, "覇", List.of(JobStat.ATTACK_DAMAGE, JobStat.ATTACK_SPEED, JobStat.CRIT_CHANCE, JobStat.MAX_HEALTH),
@@ -413,7 +413,7 @@ public final class JobDefs {
                         skill("foresight", A, SkillEffect.BUFF, 7.5, 8, 1.2, 0, 3, List.of(), 0, "見"),
                         skill("battle_aura", A, SkillEffect.BUFF, 25, 20, 0, 0, 24, List.of(), 0, "闘")),
                 List.of(
-                        skill("peerless", U, SkillEffect.SWEEP, 60, 40, 1.2, 5, 0, List.of(), 0, "無")),
+                        skill("peerless", U, SkillEffect.SWEEP, 60, 40, 1.2, 10, 0, List.of(), 0, "無")),
                 List.of());
         // ---- Dragoon: fights from the sky
         advanced("lancer", "dragoon", 0x8A3A2A, "竜", List.of(JobStat.ATTACK_DAMAGE, JobStat.MAX_HEALTH, JobStat.MOVEMENT_SPEED, JobStat.CRIT_CHANCE),
@@ -425,7 +425,7 @@ public final class JobDefs {
                         skill("spiral_lance", A, SkillEffect.SWEEP, 4.5, 15, 1.0, 6, 0, List.of(), 0, "螺"),
                         skill("sky_step", A, SkillEffect.DASH, 2.5, 8, 0, 0, 0, List.of(), 0, "天")),
                 List.of(
-                        skill("dragon_king", U, SkillEffect.WHIRL, 60, 40, 8.0, 8, 0, List.of(), 0, "王")),
+                        skill("dragon_king", U, SkillEffect.WHIRL, 60, 40, 8.0, 16, 0, List.of(), 0, "王")),
                 List.of());
         // ---- Maestro: songs on top of songs
         advanced("bard", "maestro", 0x2FA38C, "指", List.of(JobStat.MAGIC_ATTACK, JobStat.MANA_REGEN, JobStat.COOLDOWN_REDUCTION, JobStat.MAX_HEALTH),
@@ -469,8 +469,8 @@ public final class JobDefs {
                         skill("mana_meditate", A, SkillEffect.BUFF, 1, 0, 0, 0, 15, List.of(), 0, "瞑"),
                         skill("spell_guard", A, SkillEffect.BUFF, 20, 18, 0, 0, 6, List.of(), 0, "護")),
                 List.of(
-                        skill("arcane_edge", U, SkillEffect.SWEEP, 90, 45, 7.0, 8, 0, List.of(), 0, "極"),
-                        skill("elemental_burst", U, SkillEffect.WHIRL, 90, 45, 2.2, 7, 0, List.of(), 0, "解")));
+                        skill("arcane_edge", U, SkillEffect.SWEEP, 90, 45, 7.0, 16, 0, List.of(), 0, "極"),
+                        skill("elemental_burst", U, SkillEffect.WHIRL, 90, 45, 2.2, 14, 0, List.of(), 0, "解")));
         // ---- God hand (qi master): fists, and ki that heals
         hybrid("qi_master", "healer", "monk", 0xE0A040, "功", List.of(JobStat.ATTACK_DAMAGE, JobStat.MAX_HEALTH, JobStat.ATTACK_SPEED, JobStat.COOLDOWN_REDUCTION),
                 stats(JobStat.MAX_HEALTH, 4, JobStat.ATTACK_DAMAGE, 4, JobStat.ATTACK_SPEED, 5),
@@ -483,8 +483,8 @@ public final class JobDefs {
                         skill("qi_burst", A, SkillEffect.SWEEP, 4.5, 15, 1.8, 4, 0, List.of(), 0, "勁"),
                         skill("flowing_step", A, SkillEffect.DASH, 3.5, 8, 1.0, 6, 0, List.of(), 0, "流")),
                 List.of(
-                        skill("heaven_earth", U, SkillEffect.HEAL, 75, 40, 2.0, 8, 0, List.of(), 0, "天"),
-                        skill("blooming_fists", U, SkillEffect.WHIRL, 60, 40, 4.0, 5, 8, List.of(), 0, "花")));
+                        skill("heaven_earth", U, SkillEffect.HEAL, 75, 40, 2.0, 16, 0, List.of(), 0, "天"),
+                        skill("blooming_fists", U, SkillEffect.WHIRL, 60, 40, 4.0, 10, 8, List.of(), 0, "花")));
         // ---- Sentinel: spear in one hand, shield in the other
         hybrid("sentinel", "paladin", "lancer", 0xB8A060, "哨", List.of(JobStat.ARMOR, JobStat.MAX_HEALTH, JobStat.ATTACK_DAMAGE, JobStat.COOLDOWN_REDUCTION),
                 stats(JobStat.MAX_HEALTH, 6, JobStat.ARMOR, 4, JobStat.ATTACK_DAMAGE, 4),
@@ -497,7 +497,7 @@ public final class JobDefs {
                         skill("counter_lance", A, SkillEffect.BUFF, 6, 8, 2.6, 0, 3, List.of(), 0, "返"),
                         skill("provoke", A, SkillEffect.DEBUFF, 7.5, 15, 0, 10, 6, List.of(), 0, "挑")),
                 List.of(
-                        skill("fortress", U, SkillEffect.BUFF, 75, 40, 2.0, 8, 10, List.of(), 0, "砦"),
+                        skill("fortress", U, SkillEffect.BUFF, 75, 40, 2.0, 16, 10, List.of(), 0, "砦"),
                         skill("holy_lance", U, SkillEffect.SWEEP, 60, 40, 6.0, 12, 0, List.of(), 0, "聖")));
         // ---- Spellsinger: songs that put magic on the party's weapons
         hybrid("spellsinger", "enchanter", "bard", 0x9A6AD8, "律", List.of(JobStat.MAGIC_ATTACK, JobStat.MANA_REGEN, JobStat.COOLDOWN_REDUCTION, JobStat.MAX_HEALTH),
@@ -544,7 +544,7 @@ public final class JobDefs {
                         skill("lucky_compass", A, SkillEffect.BUFF, 60, 12, 0, 0, 120, List.of("minecraft:luck"), 1, "羅"),
                         skill("double_down", A, SkillEffect.BUFF, 16, 20, 0, 0, 12, List.of(), 0, "倍")),
                 List.of(
-                        skill("treasure_rain", U, SkillEffect.WHIRL, 60, 40, 1.2, 7, 3, List.of(), 0, "財"),
+                        skill("treasure_rain", U, SkillEffect.WHIRL, 60, 40, 1.2, 14, 3, List.of(), 0, "財"),
                         skill("golden_cannon", U, SkillEffect.SHOT, 60, 40, 9.0, 40, 0, List.of(), 0, "金")));
     }
 
