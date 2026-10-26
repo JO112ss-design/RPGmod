@@ -26,6 +26,8 @@ final class FxNewJobs {
             case "n_song" -> song(p);
             case "n_finale" -> finale(p);
             case "n_wave" -> wave(p);
+            case "n_shell" -> shell(p);
+            case "n_ghost_ship" -> ghostShip(p);
             default -> {
                 return false;
             }
@@ -103,6 +105,90 @@ final class FxNewJobs {
             smoke(at.add(dir.scale(Fx.r(0, 0.8))), 0x7A7A80, 0.4F, 1.4F, 30).vel(dir.scale(Fx.r(0.02, 0.1)).add(Fx.randomUnit().scale(0.02)).add(0, 0.02, 0)).alpha(0.7F, 0).spawn();
         }
         FxAnims.shake(at, 0.15F, 3, 10);
+    }
+
+    /**
+     * A cannonball arcing from pos to vec in b ticks (a = ball size): a dark ball with a burning
+     * fuse spark and a smoke trail, the arc's height growing with the distance.
+     */
+    private static void shell(P p) {
+        Vec3 from = p.pos(), to = p.vec();
+        int flight = Math.max(2, (int) p.b());
+        float size = p.a() > 0 ? p.a() : 0.4F;
+        double h = 2 + from.distanceTo(to) * 0.18;
+        FxAnims.run(flight, age -> {
+            for (int k = 0; k < 2; k++) { // two positions a tick, so the ball does not jump
+                double t = (age + k * 0.5) / flight;
+                Vec3 at = from.add(to.subtract(from).scale(t)).add(0, h * 4 * t * (1 - t), 0);
+                Fx.p(S.ORB, at).alphaBlend().lit().color(0x26262A).size(size).life(2).spawn();
+                Fx.p(S.GLOW, at.add(0, size * 0.6, 0)).color(0xFFFFFF, 0xFFA030).size(0.12F, 0).life(3).spawn();
+                if (k == 0) smoke(at, 0x8A8A90, size * 0.6F, size * 1.6F, 16).alpha(0.45F, 0).spawn();
+            }
+            return false;
+        });
+    }
+
+    /**
+     * A ghost ship hanging in the air at pos for b ticks, its keel along vec (a direction): a
+     * glowing pale hull drawn as lines, two masts with misty sails, mist dripping off it. It
+     * rises out of nothing, rocks gently and fades away again.
+     */
+    private static void ghostShip(P p) {
+        Vec3 base = p.pos();
+        Vec3 u = new Vec3(p.vec().x, 0, p.vec().z).normalize();
+        if (u.lengthSqr() < 1e-4) u = new Vec3(1, 0, 0);
+        Vec3 w = new Vec3(-u.z, 0, u.x);
+        int life = Math.max(20, (int) p.b());
+        int hull = p.colorOr(0x7FE8D8), sail = 0xD8FFF8;
+        Vec3 fu = u, fw = w;
+        FxAnims.run(life, age -> {
+            float fade = Math.min(1, Math.min(age / 12F, (life - age) / 12F));
+            if (fade <= 0) return false;
+            double roll = Math.sin(age * 0.12) * 0.12, bob = Math.sin(age * 0.09) * 0.25;
+            Vec3 o = base.add(0, bob, 0);
+            // a point on the ship: x along the keel, y up, z across (rolled a little)
+            Ship at = (x, y, z) -> o.add(fu.scale(x)).add(fw.scale(z + y * roll)).add(0, y - z * roll, 0);
+            float a = 0.85F * fade;
+            // the hull: rails at a few heights, narrowing to the keel, and a bow that rises
+            for (int i = 0; i <= 4; i++) {
+                double y = i * 0.45, half = 3.4 + i * 0.3, side = 0.35 + i * 0.3;
+                for (int s = -1; s <= 1; s += 2) {
+                    segment(at.p(-half, y, s * side), at.p(half, y, s * side), 0.1F).color(i == 4 ? 0xFFFFFF : hull, hull).alpha(a * (i == 4 ? 1 : 0.6F)).life(2).spawn();
+                    segment(at.p(half, y, s * side), at.p(half + 1.4 - i * 0.1, y + 0.3, 0), 0.1F).color(hull).alpha(a * 0.7F).life(2).spawn();
+                    segment(at.p(-half, y, s * side), at.p(-half - 0.3, y + 0.2, 0), 0.1F).color(hull).alpha(a * 0.6F).life(2).spawn();
+                }
+            }
+            for (double x = -3; x <= 3.01; x += 1.5) { // ribs
+                segment(at.p(x, 0, -0.35), at.p(x, 1.8, -1.55), 0.08F).color(hull).alpha(a * 0.5F).life(2).spawn();
+                segment(at.p(x, 0, 0.35), at.p(x, 1.8, 1.55), 0.08F).color(hull).alpha(a * 0.5F).life(2).spawn();
+            }
+            // masts and sails (square sails across the keel, bellied forward)
+            double[][] masts = {{0.6, 7.6, 2.4}, {-2.4, 6.0, 1.8}};
+            for (double[] m : masts) {
+                segment(at.p(m[0], 1.8, 0), at.p(m[0], m[1], 0), 0.12F).color(0xFFFFFF, hull).alpha(a).life(2).spawn();
+                segment(at.p(m[0], m[1] - 0.6, -m[2]), at.p(m[0], m[1] - 0.6, m[2]), 0.08F).color(hull).alpha(a * 0.8F).life(2).spawn();
+                if (age % 2 == 0) {
+                    for (double y = 3.0; y <= m[1] - 0.8; y += 0.55) {
+                        for (double z = -m[2]; z <= m[2] + 0.01; z += 0.55) {
+                            double belly = 0.6 * (1 - (z / m[2]) * (z / m[2])) * Math.sin(Math.PI * (y - 3.0) / (m[1] - 3.8));
+                            Fx.p(S.GLOW, at.p(m[0] + belly, y, z)).fixed(Fx.across(fu)).color(sail).size(0.42F).alpha(0.22F * fade).life(3).spawn();
+                        }
+                    }
+                }
+            }
+            // mist dripping off the hull, a lantern at the stern
+            if (age % 2 == 0) {
+                Vec3 drip = at.p(Fx.r(-3.5, 3.5), 0, Fx.r(-0.4, 0.4));
+                Fx.p(S.GLOW, drip).vel(0, -0.04, 0).color(hull).size(0.3F, 0.6F).alpha(0.35F * fade, 0).life(24).spawn();
+            }
+            Fx.p(S.GLOW, at.p(-3.6, 2.4, 0)).color(0xFFFFFF, 0x9FFFE0).size(0.5F).alpha(0.8F * fade).life(2).spawn();
+            return false;
+        });
+    }
+
+    @FunctionalInterface
+    private interface Ship {
+        Vec3 p(double x, double y, double z);
     }
 
     /** A burning fuse on an entity for b ticks. */

@@ -330,6 +330,11 @@ def m_coin(d, c):
     d.rectangle([8, 6, 9, 11], fill=(150, 110, 20, 255))
 
 
+def m_coins(d, c):
+    for y in (11, 8, 5):
+        d.ellipse([4, y, 13, y + 4], fill=c, outline=(150, 110, 20, 255))
+
+
 def m_two(d, c):
     d.ellipse([3, 6, 9, 12], outline=c)
     d.ellipse([8, 6, 14, 12], outline=c)
@@ -339,5 +344,6 @@ for n, col, mk in [('foresight', (255, 176, 112, 255), m_eye), ('battle_aura', (
                    ('duet', (95, 211, 188, 255), m_notes), ('flame_song', (255, 122, 48, 255), m_flame), ('spell_guard', (140, 124, 255, 255), m_shield),
                    ('immovable', (192, 176, 128, 255), m_tower), ('counter_lance', (224, 192, 128, 255), m_spear), ('fortress', (240, 216, 144, 255), m_tower),
                    ('ambush', (74, 90, 128, 255), m_dagger), ('night_hunt', (90, 100, 160, 255), m_moon), ('hunted', (192, 48, 64, 255), m_target),
-                   ('treasure', (212, 175, 55, 255), m_coin), ('double_down', (232, 192, 64, 255), m_two)]:
+                   ('treasure', (212, 175, 55, 255), m_coin), ('double_down', (232, 192, 64, 255), m_two),
+                   ('gold_rush', (255, 200, 48, 255), m_coins)]:
     icon(n, badge(col, mk))

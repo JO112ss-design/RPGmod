@@ -57,7 +57,7 @@ SKILLS = {  # id: (ja, ja desc, en, en desc)
  'powder_keg': ('火薬樽', '火薬樽を投げる。2秒後か、撃ち抜くと大爆発（地形は壊さない）。', 'Powder Keg', 'Throw a keg that blows up after 2s - or at once when shot. Does not break blocks.'),
  'grapple': ('かぎ縄', '狙った敵を引き寄せる。敵がいなければ狙った壁や地面へ飛びつく。', 'Grapple', 'Pull the targeted enemy to you - or, with no enemy, swing to where you aim.'),
  'rum': ('ラム酒', '一杯あおって体力を少し回復し、8秒間攻撃が速くなる。', 'Rum', 'A swig: heals a little and attacks faster for 8s.'),
- 'broadside': ('一斉砲撃', '狙った地点に砲弾の雨を降らせる。', 'Broadside', 'A rain of cannonballs on the aimed spot.'),
+ 'broadside': ('一斉砲撃', '背後の艦から砲弾が頭上を越え、狙った地点の手前から奥へ1列ずつ絨毯爆撃する。', 'Broadside', 'Shells fly over your head from behind and carpet-bomb the aimed area row by row, near to far.'),
  'jolly_roger': ('海賊旗', '旗を立てる。15秒間、周りの味方の攻撃力が上がり、大砲の砲撃が速くなり、自分は弾切れしない。', 'Jolly Roger', 'Plant the flag: 15s of more attack for allies around it, faster cannons and endless rounds for you.'),
  # ---- lancer
  'lance_charge': ('突進', '槍を構えて一直線に突っ込み、通り道の敵を貫く。', 'Lance Charge', 'Charge in a straight line, skewering everything in the way.'),
@@ -67,7 +67,7 @@ SKILLS = {  # id: (ja, ja desc, en, en desc)
  'counter_stance': ('迎撃の構え', '2秒間構える。その間に近づいた敵や攻撃してきた敵に自動で反撃する（受けたダメージは半分）。', 'Counter Stance', 'Brace for 2s: enemies that come close or hit you are struck back (you take half damage).'),
  'rapid_thrust': ('連突き', '正面に5回の素早い突き。', 'Rapid Thrust', 'Five quick thrusts straight ahead.'),
  'dragon_fang': ('竜牙', '高く跳び上がり、落下とともに大範囲を穿つ。', 'Dragon Fang', 'Leap high and come down on a wide area.'),
- 'spear_rain': ('千本槍', '狙った範囲に3秒間、槍の雨を降らせる。', 'Thousand Spears', 'Spears rain on the aimed area for 3s.'),
+ 'spear_rain': ('千本槍', '狙った範囲に3秒間槍を降らせる。槍は地面に刺さって残り、最後に一斉に炸裂する（近くに刺さった本数ぶん追加ダメージ、最大4本）。', 'Thousand Spears', 'Spears rain on the aimed area for 3s and stay stuck in the ground, then all burst at once (more damage per spear nearby, up to four).'),
  # ---- monk
  'combo': ('連撃', '目の前の敵に素早い3連打。当たるたびに気が溜まる。', 'Combo', 'Three quick punches in front of you. Each hit builds ki.'),
  'ki_blast': ('発勁', '気をすべて使い、溜めた量に応じた一撃を叩き込む（気1つにつき威力+80%）。', 'Ki Blast', 'Spend all your ki on one strike: +80% power per point.'),
@@ -91,7 +91,7 @@ SKILLS = {  # id: (ja, ja desc, en, en desc)
  'anchor_throw': ('錨投げ', '狙った地点に錨を投げ、周りの敵を引き寄せて足止めする。', 'Anchor Throw', 'Throw the anchor: enemies around where it lands are dragged in and slowed.'),
  'rally': ('号令', '周りの味方の攻撃と移動を速くする。', 'Rally', 'Faster attacks and movement for allies around you.'),
  'deadshot': ('狙撃', '0.5秒狙って重い一発を撃つ。弾を3発使う。', 'Deadshot', 'Aim for half a second, then one heavy shot. Uses three rounds.'),
- 'fleet_barrage': ('艦隊砲撃', '狙った範囲に5秒間砲撃が降り注ぐ。その間、自分の大砲も全力で撃つ。', 'Fleet Barrage', 'Five seconds of shelling on the aimed area; your cannons fire flat out meanwhile.'),
+ 'fleet_barrage': ('艦隊砲撃', '背後の空に幽霊船3隻を呼ぶ。5秒間、船が順番に範囲内の敵を狙い撃つ。その間、自分の大砲も全力で撃つ。', 'Fleet Barrage', 'Three ghost ships appear in the sky behind you and take turns shooting the enemies in the area for 5s; your cannons fire flat out meanwhile.'),
  # ---- champion
  'rising_dragon': ('昇龍拳', '前の敵を打ち上げる。当たると気+1。', 'Rising Dragon', 'Uppercut that launches enemies. +1 ki on a hit.'),
  'ki_wave': ('気功波', '気をすべて使う一直線のビーム（気1つにつき威力+80%）。', 'Ki Wave', 'A beam through a line of enemies, spending all ki (+80% per point).'),
@@ -157,7 +157,7 @@ SKILLS = {  # id: (ja, ja desc, en, en desc)
  'shadow_leap': ('影跳び', '煙を残して後ろへ跳ぶ。近くの敵は目がくらみ、次の一撃は奇襲になる。', 'Shadow Leap', 'Leap back out of a smoke puff; nearby enemies are blinded, the next hit is an ambush.'),
  'fan_knives': ('扇投げ', 'ナイフを5本扇状に投げる。', 'Fan of Knives', 'Five knives in a fan.'),
  'night_hunt': ('闇夜の狩り', '10秒間、姿を消し、周りの敵すべてを獲物にする（自分からのダメージ+50%）。', 'Night Hunt', 'For 10s you are unseen and every enemy around is prey (+50% damage from you).'),
- 'shadow_rain': ('影の雨', '狙った範囲に3秒間、影の矢が降る。', 'Shadow Rain', 'Shadow arrows rain on the aimed area for 3s.'),
+ 'shadow_rain': ('影の雨', '狙った1体に3秒間、影の矢を集中して降らせ縫い止める。命中のたびに近くの敵へ跳ね（半分のダメージ）、そちらも縫い止める。', 'Shadow Rain', 'Shadow arrows fall on one enemy for 3s, pinning it; each one glances off to the nearest other enemy (half damage), pinning it too.'),
  # ---- treasure hunter
  'gamble_cannon': ('ギャンブル砲', '砲弾がランダム（爆発・氷・毒・金貨・不発・大当たり）。幸運で不発を振り直す。', 'Gamble Cannon', 'A random shell: explosive, ice, poison, gold, a dud or the jackpot. Luck rerolls a dud.'),
  'coin_shot': ('金貨散弾', '金貨を8発ばらまいて撃つ。', 'Coin Shot', 'Eight gold coins fired in a spread.'),
@@ -165,7 +165,7 @@ SKILLS = {  # id: (ja, ja desc, en, en desc)
  'steal': ('盗む', '目の前の敵を攻撃し、確率で宝を盗む（1体につき1回）。', 'Steal', 'Strike the enemy in front with a chance to steal treasure (once per monster).'),
  'lucky_compass': ('幸運の羅針盤', '60秒間、幸運が上がり、倒した敵が宝を落としやすくなる。', 'Lucky Compass', 'For 60s, more luck and monsters drop extra treasure.'),
  'double_down': ('ダブルダウン', '6秒間、与えるダメージが毎回2倍か半分になる（幸運で有利に）。', 'Double Down', 'For 6s every hit is doubled or halved (luck helps).'),
- 'treasure_rain': ('財宝の雨', '狙った範囲に3秒間金貨が降る。金塊が少し落ちる。', 'Treasure Rain', 'Gold coins rain on the aimed area for 3s, leaving a few nuggets.'),
+ 'treasure_rain': ('財宝の雨', '狙った範囲に3秒間金貨が降る。一部の金貨は地面に残り、拾ったプレイヤーはゴールドラッシュ（与ダメージ+5%、最大5重、10秒）。', 'Treasure Rain', 'Gold coins rain on the aimed area for 3s. Some stay on the ground; a player who picks one up gets gold rush (+5% damage, stacks to five, 10s).'),
  'golden_cannon': ('黄金の大砲', '黄金の大砲弾で大爆発。幸運なら1.5倍。', 'Golden Cannon', 'A golden cannonball and a huge blast; half again as big with luck.'),
  'finale': ('終幕', '演奏を締めくくり、盛り上がり（コンボ）に応じた大きな衝撃波を放つ。', 'Finale', 'End the performance with a shockwave as big as the combo you built.'),
  'power_slash': ('強撃', '前方の広い扇形（半径4.5）を斬り払う。', 'Power Slash', 'Cleave a wide arc in front of you (4.5 blocks).'),
@@ -361,6 +361,7 @@ UI = {  # key: (ja, en)
  'effect.rpgmod.hunted': ('獲物', 'Hunted'),
  'effect.rpgmod.treasure': ('宝探し', 'Treasure'),
  'effect.rpgmod.double_down': ('ダブルダウン', 'Double Down'),
+ 'effect.rpgmod.gold_rush': ('ゴールドラッシュ', 'Gold Rush'),
  'rpgmod.jobchange.no_advanced': ('この職業の上位職はまだありません', 'This job has no advanced job yet'),
  'rpgmod.jobchange.done': ('%1$sに転職しました（熟練度 %2$s%%）', 'You are now a %1$s (mastery %2$s%%)'),
  'rpgmod.jobchange.mastered': ('%1$sを極めた！ 転職の書を手に入れた。使うと%2$sに転職できる', '%1$s mastered! You got a Job Change Book - use it to become a %2$s'),

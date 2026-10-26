@@ -170,6 +170,8 @@ public final class ModEffects {
     public static final DeferredHolder<MobEffect, MobEffect> TREASURE = marker("treasure", MobEffectCategory.BENEFICIAL, 0xD4AF37);
     /** Treasure hunter: each hit is doubled or halved (luck helps). */
     public static final DeferredHolder<MobEffect, MobEffect> DOUBLE_DOWN = marker("double_down", MobEffectCategory.BENEFICIAL, 0xE8C040);
+    /** Treasure rain coins picked up: +5% damage per level (up to five). */
+    public static final DeferredHolder<MobEffect, MobEffect> GOLD_RUSH = marker("gold_rush", MobEffectCategory.BENEFICIAL, 0xFFC830);
 
     /** Bard: playing (slower, cannot attack). */
     public static final DeferredHolder<MobEffect, MobEffect> PERFORMING = EFFECTS.register("performing",

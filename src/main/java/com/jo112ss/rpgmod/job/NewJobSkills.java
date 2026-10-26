@@ -329,22 +329,44 @@ public final class NewJobSkills {
     }
 
     /** Cannonballs rain on the aimed spot for 3s (half of them at the enemies there). */
+    /**
+     * Carpet bombardment: shells come over your head from the ships behind you and land in rows of
+     * three, the first row in front of the aimed spot and every next one further on.
+     */
     private static boolean broadside(Ctx c) {
         ServerPlayer p = c.p();
         Vec3 o = aimPoint(c, 28);
         double r = c.def().radius();
-        ServerFx.of("x_zone", o).a(r).b(70).vec(new Vec3(2, 4, 0)).color(0xFF6030).send(c.level());
+        Vec3 dir = c.flat(), side = Fx3.right(dir);
+        int rows = 8;
+        ServerFx.of("x_zone", o).a(r).b(rows * 4 + 24).vec(new Vec3(2, 4, 0)).color(0xFF6030).send(c.level());
         sound(c, SoundEvents.RAVAGER_ROAR, 1.6F);
         SkillTasks.run(age -> {
-            if (age % 3 == 0 && age < 60) {
-                Vec3 at = spotIn(c, o, r, enemies(p, o, r));
-                ServerFx.of("x_star", at).a(1.5).b(8).color(0x505050).send(c.level());
-                SkillTasks.later(8, () -> blast(c, at, 2.2, c.dmg(1), 0, 0xFF8030));
-                if (age % 9 == 0) sound(c, p.position(), SoundEvents.GENERIC_EXPLODE, 0.6F, 0.6F);
+            if (age % 4 == 0 && age / 4 < rows) {
+                int row = age / 4;
+                Vec3 line = o.add(dir.scale(-r + row * (2 * r / (rows - 1))));
+                for (int k = -1; k <= 1; k++) {
+                    Vec3 at = line.add(side.scale(k * 2.4 + (p.getRandom().nextDouble() - 0.5) * 0.8));
+                    Vec3 from = p.position().add(dir.scale(-7)).add(side.scale(k * 3)).add(0, 9, 0);
+                    shell(c, from, ground(c, at), 14, 2.2, c.dmg(1));
+                }
+                sound(c, p.position().add(dir.scale(-6)).add(0, 6, 0), SoundEvents.GENERIC_EXPLODE, 0.7F, 0.7F);
             }
-            return age >= 60;
+            return age >= rows * 4;
         });
         return true;
+    }
+
+    /** The ground under a spot (or the spot). */
+    static Vec3 ground(Ctx c, Vec3 at) {
+        BlockHitResult down = c.level().clip(new ClipContext(at.add(0, 3, 0), at.add(0, -8, 0), ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, c.p()));
+        return down.getType() == HitResult.Type.MISS ? at : down.getLocation();
+    }
+
+    /** A cannonball arcing from {@code from} to {@code to} in {@code flight} ticks, then a blast there. */
+    static void shell(Ctx c, Vec3 from, Vec3 to, int flight, double r, float damage) {
+        ServerFx.of("n_shell", from).vec(to).b(flight).a(0.4).send(c.level());
+        SkillTasks.later(flight, () -> blast(c, to, r, damage, 0, 0xFF8030));
     }
 
     /** Plants the flag: allies near it hit 20% harder; your cannons fire twice as fast and the gun never runs dry. */
@@ -604,28 +626,60 @@ public final class NewJobSkills {
     }
 
     /** Spears rain on the aimed area for 3s. */
+    /** Spears in the ground at once, from a thousand spears, burst this hard each (up to four on one enemy). */
+    static final double SPEAR_BURST = 0.6;
+
+    /**
+     * Spears rain on the aimed area (one every 2 ticks for 3s) and stay stuck in the ground where
+     * they land; when the rain is over they all burst at once.
+     */
     private static boolean spearRain(Ctx c) {
         ServerPlayer p = c.p();
         Vec3 o = aimPoint(c, 24);
         double r = c.def().radius();
         int life = ticks(c.def().duration());
-        ServerFx.of("x_zone", o).a(r).b(life + 10).vec(new Vec3(0, 0, 0)).color(LANCE).send(c.level());
+        WeaponMaterial mat = ModItems.materialOf(p.getMainHandItem().getItem());
+        List<SkillProp> stuck = new ArrayList<>();
+        ServerFx.of("x_zone", o).a(r).b(life + 30).vec(new Vec3(0, 0, 0)).color(LANCE).send(c.level());
         sound(c, SoundEvents.TRIDENT_THROW, 0.7F);
         SkillTasks.run(age -> {
-            if (age % 3 == 0 && age < life) {
-                List<LivingEntity> foes = enemies(p, o, r);
-                for (int k = 0; k < 3; k++) {
-                    Vec3 at = spotIn(c, o, r, foes);
-                    ServerFx.of("n_spear_fall", at).b(6).color(LANCE).send(c.level());
-                    SkillTasks.later(6, () -> {
-                        List<LivingEntity> hit = enemies(p, at, 1.4);
-                        for (LivingEntity e : hit) hurt(c, e, c.dmg(1), melee(c));
-                        if (!hit.isEmpty()) sound(c, at, SoundEvents.SPEAR_HIT, 0.6F, 1.2F);
+            if (age % 2 == 0 && age < life) {
+                Vec3 at = ground(c, spotIn(c, o, r, enemies(p, o, r)));
+                Vec3 tilt = new Vec3(p.getRandom().nextGaussian() * 0.25, 0, p.getRandom().nextGaussian() * 0.25);
+                Vec3 top = at.add(tilt.scale(-12)).add(0, 9, 0);
+                SkillProp spear = SkillProp.create(c.level(), SkillProp.SPEAR, top, p.getYRot(), life + 60);
+                spear.setVariant(mat != null ? mat.ordinal() : 1);
+                spear.aimAt(at.add(0, -1, 0).add(tilt));
+                stuck.add(spear);
+                // falls in 6 ticks, then stays stuck with its head in the ground
+                for (int t = 1; t <= 6; t++) {
+                    double f = t / 6.0;
+                    Vec3 v = top.add(at.subtract(top).scale(f)).add(0, -0.5 * f, 0);
+                    int tt = t;
+                    SkillTasks.later(t, () -> {
+                        spear.setPos(v.x, v.y, v.z);
+                        if (tt < 6) return;
+                        for (LivingEntity e : enemies(p, at, 1.3)) hurt(c, e, c.dmg(1), melee(c));
+                        ServerFx.of("x_hit", at.add(0, 0.2, 0)).vec(new Vec3(0, -1, 0)).a(0.7).color(LANCE).send(c.level());
+                        sound(c, at, SoundEvents.SPEAR_HIT, 0.5F, 0.9F + p.getRandom().nextFloat() * 0.4F);
                     });
                 }
                 if (age % 6 == 0) sound(c, o, SoundEvents.ARROW_SHOOT, 0.8F, 0.6F);
             }
-            return age >= life + 6;
+            if (age == life + 16) { // all of them burst
+                java.util.Map<LivingEntity, Integer> count = new java.util.HashMap<>();
+                for (SkillProp s : stuck) {
+                    Vec3 at = s.position();
+                    for (LivingEntity e : enemies(p, at, 1.6)) count.merge(e, 1, Integer::sum);
+                    ServerFx.of("x_burst", at.add(0, 0.4, 0)).a(1).b(0).color(0xFFB060).send(c.level());
+                    s.discard();
+                }
+                count.forEach((e, n) -> hurt(c, e, c.dmg(SPEAR_BURST) * Math.min(4, n), melee(c)));
+                ServerFx.of("x_ring", o).a(r).b(2).color(LANCE).points(new ArrayList<>(count.keySet())).send(c.level());
+                sound(c, o, SoundEvents.GENERIC_EXPLODE, 1.4F, 1.1F);
+                return true;
+            }
+            return false;
         });
         return true;
     }

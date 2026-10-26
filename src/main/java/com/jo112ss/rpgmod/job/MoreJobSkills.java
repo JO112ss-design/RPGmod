@@ -295,22 +295,36 @@ public final class MoreJobSkills {
         return true;
     }
 
-    /** The whole fleet fires on the aimed area for 5s, and your own cannons fire as fast as they can. */
+    /**
+     * Three ghost ships appear in the sky behind you, side on to the aimed area; each fires at an
+     * enemy there in turn (they share out the targets). Your own cannons fire flat out meanwhile.
+     */
     private static boolean fleetBarrage(Ctx c) {
         ServerPlayer p = c.p();
         Vec3 o = aimPoint(c, 32);
         double r = c.def().radius();
         int life = ticks(c.def().duration());
+        Vec3 dir = c.flat(), side = Fx3.right(dir);
         Pirate.BARRAGE_UNTIL.put(p.getUUID(), c.level().getGameTime() + life);
-        ServerFx.of("x_zone", o).a(r).b(life + 10).vec(new Vec3(2, 4, 0)).color(0xFF5020).send(c.level());
-        sound(c, SoundEvents.RAVAGER_ROAR, 1.4F);
-        sound(c, p.position(), SoundEvents.BELL_BLOCK, 1.0F, 0.5F);
+        Vec3[] ships = new Vec3[3];
+        for (int i = 0; i < 3; i++) {
+            ships[i] = p.position().add(dir.scale(-6 + Math.abs(i - 1) * -2)).add(side.scale((i - 1) * 10)).add(0, 11 + (i % 2) * 1.5, 0);
+            ServerFx.of("n_ghost_ship", ships[i]).vec(side) // lying across, broadside towards the target
+                    .b(life + 20).send(c.level());
+        }
+        ServerFx.of("x_zone", o).a(r).b(life + 10).vec(new Vec3(2, 4, 0)).color(0x7FE8D8).send(c.level());
+        sound(c, SoundEvents.BELL_BLOCK, 0.5F);
+        sound(c, p.position(), SoundEvents.ELDER_GUARDIAN_CURSE, 0.6F, 1.4F);
+        final int[] turn = {0};
         SkillTasks.run(age -> {
-            if (age % 2 == 0 && age < life) {
-                Vec3 at = NewJobSkills.spotIn(c, o, r, enemies(p, o, r));
-                ServerFx.of("x_star", at).a(1.5).b(8).color(0x404040).send(c.level());
-                SkillTasks.later(8, () -> NewJobSkills.blast(c, at, 2.4, c.dmg(1), 0, 0xFF8030));
-                if (age % 10 == 0) sound(c, p.position(), SoundEvents.GENERIC_EXPLODE, 0.6F, 0.6F);
+            if (age >= 10 && age < life && (age - 10) % 6 == 0) {
+                int i = turn[0]++ % 3;
+                List<LivingEntity> foes = enemies(p, o, r + 2);
+                Vec3 at = foes.isEmpty() ? NewJobSkills.spotIn(c, o, r, foes) : foes.get(turn[0] % foes.size()).position();
+                Vec3 from = ships[i].add(dir.scale(1.6)).add(0, 1.0, 0);
+                ServerFx.of("n_cannon_fire", from).vec(at.subtract(from)).send(c.level());
+                NewJobSkills.shell(c, from, at, 12, 2.2, c.dmg(1));
+                sound(c, from, SoundEvents.GENERIC_EXPLODE, 1.0F, 0.6F);
             }
             return age >= life;
         });
@@ -1225,29 +1239,63 @@ public final class MoreJobSkills {
         return true;
     }
 
-    /** Shadow arrows rain on the aimed area for 3s. */
+    /**
+     * Shadow arrows fall on one enemy (the one aimed at) for 3s, pinning it; each one that hits
+     * glances off to the nearest other enemy (half the damage, pinned too). A fallen target is
+     * replaced by the nearest enemy.
+     */
     private static boolean shadowRain(Ctx c) {
         ServerPlayer p = c.p();
-        Vec3 o = aimPoint(c, 28);
-        double r = c.def().radius();
+        LivingEntity first = lookTarget(c, 28, 10);
+        if (first == null) first = NewJobSkills.nearest(enemies(p, aimPoint(c, 28), c.def().radius()), aimPoint(c, 28));
+        if (first == null) {
+            fail(p, "rpgmod.job.no_target");
+            return false;
+        }
         int life = ticks(c.def().duration());
-        ServerFx.of("x_zone", o).a(r).b(life + 10).vec(new Vec3(2, 4, 0)).color(SHADOW).send(c.level());
+        final LivingEntity[] target = {first};
+        ServerFx.of("x_mark", first.position()).follow(first).a(c.def().duration()).color(0x6070C0).send(c.level());
         sound(c, SoundEvents.ARROW_SHOOT, 0.6F);
         SkillTasks.run(age -> {
-            if (age % 2 == 0 && age < life) {
-                List<LivingEntity> foes = enemies(p, o, r);
-                for (int k = 0; k < 2; k++) {
-                    Vec3 at = NewJobSkills.spotIn(c, o, r, foes);
-                    ServerFx.of("n_spear_fall", at).b(5).color(0x8090C0).send(c.level());
-                    SkillTasks.later(5, () -> {
-                        for (LivingEntity e : enemies(p, at, 1.2)) hurt(c, e, c.dmg(1), melee(c));
-                    });
+            if (age % 4 == 0 && age < life) {
+                LivingEntity t = target[0];
+                if (!t.isAlive()) {
+                    t = NewJobSkills.nearest(enemies(p, t.position(), c.def().radius()), t.position());
+                    if (t == null) return true;
+                    target[0] = t;
                 }
-                if (age % 6 == 0) sound(c, o, SoundEvents.ARROW_SHOOT, 0.7F, 0.8F + p.getRandom().nextFloat() * 0.4F);
+                LivingEntity hitT = t;
+                ServerFx.of("n_spear_fall", hitT.position().add(0, hitT.getBbHeight() * 0.6, 0)).b(4).a(0.5).color(0x6070C0).send(c.level());
+                SkillTasks.later(4, () -> {
+                    if (!hitT.isAlive()) return;
+                    hurt(c, hitT, c.dmg(1), melee(c));
+                    pin(c, hitT);
+                    LivingEntity next = null;
+                    double bd = 25;
+                    for (LivingEntity o2 : enemies(p, hitT.position(), 5)) {
+                        double dd = o2.distanceToSqr(hitT);
+                        if (o2 != hitT && dd < bd) {
+                            bd = dd;
+                            next = o2;
+                        }
+                    }
+                    if (next != null) {
+                        hurt(c, next, c.dmg(0.5), melee(c));
+                        pin(c, next);
+                        ServerFx.of("x_bolt", mid(hitT)).vec(mid(next).subtract(mid(hitT)).normalize().scale(2.5)).a(6).b(0.15).color(0x8090D0).follow(next).send(c.level());
+                    }
+                    sound(c, hitT.position(), SoundEvents.ARROW_HIT, 0.7F, 0.8F);
+                });
             }
-            return age >= life + 5;
+            return age >= life + 4;
         });
         return true;
+    }
+
+    /** Pinned by a shadow arrow: cannot move for a moment. */
+    private static void pin(Ctx c, LivingEntity e) {
+        e.addEffect(new MobEffectInstance(MobEffects.SLOWNESS, 25, 6), c.p());
+        ServerFx.of("x_ring", e.position()).a(1).b(1).color(0x303850).send(c.level());
     }
 
     // ================================================================== treasure hunter
@@ -1389,26 +1437,53 @@ public final class MoreJobSkills {
         return true;
     }
 
-    /** Gold coins rain on the aimed area; some are left lying there. */
+    /** Coins left by the treasure rain stay this long, and each one picked up gives this (stacking to five). */
+    static final int COIN_LIFE = 200, GOLD_RUSH_TICKS = 200;
+
+    /**
+     * Gold coins rain on the aimed area for 3s. Every fourth coin stays on the ground, spinning; a
+     * player who walks over one picks it up: gold rush, +5% damage for 10s, stacking up to five.
+     */
     private static boolean treasureRain(Ctx c) {
         ServerPlayer p = c.p();
         Vec3 o = aimPoint(c, 24);
         double r = c.def().radius();
         int life = ticks(c.def().duration());
+        List<SkillProp> coins = new ArrayList<>();
         ServerFx.of("x_zone", o).a(r).b(life + 10).vec(new Vec3(1, 3, 0)).color(GOLD).send(c.level());
         sound(c, SoundEvents.PLAYER_LEVELUP, 1.6F);
+        final int[] fallen = {0};
         SkillTasks.run(age -> {
             if (age % 2 == 0 && age < life) {
-                Vec3 at = NewJobSkills.spotIn(c, o, r, enemies(p, o, r));
+                Vec3 at = NewJobSkills.ground(c, NewJobSkills.spotIn(c, o, r, enemies(p, o, r)));
                 ServerFx.of("x_star", at).a(1.2).b(6).color(0xFFD040).send(c.level());
                 SkillTasks.later(6, () -> {
                     List<LivingEntity> hit = enemies(p, at, 1.6);
                     for (LivingEntity e : hit) hurt(c, e, c.dmg(1), melee(c));
-                    if (!hit.isEmpty()) sound(c, at, SoundEvents.CHAIN_PLACE, 0.6F, 1.8F);
-                    if (p.getRandom().nextFloat() < 0.08F) drop(c.level(), at, new ItemStack(Items.GOLD_NUGGET));
+                    sound(c, at, SoundEvents.CHAIN_PLACE, 0.5F, 1.8F);
+                    if (++fallen[0] % 4 == 0) coins.add(SkillProp.create(c.level(), SkillProp.COIN, at.add(0, 0.1, 0), 0, COIN_LIFE));
                 });
             }
-            return age >= life + 6;
+            // the coins on the ground: picked up by any player walking over them
+            if (age % 4 == 0) {
+                for (SkillProp coin : new ArrayList<>(coins)) {
+                    if (coin.isRemoved()) {
+                        coins.remove(coin);
+                        continue;
+                    }
+                    for (ServerPlayer a : c.level().getEntitiesOfClass(ServerPlayer.class, coin.getBoundingBox().inflate(0.9), a -> a.isAlive() && !a.isSpectator())) {
+                        MobEffectInstance cur = a.getEffect(ModEffects.GOLD_RUSH);
+                        int amp = cur == null ? 0 : Math.min(4, cur.getAmplifier() + 1);
+                        a.addEffect(new MobEffectInstance(ModEffects.GOLD_RUSH, GOLD_RUSH_TICKS, amp), p);
+                        ServerFx.of("x_burst", coin.position().add(0, 0.4, 0)).a(0.8).b(4).color(GOLD).send(c.level());
+                        c.level().playSound(null, coin.blockPosition(), SoundEvents.EXPERIENCE_ORB_PICKUP, net.minecraft.sounds.SoundSource.PLAYERS, 0.8F, 1.4F + amp * 0.1F);
+                        coin.discard();
+                        coins.remove(coin);
+                        break;
+                    }
+                }
+            }
+            return age >= life + COIN_LIFE;
         });
         return true;
     }

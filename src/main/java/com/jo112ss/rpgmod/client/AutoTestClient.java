@@ -222,7 +222,8 @@ public final class AutoTestClient {
             case "quick_draw", "spear_sweep", "ki_blast", "whirl_kick", "shrink_step", "grapple", "finale" -> new int[] {3};
             case "cannon" -> new int[] {12, 44};
             case "powder_keg" -> new int[] {4, 8, 12, 20, 42};
-            case "broadside", "spear_rain" -> new int[] {12, 30};
+            case "broadside" -> new int[] {14, 28, 44};
+            case "spear_rain" -> new int[] {24, 56, 77, 80};
             case "lance_charge" -> new int[] {4};
             case "spear_throw" -> new int[] {6, 16};
             case "leap_thrust" -> new int[] {8, 18};
@@ -236,14 +237,15 @@ public final class AutoTestClient {
             case "grand_concert" -> new int[] {25};
             case "high_jump" -> new int[] {10, 30};
             case "dragon_king" -> new int[] {16, 40};
-            case "fleet_barrage" -> new int[] {14, 50};
+            case "fleet_barrage" -> new int[] {12, 36, 70};
             case "anchor_throw" -> new int[] {4, 8, 12, 20};
             case "twin_cannon" -> new int[] {14, 50};
             case "peerless" -> new int[] {6, 18};
             case "deadshot" -> new int[] {12};
             case "mimic" -> new int[] {10, 40};
             case "gamble_cannon", "golden_cannon" -> new int[] {6, 16};
-            case "shadow_rain", "treasure_rain" -> new int[] {12, 30};
+            case "shadow_rain" -> new int[] {16, 40};
+            case "treasure_rain" -> new int[] {24, 60};
             case "spear_wall", "requiem", "fortress", "night_hunt" -> new int[] {12};
             case "elemental_burst" -> new int[] {2, 12, 22};
             case "symphony", "grand_concerto" -> new int[] {25};
@@ -280,7 +282,8 @@ public final class AutoTestClient {
             case "high_jump" -> 60;
             case "fleet_barrage", "symphony", "grand_concerto" -> 110;
             case "bard:play" -> 300;
-            case "cannon", "jolly_roger", "broadside", "spear_rain" -> 60;
+            case "cannon", "jolly_roger", "broadside" -> 60;
+            case "spear_rain", "treasure_rain" -> 95;
             case "perf" -> 1800;
             case "gem:socket" -> 70;
             case "gem:procs" -> 80;
@@ -329,7 +332,9 @@ public final class AutoTestClient {
             showSkills.clear(); // the four advanced jobs and the six hybrid jobs: every skill, the hybrid unlock and points
             if ("all".equals(System.getProperty("rpgmod.showcase"))) showSkills.addAll(com.jo112ss.rpgmod.job.core.JobDefs.SKILLS.keySet());
             showSkills.clear(); // thrown props (keg, anchor) fly on the client too: their path tick by tick
-            showSkills.addAll(java.util.List.of("nj:pirate", "powder_keg", "grapple", "nj:captain", "anchor_throw", "nj:restore"));
+            showSkills.clear(); // group A, the rain skills made distinct: carpet bombing, ghost ships, stuck spears, focused arrows, coins to pick up
+            showSkills.addAll(java.util.List.of("nj:pirate", "broadside", "nj:captain", "fleet_barrage", "nj:lancer", "spear_rain", "nj:shadow_hunter", "shadow_rain",
+                    "nj:treasure_hunter", "treasure_rain", "nj:coins", "nj:restore"));
             mc.options.gamma().set(1.0); // the night fight, brightly lit for the screenshots
             mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK);
             com.jo112ss.rpgmod.client.mob.MobOverlay.testSelf = true;

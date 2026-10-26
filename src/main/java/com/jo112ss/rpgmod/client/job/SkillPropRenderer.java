@@ -65,6 +65,8 @@ public class SkillPropRenderer extends EntityRenderer<SkillProp, SkillPropRender
             WeaponMaterial[] mats = WeaponMaterial.values();
             ItemStack spear = new ItemStack(ModItems.get(WeaponType.SPEAR, mats[Math.floorMod(entity.variant(), mats.length)]));
             items.updateForNonLiving(state.item, spear, ItemDisplayContext.FIXED, entity);
+        } else if (state.kind == SkillProp.COIN) {
+            items.updateForNonLiving(state.item, new ItemStack(net.minecraft.world.item.Items.GOLD_NUGGET), ItemDisplayContext.GROUND, entity);
         } else if (state.kind == SkillProp.CHEST || state.kind == SkillProp.ANCHOR) {
             ItemStack block = new ItemStack(state.kind == SkillProp.CHEST ? net.minecraft.world.item.Items.CHEST : net.minecraft.world.item.Items.ANVIL);
             items.updateForNonLiving(state.item, block, ItemDisplayContext.FIXED, entity);
@@ -83,6 +85,12 @@ public class SkillPropRenderer extends EntityRenderer<SkillProp, SkillPropRender
             poseStack.rotateDegrees(Axis.ZP, -state.pitch - 45);
             poseStack.scale(1.8F, 1.8F, 1.8F);
             state.item.submit(poseStack, collector, state.lightCoords, OverlayTexture.NO_OVERLAY, state.outlineColor);
+        } else if (state.kind == SkillProp.COIN) {
+            // a treasure-rain coin lying about: spinning and bobbing like a pickup, a bit larger
+            poseStack.translate(0, 0.25F + Mth.sin(state.ageInTicks * 0.15F) * 0.08F, 0);
+            poseStack.rotateDegrees(Axis.YP, state.ageInTicks * 9);
+            poseStack.scale(1.6F, 1.6F, 1.6F);
+            state.item.submit(poseStack, collector, net.minecraft.util.LightCoordsUtil.FULL_BRIGHT, OverlayTexture.NO_OVERLAY, state.outlineColor);
         } else if (state.kind == SkillProp.CHEST || state.kind == SkillProp.ANCHOR) {
             // a block-sized chest (the mimic, its lid snapping) or the captain's anchor (an anvil)
             poseStack.translate(0, 0.45F, 0);

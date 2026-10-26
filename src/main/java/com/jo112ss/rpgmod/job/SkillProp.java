@@ -20,7 +20,7 @@ import net.minecraft.world.phys.Vec3;
  * and rolls on its own, on the server and the clients alike. Never saved; gone after its life.
  */
 public class SkillProp extends Entity {
-    public static final int CANNON = 0, KEG = 1, FLAG = 2, SPEAR = 3, CHEST = 4, ANCHOR = 5;
+    public static final int CANNON = 0, KEG = 1, FLAG = 2, SPEAR = 3, CHEST = 4, ANCHOR = 5, COIN = 6;
     private static final EntityDataAccessor<Integer> DATA_KIND = SynchedEntityData.defineId(SkillProp.class, EntityDataSerializers.INT);
     /** Spear: the material index of the thrown spear. */
     private static final EntityDataAccessor<Integer> DATA_VARIANT = SynchedEntityData.defineId(SkillProp.class, EntityDataSerializers.INT);
@@ -93,6 +93,10 @@ public class SkillProp extends Entity {
             v = this.getDeltaMovement().scale(0.98);
             if (this.onGround()) v = kind() == ANCHOR ? Vec3.ZERO : v.multiply(0.7, 0, 0.7); // an anchor bites in, a keg rolls on a little
             this.setDeltaMovement(v);
+        }
+        if (kind() == COIN && this.level().isClientSide() && this.tickCount % 5 == 0) { // a coin on the ground glints
+            this.level().addParticle(net.minecraft.core.particles.ParticleTypes.WAX_ON, getX() + (random.nextDouble() - 0.5) * 0.4, getY() + 0.3 + random.nextDouble() * 0.3,
+                    getZ() + (random.nextDouble() - 0.5) * 0.4, 0, 0.02, 0);
         }
         if (!this.level().isClientSide() && --life <= 0) this.discard();
     }

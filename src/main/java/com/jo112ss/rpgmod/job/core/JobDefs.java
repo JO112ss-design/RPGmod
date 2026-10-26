@@ -517,7 +517,7 @@ public final class JobDefs {
                         skill("fan_knives", A, SkillEffect.SWEEP, 7, 11, 0.9, 8, 0, List.of(), 0, "扇")),
                 List.of(
                         skill("night_hunt", U, SkillEffect.BUFF, 90, 40, 0, 30, 10, List.of(), 0, "夜"),
-                        skill("shadow_rain", U, SkillEffect.SHOT, 90, 40, 1.0, 6, 3, List.of(), 0, "雨")));
+                        skill("shadow_rain", U, SkillEffect.SHOT, 90, 40, 0.6, 6, 3, List.of(), 0, "雨")));
         // ---- Treasure hunter: lucky cannons and loot
         hybrid("treasure_hunter", "gambler", "pirate", 0xD4AF37, "宝", List.of(JobStat.LUCK, JobStat.ATTACK_DAMAGE, JobStat.CRIT_CHANCE, JobStat.MAX_HEALTH),
                 stats(JobStat.ATTACK_DAMAGE, 4, JobStat.LUCK, 1, JobStat.CRIT_CHANCE, 3),

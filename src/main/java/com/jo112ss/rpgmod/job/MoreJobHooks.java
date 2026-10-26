@@ -39,6 +39,8 @@ public final class MoreJobHooks {
     public static final double BATTLE_AURA_PER_KI = 0.04, HEROIC = 0.3, AMBUSH = 0.6, HUNTED = 0.5, FLAME_STEP = 0.03;
     /** Spellblade sword hits: this share of the spellblade's own magic attack on top, as the element. */
     public static final double ELEMENT_SHARE = 0.5;
+    /** Gold rush (treasure rain coins): this much more damage per coin held. */
+    public static final double GOLD_RUSH = 0.05;
 
     @SubscribeEvent
     public static void onIncoming(LivingIncomingDamageEvent event) {
@@ -53,6 +55,8 @@ public final class MoreJobHooks {
             JobData d = JobManager.data(sp);
             if (sp.hasEffect(ModEffects.BATTLE_AURA)) amount *= (float) (1 + BATTLE_AURA_PER_KI * d.ki());
             if (sp.hasEffect(ModEffects.HEROIC)) amount *= (float) (1 + HEROIC);
+            MobEffectInstance rush = sp.getEffect(ModEffects.GOLD_RUSH);
+            if (rush != null) amount *= (float) (1 + GOLD_RUSH * (rush.getAmplifier() + 1));
             MobEffectInstance flame = sp.getEffect(ModEffects.FLAME_SONG);
             if (flame != null) {
                 amount *= (float) (1 + FLAME_STEP * (flame.getAmplifier() + 1));

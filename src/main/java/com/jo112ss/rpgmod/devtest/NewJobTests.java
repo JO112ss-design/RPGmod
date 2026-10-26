@@ -50,6 +50,7 @@ final class NewJobTests {
             case "monk" -> monk(level, p, dummies);
             case "bard" -> become(p, "bard");
             case "hybrids" -> hybrids(level, p, dummies);
+            case "coins" -> coins(level, p);
             default -> {
                 if (JobDefs.isAdvanced(name)) become(p, JobDefs.BASE_OF.get(name), true);
                 else if (JobDefs.job(name) != null) become(p, name);
@@ -136,6 +137,24 @@ final class NewJobTests {
                 d.setMastery("wizard", wz);
             });
         }
+    }
+
+    /** Treasure rain: walk over a coin it left and pick it up (gold rush). */
+    private static void coins(ServerLevel level, ServerPlayer p) {
+        List<com.jo112ss.rpgmod.job.SkillProp> coins = level.getEntitiesOfClass(com.jo112ss.rpgmod.job.SkillProp.class, p.getBoundingBox().inflate(30),
+                e -> e.kind() == com.jo112ss.rpgmod.job.SkillProp.COIN);
+        log("coins: {} left on the ground", coins.size());
+        if (coins.isEmpty()) return;
+        net.minecraft.world.phys.Vec3 back = p.position();
+        float yaw = p.getYRot(), pitch = p.getXRot();
+        var coin = coins.get(0);
+        p.teleportTo(level, coin.getX(), coin.getY(), coin.getZ(), java.util.Set.of(), yaw, pitch, false);
+        SkillTasks.later(8, () -> {
+            var rush = p.getEffect(ModEffects.GOLD_RUSH);
+            log("coins: picked up -> gold rush {} (coin gone {}), {} left", rush == null ? "none" : "lv" + (rush.getAmplifier() + 1), coin.isRemoved(),
+                    level.getEntitiesOfClass(com.jo112ss.rpgmod.job.SkillProp.class, p.getBoundingBox().inflate(30), e -> e.kind() == com.jo112ss.rpgmod.job.SkillProp.COIN).size());
+            p.teleportTo(level, back.x, back.y, back.z, java.util.Set.of(), yaw, pitch, false);
+        });
     }
 
     private static void lancer(ServerLevel level, ServerPlayer p, List<? extends LivingEntity> dummies) {
