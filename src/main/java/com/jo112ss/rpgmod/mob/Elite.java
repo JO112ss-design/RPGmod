@@ -219,22 +219,24 @@ public final class Elite {
             mob.heal((float) (mob.getMaxHealth() * REGEN_SHARE));
             ServerFx.of("elite_regen", mob.position()).follow(mob).send(sl);
         }
-        if ((mask & Trait.GUARDIAN.bit()) != 0 && mob.getTarget() instanceof Player && (mob.tickCount + mob.getId()) % GUARD_EVERY == 0) {
-            // the warning first (a blue ring on the ground), then the shields
-            ServerFx.of("elite_guard_warn", mob.position()).follow(mob).a(GUARD_RANGE).b(GUARD_WARN).send(sl);
-            sl.playSound(null, mob.blockPosition(), SoundEvents.BEACON_POWER_SELECT, SoundSource.HOSTILE, 0.8F, 1.6F);
-            com.jo112ss.rpgmod.job.SkillTasks.later(GUARD_WARN, () -> {
-                if (!mob.isAlive()) return;
-                List<Mob> shielded = new ArrayList<>();
-                for (Mob m : sl.getEntitiesOfClass(Mob.class, mob.getBoundingBox().inflate(GUARD_RANGE), m -> m.isAlive() && m instanceof Enemy && m.distanceTo(mob) <= GUARD_RANGE)) {
-                    int amp = Math.max(0, Math.min(255, (int) Math.round(m.getMaxHealth() * GUARD_SHARE / 4.0) - 1));
-                    m.addEffect(new MobEffectInstance(MobEffects.ABSORPTION, 200, amp), mob);
-                    shielded.add(m);
-                }
-                ServerFx.of("elite_guard", mob.position()).follow(mob).a(GUARD_RANGE).points(shielded).send(sl);
-                sl.playSound(null, mob.blockPosition(), SoundEvents.BEACON_ACTIVATE, SoundSource.HOSTILE, 0.8F, 1.4F);
-            });
-        }
+        if ((mask & Trait.GUARDIAN.bit()) != 0 && mob.getTarget() instanceof Player && (mob.tickCount + mob.getId()) % GUARD_EVERY == 0) guard(mob, sl);
+    }
+
+    /** The guardian's shield: the warning first (a blue ring on the ground), then shields on the monsters around. */
+    public static void guard(Mob mob, ServerLevel sl) {
+        ServerFx.of("elite_guard_warn", mob.position()).follow(mob).a(GUARD_RANGE).b(GUARD_WARN).send(sl);
+        sl.playSound(null, mob.blockPosition(), SoundEvents.BEACON_POWER_SELECT, SoundSource.HOSTILE, 0.8F, 1.6F);
+        com.jo112ss.rpgmod.job.SkillTasks.later(GUARD_WARN, () -> {
+            if (!mob.isAlive()) return;
+            List<Mob> shielded = new ArrayList<>();
+            for (Mob m : sl.getEntitiesOfClass(Mob.class, mob.getBoundingBox().inflate(GUARD_RANGE), m -> m.isAlive() && m instanceof Enemy && m.distanceTo(mob) <= GUARD_RANGE)) {
+                int amp = Math.max(0, Math.min(255, (int) Math.round(m.getMaxHealth() * GUARD_SHARE / 4.0) - 1));
+                m.addEffect(new MobEffectInstance(MobEffects.ABSORPTION, 200, amp), mob);
+                shielded.add(m);
+            }
+            ServerFx.of("elite_guard", mob.position()).follow(mob).a(GUARD_RANGE).points(shielded).send(sl);
+            sl.playSound(null, mob.blockPosition(), SoundEvents.BEACON_ACTIVATE, SoundSource.HOSTILE, 0.8F, 1.4F);
+        });
     }
 
     /** A splitting elite falls apart into two weak halves of its kind. */

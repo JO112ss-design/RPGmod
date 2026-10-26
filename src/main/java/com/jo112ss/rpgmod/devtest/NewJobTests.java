@@ -281,7 +281,7 @@ final class NewJobTests {
         Vec3 side = new Vec3(-face.z, 0, face.x);
         java.util.function.BiFunction<Integer, Double, net.minecraft.world.entity.Mob> spawn = (mask, off) -> {
             var z = net.minecraft.world.entity.EntityTypes.HUSK.create(level, net.minecraft.world.entity.EntitySpawnReason.COMMAND); // husks do not burn in the sun
-            Vec3 at = p.position().add(face.scale(6)).add(side.scale(off));
+            Vec3 at = p.position().add(face.scale(16)).add(side.scale(off * 0.8)); // beyond the training dummies and what lingers round them
             z.snapTo(at.x, at.y, at.z, p.getYRot() + 180, 0);
             z.setNoAi(true);
             com.jo112ss.rpgmod.mob.Elite.forceNext = mask;
@@ -318,8 +318,8 @@ final class NewJobTests {
         SkillTasks.later(130, () -> log("elites: regen {} -> {} after 5s unhurt (max {})", String.format("%.1f", afterHit[0]), String.format("%.1f", regen.getHealth()),
                 String.format("%.0f", regen.getMaxHealth())));
         // the guardian: a target, then (within 10s) the warning and the shields
-        split.setTarget(p);
-        SkillTasks.later(240, () -> log("elites: guardian shields (8 blocks) - absorption on the ward (6 away) {} regen (3 away) {}, the plain one (12 away) {}",
+        SkillTasks.later(200, () -> com.jo112ss.rpgmod.mob.Elite.guard(split, level));
+        SkillTasks.later(240, () -> log("elites: guardian shields (8 blocks) - absorption on the ward (4.8 away) {} regen (2.4 away) {}, the plain one (9.6 away) {}",
                 String.format("%.1f", ward.getAbsorptionAmount()), String.format("%.1f", regen.getAbsorptionAmount()), String.format("%.1f", plain.getAbsorptionAmount())));
         SkillTasks.later(250, () -> {
             int before = level.getEntitiesOfClass(net.minecraft.world.entity.monster.zombie.Husk.class, p.getBoundingBox().inflate(20)).size();
