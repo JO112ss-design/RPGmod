@@ -380,12 +380,15 @@ public final class AutoTestClient {
                     "nj:songs_maestro", "symphony", "nj:spellblade", "arcane_edge", "elemental_burst", "nj:qi_master", "heaven_earth", "blooming_fists", "nj:sentinel",
                     "fortress", "holy_lance", "nj:songs_singer", "grand_concerto", "sealing_chord", "nj:shadow_hunter", "night_hunt", "shadow_rain", "nj:treasure_hunter",
                     "treasure_rain", "golden_cannon", "nj:restore"));
-            showSkills.clear(); // actives on the shared effects (aura, burst, slash, ring, dash, pillar, mark, hit) after their rework
-            showSkills.addAll(java.util.List.of("nj:restore", "nj:fighter", "power_slash", "whirlwind", "war_cry", "nj:berserker", "blood_frenzy", "decapitate", "triple_whirl",
+            if (false) showSkills.clear(); // actives on the shared effects (aura, burst, slash, ring, dash, pillar, mark, hit) after their rework
+            if (false) showSkills.addAll(java.util.List.of("nj:restore", "nj:fighter", "power_slash", "whirlwind", "war_cry", "nj:berserker", "blood_frenzy", "decapitate", "triple_whirl",
                     "nj:guardian", "iron_wall", "cover", "reprisal", "nj:monk", "ki_blast", "parry", "nj:champion", "rising_dragon", "battle_aura", "nj:dragoon",
                     "dragon_scale", "spiral_lance", "sky_step", "nj:pirate", "rum", "nj:spellmaster", "mana_overload", "nj:nightblade", "twin_venom", "moon_shadow",
                     "nj:healer", "holy_barrier", "nj:qi_master", "hard_qi", "nj:sentinel", "provoke", "nj:shadow_hunter", "vital_shot", "nj:treasure_hunter",
                     "coin_shot", "steal", "nj:restore"));
+            showSkills.clear(); // area ultimates at twice the reach
+            showSkills.addAll(java.util.List.of("nj:restore", "nj:fighter", "earthshatter", "nj:paladin", "judgement", "nj:wizard", "time_warp", "nj:lancer", "spear_rain",
+                    "nj:dragoon", "dragon_king", "nj:qi_master", "blooming_fists", "nj:treasure_hunter", "golden_cannon", "nj:restore"));
             if (false) showSkills.clear(); // spellsinger afterglow
             if (false) showSkills.addAll(java.util.List.of("nj:restore", "nj:wardlinger", "nj:ward", "nj:linger", "nj:restore"));
             if (false) showSkills.clear(); // songs: each with its own rhythm (bars from the song's style) and tune

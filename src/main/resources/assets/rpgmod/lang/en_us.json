@@ -552,7 +552,7 @@
   "rpgmod.skill.feather_rune": "Feather Rune",
   "rpgmod.skill.feather_rune.desc": "Nearby allies take no fall damage for 2 minutes.",
   "rpgmod.skill.grand_rune": "Grand Rune",
-  "rpgmod.skill.grand_rune.desc": "A huge circle (12 blocks, 15s): allies inside get strength, resistance, speed and regeneration; enemies are slowed, weakened and hurt.",
+  "rpgmod.skill.grand_rune.desc": "A huge circle (24 blocks, 15s): allies inside get strength, resistance, speed and regeneration; enemies are slowed, weakened and hurt.",
   "rpgmod.skill.switcheroo": "Switcheroo",
   "rpgmod.skill.switcheroo.desc": "Trade places with the targeted enemy, leaving it dazed for 3s.",
   "rpgmod.skill.decoy": "Decoy",

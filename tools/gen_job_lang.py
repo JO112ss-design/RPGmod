@@ -289,7 +289,7 @@ SKILLS = {  # id: (ja, ja desc, en, en desc)
  'gale_rune': ('疾風のルーン', '周囲の味方の移動速度とジャンプ力が大きく上がる。', 'Gale Rune', 'Nearby allies run much faster and jump higher.'),
  'night_sight': ('暗視の加護', '周囲の味方に暗視と水中呼吸を長時間与える。', 'Night Sight', 'Gives nearby allies night vision and water breathing for a long time.'),
  'feather_rune': ('羽のルーン', '周囲の味方が2分間、落下ダメージを受けなくなる。', 'Feather Rune', 'Nearby allies take no fall damage for 2 minutes.'),
- 'grand_rune': ('大ルーン陣', '足元に巨大な陣（半径24・15秒）。中の味方は力・耐性・速度・再生、敵は鈍化・弱体・攻撃低下とダメージ。', 'Grand Rune', 'A huge circle (12 blocks, 15s): allies inside get strength, resistance, speed and regeneration; enemies are slowed, weakened and hurt.'),
+ 'grand_rune': ('大ルーン陣', '足元に巨大な陣（半径24・15秒）。中の味方は力・耐性・速度・再生、敵は鈍化・弱体・攻撃低下とダメージ。', 'Grand Rune', 'A huge circle (24 blocks, 15s): allies inside get strength, resistance, speed and regeneration; enemies are slowed, weakened and hurt.'),
  'switcheroo': ('すり替え', '狙った敵と自分の位置を入れ替え、敵を3秒間ふらつかせる。', 'Switcheroo', 'Trade places with the targeted enemy, leaving it dazed for 3s.'),
  'decoy': ('分身', 'その場に分身を残して姿を消す。モンスターは分身に向かい、5秒後に分身が爆発する。', 'Decoy', 'Leave a decoy and vanish: monsters go for it, and after 5s it blows up.'),
  'loaded_dice': ('いかさま', '30秒以内の次の賭け（コイン・ダイス・ルーレット・カード等）が必ず最高の結果になる。', 'Loaded Dice', 'Your next gamble within 30s (coin, dice, roulette, cards...) lands on its best result.'),
