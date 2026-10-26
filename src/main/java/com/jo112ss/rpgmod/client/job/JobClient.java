@@ -96,6 +96,18 @@ public final class JobClient {
         }
     }
 
+    /** Charging sword magic slows you down like drawing a bow or charging a staff (and stops the sprint). */
+    @SubscribeEvent
+    public static void onMovementInput(net.neoforged.neoforge.client.event.MovementInputUpdateEvent event) {
+        if (swordCharge < 0 || event.getEntity().isPassenger()) return;
+        var input = event.getInput();
+        input.moveVector = input.moveVector.scale(SWORD_CHARGE_SPEED);
+        event.getEntity().setSprinting(false);
+    }
+
+    /** Walking speed while charging sword magic (vanilla item use: 0.2). */
+    public static final float SWORD_CHARGE_SPEED = 0.2F;
+
     private static void tickLeftCast(Minecraft mc) {
         boolean want = mc.player != null && mc.gui.screen() == null && leftCasting() && JobKeys.LEFT_SPELL.isDown();
         if (want && leftCharge < 0) {
