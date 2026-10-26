@@ -91,7 +91,7 @@ public class SkillProp extends Entity {
             this.setDeltaMovement(v);
             this.move(MoverType.SELF, v); // (stops the motion against walls and the ground)
             v = this.getDeltaMovement().scale(0.98);
-            if (this.onGround()) v = v.multiply(0.7, 0, 0.7);
+            if (this.onGround()) v = kind() == ANCHOR ? Vec3.ZERO : v.multiply(0.7, 0, 0.7); // an anchor bites in, a keg rolls on a little
             this.setDeltaMovement(v);
         }
         if (!this.level().isClientSide() && --life <= 0) this.discard();

@@ -87,7 +87,7 @@ final class FxNewJobs {
                 double t = i / (double) Math.max(1, links);
                 // a little slack: the chain sags in the middle
                 Vec3 v = from.add(d.scale(t)).add(0, -Math.sin(t * Math.PI) * Math.min(0.6, len * 0.04), 0);
-                Fx.p(S.RING, v).fixed(i % 2 == 0 ? Fx.across(dir) : Fx.axial(v, dir)).size(0.13F).color(0x8A929C).alphaBlend().lit().life(2).spawn();
+                Fx.p(S.RING, v).fixed(i % 2 == 0 ? Fx.across(dir) : Fx.axial(v, dir)).size(0.17F).color(0x60666E).alphaBlend().lit().life(2).spawn();
             }
             return false;
         });
