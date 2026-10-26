@@ -290,6 +290,7 @@ final class NewJobTests {
         become(p, "spellsinger");
         if (dummies.isEmpty()) return;
         LivingEntity mob = dummies.get(0);
+        com.jo112ss.rpgmod.job.Bard.forgetWard(p.getUUID()); // (the arena reset took the last test's absorption away)
         var mode = p.gameMode();
         boolean inv = p.getAbilities().invulnerable;
         p.setGameMode(net.minecraft.world.level.GameType.SURVIVAL);

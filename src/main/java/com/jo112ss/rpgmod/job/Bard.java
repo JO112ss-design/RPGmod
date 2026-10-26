@@ -417,6 +417,12 @@ public final class Bard {
         WARDED.put(id, now + ticks);
     }
 
+    /** Forgets someone's ward melody state (logout, tests). */
+    public static void forgetWard(UUID id) {
+        WARDED.remove(id);
+        WARD_BROKEN.remove(id);
+    }
+
     /** Makes someone's ward melody absorption last {@code ticks} more without refilling it. */
     private static void keepWard(ServerPlayer singer, ServerPlayer a, int ticks) {
         MobEffectInstance abs = a.getEffect(MobEffects.ABSORPTION);
@@ -549,5 +555,6 @@ public final class Bard {
 
     static void forget(UUID id) {
         PERF.remove(id);
+        forgetWard(id);
     }
 }
