@@ -28,6 +28,8 @@ final class FxNewJobs {
             case "n_wave" -> wave(p);
             case "n_shell" -> shell(p);
             case "n_ghost_ship" -> ghostShip(p);
+            case "n_coin_fall" -> coinFall(p);
+            case "n_dark_portal" -> darkPortal(p);
             default -> {
                 return false;
             }
@@ -182,6 +184,49 @@ final class FxNewJobs {
                 Fx.p(S.GLOW, drip).vel(0, -0.04, 0).color(hull).size(0.3F, 0.6F).alpha(0.35F * fade, 0).life(24).spawn();
             }
             Fx.p(S.GLOW, at.p(-3.6, 2.4, 0)).color(0xFFFFFF, 0x9FFFE0).size(0.5F).alpha(0.8F * fade).life(2).spawn();
+            return false;
+        });
+    }
+
+    /** A big gold coin tumbling down onto pos in b ticks, glinting, and a splash of gold where it lands. */
+    private static void coinFall(P p) {
+        Vec3 at = p.pos();
+        int fall = Math.max(2, (int) p.b());
+        Vec3 sky = new Vec3(Fx.r(-0.8, 0.8), 8, Fx.r(-0.8, 0.8));
+        Fx.p(S.COIN, at.add(sky)).vel(sky.scale(-1.0 / fall)).size(0.32F).alpha(1, 1).coin().spin(0.5F).life(fall).spawn();
+        FxAnims.run(fall, age -> {
+            Vec3 v = at.add(sky.scale(1 - (double) age / fall));
+            Fx.p(S.GLOW, v).color(0xFFFFFF, 0xFFC830).size(0.2F, 0).alpha(0.8F, 0).life(6).spawn();
+            if (age % 2 == 0) Fx.p(S.SPARK, v.add(Fx.randomUnit().scale(0.25))).color(0xFFFFFF, 0xFFE070).size(0.15F, 0).randomAngle().life(5).spawn();
+            return false;
+        });
+        FxAnims.later(fall, () -> {
+            ground(S.RING, at, 0.2F, 0xFFD040, 8).size(0.2F, 1.2F).easeOut().alpha(0.9F, 0).spawn();
+            for (int i = 0, n = Fx.n(5); i < n; i++) {
+                Fx.p(S.COIN, at.add(0, 0.2, 0)).vel(Fx.randomUnit().scale(Fx.r(0.08, 0.18)).add(0, 0.25, 0)).gravity(0.6F).size(0.12F).alpha(1, 0).coin().spin(0.6F).life(16).spawn();
+            }
+        });
+    }
+
+    /**
+     * A dark hole in the air above an entity (followed for b ticks) that the shadow arrows come
+     * out of: a turning dark circle with smoke curling at its edge.
+     */
+    private static void darkPortal(P p) {
+        Entity e = p.e();
+        if (e == null) return;
+        int life = Math.max(10, (int) p.b());
+        int c = p.colorOr(0x6070C0);
+        FxAnims.follow(e, life, age -> {
+            float fade = Math.min(1, Math.min(age / 6F, (life - age) / 6F));
+            Vec3 top = e.position().add(0, e.getBbHeight() + 5.5, 0);
+            Fx.p(S.CIRCLE_HEX, top).flat().size(1.6F).color(c).alpha(0.8F * fade).spin(0).angle(age * 0.08F).life(2).spawn();
+            Fx.p(S.GLOW, top).flat().alphaBlend().color(0x0A0A14).size(1.3F).alpha(0.85F * fade).life(2).spawn();
+            if (age % 2 == 0) {
+                double a = Fx.r(0, Math.PI * 2);
+                Vec3 edge = top.add(Math.cos(a) * 1.4, 0, Math.sin(a) * 1.4);
+                smoke(edge, 0x20202C, 0.3F, 0.7F, 14).vel(Math.cos(a + 1.6) * 0.05, -0.02, Math.sin(a + 1.6) * 0.05).alpha(0.6F * fade, 0).spawn();
+            }
             return false;
         });
     }

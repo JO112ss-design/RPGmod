@@ -306,11 +306,12 @@ public final class MoreJobSkills {
         int life = ticks(c.def().duration());
         Vec3 dir = c.flat(), side = Fx3.right(dir);
         Pirate.BARRAGE_UNTIL.put(p.getUUID(), c.level().getGameTime() + life);
+        // the ships hang in the air around the far side of the area, each side on to it
         Vec3[] ships = new Vec3[3];
         for (int i = 0; i < 3; i++) {
-            ships[i] = p.position().add(dir.scale(-6 + Math.abs(i - 1) * -2)).add(side.scale((i - 1) * 10)).add(0, 11 + (i % 2) * 1.5, 0);
-            ServerFx.of("n_ghost_ship", ships[i]).vec(side) // lying across, broadside towards the target
-                    .b(life + 20).send(c.level());
+            Vec3 out = Fx3.rotY(dir, Math.toRadians((i - 1) * 60));
+            ships[i] = o.add(out.scale(r + 1)).add(0, 8 + (i == 1 ? 1.5 : 0), 0);
+            ServerFx.of("n_ghost_ship", ships[i]).vec(Fx3.right(out)).b(life + 20).send(c.level());
         }
         ServerFx.of("x_zone", o).a(r).b(life + 10).vec(new Vec3(2, 4, 0)).color(0x7FE8D8).send(c.level());
         sound(c, SoundEvents.BELL_BLOCK, 0.5F);
@@ -321,7 +322,7 @@ public final class MoreJobSkills {
                 int i = turn[0]++ % 3;
                 List<LivingEntity> foes = enemies(p, o, r + 2);
                 Vec3 at = foes.isEmpty() ? NewJobSkills.spotIn(c, o, r, foes) : foes.get(turn[0] % foes.size()).position();
-                Vec3 from = ships[i].add(dir.scale(1.6)).add(0, 1.0, 0);
+                Vec3 from = ships[i].add(at.subtract(ships[i]).multiply(1, 0, 1).normalize().scale(1.6)).add(0, 1.0, 0);
                 ServerFx.of("n_cannon_fire", from).vec(at.subtract(from)).send(c.level());
                 NewJobSkills.shell(c, from, at, 12, 2.2, c.dmg(1));
                 sound(c, from, SoundEvents.GENERIC_EXPLODE, 1.0F, 0.6F);
@@ -1255,6 +1256,7 @@ public final class MoreJobSkills {
         int life = ticks(c.def().duration());
         final LivingEntity[] target = {first};
         ServerFx.of("x_mark", first.position()).follow(first).a(c.def().duration()).color(0x6070C0).send(c.level());
+        ServerFx.of("n_dark_portal", first.position()).follow(first).b(life + 6).color(0x6070C0).send(c.level());
         sound(c, SoundEvents.ARROW_SHOOT, 0.6F);
         SkillTasks.run(age -> {
             if (age % 4 == 0 && age < life) {
@@ -1456,7 +1458,7 @@ public final class MoreJobSkills {
         SkillTasks.run(age -> {
             if (age % 2 == 0 && age < life) {
                 Vec3 at = NewJobSkills.ground(c, NewJobSkills.spotIn(c, o, r, enemies(p, o, r)));
-                ServerFx.of("x_star", at).a(1.2).b(6).color(0xFFD040).send(c.level());
+                ServerFx.of("n_coin_fall", at).b(6).send(c.level());
                 SkillTasks.later(6, () -> {
                     List<LivingEntity> hit = enemies(p, at, 1.6);
                     for (LivingEntity e : hit) hurt(c, e, c.dmg(1), melee(c));

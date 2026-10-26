@@ -262,7 +262,7 @@ public final class AutoTestClient {
     }
 
     private static int length(String entry) {
-        String id = entry.startsWith("fp:") ? entry.substring(3) : entry;
+        String id = entry.startsWith("fp:") || entry.startsWith("up:") || entry.startsWith("down:") ? entry.substring(entry.indexOf(':') + 1) : entry;
         return switch (id) {
             case "mob:pillar", "mob:dig", "mob:archer", "mob:items" -> 220;
             case "mob:creeper", "mob:spider" -> 120;
@@ -333,7 +333,7 @@ public final class AutoTestClient {
             if ("all".equals(System.getProperty("rpgmod.showcase"))) showSkills.addAll(com.jo112ss.rpgmod.job.core.JobDefs.SKILLS.keySet());
             showSkills.clear(); // thrown props (keg, anchor) fly on the client too: their path tick by tick
             showSkills.clear(); // group A, the rain skills made distinct: carpet bombing, ghost ships, stuck spears, focused arrows, coins to pick up
-            showSkills.addAll(java.util.List.of("nj:pirate", "broadside", "nj:captain", "fleet_barrage", "nj:lancer", "spear_rain", "nj:shadow_hunter", "shadow_rain",
+            showSkills.addAll(java.util.List.of("nj:pirate", "down:broadside", "nj:captain", "up:fleet_barrage", "nj:lancer", "spear_rain", "nj:shadow_hunter", "shadow_rain",
                     "nj:treasure_hunter", "treasure_rain", "nj:coins", "nj:restore"));
             mc.options.gamma().set(1.0); // the night fight, brightly lit for the screenshots
             mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK);
@@ -440,7 +440,10 @@ public final class AutoTestClient {
             return;
         }
         boolean fp = entry.startsWith("fp:");
-        String id = fp ? entry.substring(3) : entry;
+        // "up:" / "down:" turn the camera after the cast (the skill is already aimed) to see the sky or the ground
+        float tilt = entry.startsWith("up:") ? -28 : entry.startsWith("down:") ? 38 : Float.NaN;
+        String id = fp ? entry.substring(3) : Float.isNaN(tilt) ? entry : entry.substring(entry.indexOf(':') + 1);
+        if (!Float.isNaN(tilt) && k == 3) mc.player.setXRot(tilt);
         // the new jobs: hold the job's weapon on this side too (the server puts it in slot 7), for the HUD
         if (k == 4 && entry.startsWith("nj:") && !entry.equals("nj:restore")) mc.player.getInventory().setSelectedSlot(6);
         if (k == 0) {
