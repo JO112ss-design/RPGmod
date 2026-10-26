@@ -20,13 +20,13 @@ public final class BardAttack {
 
     public static void wave(ServerPlayer p) {
         ServerLevel level = (ServerLevel) p.level();
-        JobData d = JobManager.data(p);
-        if (d.mana() < COST) {
+        JobData data = JobManager.data(p);
+        if (data.mana() < COST) {
             p.sendSystemMessage(net.minecraft.network.chat.Component.translatable("rpgmod.job.no_mana").withStyle(net.minecraft.ChatFormatting.RED), true);
             p.getCooldowns().addCooldown(p.getMainHandItem(), GAP);
             return;
         }
-        d.setMana(d.mana() - COST);
+        data.setMana(data.mana() - COST);
         JobManager.sync(p);
         // the context only carries the player and the damage type here: the ratio is set below
         Ctx c = new Ctx(p, level, JobDefs.skill("finale"), JobManager.magicAttack(p), 1.0);
