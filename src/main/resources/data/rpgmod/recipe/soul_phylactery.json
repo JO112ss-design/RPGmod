@@ -1,0 +1,15 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    " G ",
+    "BSB",
+    "BGB"
+  ],
+  "key": {
+    "G": "minecraft:gold_ingot",
+    "B": "minecraft:bone_block",
+    "S": "minecraft:soul_lantern"
+  },
+  "result": { "id": "rpgmod:soul_phylactery", "count": 1 }
+}

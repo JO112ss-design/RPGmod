@@ -27,7 +27,7 @@ public final class Dungeons {
 
     /** What was offered: a key's run of four rooms, or straight to a boss. */
     public enum Kind {
-        RUN, KING_SLIME, GOLEM;
+        RUN, KING_SLIME, GOLEM, LICH, SPIDER_QUEEN;
 
         public boolean boss() {
             return this != RUN;

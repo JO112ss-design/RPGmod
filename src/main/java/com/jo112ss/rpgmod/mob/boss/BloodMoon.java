@@ -148,22 +148,36 @@ public final class BloodMoon {
 
     // ------------------------------------------------------------------ the boss
 
+    /** The four bosses a blood moon (or a dungeon's last room) may bring. */
+    public static List<net.minecraft.world.entity.EntityType<? extends net.minecraft.world.entity.Mob>> bosses() {
+        return List.of(ModRegistries.KING_SLIME.get(), ModRegistries.GOLEM.get(), ModRegistries.LICH.get(), ModRegistries.SPIDER_QUEEN.get());
+    }
+
+    /** The lang key part of a boss ({@code king_slime}, {@code golem}, {@code lich}, {@code spider_queen}). */
+    public static String key(net.minecraft.world.entity.EntityType<?> type) {
+        return net.minecraft.core.registries.BuiltInRegistries.ENTITY_TYPE.getKey(type).getPath();
+    }
+
     /**
-     * Summons the night's boss - the King Slime or the Golem ({@link MobConfig#golemChance()}) - near a
-     * random player in the overworld; null if nobody is there or no room.
+     * Summons the night's boss - one of the four, at random - near a random player in the overworld;
+     * null if nobody is there or no room.
      */
     public static net.minecraft.world.entity.Mob summon(ServerLevel ow) {
-        boolean golem = ow.getRandom().nextDouble() < MobConfig.golemChance();
-        return summon(ow, golem);
+        var all = bosses();
+        return summon(ow, all.get(ow.getRandom().nextInt(all.size())));
     }
 
     public static net.minecraft.world.entity.Mob summon(ServerLevel ow, boolean golem) {
+        return summon(ow, golem ? ModRegistries.GOLEM.get() : ModRegistries.KING_SLIME.get());
+    }
+
+    public static net.minecraft.world.entity.Mob summon(ServerLevel ow, net.minecraft.world.entity.EntityType<? extends net.minecraft.world.entity.Mob> type) {
         List<ServerPlayer> pool = new ArrayList<>();
         for (ServerPlayer p : ow.players()) if (p.isAlive() && !p.isSpectator() && !com.jo112ss.rpgmod.compat.Downed.is(p)) pool.add(p);
         java.util.Collections.shuffle(pool, new java.util.Random(ow.getRandom().nextLong()));
-        String key = golem ? "golem" : "king_slime";
+        String key = key(type);
         for (ServerPlayer p : pool) {
-            net.minecraft.world.entity.Mob boss = golem ? spawnNear(ow, p, ModRegistries.GOLEM.get()) : spawnNear(ow, p);
+            net.minecraft.world.entity.Mob boss = spawnNear(ow, p, type);
             if (boss != null) {
                 BossEvents.broadcast(ow.getServer(), Component.translatable("rpgmod.boss." + key + ".appeared", p.getDisplayName()).withStyle(ChatFormatting.RED));
                 for (ServerPlayer q : ow.players()) {
@@ -187,6 +201,7 @@ public final class BloodMoon {
         T king = type.create(level, EntitySpawnReason.EVENT);
         if (king == null) return null;
         boolean golem = king instanceof Golem;
+        String spawnFx = king instanceof Golem ? "golem_spawn" : king instanceof Lich ? "lich_spawn" : king instanceof SpiderQueen ? "queen_spawn" : "king_spawn";
         var rnd = level.getRandom();
         for (int pass = 0; pass < 3; pass++) {
             for (int i = 0; i < 24; i++) {
@@ -206,10 +221,10 @@ public final class BloodMoon {
                 if (!level.noCollision(king) || level.containsAnyLiquid(king.getBoundingBox())) continue;
                 king.setPersistenceRequired();
                 level.addFreshEntity(king);
-                com.jo112ss.rpgmod.job.fx.ServerFx.of(golem ? "golem_spawn" : "king_spawn", king.position()).a(king.getBbWidth()).send(level, 128);
+                com.jo112ss.rpgmod.job.fx.ServerFx.of(spawnFx, king.position()).a(king.getBbWidth()).send(level, 128);
                 level.playSound(null, king.blockPosition(), golem ? SoundEvents.STONE_BREAK : SoundEvents.SLIME_SQUISH, SoundSource.HOSTILE, 4.0F, 0.3F);
                 level.playSound(null, king.blockPosition(), SoundEvents.RAVAGER_ROAR, SoundSource.HOSTILE, 3.0F, golem ? 0.4F : 0.6F);
-                RpgMod.LOGGER.info("[blood moon] {} Lv{} near {} at {}", golem ? "Golem" : "King Slime", MobLevels.level(king), p.getGameProfile().name(), king.blockPosition());
+                RpgMod.LOGGER.info("[blood moon] {} Lv{} near {} at {}", key(type), MobLevels.level(king), p.getGameProfile().name(), king.blockPosition());
                 return king;
             }
         }

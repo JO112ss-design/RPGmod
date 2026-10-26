@@ -59,6 +59,16 @@ public final class ModRegistries {
                     b -> b.sized(1.4F * com.jo112ss.rpgmod.mob.boss.Golem.SCALE, 2.7F * com.jo112ss.rpgmod.mob.boss.Golem.SCALE).eyeHeight(2.3F * com.jo112ss.rpgmod.mob.boss.Golem.SCALE)
                             .clientTrackingRange(16).fireImmune());
 
+    /** The Lich King: a giant skeletal sorcerer (sized by its scale attribute). */
+    public static final DeferredHolder<net.minecraft.world.entity.EntityType<?>, net.minecraft.world.entity.EntityType<com.jo112ss.rpgmod.mob.boss.Lich>> LICH =
+            ENTITIES.registerEntityType("lich", com.jo112ss.rpgmod.mob.boss.Lich::new, net.minecraft.world.entity.MobCategory.MONSTER,
+                    b -> b.sized(0.6F, 1.99F).eyeHeight(1.74F).clientTrackingRange(16).fireImmune());
+
+    /** The Spider Queen: a giant spider (sized by her scale attribute). */
+    public static final DeferredHolder<net.minecraft.world.entity.EntityType<?>, net.minecraft.world.entity.EntityType<com.jo112ss.rpgmod.mob.boss.SpiderQueen>> SPIDER_QUEEN =
+            ENTITIES.registerEntityType("spider_queen", com.jo112ss.rpgmod.mob.boss.SpiderQueen::new, net.minecraft.world.entity.MobCategory.MONSTER,
+                    b -> b.sized(1.4F, 0.9F).eyeHeight(0.65F).clientTrackingRange(16));
+
     /** Fallen adventurers: zombies that still fight in their old job's way, deep underground. */
     public static final DeferredHolder<net.minecraft.world.entity.EntityType<?>, net.minecraft.world.entity.EntityType<com.jo112ss.rpgmod.mob.revenant.Revenant>> REVENANT =
             ENTITIES.registerEntityType("revenant", com.jo112ss.rpgmod.mob.revenant.Revenant::new, net.minecraft.world.entity.MobCategory.MONSTER,
@@ -111,6 +121,10 @@ public final class ModRegistries {
     public static final DeferredItem<net.minecraft.world.item.Item> SLIME_CROWN = ITEMS.registerSimpleItem("slime_crown",
             p -> p.stacksTo(16).rarity(net.minecraft.world.item.Rarity.RARE));
     public static final DeferredItem<net.minecraft.world.item.Item> GOLEM_CORE = ITEMS.registerSimpleItem("golem_core",
+            p -> p.stacksTo(16).rarity(net.minecraft.world.item.Rarity.RARE));
+    public static final DeferredItem<net.minecraft.world.item.Item> SOUL_PHYLACTERY = ITEMS.registerSimpleItem("soul_phylactery",
+            p -> p.stacksTo(16).rarity(net.minecraft.world.item.Rarity.RARE));
+    public static final DeferredItem<net.minecraft.world.item.Item> QUEEN_COCOON = ITEMS.registerSimpleItem("queen_cocoon",
             p -> p.stacksTo(16).rarity(net.minecraft.world.item.Rarity.RARE));
 
     public static final DeferredHolder<MenuType<?>, MenuType<com.jo112ss.rpgmod.gem.SocketMenu>> SOCKET_MENU = MENUS.register("socket",
@@ -169,6 +183,8 @@ public final class ModRegistries {
                 for (int lv : new int[] {30, 60, 100, 150}) output.accept(com.jo112ss.rpgmod.dungeon.DungeonManager.sealedKey(lv));
                 output.accept(SLIME_CROWN.get());
                 output.accept(GOLEM_CORE.get());
+                output.accept(SOUL_PHYLACTERY.get());
+                output.accept(QUEEN_COCOON.get());
                 // one gem of every special effect, and one of every stat (rare, at its top value)
                 for (com.jo112ss.rpgmod.gem.GemSpecial s : com.jo112ss.rpgmod.gem.GemSpecial.values()) {
                     output.accept(com.jo112ss.rpgmod.gem.GemItems.stack(com.jo112ss.rpgmod.gem.Gem.of(s)));

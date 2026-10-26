@@ -50,9 +50,9 @@ import net.minecraft.world.phys.Vec3;
 
 /**
  * King Slime, the blood moon boss: a giant crowned slime with a rhythm. It hops after its target
- * quickly, then strings together a <b>combo</b> of readable moves (two, three below half health) and
- * ends it <b>exhausted</b>: it sags and pants for a few seconds and takes 1.5x damage. A dodged slam
- * also leaves a short opening, and a dash into a wall a long one.
+ * quickly, then strings together a <b>combo</b> of readable moves (three, four below half health);
+ * every second combo ends <b>exhausted</b>: it sags and pants for a moment and takes 1.4x damage. A
+ * dash into a wall leaves it dazed for a while too.
  * <ul>
  * <li>slam: red circle where it will land, a leap, a hit inside the circle and a ground shockwave
  * that can be jumped</li>
@@ -353,7 +353,7 @@ public class KingSlime extends Slime implements BloodMoonBoss {
         List<Move> pool = new ArrayList<>(p2
                 ? List.of(Move.TRIPLE, Move.TRIPLE, Move.SLAM, Move.BOUNCE, Move.BOUNCE, Move.SPIT, Move.DASH, Move.DASH, Move.RAIN, Move.RIPPLE, Move.RIPPLE)
                 : List.of(Move.SLAM, Move.SLAM, Move.BOUNCE, Move.BOUNCE, Move.SPIT, Move.DASH, Move.DASH, Move.RAIN));
-        int n = p2 ? 3 : 2;
+        int n = p2 ? 4 : 3;
         if (p2 && absorbCooldown <= 0 && children(sl).size() >= 2 && this.random.nextBoolean()) {
             combo.add(Move.ABSORB);
             n--;
@@ -384,15 +384,27 @@ public class KingSlime extends Slime implements BloodMoonBoss {
         if (!combo.isEmpty()) {
             setState(State.CHASE, 0);
             nextMove = phase() >= 2 ? 6 + this.random.nextInt(6) : 10 + this.random.nextInt(8);
+        } else if (++combos % 2 == 0) {
+            startTired(); // exhausted after every second combo only
         } else {
-            startTired();
+            setState(State.CHASE, 0);
+            nextMove = phase() >= 2 ? 14 + this.random.nextInt(8) : 20 + this.random.nextInt(10);
         }
     }
 
+    /** Combos done (every second one ends exhausted). */
+    private int combos;
+
+    /** A short pause to land, with no extra damage taken (the openings are kept for the big moments). */
+    private void recover(int ticks) {
+        setState(State.STUN, ticks);
+        damageTakenMult = 1;
+    }
+
     private void startTired() {
-        int len = phase() >= 2 ? 55 : 70;
+        int len = phase() >= 2 ? 40 : 50;
         setState(State.TIRED, len);
-        damageTakenMult = 1.5F;
+        damageTakenMult = 1.4F;
         if (this.level() instanceof ServerLevel sl) {
             ServerFx.of("king_tired", this.position()).follow(this).a(this.getBbWidth()).b(len).send(sl);
             sl.playSound(null, this.blockPosition(), SoundEvents.SLIME_SQUISH, SoundSource.HOSTILE, 2.5F, 0.35F);
@@ -516,8 +528,8 @@ public class KingSlime extends Slime implements BloodMoonBoss {
             }
         }
         switch (hop) {
-            case SLAM -> stun(sl, phase() >= 2 ? 14 : 18, 1.3F); // a short opening after every slam
-            case TRIPLE -> stun(sl, 24, 1.3F);
+            case SLAM -> recover(phase() >= 2 ? 8 : 10);
+            case TRIPLE -> recover(14);
             default -> moveDone();
         }
     }
@@ -608,7 +620,7 @@ public class KingSlime extends Slime implements BloodMoonBoss {
             ServerFx.of("king_wall", this.position().add(dashDir.scale(this.getBbWidth() / 2)).add(0, 1, 0)).a(this.getBbWidth()).send(sl);
             sl.playSound(null, this.blockPosition(), SoundEvents.GENERIC_EXPLODE.value(), SoundSource.HOSTILE, 1.5F, 0.8F);
             sl.playSound(null, this.blockPosition(), SoundEvents.SLIME_BLOCK_FALL, SoundSource.HOSTILE, 3.0F, 0.4F);
-            stun(sl, 70, 1.5F);
+            stun(sl, 45, 1.4F);
             return;
         }
         if (stateTicks >= stateLength) moveDone();
@@ -725,7 +737,7 @@ public class KingSlime extends Slime implements BloodMoonBoss {
     private void startAbsorb(ServerLevel sl) {
         absorbCooldown = 600;
         setState(State.ABSORB, 70);
-        damageTakenMult = 1.3F;
+        damageTakenMult = 1;
         for (ServerPlayer p : bossPlayers()) {
             p.sendSystemMessage(Component.translatable("rpgmod.boss.king_slime.absorb").withStyle(ChatFormatting.AQUA), true);
         }

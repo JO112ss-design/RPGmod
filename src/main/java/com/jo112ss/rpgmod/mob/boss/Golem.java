@@ -46,8 +46,8 @@ import net.minecraft.world.phys.Vec3;
 
 /**
  * The Golem, the other blood moon boss: a giant dark stone golem with a glowing core. It walks after
- * its target and strings together a combo of heavy, readable moves (two, three below half health),
- * then <b>overheats</b>: it kneels with its core open for a few seconds and takes 1.5x damage.
+ * its target and strings together a combo of heavy, readable moves (three, four below half health);
+ * every second combo it <b>overheats</b>: it kneels with its core open for a moment and takes 1.4x damage.
  * <ul>
  * <li>slam: both arms up, a red circle around it, then a hit inside and a ground shockwave (jumpable)</li>
  * <li>boulder: tears a rock from the ground and throws it at a player (marked landing spot)</li>
@@ -398,7 +398,7 @@ public class Golem extends Monster implements BloodMoonBoss {
         List<Move> pool = new ArrayList<>(p2
                 ? List.of(Move.QUAKE, Move.QUAKE, Move.SLAM, Move.THROW, Move.THROW, Move.FISSURE, Move.FISSURE, Move.CHARGE, Move.CHARGE, Move.ROCKFALL)
                 : List.of(Move.SLAM, Move.SLAM, Move.THROW, Move.THROW, Move.FISSURE, Move.FISSURE, Move.CHARGE, Move.ROCKFALL));
-        int n = p2 ? 3 : 2;
+        int n = p2 ? 4 : 3;
         // someone hugging it: the sweep comes first
         if (!fighters(sl, reach() + 1.5).isEmpty() && this.random.nextDouble() < 0.7) {
             combo.add(Move.SWEEP);
@@ -429,15 +429,21 @@ public class Golem extends Monster implements BloodMoonBoss {
         if (!combo.isEmpty()) {
             setState(State.CHASE, 0);
             nextMove = phase() >= 2 ? 8 + this.random.nextInt(6) : 12 + this.random.nextInt(8);
+        } else if (++combos % 2 == 0) {
+            startOverheat(); // overheats after every second combo only
         } else {
-            startOverheat();
+            setState(State.CHASE, 0);
+            nextMove = phase() >= 2 ? 16 + this.random.nextInt(8) : 22 + this.random.nextInt(10);
         }
     }
 
+    /** Combos done (every second one ends in an overheat). */
+    private int combos;
+
     private void startOverheat() {
-        int len = phase() >= 2 ? 55 : 70;
+        int len = phase() >= 2 ? 40 : 50;
         setState(State.OVERHEAT, len);
-        damageTakenMult = 1.5F;
+        damageTakenMult = 1.4F;
         if (this.level() instanceof ServerLevel sl) {
             ServerFx.of("golem_overheat", this.position()).follow(this).a(this.getBbWidth()).b(len).send(sl);
             sl.playSound(null, this.blockPosition(), SoundEvents.LAVA_EXTINGUISH, SoundSource.HOSTILE, 2.0F, 0.6F);
@@ -493,10 +499,10 @@ public class Golem extends Monster implements BloodMoonBoss {
         }
     }
 
-    /** Fists on the ground after a slam: a short opening (x1.3). */
+    /** Fists on the ground after a slam: a short recovery (no extra damage taken). */
     private void fistsDown(int ticks) {
         setState(State.SLAM, ticks);
-        damageTakenMult = 1.3F;
+        damageTakenMult = 1;
     }
 
     private int quakeEvery() {
@@ -762,7 +768,7 @@ public class Golem extends Monster implements BloodMoonBoss {
             ServerFx.of("king_wall", this.position().add(aimDir.scale(this.getBbWidth() / 2)).add(0, 1.5, 0)).a(this.getBbWidth()).send(sl);
             sl.playSound(null, this.blockPosition(), SoundEvents.GENERIC_EXPLODE.value(), SoundSource.HOSTILE, 1.5F, 0.7F);
             sl.playSound(null, this.blockPosition(), SoundEvents.IRON_GOLEM_HURT, SoundSource.HOSTILE, 2.5F, 0.4F);
-            stun(sl, 70, 1.5F);
+            stun(sl, 45, 1.4F);
             return;
         }
         if (stateTicks >= stateLength) moveDone();
@@ -881,7 +887,7 @@ public class Golem extends Monster implements BloodMoonBoss {
         for (ServerPlayer p : bossPlayers()) p.sendSystemMessage(Component.translatable("rpgmod.boss.golem.armour_broken").withStyle(ChatFormatting.YELLOW), true);
         if (state != State.LEAP && state != State.CHARGE) {
             combo.clear();
-            stun(sl, 60, 1.5F);
+            stun(sl, 40, 1.4F);
         }
     }
 

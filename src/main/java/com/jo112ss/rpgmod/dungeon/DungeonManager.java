@@ -92,6 +92,8 @@ public final class DungeonManager {
         if (stack.is(ModRegistries.DUNGEON_KEY.get()) || stack.is(ModRegistries.SEALED_KEY.get())) return Kind.RUN;
         if (stack.is(ModRegistries.SLIME_CROWN.get())) return Kind.KING_SLIME;
         if (stack.is(ModRegistries.GOLEM_CORE.get())) return Kind.GOLEM;
+        if (stack.is(ModRegistries.SOUL_PHYLACTERY.get())) return Kind.LICH;
+        if (stack.is(ModRegistries.QUEEN_COCOON.get())) return Kind.SPIDER_QUEEN;
         return null;
     }
 
@@ -162,6 +164,8 @@ public final class DungeonManager {
             case RUN -> 0xB070FF;
             case KING_SLIME -> 0x70E070;
             case GOLEM -> 0xFF9050;
+            case LICH -> 0x7FE8FF;
+            case SPIDER_QUEEN -> 0xB070FF;
         };
     }
 
@@ -324,8 +328,8 @@ public final class DungeonManager {
         if (room.last() && finalWave) {
             boolean boss = r.kind.boss() || (forceBoss != null ? forceBoss : rnd.nextDouble() < BOSS_CHANCE);
             if (boss) {
-                Kind k = r.kind.boss() ? r.kind : rnd.nextBoolean() ? Kind.KING_SLIME : Kind.GOLEM;
-                plan.add(new Spawn(k == Kind.GOLEM ? ModRegistries.GOLEM.get() : ModRegistries.KING_SLIME.get(), null, 0, true));
+                Kind k = r.kind.boss() ? r.kind : BOSSES[rnd.nextInt(BOSSES.length)];
+                plan.add(new Spawn(bossType(k), null, 0, true));
             } else {
                 int count = 2 + (n >= 3 ? 1 : 0);
                 for (int i = 0; i < count; i++) plan.add(strong(rnd, 3));
@@ -379,6 +383,24 @@ public final class DungeonManager {
             for (ServerPlayer p : inside) if (near == null || p.distanceToSqr(m) < near.distanceToSqr(m)) near = p;
             m.setTarget(near);
         }
+    }
+
+    private static final Kind[] BOSSES = {Kind.KING_SLIME, Kind.GOLEM, Kind.LICH, Kind.SPIDER_QUEEN};
+
+    static EntityType<? extends Mob> bossType(Kind k) {
+        return switch (k) {
+            case GOLEM -> ModRegistries.GOLEM.get();
+            case LICH -> ModRegistries.LICH.get();
+            case SPIDER_QUEEN -> ModRegistries.SPIDER_QUEEN.get();
+            default -> ModRegistries.KING_SLIME.get();
+        };
+    }
+
+    private static String spawnFx(Mob m) {
+        if (m instanceof com.jo112ss.rpgmod.mob.boss.Golem) return "golem_spawn";
+        if (m instanceof com.jo112ss.rpgmod.mob.boss.Lich) return "lich_spawn";
+        if (m instanceof com.jo112ss.rpgmod.mob.boss.SpiderQueen) return "queen_spawn";
+        return "king_spawn";
     }
 
     /** One monster to spawn: its type, a job for revenants, elite traits (0 = none), a boss? */
@@ -436,7 +458,7 @@ public final class DungeonManager {
         ServerPlayer near = null;
         for (ServerPlayer p : inside) if (near == null || p.distanceToSqr(m) < near.distanceToSqr(m)) near = p;
         if (near != null && !near.isCreative()) m.setTarget(near);
-        ServerFx.of(s.boss() ? (m instanceof com.jo112ss.rpgmod.mob.boss.Golem ? "golem_spawn" : "king_spawn") : "dg_summon", m.position()).a(m.getBbWidth())
+        ServerFx.of(s.boss() ? spawnFx(m) : "dg_summon", m.position()).a(m.getBbWidth())
                 .color(s.traits() != 0 ? 0xFFB040 : 0xB070FF).send(dl, 64);
         return m;
     }

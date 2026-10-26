@@ -35,6 +35,8 @@ public final class BossEvents {
         event.put(ModRegistries.KING_SLIME.get(), KingSlime.createAttributes().build());
         event.put(ModRegistries.GOLEM.get(), Golem.createAttributes().build());
         event.put(ModRegistries.GOLEM_PILLAR.get(), GolemPillar.createAttributes().build());
+        event.put(ModRegistries.LICH.get(), Lich.createAttributes().build());
+        event.put(ModRegistries.SPIDER_QUEEN.get(), SpiderQueen.createAttributes().build());
         event.put(ModRegistries.REVENANT.get(), com.jo112ss.rpgmod.mob.revenant.Revenant.createAttributes().build());
     }
 
@@ -79,6 +81,30 @@ public final class BossEvents {
     @SubscribeEvent
     public static void onSplit(MobSplitEvent event) {
         if (event.getParent() instanceof KingSlime) event.setCanceled(true);
+    }
+
+    /**
+     * A boss is down: skill books for everyone who fought it or stood near (48 blocks), a fanfare, and
+     * word to the server ({@code rpgmod.boss.<key>.defeated}).
+     */
+    public static void reward(ServerLevel sl, LivingEntity boss, java.util.Set<java.util.UUID> participants, String key) {
+        java.util.Set<java.util.UUID> who = new java.util.HashSet<>(participants);
+        for (net.minecraft.server.level.ServerPlayer p : sl.getEntitiesOfClass(net.minecraft.server.level.ServerPlayer.class, boss.getBoundingBox().inflate(48))) who.add(p.getUUID());
+        int books = com.jo112ss.rpgmod.mob.MobConfig.bossBooks();
+        java.util.List<String> names = new java.util.ArrayList<>();
+        for (java.util.UUID id : who) {
+            net.minecraft.server.level.ServerPlayer p = sl.getServer().getPlayerList().getPlayer(id);
+            if (p == null) continue;
+            names.add(p.getGameProfile().name());
+            if (books > 0) {
+                net.minecraft.world.item.ItemStack stack = new net.minecraft.world.item.ItemStack(ModRegistries.SKILL_BOOK.get(), books);
+                if (!p.getInventory().add(stack)) p.drop(stack, false, net.minecraft.util.Prediction.SERVER_ONLY);
+                p.sendSystemMessage(Component.translatable("rpgmod.boss.reward", books).withStyle(net.minecraft.ChatFormatting.GOLD));
+            }
+            sl.playSound(null, p.getX(), p.getY(), p.getZ(), net.minecraft.sounds.SoundEvents.UI_TOAST_CHALLENGE_COMPLETE, net.minecraft.sounds.SoundSource.PLAYERS, 1.0F, 1.0F);
+        }
+        broadcast(sl.getServer(), Component.translatable("rpgmod.boss." + key + ".defeated", String.join(", ", names)).withStyle(net.minecraft.ChatFormatting.GOLD));
+        RpgMod.LOGGER.info("[boss] {} defeated, {} participants rewarded", key, names.size());
     }
 
     public static void broadcast(MinecraftServer server, Component msg) {

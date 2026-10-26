@@ -1226,5 +1226,21 @@
   "rpgmod.dungeon.cleared": "§6Dungeon cleared!§r Back to the altar in %s s - mind the chest",
   "rpgmod.dungeon.altar_locked": "The altar cannot be broken while its dungeon is open",
   "rpgmod.dungeon.wave": "§cWave %s/%s",
-  "rpgmod.dungeon.wave_cleared": "§eWave %s/%s beaten! More are coming..."
+  "rpgmod.dungeon.wave_cleared": "§eWave %s/%s beaten! More are coming...",
+  "item.rpgmod.soul_phylactery": "Soul Phylactery",
+  "item.rpgmod.queen_cocoon": "Queen's Cocoon",
+  "rpgmod.dungeon.kind.lich": "the Lich King's throne room",
+  "rpgmod.dungeon.kind.spider_queen": "the Spider Queen's nest",
+  "entity.rpgmod.lich": "Lich King",
+  "rpgmod.boss.lich.appeared": "The blood moon rises... the Lich King appeared near %s!",
+  "rpgmod.boss.lich.near": "The Lich King appeared near %s",
+  "rpgmod.boss.lich.enraged": "The Lich King rises in a storm of light!",
+  "rpgmod.boss.lich.left": "Dawn breaks and the Lich King fades into mist...",
+  "rpgmod.boss.lich.defeated": "The Lich King was defeated! (%s)",
+  "entity.rpgmod.spider_queen": "Spider Queen",
+  "rpgmod.boss.spider_queen.appeared": "The blood moon rises... the Spider Queen appeared near %s!",
+  "rpgmod.boss.spider_queen.near": "The Spider Queen appeared near %s",
+  "rpgmod.boss.spider_queen.enraged": "The Spider Queen shrieks! Her brood is hatching!",
+  "rpgmod.boss.spider_queen.left": "Dawn breaks and the Spider Queen burrows away...",
+  "rpgmod.boss.spider_queen.defeated": "The Spider Queen was defeated! (%s)"
 }

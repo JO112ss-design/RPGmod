@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "SSS",
+    "SFS",
+    "SSS"
+  ],
+  "key": {
+    "S": "minecraft:string",
+    "F": "minecraft:fermented_spider_eye"
+  },
+  "result": { "id": "rpgmod:queen_cocoon", "count": 1 }
+}

@@ -74,7 +74,8 @@ public final class MobConfig {
     public static final ModConfigSpec.BooleanValue DAY_TITLE = B.comment("Show 'Day N' every morning").define("dayTitle", true);
     public static final ModConfigSpec.DoubleValue KING_HEALTH = B.comment("King Slime health at level 1 for one player (grows with level like other monsters)").defineInRange("kingSlimeBaseHealth", 800.0, 1, 100000);
     public static final ModConfigSpec.DoubleValue GOLEM_HEALTH = B.comment("Golem health at level 1 for one player (grows with level like other monsters)").defineInRange("golemBaseHealth", 800.0, 1, 100000);
-    public static final ModConfigSpec.DoubleValue GOLEM_CHANCE = B.comment("Chance that a blood moon brings the Golem instead of the King Slime").defineInRange("golemChance", 0.5, 0, 1);
+    public static final ModConfigSpec.DoubleValue LICH_HEALTH = B.comment("Lich King health at level 1 for one player (grows with level like other monsters)").defineInRange("lichBaseHealth", 800.0, 1, 100000);
+    public static final ModConfigSpec.DoubleValue QUEEN_HEALTH = B.comment("Spider Queen health at level 1 for one player (grows with level like other monsters)").defineInRange("spiderQueenBaseHealth", 800.0, 1, 100000);
     public static final ModConfigSpec.DoubleValue BOSS_PER_PLAYER = B.comment("Extra boss health per additional player online (0.6 = +60%)").defineInRange("healthPerPlayer", 0.6, 0, 10);
     public static final ModConfigSpec.IntValue BOSS_LEVEL_BONUS = B.comment("Boss level = highest player job level + this").defineInRange("levelBonus", 0, -100, 100);
     public static final ModConfigSpec.DoubleValue BOSS_MAX_HIT = B.comment("Largest share of a player's max health one boss hit can take (before armour)").defineInRange("maxHitShare", 0.2, 0.01, 10);
@@ -113,8 +114,12 @@ public final class MobConfig {
         return SPEC.isLoaded() ? GOLEM_HEALTH.get() : 800;
     }
 
-    public static double golemChance() {
-        return SPEC.isLoaded() ? GOLEM_CHANCE.get() : 0.5;
+    public static double lichHealth() {
+        return SPEC.isLoaded() ? LICH_HEALTH.get() : 800;
+    }
+
+    public static double queenHealth() {
+        return SPEC.isLoaded() ? QUEEN_HEALTH.get() : 800;
     }
 
     public static double kingHealth() {

@@ -1226,5 +1226,21 @@
   "rpgmod.dungeon.cleared": "§6ダンジョンクリア！§r %s 秒後に祭壇へ帰還します。宝箱をお忘れなく",
   "rpgmod.dungeon.altar_locked": "ダンジョンが開いている間は祭壇を壊せません",
   "rpgmod.dungeon.wave": "§cウェーブ %s/%s",
-  "rpgmod.dungeon.wave_cleared": "§eウェーブ %s/%s 突破！次が来る…"
+  "rpgmod.dungeon.wave_cleared": "§eウェーブ %s/%s 突破！次が来る…",
+  "item.rpgmod.soul_phylactery": "魂の器",
+  "item.rpgmod.queen_cocoon": "女王の繭",
+  "rpgmod.dungeon.kind.lich": "亡者の王の玉座",
+  "rpgmod.dungeon.kind.spider_queen": "蜘蛛の女王の巣",
+  "entity.rpgmod.lich": "亡者の王",
+  "rpgmod.boss.lich.appeared": "ブラッドムーンが昇った…亡者の王が %s の近くに現れた！",
+  "rpgmod.boss.lich.near": "亡者の王が %s の近くに現れた",
+  "rpgmod.boss.lich.enraged": "亡者の王が光の嵐をまとって立ち上がった！",
+  "rpgmod.boss.lich.left": "夜が明け、亡者の王は霧となって消えていった…",
+  "rpgmod.boss.lich.defeated": "亡者の王を倒した！（%s）",
+  "entity.rpgmod.spider_queen": "蜘蛛の女王",
+  "rpgmod.boss.spider_queen.appeared": "ブラッドムーンが昇った…蜘蛛の女王が %s の近くに現れた！",
+  "rpgmod.boss.spider_queen.near": "蜘蛛の女王が %s の近くに現れた",
+  "rpgmod.boss.spider_queen.enraged": "蜘蛛の女王が金切り声をあげた！子グモが孵る！",
+  "rpgmod.boss.spider_queen.left": "夜が明け、蜘蛛の女王は地中へ潜っていった…",
+  "rpgmod.boss.spider_queen.defeated": "蜘蛛の女王を倒した！（%s）"
 }
