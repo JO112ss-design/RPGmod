@@ -126,7 +126,7 @@ public class SpiderQueenRenderer extends MobRenderer<SpiderQueen, SpiderQueenRen
         if (rearing(state.mode)) { // the front of the body lifted
             float k = Math.min(1, state.modeTicks / 6F);
             poseStack.translate(0, 0, 0.3F * entityScale);
-            poseStack.mulPose(Axis.XP.rotationDegrees(-22F * k));
+            poseStack.rotateDegrees(Axis.XP, -22F * k);
             poseStack.translate(0, 0, -0.3F * entityScale);
         } else if (state.mode == SpiderQueen.State.CROUCH) {
             poseStack.translate(0, -0.12F * entityScale, 0);
