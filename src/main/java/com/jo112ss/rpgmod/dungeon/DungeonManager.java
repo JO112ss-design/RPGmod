@@ -253,6 +253,7 @@ public final class DungeonManager {
         for (UUID u : r.mobs) {
             Entity e = dl.getEntity(u);
             if (e instanceof LivingEntity le && le.isAlive()) return;
+            if (testLog && room.last()) log("last room check: {} -> {} (removed {})", u, e, e != null ? e.getRemovalReason() : "-");
         }
         clearRoom(dl, d, r, room);
     }
@@ -351,6 +352,8 @@ public final class DungeonManager {
         Elite.forceNext = s.traits();
         try {
             dl.addFreshEntityWithPassengers(m);
+            if (s.boss()) log("boss {} added: removed {} found {} alive {} health {} / {} at {}", m.getType().getDescriptionId(), m.isRemoved(), dl.getEntity(m.getUUID()) != null,
+                    m.isAlive(), m.getHealth(), m.getMaxHealth(), m.blockPosition());
         } finally {
             MobLevels.forceLevel = null;
             Elite.forceNext = null;
