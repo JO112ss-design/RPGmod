@@ -486,7 +486,7 @@ public final class DungeonManager {
             if (r == null) return;
             if (!builder(event.getPlayer())) {
                 event.setCanceled(true);
-                event.getPlayer().sendSystemMessage(Component.translatable("rpgmod.dungeon.altar_locked"), true);
+                if (event.getPlayer() instanceof ServerPlayer sp) sp.sendSystemMessage(Component.translatable("rpgmod.dungeon.altar_locked"), true);
             } else {
                 abort(level.getServer(), r);
             }
