@@ -219,12 +219,17 @@ public final class AutoTestClient {
             case "mob:dragonhp" -> new int[] {100, 140};
             case "nj:pirate", "nj:lancer", "nj:monk" -> new int[] {8};
             case "boarding_shot" -> new int[] {4, 9};
-            case "quick_draw", "spear_sweep", "ki_blast", "whirl_kick", "shrink_step", "grapple", "finale" -> new int[] {3};
+            case "quick_draw", "spear_sweep", "ki_blast", "whirl_kick", "grapple", "finale" -> new int[] {3};
             case "cannon" -> new int[] {12, 44};
             case "powder_keg" -> new int[] {4, 8, 12, 20, 42};
             case "broadside" -> new int[] {14, 28, 44};
             case "spear_rain" -> new int[] {24, 56, 77, 80};
-            case "lance_charge" -> new int[] {4};
+            case "lance_charge" -> new int[] {4, 9, 14};
+            case "shrink_step" -> new int[] {1, 5};
+            case "iron_mountain" -> new int[] {5, 10, 15};
+            case "thunder_thrust" -> new int[] {1, 9, 11};
+            case "flowing_step" -> new int[] {2, 7, 12};
+            case "shield_charge" -> new int[] {4, 9, 12};
             case "spear_throw" -> new int[] {6, 16};
             case "leap_thrust" -> new int[] {8, 18};
             case "counter_stance", "jolly_roger" -> new int[] {10};
@@ -335,6 +340,9 @@ public final class AutoTestClient {
             showSkills.clear(); // group A, the rain skills made distinct: carpet bombing, ghost ships, stuck spears, focused arrows, coins to pick up
             showSkills.addAll(java.util.List.of("nj:pirate", "down:broadside", "nj:captain", "up:fleet_barrage", "nj:lancer", "spear_rain", "nj:shadow_hunter", "shadow_rain",
                     "nj:treasure_hunter", "treasure_rain", "nj:coins", "nj:restore"));
+            showSkills.clear(); // group B, the dashes made distinct: accelerating skewer, blink behind, gather and slam, lightning, flowing zigzag, shield push (twice against a wall)
+            showSkills.addAll(java.util.List.of("nj:lancer", "lance_charge", "nj:monk", "shrink_step", "nj:champion", "iron_mountain", "nj:spellblade", "thunder_thrust",
+                    "nj:qi_master", "flowing_step", "nj:sentinel", "shield_charge", "nj:wall", "nj:lancer", "lance_charge", "nj:sentinel", "shield_charge", "nj:unwall", "nj:restore"));
             mc.options.gamma().set(1.0); // the night fight, brightly lit for the screenshots
             mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK);
             com.jo112ss.rpgmod.client.mob.MobOverlay.testSelf = true;

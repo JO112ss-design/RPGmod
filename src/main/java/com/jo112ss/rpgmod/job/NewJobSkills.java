@@ -396,32 +396,116 @@ public final class NewJobSkills {
     // ================================================================== lancer
 
     /** A long straight charge that skewers everything on the way. */
+    /** Lance charge: the run speeds up from this to the top speed (blocks a tick) over the charge. */
+    static final double LANCE_START = 0.4, LANCE_TOP = 1.4;
+
+    /**
+     * Charges straight ahead, faster and faster. Enemies in the way are skewered and carried along
+     * on the spear (up to three); at the end they are flung off, harder the faster you were going.
+     * Run them into a wall and they take a heavy extra hit and are stunned.
+     */
     private static boolean lanceCharge(Ctx c) {
         ServerPlayer p = c.p();
         Vec3 dir = c.flat();
-        launch(p, dir.scale(2.2).add(0, 0.15, 0));
-        ServerFx.of("charge", p.position()).vec(dir).follow(p).send(c.level());
+        int ticks = 12;
+        ServerFx.of("n_rush", p.position()).follow(p).vec(dir).a(ticks - 2).b(ticks + 2).color(LANCE).send(c.level());
         sound(c, SoundEvents.SPEAR_USE, 0.9F);
         sound(c, p.position(), SoundEvents.BREEZE_JUMP, 0.8F, 1.0F);
-        Set<Integer> done = new HashSet<>();
-        SkillTasks.run(age -> {
-            if (!p.isAlive()) return true;
-            if (age < 9) launch(p, dir.scale(2.2 * (1 - age * 0.06)).add(0, p.getDeltaMovement().y, 0));
-            Vec3 front = p.position().add(dir.scale(1.0));
-            List<LivingEntity> hit = new ArrayList<>();
-            for (LivingEntity e : enemies(p, front, 1.9)) {
-                if (!done.add(e.getId())) continue;
-                hurt(c, e, c.dmg(1), melee(c));
-                push(e, Fx3.right(dir).scale(e.position().subtract(p.position()).dot(Fx3.right(dir)) >= 0 ? 1 : -1), 0.8, 0.35);
-                hit.add(e);
+        charge(c, dir, ticks, age -> Math.min(LANCE_TOP, LANCE_START + 0.09 * age), 1.7, 3, c.dmg(0.5), (carried, wall, v) -> {
+            float fast = (float) (v / LANCE_TOP);
+            for (LivingEntity e : carried) {
+                if (!e.isAlive()) continue;
+                if (wall) {
+                    hurt(c, e, c.dmg(1.3), melee(c));
+                    stun(c, e, 40);
+                    ServerFx.of("x_burst", mid(e)).a(1.4).b(3).color(LANCE).send(c.level());
+                } else {
+                    hurt(c, e, c.dmg(0.4 + 0.6 * fast), melee(c));
+                    push(e, dir, 0.6 + 1.4 * fast, 0.45);
+                    ServerFx.of("n_thrown", e.position()).follow(e).b(12).color(LANCE).send(c.level());
+                }
             }
-            if (!hit.isEmpty()) {
-                ServerFx.of("hit", front).color(LANCE).a(1.2).points(hit).send(c.level());
-                sound(c, front, SoundEvents.SPEAR_HIT, 1.0F, 1.0F);
+            if (wall) {
+                launch(p, dir.scale(-0.35).add(0, 0.2, 0));
+                sound(c, p.position(), SoundEvents.ANVIL_LAND, 0.8F, 0.7F);
+                sound(c, p.position(), SoundEvents.SPEAR_HIT, 1.2F, 0.6F);
+            } else if (!carried.isEmpty()) {
+                sound(c, p.position(), SoundEvents.SPEAR_HIT, 1.0F, 1.3F);
             }
-            return age >= 11;
         });
         return true;
+    }
+
+    /** How a charge ended: who was carried, whether it ran into a wall, how fast it was going. */
+    @FunctionalInterface
+    interface ChargeEnd {
+        void at(List<LivingEntity> carried, boolean wall, double speed);
+    }
+
+    /**
+     * Runs the player straight along {@code dir} for {@code ticks} at {@code speed(age)} blocks a
+     * tick. Enemies met in front (within {@code catchR}) take {@code pick} and are carried along in
+     * front (up to {@code max}); it ends early if they or the player hit a wall.
+     */
+    static void charge(Ctx c, Vec3 dir, int ticks, java.util.function.IntToDoubleFunction speed, double catchR, int max, float pick, ChargeEnd end) {
+        ServerPlayer p = c.p();
+        List<LivingEntity> carried = new ArrayList<>();
+        Set<Integer> seen = new HashSet<>();
+        Vec3 side = Fx3.right(dir);
+        SkillTasks.run(age -> {
+            if (!p.isAlive()) return true;
+            double v = speed.applyAsDouble(age);
+            Vec3 front = p.position().add(dir.scale(1.1));
+            for (LivingEntity e : enemies(p, front, catchR)) {
+                if (carried.size() >= max || !seen.add(e.getId())) continue;
+                hurt(c, e, pick, melee(c));
+                carried.add(e);
+                ServerFx.of("x_hit", mid(e)).vec(dir).a(1.0).color(0xFFFFFF).send(c.level());
+                sound(c, e.position(), SoundEvents.PLAYER_ATTACK_KNOCKBACK, 0.9F, 0.8F);
+            }
+            carried.removeIf(e -> !e.isAlive());
+            boolean wall = !c.level().noCollision(p, p.getBoundingBox().move(dir.scale(0.7)).deflate(0.05).move(0, 0.1, 0));
+            for (LivingEntity e : carried) {
+                if (!c.level().noCollision(e, e.getBoundingBox().move(dir.scale(Math.max(0.7, v))).deflate(0.05).move(0, 0.1, 0))) wall = true;
+            }
+            if (wall || age >= ticks) {
+                end.at(carried, wall, v);
+                return true;
+            }
+            launch(p, dir.scale(v).add(0, Math.min(0, p.getDeltaMovement().y), 0));
+            for (int i = 0; i < carried.size(); i++) {
+                LivingEntity e = carried.get(i);
+                double off = (i - (carried.size() - 1) / 2.0) * 0.8;
+                // where the player will be next tick, plus a spear's (or shield's) length
+                Vec3 at = p.position().add(dir.scale(v + 1.0 + e.getBbWidth() / 2)).add(side.scale(off));
+                e.setPos(at.x, p.getY(), at.z);
+                e.setDeltaMovement(dir.scale(v));
+                e.resetFallDistance();
+            }
+            return false;
+        });
+    }
+
+    /** Stunned: can hardly move for a while (and the stars over its head say so). */
+    static void stun(Ctx c, LivingEntity e, int ticks) {
+        e.addEffect(new MobEffectInstance(MobEffects.SLOWNESS, ticks, 9, false, false), c.p());
+        if (e instanceof net.minecraft.world.entity.Mob m) m.getNavigation().stop();
+        ServerFx.of("n_stun", e.position()).follow(e).b(ticks).send(c.level());
+    }
+
+    /** Moves the player to a spot at once, facing {@code look} (a point). */
+    static void blinkTo(Ctx c, Vec3 to, Vec3 look) {
+        ServerPlayer p = c.p();
+        Vec3 d = look.subtract(to);
+        float yaw = (float) (Math.toDegrees(Math.atan2(d.z, d.x)) - 90);
+        p.teleportTo(c.level(), to.x, to.y, to.z, java.util.Set.of(), yaw, p.getXRot(), false);
+        p.resetFallDistance();
+    }
+
+    /** Whether the player fits at a spot (standing there). */
+    static boolean fits(Ctx c, Vec3 at) {
+        ServerPlayer p = c.p();
+        return c.level().noCollision(p, p.getBoundingBox().move(at.subtract(p.position())).deflate(0.02).move(0, 0.05, 0));
     }
 
     /** Throws the spear through a line of enemies; it flies back to you (hitting again on the way, at half). */
@@ -788,29 +872,49 @@ public final class NewJobSkills {
     }
 
     /** A blink-fast step forward, untouchable, striking what you pass. */
+    /** Shrink step: hitting from behind does this much more. */
+    static final double BACK_HIT = 1.3;
+
+    /**
+     * Blinks behind the enemy you are looking at (or the nearest one ahead) and strikes its back,
+     * an afterimage left where you stood.
+     */
     private static boolean shrinkStep(Ctx c) {
         ServerPlayer p = c.p();
-        Vec3 dir = c.flat();
-        Vec3 from = p.position();
-        p.addEffect(new MobEffectInstance(ModEffects.UNTOUCHABLE, 8, 0, false, false, true), p);
-        launch(p, dir.scale(2.6).add(0, 0.1, 0));
-        ServerFx.of("x_dash", from).vec(from.add(dir.scale(c.def().radius()))).color(0xFFE0B0).send(c.level());
-        sound(c, SoundEvents.BREEZE_JUMP, 1.8F);
-        Set<Integer> done = new HashSet<>();
-        SkillTasks.run(age -> {
-            if (!p.isAlive()) return true;
-            for (LivingEntity e : enemies(p, p.position(), 1.7)) {
-                if (!done.add(e.getId())) continue;
-                hurt(c, e, c.dmg(1), melee(c));
-                ServerFx.of("x_hit", mid(e)).vec(dir).a(0.9).color(KI).send(c.level());
-            }
-            if (age == 3) launch(p, dir.scale(0.3).add(0, p.getDeltaMovement().y, 0));
-            if (age >= 4) {
-                if (!done.isEmpty()) sound(c, p.position(), SoundEvents.PLAYER_ATTACK_STRONG, 0.9F, 1.4F);
-                Monk.add(p, 1);
-                return true;
-            }
+        double range = c.def().radius() + 2;
+        LivingEntity t = lookTarget(c, range, 25);
+        if (t == null) {
+            fail(p, "rpgmod.job.no_target");
             return false;
+        }
+        Vec3 from = p.position();
+        Vec3 through = t.position().subtract(from).multiply(1, 0, 1).normalize();
+        Vec3 spot = null;
+        for (double turn : new double[] {0, 0.6, -0.6, 1.2, -1.2}) {
+            Vec3 at = t.position().add(Fx3.rotY(through, turn).scale(t.getBbWidth() / 2 + 0.9));
+            if (fits(c, at)) {
+                spot = at;
+                break;
+            }
+        }
+        if (spot == null) {
+            fail(p, "rpgmod.job.no_room_behind");
+            return false;
+        }
+        p.addEffect(new MobEffectInstance(ModEffects.UNTOUCHABLE, 10, 0, false, false, true), p);
+        blinkTo(c, spot, t.position());
+        ServerFx.of("n_blink", from).vec(spot).color(KI).send(c.level());
+        sound(c, from, SoundEvents.BREEZE_JUMP, 0.8F, 1.8F);
+        Vec3 landed = spot;
+        SkillTasks.later(2, () -> {
+            if (!t.isAlive()) return;
+            Vec3 hitDir = t.position().subtract(landed);
+            hurt(c, t, c.dmg(BACK_HIT), melee(c));
+            push(t, hitDir, 0.7, 0.3);
+            ServerFx.of("n_fist", mid(t).subtract(hitDir.normalize().scale(0.4))).vec(hitDir).color(KI).send(c.level());
+            ServerFx.of("x_hit", mid(t)).vec(hitDir).a(1.3).color(KI).send(c.level());
+            sound(c, t.position(), SoundEvents.PLAYER_ATTACK_CRIT, 1.0F, 0.9F);
+            Monk.add(p, 1);
         });
         return true;
     }

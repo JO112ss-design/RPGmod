@@ -51,6 +51,7 @@ final class NewJobTests {
             case "bard" -> become(p, "bard");
             case "hybrids" -> hybrids(level, p, dummies);
             case "coins" -> coins(level, p);
+            case "wall", "unwall" -> wall(level, p, name.equals("wall"));
             default -> {
                 if (JobDefs.isAdvanced(name)) become(p, JobDefs.BASE_OF.get(name), true);
                 else if (JobDefs.job(name) != null) become(p, name);
@@ -137,6 +138,14 @@ final class NewJobTests {
                 d.setMastery("wizard", wz);
             });
         }
+    }
+
+    /** A stone wall across the arena behind the dummies (forward is +z), for charges to run into. */
+    private static void wall(ServerLevel level, ServerPlayer p, boolean put) {
+        net.minecraft.core.BlockPos o = p.blockPosition();
+        var state = put ? net.minecraft.world.level.block.Blocks.STONE_BRICKS.defaultBlockState() : net.minecraft.world.level.block.Blocks.AIR.defaultBlockState();
+        for (int x = -6; x <= 6; x++) for (int y = 0; y < 3; y++) level.setBlockAndUpdate(o.offset(x, y, 9), state);
+        log("wall {} at z+9", put ? "put" : "removed");
     }
 
     /** Treasure rain: walk over a coin it left and pick it up (gold rush). */

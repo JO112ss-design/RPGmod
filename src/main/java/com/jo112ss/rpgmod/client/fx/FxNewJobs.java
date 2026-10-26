@@ -30,6 +30,12 @@ final class FxNewJobs {
             case "n_ghost_ship" -> ghostShip(p);
             case "n_coin_fall" -> coinFall(p);
             case "n_dark_portal" -> darkPortal(p);
+            case "n_rush" -> rush(p);
+            case "n_blink" -> blink(p);
+            case "n_bolt_dash" -> boltDash(p);
+            case "n_stun" -> stun(p);
+            case "n_thrown" -> thrown(p);
+            case "n_stance" -> stance(p);
             default -> {
                 return false;
             }
@@ -247,6 +253,157 @@ final class FxNewJobs {
     @FunctionalInterface
     private interface Ship {
         Vec3 p(double x, double y, double z);
+    }
+
+    // ------------------------------------------------------------------ dashes
+
+    /**
+     * A charge (entity, for b ticks, along vec): wind piling up in a cone before the spear or shield
+     * and streaming past, stronger as the charge speeds up (a = top speed tick, 0 = steady), dust kicked up behind.
+     */
+    private static void rush(P p) {
+        Entity e = p.e();
+        if (e == null) return;
+        int life = Math.max(4, (int) p.b());
+        int c = p.colorOr(0xE0D0B0);
+        Vec3 dir = flatDir(p.vec());
+        Vec3 side = new Vec3(-dir.z, 0, dir.x);
+        float top = p.a();
+        FxAnims.follow(e, life, age -> {
+            float k = top > 0 ? Math.min(1, age / top) : 1; // how fast now
+            Vec3 tip = e.position().add(0, 1.0, 0).add(dir.scale(1.6 + k * 0.6));
+            // the bow wave: a ring of air bent back from the tip
+            Fx.p(S.RING, tip).fixed(Fx.across(dir)).color(0xFFFFFF, c).size(0.3F + k * 0.5F, 0.9F + k * 1.2F).alpha(0.25F + k * 0.45F, 0).life(4).spawn();
+            for (int i = 0, n = 2 + (int) (k * 5); i < n; i++) {
+                double a = Fx.r(0, Math.PI * 2), r = Fx.r(0.4, 0.9 + k * 0.6);
+                Vec3 v = tip.add(side.scale(Math.cos(a) * r)).add(0, Math.sin(a) * r * 0.8, 0).add(dir.scale(Fx.r(-1.5, 0)));
+                segment(v, v.subtract(dir.scale(1.2 + k * 1.8)), 0.06F).color(0xFFFFFF, c).alpha(0.5F + k * 0.4F, 0).life(3).spawn();
+            }
+            if (age % 2 == 0) {
+                Vec3 f = e.position();
+                smoke(f.add(Fx.r(-0.3, 0.3), 0.1, Fx.r(-0.3, 0.3)), 0xB8A88C, 0.3F, 0.9F + k, 18).vel(dir.scale(-0.05).add(0, 0.03, 0)).alpha(0.5F, 0).spawn();
+                debris(f, 1 + (int) (k * 2), 0.3, 0.3);
+            }
+            return false;
+        });
+    }
+
+    /** A blink from pos to vec: an afterimage left behind, a streak of colour, a burst where it arrives. */
+    private static void blink(P p) {
+        int c = p.colorOr(0xFFD27A);
+        Vec3 a = p.pos(), b = p.vec();
+        Vec3 d = flatDir(b.subtract(a));
+        Vec3 side = new Vec3(-d.z, 0, d.x);
+        // the afterimage: a body of glows fading where you stood
+        for (int i = 0, n = Fx.n(26); i < n; i++) {
+            double h = Fx.r(0, 1.85);
+            double wdt = h > 1.45 ? 0.22 : h > 0.75 ? 0.36 : 0.2;
+            Fx.p(S.GLOW, a.add(side.scale(Fx.r(-wdt, wdt))).add(0, h, 0)).color(light(c), c).size(0.3F, 0.1F).alpha(0.7F, 0).life(12 + Fx.RND.nextInt(6)).spawn();
+        }
+        line(a.add(0, 1, 0), b.add(0, 1, 0), 0.3, (v, t) -> {
+            Fx.p(S.GLOW, v.add(Fx.randomUnit().scale(0.15))).color(0xFFFFFF, c).size(0.2F, 0).alpha(0.9F, 0).life(6 + (int) (t * 4)).spawn();
+            if (Fx.RND.nextInt(3) == 0) Fx.p(S.STREAK, v).fixed(Fx.axial(v, d)).color(0xFFFFFF, c).size(0.5F, 0.2F).alpha(0.8F, 0).life(5).spawn();
+        });
+        flash(b.add(0, 1, 0), c, 1.0F, 4);
+        ground(S.RING, b, 0.3F, c, 8).size(0.3F, 1.4F).easeOut().alpha(0.8F, 0).spawn();
+    }
+
+    /**
+     * Thunder thrust: a jagged bolt along the path pos -> vec at once (the player gone into it), the
+     * path crackling, then after b ticks lightning crashing down on it every two blocks.
+     */
+    private static void boltDash(P p) {
+        Vec3 a = p.pos().add(0, 1, 0), b = p.vec().add(0, 1, 0);
+        int delay = Math.max(2, (int) p.b());
+        int c = p.colorOr(0xFFF07A);
+        drawBolt(bolt(a, b, 0.6, 4), c, 0.12F, 6, 0);
+        drawBolt(bolt(a, b, 0.9, 3), 0xB0D8FF, 0.07F, 5, 1);
+        flash(a, c, 1.4F, 4);
+        flash(b, c, 1.8F, 5);
+        double len = a.distanceTo(b);
+        int marks = Math.max(1, (int) (len / 2));
+        Vec3 d = b.subtract(a);
+        FxAnims.run(delay + 1, age -> {
+            for (int i = 0; i <= marks; i++) {
+                Vec3 m = p.pos().add(d.scale(i / (double) marks)).add(0, 0.05, 0);
+                if (age < delay) {
+                    if (Fx.RND.nextInt(3) == 0) {
+                        Vec3 s = m.add(Fx.r(-0.4, 0.4), Fx.r(0, 0.4), Fx.r(-0.4, 0.4));
+                        drawBolt(bolt(s, s.add(Fx.randomUnit().scale(0.5)), 0.15, 1), c, 0.04F, 2, 0);
+                    }
+                    if (age % 3 == 0) ground(S.HEX, m, 0.5F + age * 0.05F, c, 3).alpha(0.5F, 0).spawn();
+                } else {
+                    Vec3 sky = m.add(Fx.r(-0.6, 0.6), 9, Fx.r(-0.6, 0.6));
+                    drawBolt(bolt(sky, m, 0.9, 4), 0xFFFFFF, 0.14F, 5, 0);
+                    drawBolt(bolt(sky, m, 1.2, 3), c, 0.08F, 6, 0);
+                    flash(m.add(0, 0.5, 0), c, 1.6F, 5);
+                    ground(S.RING, m, 0.3F, c, 10).size(0.3F, 2.0F).easeOut().alpha(0.9F, 0).spawn();
+                    spray(m, new Vec3(0, 1, 0), 1.2, 6, 0.3, S.SPARK, 0xFFFFFF, c, 0.12F, 8, 0.4F);
+                }
+            }
+            if (age == delay) FxAnims.shake(b, 0.25F, 5, 16);
+            return false;
+        });
+    }
+
+    /** Stunned (entity, b ticks): little stars and sparks circling over its head. */
+    private static void stun(P p) {
+        Entity e = p.e();
+        if (e == null) return;
+        int life = Math.max(5, (int) p.b());
+        FxAnims.follow(e, life, age -> {
+            Vec3 top = e.position().add(0, e.getBbHeight() + 0.35, 0);
+            double r = Math.max(0.35, e.getBbWidth() * 0.55);
+            for (int i = 0; i < 3; i++) {
+                double a = age * 0.3 + i * Math.PI * 2 / 3;
+                Fx.p(S.CROSS, top.add(Math.cos(a) * r, Math.sin(age * 0.2 + i) * 0.08, Math.sin(a) * r)).color(0xFFFFFF, 0xFFE060).size(0.16F).life(2).spawn();
+            }
+            return false;
+        });
+    }
+
+    /** Something thrown hard (entity, b ticks): a streak behind it and dust where it scrapes the ground. */
+    private static void thrown(P p) {
+        Entity e = p.e();
+        if (e == null) return;
+        int c = p.colorOr(0xFFD27A);
+        int life = Math.max(4, (int) p.b());
+        Vec3[] last = {e.position().add(0, e.getBbHeight() * 0.5, 0)};
+        FxAnims.follow(e, life, age -> {
+            Vec3 now = e.position().add(0, e.getBbHeight() * 0.5, 0);
+            if (now.distanceToSqr(last[0]) > 0.01) {
+                segment(last[0], now, 0.25F).color(0xFFFFFF, c).alpha(0.7F * (1 - (float) age / life), 0).life(6).spawn();
+                for (int i = 0; i < 3; i++) Fx.p(S.GLOW, now.add(Fx.randomUnit().scale(e.getBbWidth() * 0.5))).color(light(c), c).size(0.2F, 0).alpha(0.8F, 0).life(8).spawn();
+            }
+            if (e.onGround() && age % 2 == 0) {
+                smoke(e.position(), 0xA89878, 0.3F, 1.0F, 16).alpha(0.6F, 0).spawn();
+                debris(e.position(), 2, 0.3, 0.3);
+            }
+            last[0] = now;
+            return false;
+        });
+    }
+
+    /** Gathering for a blow (entity, b ticks): ki drawn in from all around, the ground cracking under the feet. */
+    private static void stance(P p) {
+        Entity e = p.e();
+        if (e == null) return;
+        int c = p.colorOr(0xFFD27A);
+        int life = Math.max(4, (int) p.b());
+        FxAnims.follow(e, life, age -> {
+            Vec3 core = e.position().add(0, 1.0, 0);
+            for (int i = 0, n = Fx.n(4); i < n; i++) {
+                Vec3 from = core.add(Fx.randomUnit().scale(Fx.r(1.8, 2.6)));
+                Fx.p(S.GLOW, from).vel(core.subtract(from).scale(1 / 7.0)).color(light(c), c).size(0.15F, 0.25F).alpha(0.4F, 1).life(7).spawn();
+            }
+            if (age % 3 == 0) ground(S.RING, e.position(), 2.2F - age * 0.12F, c, 4).alpha(0.6F, 0).spawn();
+            if (age == life - 1) {
+                ground(S.HEX, e.position(), 1.6F, 0x806040, 20).alpha(0.9F, 0).alphaBlend().lit().spawn();
+                debris(e.position(), 10, 0.8, 0.5);
+                flash(core, c, 1.6F, 4);
+            }
+            return false;
+        });
     }
 
     /** A burning fuse on an entity for b ticks. */

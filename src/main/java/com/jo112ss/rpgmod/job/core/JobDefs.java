@@ -224,7 +224,7 @@ public final class JobDefs {
         job("lancer", 0xC0703A, "槍", List.of(JobStat.ATTACK_DAMAGE, JobStat.MAX_HEALTH, JobStat.ARMOR, JobStat.MOVEMENT_SPEED),
                 stats(JobStat.MAX_HEALTH, 4, JobStat.ATTACK_DAMAGE, 6), stats(JobStat.ATTACK_DAMAGE, 0.6, JobStat.MAX_HEALTH, hpGrow(1.0, 4)),
                 List.of(
-                        skill("lance_charge", SkillKind.ACTIVE, SkillEffect.DASH, 8, 11, 2.0, 8, 0, List.of(), 0, "突"),
+                        skill("lance_charge", SkillKind.ACTIVE, SkillEffect.DASH, 8, 11, 1.3, 8, 0, List.of(), 0, "突"),
                         skill("spear_throw", SkillKind.ACTIVE, SkillEffect.BOLT, 9, 13, 2.6, 24, 0, List.of(), 0, "投"),
                         skill("spear_sweep", SkillKind.ACTIVE, SkillEffect.SWEEP, 8, 11, 1.8, 5.5, 0, List.of(), 0, "薙"),
                         skill("leap_thrust", SkillKind.ACTIVE, SkillEffect.WHIRL, 12, 14, 2.6, 2.5, 0, List.of(), 0, "跳"),

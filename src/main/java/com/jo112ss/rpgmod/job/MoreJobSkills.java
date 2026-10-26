@@ -368,25 +368,63 @@ public final class MoreJobSkills {
         return true;
     }
 
-    /** A shoulder charge: the first enemy met is thrown far. */
+    /**
+     * Iron mountain: a short gathering (0.4s, rooted), then a shoulder slam a few blocks ahead. The
+     * enemy hit is sent flying, and it bowls over the enemies it crashes into (and is stunned if it
+     * hits a wall).
+     */
     private static boolean ironMountain(Ctx c) {
         ServerPlayer p = c.p();
         Vec3 dir = c.flat();
-        launch(p, dir.scale(2.0).add(0, 0.1, 0));
-        ServerFx.of("x_dash", p.position()).vec(p.position().add(dir.scale(c.def().radius()))).color(KI).send(c.level());
-        sound(c, SoundEvents.BREEZE_JUMP, 0.9F);
+        int gather = 8;
+        p.addEffect(new MobEffectInstance(MobEffects.SLOWNESS, gather, 9, false, false), p);
+        ServerFx.of("n_stance", p.position()).follow(p).b(gather).color(KI).send(c.level());
+        sound(c, SoundEvents.RAVAGER_STEP, 1.2F);
+        final LivingEntity[] flung = {null};
+        Set<Integer> bowled = new HashSet<>();
         SkillTasks.run(age -> {
             if (!p.isAlive()) return true;
-            Vec3 front = p.position().add(dir.scale(0.9));
-            LivingEntity t = NewJobSkills.nearest(enemies(p, front, 1.8), front);
-            if (t == null) return age >= 6;
-            hurt(c, t, c.dmg(1), melee(c));
-            push(t, dir, 1.9, 0.45);
-            launch(p, dir.scale(0.1));
-            Monk.add(p, 1);
-            ServerFx.of("x_burst", mid(t)).a(1.4).b(3).color(KI).send(c.level());
-            sound(c, t.position(), SoundEvents.PLAYER_ATTACK_KNOCKBACK, 1.2F, 0.5F);
-            return true;
+            if (age < gather) return false;
+            if (age < gather + 4 && flung[0] == null) { // the slam
+                if (age == gather) {
+                    launch(p, dir.scale(1.5).add(0, 0.05, 0));
+                    sound(c, p.position(), SoundEvents.BREEZE_JUMP, 0.9F, 0.6F);
+                }
+                Vec3 front = p.position().add(dir.scale(0.9));
+                LivingEntity t = NewJobSkills.nearest(enemies(p, front, 1.9), front);
+                if (t != null) {
+                    flung[0] = t;
+                    bowled.add(t.getId());
+                    hurt(c, t, c.dmg(1), melee(c));
+                    push(t, dir, 2.4, 0.35);
+                    launch(p, dir.scale(0.05));
+                    Monk.add(p, 1);
+                    ServerFx.of("x_burst", mid(t)).a(1.6).b(3).color(KI).send(c.level());
+                    ServerFx.of("x_ring", p.position().add(dir.scale(0.8))).a(2.5).b(1).color(KI).send(c.level());
+                    ServerFx.of("n_thrown", t.position()).follow(t).b(16).color(KI).send(c.level());
+                    sound(c, t.position(), SoundEvents.PLAYER_ATTACK_KNOCKBACK, 1.4F, 0.5F);
+                    sound(c, t.position(), SoundEvents.ANVIL_LAND, 0.5F, 0.6F);
+                }
+                return false;
+            }
+            LivingEntity t = flung[0];
+            if (t == null || !t.isAlive()) return true;
+            // the flung enemy bowls over whoever it meets
+            for (LivingEntity o : enemies(p, t.position(), t.getBbWidth() / 2 + 1.1)) {
+                if (!bowled.add(o.getId())) continue;
+                hurt(c, o, c.dmg(0.6), melee(c));
+                push(o, o.position().subtract(t.position()).add(dir), 1.3, 0.4);
+                ServerFx.of("x_hit", mid(o)).vec(o.position().subtract(t.position())).a(1.1).color(KI).send(c.level());
+                sound(c, o.position(), SoundEvents.PLAYER_ATTACK_KNOCKBACK, 1.0F, 0.8F);
+            }
+            if (t.horizontalCollision && !bowled.contains(-t.getId())) { // into a wall
+                bowled.add(-t.getId());
+                hurt(c, t, c.dmg(0.5), melee(c));
+                NewJobSkills.stun(c, t, 30);
+                ServerFx.of("x_burst", mid(t)).a(1.2).b(3).color(0xC0A070).send(c.level());
+                sound(c, t.position(), SoundEvents.ANVIL_LAND, 0.7F, 0.5F);
+            }
+            return age >= gather + 20;
         });
         return true;
     }
@@ -706,24 +744,40 @@ public final class MoreJobSkills {
         return true;
     }
 
-    /** A lightning-fast thrust through a line of enemies; thunder jumps from each. */
+    /** Thunder thrust: the lightning comes down on the path this long after you went along it. */
+    static final int THUNDER_DELAY = 8;
+
+    /**
+     * You turn into lightning and are at the end of the line at once (untouchable for a moment);
+     * a moment later lightning crashes down all along the path you took.
+     */
     private static boolean thunderThrust(Ctx c) {
         ServerPlayer p = c.p();
         Vec3 dir = c.flat();
         Vec3 from = p.position();
-        launch(p, dir.scale(2.2).add(0, 0.1, 0));
-        ServerFx.of("x_dash", from).vec(from.add(dir.scale(c.def().radius()))).color(0xFFF07A).send(c.level());
-        sound(c, SoundEvents.LIGHTNING_BOLT_IMPACT, 1.4F);
-        Set<Integer> done = new HashSet<>();
-        SkillTasks.run(age -> {
-            if (!p.isAlive()) return true;
-            for (LivingEntity e : enemies(p, p.position().add(dir.scale(0.8)), 1.8)) {
-                if (!done.add(e.getId())) continue;
-                hurt(c, e, c.dmg(1), melee(c));
-                elementHit(p, c.level(), e, 2, c.dmg(1));
-                ServerFx.of("x_strike", e.position()).a(1).color(0xFFF07A).point(mid(e)).send(c.level());
+        BlockHitResult hit = c.level().clip(new ClipContext(from.add(0, 0.6, 0), from.add(0, 0.6, 0).add(dir.scale(c.def().radius())),
+                ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, p));
+        Vec3 to = hit.getLocation().subtract(dir.scale(0.6)).add(0, -0.6, 0);
+        if (to.distanceTo(from) < 1.5) {
+            fail(p, "rpgmod.job.no_room_ahead");
+            return false;
+        }
+        p.addEffect(new MobEffectInstance(ModEffects.UNTOUCHABLE, THUNDER_DELAY + 6, 0, false, false, true), p);
+        NewJobSkills.blinkTo(c, to, to.add(dir));
+        ServerFx.of("n_bolt_dash", from).vec(to).b(THUNDER_DELAY).color(0xFFF07A).send(c.level());
+        sound(c, SoundEvents.LIGHTNING_BOLT_IMPACT, 1.6F);
+        SkillTasks.later(THUNDER_DELAY, () -> {
+            Set<Integer> done = new HashSet<>();
+            double len = from.distanceTo(to);
+            for (double d = 0; d <= len + 0.01; d += 1.0) {
+                Vec3 at = from.add(to.subtract(from).normalize().scale(d));
+                for (LivingEntity e : enemies(p, at, 1.8)) {
+                    if (!done.add(e.getId())) continue;
+                    hurt(c, e, c.dmg(1), melee(c));
+                    elementHit(p, c.level(), e, 2, c.dmg(1));
+                }
             }
-            return age >= 7;
+            sound(c, from.add(to).scale(0.5), SoundEvents.LIGHTNING_BOLT_THUNDER, 0.8F, 1.3F);
         });
         return true;
     }
@@ -877,26 +931,50 @@ public final class MoreJobSkills {
         return true;
     }
 
-    /** Glides forward through the enemies, striking them; each one struck gives back a little health. */
+    /** Flowing step: each touch heals this share of your health. */
+    static final float FLOW_HEAL = 0.04F;
+
+    /**
+     * Flows from enemy to enemy (up to three near you, nearest first), zigzagging from one side of
+     * each to the other; every one touched is struck and the touch heals you.
+     */
     private static boolean flowingStep(Ctx c) {
         ServerPlayer p = c.p();
-        Vec3 dir = c.flat();
-        Vec3 from = p.position();
-        launch(p, dir.scale(2.2).add(0, 0.1, 0));
-        ServerFx.of("x_dash", from).vec(from.add(dir.scale(c.def().radius()))).color(0xFFE6A0).send(c.level());
+        List<LivingEntity> foes = new ArrayList<>(enemies(p, p.position(), c.def().radius()));
+        if (foes.isEmpty()) {
+            fail(p, "rpgmod.job.no_target");
+            return false;
+        }
+        foes.sort(java.util.Comparator.comparingDouble(e -> e.distanceToSqr(p)));
+        List<LivingEntity> path = foes.subList(0, Math.min(3, foes.size()));
+        p.addEffect(new MobEffectInstance(ModEffects.UNTOUCHABLE, path.size() * 5 + 4, 0, false, false, true), p);
         sound(c, SoundEvents.BREEZE_JUMP, 1.6F);
-        Set<Integer> done = new HashSet<>();
+        final Vec3[] at = {p.position()};
         SkillTasks.run(age -> {
             if (!p.isAlive()) return true;
-            for (LivingEntity e : enemies(p, p.position(), 1.7)) {
-                if (!done.add(e.getId())) continue;
-                hurt(c, e, c.dmg(1), melee(c));
-                HealthScale.heal(p, p.getMaxHealth() * 0.03F);
-            }
-            if (age >= 5) {
+            int i = age / 5;
+            if (i >= path.size()) {
                 Monk.add(p, 1);
                 return true;
             }
+            if (age % 5 != 0) return false;
+            LivingEntity t = path.get(i);
+            if (!t.isAlive()) return false;
+            Vec3 in = t.position().subtract(at[0]).multiply(1, 0, 1);
+            if (in.lengthSqr() < 1e-4) in = c.flat();
+            in = in.normalize();
+            // to the side of it, left and right in turn
+            Vec3 spot = t.position().add(Fx3.right(in).scale((i % 2 == 0 ? 1 : -1) * (t.getBbWidth() / 2 + 0.8)));
+            if (!NewJobSkills.fits(c, spot)) spot = t.position().subtract(in.scale(t.getBbWidth() / 2 + 0.8));
+            if (!NewJobSkills.fits(c, spot)) return false;
+            ServerFx.of("n_blink", at[0]).vec(spot).color(0xFFE6A0).send(c.level());
+            NewJobSkills.blinkTo(c, spot, t.position());
+            at[0] = spot;
+            hurt(c, t, c.dmg(1), melee(c));
+            HealthScale.heal(p, p.getMaxHealth() * FLOW_HEAL);
+            ServerFx.of("x_hit", mid(t)).vec(t.position().subtract(spot)).a(1.0).color(0xFFE6A0).send(c.level());
+            ServerFx.of("x_ring", p.position()).a(1.2).b(1).color(0x9FE8A0).send(c.level());
+            sound(c, spot, SoundEvents.PLAYER_ATTACK_SWEEP, 0.8F, 1.6F);
             return false;
         });
         return true;
@@ -956,30 +1034,38 @@ public final class MoreJobSkills {
         return true;
     }
 
-    /** Charges behind the shield; enemies hit are knocked aside and stunned. */
+    /**
+     * Charges behind the shield at a steady pace, scooping up the enemies in front (up to five) and
+     * pushing them along. Drive them into a wall and they are stunned (2.5s) and take a heavy hit;
+     * otherwise they are shoved off at the end.
+     */
     private static boolean shieldCharge(Ctx c) {
         ServerPlayer p = c.p();
         Vec3 dir = c.flat();
-        launch(p, dir.scale(2.0).add(0, 0.15, 0));
-        ServerFx.of("charge", p.position()).vec(dir).follow(p).send(c.level());
+        int ticks = 9;
+        ServerFx.of("n_rush", p.position()).follow(p).vec(dir).b(ticks + 2).color(0xF0E0A0).send(c.level());
         sound(c, SoundEvents.SHIELD_BLOCK, 0.7F);
-        Set<Integer> done = new HashSet<>();
-        SkillTasks.run(age -> {
-            if (!p.isAlive()) return true;
-            Vec3 front = p.position().add(dir.scale(0.9));
-            List<LivingEntity> hit = new ArrayList<>();
-            for (LivingEntity e : enemies(p, front, 1.8)) {
-                if (!done.add(e.getId())) continue;
-                hurt(c, e, c.dmg(1), melee(c));
-                apply(e, c.def(), p);
-                push(e, dir, 1.2, 0.35);
-                hit.add(e);
+        sound(c, p.position(), SoundEvents.RAVAGER_STEP, 1.0F, 1.2F);
+        NewJobSkills.charge(c, dir, ticks, age -> 1.0, 2.1, 5, c.dmg(0.4), (carried, wall, v) -> {
+            for (LivingEntity e : carried) {
+                if (!e.isAlive()) continue;
+                if (wall) {
+                    hurt(c, e, c.dmg(1.2), melee(c));
+                    NewJobSkills.stun(c, e, 50);
+                    apply(e, c.def(), p);
+                    ServerFx.of("x_burst", mid(e)).a(1.3).b(3).color(0xF0E0A0).send(c.level());
+                } else {
+                    hurt(c, e, c.dmg(0.5), melee(c));
+                    push(e, dir, 1.1, 0.35);
+                }
             }
-            if (!hit.isEmpty()) {
-                ServerFx.of("x_hit", front.add(0, 1, 0)).vec(dir).a(1.3).color(0xF0E0A0).send(c.level());
-                sound(c, front, SoundEvents.ANVIL_LAND, 0.5F, 1.4F);
+            if (wall) {
+                launch(p, dir.scale(-0.25).add(0, 0.15, 0));
+                sound(c, p.position(), SoundEvents.ANVIL_LAND, 0.9F, 0.8F);
+                ServerFx.of("x_ring", p.position().add(dir.scale(1.2))).a(2.0).b(1).color(0xF0E0A0).send(c.level());
+            } else if (!carried.isEmpty()) {
+                sound(c, p.position(), SoundEvents.SHIELD_BLOCK, 1.0F, 0.8F);
             }
-            return age >= 9;
         });
         return true;
     }
