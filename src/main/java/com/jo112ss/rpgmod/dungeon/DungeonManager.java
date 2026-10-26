@@ -354,6 +354,14 @@ public final class DungeonManager {
             dl.addFreshEntityWithPassengers(m);
             if (s.boss()) log("boss {} added: removed {} found {} alive {} health {} / {} at {}", m.getType().getDescriptionId(), m.isRemoved(), dl.getEntity(m.getUUID()) != null,
                     m.isAlive(), m.getHealth(), m.getMaxHealth(), m.blockPosition());
+            if (s.boss() && testLog) {
+                Mob boss = m;
+                com.jo112ss.rpgmod.job.SkillTasks.run(age -> {
+                    log("boss tick {}: health {} removed {} ({}) alive {} at {} lastHurt {}", age, boss.getHealth(), boss.isRemoved(), boss.getRemovalReason(), boss.isAlive(),
+                            boss.blockPosition(), boss.getLastDamageSource() != null ? boss.getLastDamageSource().getMsgId() : "-");
+                    return age >= 15 || boss.isRemoved();
+                });
+            }
         } finally {
             MobLevels.forceLevel = null;
             Elite.forceNext = null;
