@@ -360,6 +360,11 @@ final class NewJobTests {
         // a clean field away from the training dummies and what earlier scenes left behind
         Vec3 field = home.add(120, 0, 0);
         p.teleportTo(field.x, field.y, field.z);
+        // the field's chunks load first: what is added to an unloaded chunk only joins the world later
+        SkillTasks.later(40, () -> revenantField(level, p, mode, home, field));
+    }
+
+    private static void revenantField(ServerLevel level, ServerPlayer p, net.minecraft.world.level.GameType mode, Vec3 home, Vec3 field) {
         for (var m : level.getEntitiesOfClass(net.minecraft.world.entity.Mob.class, p.getBoundingBox().inflate(40))) m.discard();
         p.setGameMode(net.minecraft.world.level.GameType.SURVIVAL);
         p.getAbilities().invulnerable = false; // they only hunt players they can hurt...
