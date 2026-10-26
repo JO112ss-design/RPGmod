@@ -253,7 +253,6 @@ public final class DungeonManager {
         for (UUID u : r.mobs) {
             Entity e = dl.getEntity(u);
             if (e instanceof LivingEntity le && le.isAlive()) return;
-            if (testLog && room.last()) log("last room check: {} -> {} (removed {})", u, e, e != null ? e.getRemovalReason() : "-");
         }
         clearRoom(dl, d, r, room);
     }
@@ -354,14 +353,6 @@ public final class DungeonManager {
             dl.addFreshEntityWithPassengers(m);
             if (s.boss()) log("boss {} added: removed {} found {} alive {} health {} / {} at {}", m.getType().getDescriptionId(), m.isRemoved(), dl.getEntity(m.getUUID()) != null,
                     m.isAlive(), m.getHealth(), m.getMaxHealth(), m.blockPosition());
-            if (s.boss() && testLog) {
-                Mob boss = m;
-                com.jo112ss.rpgmod.job.SkillTasks.run(age -> {
-                    log("boss tick {}: health {} removed {} ({}) alive {} at {} lastHurt {}", age, boss.getHealth(), boss.isRemoved(), boss.getRemovalReason(), boss.isAlive(),
-                            boss.blockPosition(), boss.getLastDamageSource() != null ? boss.getLastDamageSource().getMsgId() : "-");
-                    return age >= 15 || boss.isRemoved();
-                });
-            }
         } finally {
             MobLevels.forceLevel = null;
             Elite.forceNext = null;
@@ -545,9 +536,6 @@ public final class DungeonManager {
         log("death of {} by {} (attacker {}, direct {}) health {}", event.getEntity().getType().getDescriptionId(), src.getMsgId(),
                 src.getEntity() != null ? src.getEntity().getType().getDescriptionId() : "-", src.getDirectEntity() != null ? src.getDirectEntity().getType().getDescriptionId() : "-",
                 event.getEntity().getHealth());
-        if (event.getEntity() instanceof com.jo112ss.rpgmod.mob.boss.BloodMoonBoss) {
-            for (var st : Thread.currentThread().getStackTrace()) if (st.getClassName().startsWith("com.jo112ss")) log("  at {}.{}:{}", st.getClassName(), st.getMethodName(), st.getLineNumber());
-        }
     }
 
     /** Chances of a key from an elite and from a fallen adventurer (killed by a player). */
