@@ -163,7 +163,7 @@ public final class AutoTestClient {
         return switch (id) {
             case "power_slash", "shield_bash" -> new int[] {2};
             case "multishot", "backstep", "magic_bolt", "backstab", "lucky_shot" -> new int[] {3};
-            case "time_warp", "guardian_light", "divine_aegis", "eagle_eye", "blooming_fists", "heaven_earth", "diamond_body", "grand_rune" -> new int[] {10};
+            case "divine_aegis", "eagle_eye", "blooming_fists", "heaven_earth", "diamond_body" -> new int[] {10};
             case "hundred_fists" -> new int[] {20, 61};
             case "sealing_chord", "holy_lance" -> new int[] {3, 8};
             case "earthshatter" -> new int[] {4, 10};
