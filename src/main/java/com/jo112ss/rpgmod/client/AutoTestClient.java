@@ -267,7 +267,7 @@ public final class AutoTestClient {
     }
 
     private static int length(String entry) {
-        String id = entry.startsWith("fp:") || entry.startsWith("up:") || entry.startsWith("down:") ? entry.substring(entry.indexOf(':') + 1) : entry;
+        String id = entry.startsWith("fp:") || entry.startsWith("up:") || entry.startsWith("down:") || entry.startsWith("front:") ? entry.substring(entry.indexOf(':') + 1) : entry;
         return switch (id) {
             case "mob:pillar", "mob:dig", "mob:archer", "mob:items" -> 220;
             case "mob:creeper", "mob:spider" -> 120;
@@ -341,7 +341,7 @@ public final class AutoTestClient {
             showSkills.addAll(java.util.List.of("nj:pirate", "down:broadside", "nj:captain", "up:fleet_barrage", "nj:lancer", "spear_rain", "nj:shadow_hunter", "shadow_rain",
                     "nj:treasure_hunter", "treasure_rain", "nj:coins", "nj:restore"));
             showSkills.clear(); // group B, the dashes made distinct: accelerating skewer, blink behind, gather and slam, lightning, flowing zigzag, shield push (twice against a wall)
-            showSkills.addAll(java.util.List.of("nj:lancer", "lance_charge", "nj:monk", "shrink_step", "nj:champion", "iron_mountain", "nj:spellblade", "thunder_thrust",
+            showSkills.addAll(java.util.List.of("nj:lancer", "lance_charge", "nj:monk", "shrink_step", "nj:champion", "iron_mountain", "nj:spellblade", "front:thunder_thrust",
                     "nj:qi_master", "flowing_step", "nj:sentinel", "shield_charge", "nj:wall", "nj:lancer", "lance_charge", "nj:sentinel", "shield_charge", "nj:unwall", "nj:restore"));
             mc.options.gamma().set(1.0); // the night fight, brightly lit for the screenshots
             mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK);
@@ -450,7 +450,9 @@ public final class AutoTestClient {
         boolean fp = entry.startsWith("fp:");
         // "up:" / "down:" turn the camera after the cast (the skill is already aimed) to see the sky or the ground
         float tilt = entry.startsWith("up:") ? -28 : entry.startsWith("down:") ? 38 : Float.NaN;
-        String id = fp ? entry.substring(3) : Float.isNaN(tilt) ? entry : entry.substring(entry.indexOf(':') + 1);
+        boolean front = entry.startsWith("front:"); // the camera in front, looking back along the way you came
+        String id = fp ? entry.substring(3) : Float.isNaN(tilt) && !front ? entry : entry.substring(entry.indexOf(':') + 1);
+        if (front && k == 2) mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_FRONT);
         if (!Float.isNaN(tilt) && k == 3) mc.player.setXRot(tilt);
         // the new jobs: hold the job's weapon on this side too (the server puts it in slot 7), for the HUD
         if (k == 4 && entry.startsWith("nj:") && !entry.equals("nj:restore")) mc.player.getInventory().setSelectedSlot(6);

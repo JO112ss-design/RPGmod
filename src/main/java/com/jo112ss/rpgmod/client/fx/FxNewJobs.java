@@ -273,11 +273,11 @@ final class FxNewJobs {
             float k = top > 0 ? Math.min(1, age / top) : 1; // how fast now
             Vec3 tip = e.position().add(0, 1.0, 0).add(dir.scale(1.6 + k * 0.6));
             // the bow wave: a ring of air bent back from the tip
-            Fx.p(S.RING, tip).fixed(Fx.across(dir)).color(0xFFFFFF, c).size(0.3F + k * 0.5F, 0.9F + k * 1.2F).alpha(0.25F + k * 0.45F, 0).life(4).spawn();
-            for (int i = 0, n = 2 + (int) (k * 5); i < n; i++) {
+            if (age % 2 == 0) Fx.p(S.RING, tip).fixed(Fx.across(dir)).color(0xFFFFFF, c).size(0.3F + k * 0.4F, 0.8F + k * 0.9F).alpha(0.12F + k * 0.3F, 0).life(4).spawn();
+            for (int i = 0, n = 1 + (int) (k * 3); i < n; i++) {
                 double a = Fx.r(0, Math.PI * 2), r = Fx.r(0.4, 0.9 + k * 0.6);
                 Vec3 v = tip.add(side.scale(Math.cos(a) * r)).add(0, Math.sin(a) * r * 0.8, 0).add(dir.scale(Fx.r(-1.5, 0)));
-                segment(v, v.subtract(dir.scale(1.2 + k * 1.8)), 0.06F).color(0xFFFFFF, c).alpha(0.5F + k * 0.4F, 0).life(3).spawn();
+                segment(v, v.subtract(dir.scale(1.0 + k * 1.4)), 0.05F).color(0xFFFFFF, c).alpha(0.3F + k * 0.35F, 0).life(3).spawn();
             }
             if (age % 2 == 0) {
                 Vec3 f = e.position();
@@ -331,7 +331,6 @@ final class FxNewJobs {
                         Vec3 s = m.add(Fx.r(-0.4, 0.4), Fx.r(0, 0.4), Fx.r(-0.4, 0.4));
                         drawBolt(bolt(s, s.add(Fx.randomUnit().scale(0.5)), 0.15, 1), c, 0.04F, 2, 0);
                     }
-                    if (age % 3 == 0) ground(S.HEX, m, 0.5F + age * 0.05F, c, 3).alpha(0.5F, 0).spawn();
                 } else {
                     Vec3 sky = m.add(Fx.r(-0.6, 0.6), 9, Fx.r(-0.6, 0.6));
                     drawBolt(bolt(sky, m, 0.9, 4), 0xFFFFFF, 0.14F, 5, 0);

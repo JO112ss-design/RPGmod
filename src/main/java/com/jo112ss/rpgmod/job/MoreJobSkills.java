@@ -368,6 +368,10 @@ public final class MoreJobSkills {
         return true;
     }
 
+    /** Iron mountain: how fast the enemy flies off (blocks a tick, slowing down) and for how long at most. */
+    static final double FLING_SPEED = 1.3;
+    static final int FLING_TICKS = 12;
+
     /**
      * Iron mountain: a short gathering (0.4s, rooted), then a shoulder slam a few blocks ahead. The
      * enemy hit is sent flying, and it bowls over the enemies it crashes into (and is stunned if it
@@ -381,50 +385,60 @@ public final class MoreJobSkills {
         ServerFx.of("n_stance", p.position()).follow(p).b(gather).color(KI).send(c.level());
         sound(c, SoundEvents.RAVAGER_STEP, 1.2F);
         final LivingEntity[] flung = {null};
+        final int[] flyFrom = {0};
+        final double[] speed = {0};
         Set<Integer> bowled = new HashSet<>();
         SkillTasks.run(age -> {
             if (!p.isAlive()) return true;
             if (age < gather) return false;
-            if (age < gather + 4 && flung[0] == null) { // the slam
+            if (flung[0] == null) { // the slam
+                if (age >= gather + 4) return true;
                 if (age == gather) {
                     launch(p, dir.scale(1.5).add(0, 0.05, 0));
                     sound(c, p.position(), SoundEvents.BREEZE_JUMP, 0.9F, 0.6F);
                 }
                 Vec3 front = p.position().add(dir.scale(0.9));
                 LivingEntity t = NewJobSkills.nearest(enemies(p, front, 1.9), front);
-                if (t != null) {
-                    flung[0] = t;
-                    bowled.add(t.getId());
-                    hurt(c, t, c.dmg(1), melee(c));
-                    push(t, dir, 2.4, 0.35);
-                    launch(p, dir.scale(0.05));
-                    Monk.add(p, 1);
-                    ServerFx.of("x_burst", mid(t)).a(1.6).b(3).color(KI).send(c.level());
-                    ServerFx.of("x_ring", p.position().add(dir.scale(0.8))).a(2.5).b(1).color(KI).send(c.level());
-                    ServerFx.of("n_thrown", t.position()).follow(t).b(16).color(KI).send(c.level());
-                    sound(c, t.position(), SoundEvents.PLAYER_ATTACK_KNOCKBACK, 1.4F, 0.5F);
-                    sound(c, t.position(), SoundEvents.ANVIL_LAND, 0.5F, 0.6F);
-                }
+                if (t == null) return false;
+                flung[0] = t;
+                flyFrom[0] = age;
+                speed[0] = FLING_SPEED * Math.max(0, 1 - t.getAttributeValue(net.minecraft.world.entity.ai.attributes.Attributes.KNOCKBACK_RESISTANCE));
+                bowled.add(t.getId());
+                hurt(c, t, c.dmg(1), melee(c));
+                launch(p, dir.scale(0.05));
+                Monk.add(p, 1);
+                ServerFx.of("x_burst", mid(t)).a(1.6).b(3).color(KI).send(c.level());
+                ServerFx.of("x_ring", p.position().add(dir.scale(0.8))).a(2.5).b(1).color(KI).send(c.level());
+                ServerFx.of("n_thrown", t.position()).follow(t).b(FLING_TICKS + 4).color(KI).send(c.level());
+                sound(c, t.position(), SoundEvents.PLAYER_ATTACK_KNOCKBACK, 1.4F, 0.5F);
+                sound(c, t.position(), SoundEvents.ANVIL_LAND, 0.5F, 0.6F);
                 return false;
             }
             LivingEntity t = flung[0];
-            if (t == null || !t.isAlive()) return true;
-            // the flung enemy bowls over whoever it meets
-            for (LivingEntity o : enemies(p, t.position(), t.getBbWidth() / 2 + 1.1)) {
-                if (!bowled.add(o.getId())) continue;
-                hurt(c, o, c.dmg(0.6), melee(c));
-                push(o, o.position().subtract(t.position()).add(dir), 1.3, 0.4);
-                ServerFx.of("x_hit", mid(o)).vec(o.position().subtract(t.position())).a(1.1).color(KI).send(c.level());
-                sound(c, o.position(), SoundEvents.PLAYER_ATTACK_KNOCKBACK, 1.0F, 0.8F);
-            }
-            if (t.horizontalCollision && !bowled.contains(-t.getId())) { // into a wall
-                bowled.add(-t.getId());
+            if (!t.isAlive() || speed[0] < 0.15 || age - flyFrom[0] > FLING_TICKS) return true;
+            // it flies (driven here, so even a mob that stands still for knockback goes)
+            Vec3 step = dir.scale(speed[0]);
+            if (!c.level().noCollision(t, t.getBoundingBox().move(step).deflate(0.05).move(0, 0.1, 0))) { // into a wall
                 hurt(c, t, c.dmg(0.5), melee(c));
                 NewJobSkills.stun(c, t, 30);
-                ServerFx.of("x_burst", mid(t)).a(1.2).b(3).color(0xC0A070).send(c.level());
+                ServerFx.of("x_burst", mid(t).add(dir.scale(t.getBbWidth() / 2))).a(1.2).b(3).color(0xC0A070).send(c.level());
                 sound(c, t.position(), SoundEvents.ANVIL_LAND, 0.7F, 0.5F);
+                return true;
             }
-            return age >= gather + 20;
+            t.setPos(t.getX() + step.x, t.getY(), t.getZ() + step.z);
+            t.setDeltaMovement(step);
+            speed[0] *= 0.82;
+            // and bowls over whoever it meets, who stumble back
+            for (LivingEntity o : enemies(p, t.position(), t.getBbWidth() / 2 + 1.0)) {
+                if (!bowled.add(o.getId())) continue;
+                hurt(c, o, c.dmg(0.6), melee(c));
+                Vec3 away = o.position().subtract(t.position()).multiply(1, 0, 1).normalize().add(dir).normalize();
+                o.setPos(o.getX() + away.x * 0.8, o.getY(), o.getZ() + away.z * 0.8);
+                push(o, away, 0.6, 0.35);
+                ServerFx.of("x_hit", mid(o)).vec(away).a(1.1).color(KI).send(c.level());
+                sound(c, o.position(), SoundEvents.PLAYER_ATTACK_KNOCKBACK, 1.0F, 0.8F);
+            }
+            return false;
         });
         return true;
     }
