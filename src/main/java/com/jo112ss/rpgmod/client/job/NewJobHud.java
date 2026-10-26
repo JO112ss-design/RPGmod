@@ -37,7 +37,7 @@ public final class NewJobHud {
     /** The sword magic charging: three segments, filling up to each stage, the reached ones lit. */
     private static void swordCharge(GuiGraphicsExtractor g, int el, int sw, int sh) {
         int held = JobClient.swordCharge;
-        int[] at = {com.jo112ss.rpgmod.job.SpellbladeMagic.STAGE1, com.jo112ss.rpgmod.job.SpellbladeMagic.STAGE2, com.jo112ss.rpgmod.job.SpellbladeMagic.STAGE3};
+        int[] at = com.jo112ss.rpgmod.job.SpellbladeMagic.stageTicks(net.minecraft.client.Minecraft.getInstance().player); // cast speed shortens them
         int seg = 18, gap = 3, w = seg * 3 + gap * 2;
         int x0 = sw / 2 - w / 2, y = sh / 2 + 22;
         int col = 0xFF000000 | com.jo112ss.rpgmod.job.MoreJobSkills.ELEMENT_COLORS[el];

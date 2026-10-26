@@ -52,6 +52,11 @@ final class NewJobTests {
             case "hybrids" -> hybrids(level, p, dummies);
             case "coins" -> coins(level, p);
             case "sb0", "sb1", "sb2" -> spellblade(p, name.charAt(2) - '0');
+            case "sbquick" -> {
+                spellblade(p, 2);
+                p.addEffect(new net.minecraft.world.effect.MobEffectInstance(ModEffects.QUICK_CAST, 200, 0));
+                log("spellblade with quick cast: stages at {} ticks", java.util.Arrays.toString(com.jo112ss.rpgmod.job.SpellbladeMagic.stageTicks(p)));
+            }
             case "meditate" -> meditate(level, p);
             case "counter_lance" -> counterLance(level, p, dummies);
             case "wall", "unwall" -> wall(level, p, name.equals("wall"));

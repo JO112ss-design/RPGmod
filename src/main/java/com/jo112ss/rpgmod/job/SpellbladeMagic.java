@@ -43,7 +43,7 @@ public final class SpellbladeMagic {
     /** Mana per element (fire, ice, thunder) and stage. */
     public static final int[][] COST = {{10, 24, 45}, {12, 28, 50}, {14, 32, 55}};
     /** Damage ratio (x attack + magic attack) per element and stage. */
-    static final double[][] POWER = {{0.84, 1.68, 2.94}, {0.49, 0.98, 1.68}, {1.4, 2.8, 4.9}};
+    static final double[][] POWER = {{1.05, 1.68, 2.94}, {0.62, 0.98, 1.68}, {1.75, 2.8, 4.9}};
     /** Fireball burst radius and frost field radius per stage. */
     static final double[] FIRE_R = {1.6, 2.2, 3.0}, ICE_R = {3.5, 5.0, 6.5};
     static final double FIRE_RANGE = 28, ICE_RANGE = 16, THUNDER_RANGE = 24, FIREBALL_SPEED = 1.2;
@@ -65,8 +65,19 @@ public final class SpellbladeMagic {
                 && ModItems.typeOf(p.getMainHandItem().getItem()) == WeaponType.SWORD;
     }
 
-    public static int stage(int held) {
-        return held >= STAGE3 ? 3 : held >= STAGE2 ? 2 : held >= STAGE1 ? 1 : 0;
+    /**
+     * The three stages' charge times for this player: shortened by cast speed like a staff spell
+     * (panel and forged options up to -60%, quick cast beyond).
+     */
+    public static int[] stageTicks(net.minecraft.world.entity.player.Player p) {
+        double speed = Math.min(60, JobManager.castSpeedPercent(p));
+        if (p.hasEffect(com.jo112ss.rpgmod.registry.ModEffects.QUICK_CAST)) speed += 40;
+        double f = 1 - Math.min(85, speed) / 100.0;
+        return new int[] {(int) Math.round(STAGE1 * f), (int) Math.round(STAGE2 * f), (int) Math.round(STAGE3 * f)};
+    }
+
+    public static int stage(int[] at, int held) {
+        return held >= at[2] ? 3 : held >= at[1] ? 2 : held >= at[0] ? 1 : 0;
     }
 
     /** Right click pressed with the sword: start charging (if a first-stage spell can be paid for). */
@@ -82,7 +93,8 @@ public final class SpellbladeMagic {
         }
         CHARGING.put(p.getUUID(), new Charge(now, el));
         int color = MoreJobSkills.ELEMENT_COLORS[el];
-        ServerFx.of("spell_charge", p.position()).follow(p).b(STAGE3).color(color).send(level);
+        int[] at = stageTicks(p);
+        ServerFx.of("spell_charge", p.position()).follow(p).b(at[2]).color(color).send(level);
         // a chime as each stage is reached
         SkillTasks.run(age -> {
             Charge ch = CHARGING.get(p.getUUID());
@@ -90,9 +102,9 @@ public final class SpellbladeMagic {
                 if (ch != null && ch.start() == now) CHARGING.remove(p.getUUID()); // sword put away
                 return true;
             }
-            if (age == STAGE1 || age == STAGE2 || age == STAGE3) {
-                level.playSound(null, p.blockPosition(), SoundEvents.AMETHYST_BLOCK_RESONATE, SoundSource.PLAYERS, 1.0F, age == STAGE3 ? 1.8F : 1.3F);
-                ServerFx.of("x_burst", p.position().add(0, 1.0, 0)).a(age == STAGE3 ? 1.2 : 0.8).b(el == 0 ? 0 : el == 1 ? 1 : 2).color(color).send(level);
+            if (age == at[0] || age == at[1] || age == at[2]) {
+                level.playSound(null, p.blockPosition(), SoundEvents.AMETHYST_BLOCK_RESONATE, SoundSource.PLAYERS, 1.0F, age == at[2] ? 1.8F : age == at[1] ? 1.5F : 1.2F);
+                ServerFx.of("x_burst", p.position().add(0, 1.0, 0)).a(age == at[2] ? 1.2 : 0.8).b(el == 0 ? 0 : el == 1 ? 1 : 2).color(color).send(level);
             }
             return age > 600;
         });
@@ -106,7 +118,7 @@ public final class SpellbladeMagic {
         int held = (int) (level.getGameTime() - ch.start());
         int el = ch.element();
         JobData d = JobManager.data(p);
-        int st = stage(held);
+        int st = stage(stageTicks(p), held);
         if (st == 0) { // not held long enough: nothing happens, nothing is paid
             p.sendSystemMessage(Component.translatable("rpgmod.job.fizzle").withStyle(ChatFormatting.GRAY), true);
             return;
