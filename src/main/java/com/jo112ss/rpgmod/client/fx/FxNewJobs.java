@@ -36,6 +36,10 @@ final class FxNewJobs {
             case "n_stun" -> stun(p);
             case "n_thrown" -> thrown(p);
             case "n_stance" -> stance(p);
+            case "n_ground_wave" -> groundWave(p);
+            case "n_spin" -> spin(p);
+            case "n_dive_mark" -> diveMark(p);
+            case "n_dragon" -> dragon(p);
             default -> {
                 return false;
             }
@@ -253,6 +257,130 @@ final class FxNewJobs {
     @FunctionalInterface
     private interface Ship {
         Vec3 p(double x, double y, double z);
+    }
+
+    // ------------------------------------------------------------------ jumps and slams
+
+    /**
+     * A shockwave running along the ground from pos along vec (its length) in b ticks: the ground
+     * splitting at the front, stone spikes jutting up and sinking, dust and chunks thrown up.
+     */
+    private static void groundWave(P p) {
+        Vec3 o = p.pos();
+        Vec3 d = new Vec3(p.vec().x, 0, p.vec().z);
+        double len = d.length();
+        if (len < 0.1) return;
+        Vec3 dir = d.scale(1 / len);
+        Vec3 side = new Vec3(-dir.z, 0, dir.x);
+        int ticks = Math.max(2, (int) p.b());
+        int c = p.colorOr(0xE0B070);
+        FxAnims.run(ticks + 1, age -> {
+            double from = len * age / (ticks + 1.0), to = len * (age + 1) / (ticks + 1.0);
+            for (double s = from; s < to; s += 0.5) {
+                Vec3 at = o.add(dir.scale(s)).add(side.scale(Fx.r(-0.25, 0.25)));
+                // the crack, zigzagging
+                segment(at.add(0, 0.05, 0), at.add(dir.scale(0.5)).add(side.scale(Fx.r(-0.3, 0.3))).add(0, 0.05, 0), 0.06F).color(0xFFFFFF, c).alpha(0.9F, 0).life(18).spawn();
+                // a stone spike thrusting up, then gone
+                Fx.p(S.SHARD, at.add(side.scale(Fx.r(-0.5, 0.5))).add(0, 0.4, 0)).upright().color(0xD8C8A8, 0x8A7A60).size(0.5F, 0.15F).alphaBlend().lit().life(10).spawn();
+                debris(at, 2, 0.4, 0.45);
+                smoke(at, 0xA89878, 0.4F, 1.0F, 18).vel(side.scale(Fx.r(-0.05, 0.05)).add(0, 0.03, 0)).alpha(0.5F, 0).spawn();
+            }
+            Vec3 front = o.add(dir.scale(to));
+            flash(front.add(0, 0.3, 0), c, 0.8F, 3);
+            return false;
+        });
+    }
+
+    /** A spear spinning around someone (entity, b ticks): streaks whirling round them and a spiral of light. */
+    private static void spin(P p) {
+        Entity e = p.e();
+        if (e == null) return;
+        int c = p.colorOr(0xFF9030);
+        int life = Math.max(3, (int) p.b());
+        FxAnims.follow(e, life, age -> {
+            Vec3 core = e.position().add(0, 1.0, 0);
+            for (int k = 0; k < 2; k++) {
+                double a = age * 1.1 + k * Math.PI;
+                Vec3 arm = new Vec3(Math.cos(a), 0, Math.sin(a));
+                Vec3 tip = core.add(arm.scale(1.6)), back = core.add(arm.scale(-0.4));
+                segment(back, tip, 0.1F).color(0xFFFFFF, c).alpha(0.9F, 0).life(3).spawn();
+                Fx.p(S.SLASH, core.add(arm.scale(1.0))).flat().size(1.5F).color(light(c), c).alpha(0.6F, 0).angle((float) -a).life(3).spawn();
+                Fx.p(S.GLOW, tip).color(0xFFFFFF, c).size(0.3F, 0).alpha(0.9F, 0).life(8).spawn();
+            }
+            return false;
+        });
+    }
+
+    /** Where a dive will land (pos, a = radius, b ticks): a reticle on the ground and a faint column of light. */
+    private static void diveMark(P p) {
+        Vec3 o = p.pos().add(0, 0.05, 0);
+        float r = Math.max(0.6F, p.a());
+        int life = Math.max(2, (int) p.b());
+        int c = p.colorOr(0xC05030);
+        ground(S.RING, o, r, c, life).alpha(0.9F).spawn();
+        ground(S.CIRCLE_HEX, o, r * 0.7F, c, life).alpha(0.6F).spawn();
+        for (int k = 0; k < 4; k++) {
+            double a = k * Math.PI / 2;
+            Vec3 v = new Vec3(Math.cos(a), 0, Math.sin(a));
+            segment(o.add(v.scale(r * 1.1)), o.add(v.scale(r * 1.6)), 0.08F).color(0xFFFFFF, c).alpha(0.9F).life(life).spawn();
+        }
+        segment(o, o.add(0, 6, 0), 0.25F).color(c).alpha(0.25F).life(life).spawn();
+    }
+
+    /**
+     * The dragon king's dragon (entity, b ticks): a long glowing body trailing behind the falling
+     * player, its head at them, wings beating from the shoulders.
+     */
+    private static void dragon(P p) {
+        Entity e = p.e();
+        if (e == null) return;
+        int c = p.colorOr(0xFF6020);
+        int life = Math.max(5, (int) p.b());
+        java.util.ArrayDeque<Vec3> trail = new java.util.ArrayDeque<>();
+        FxAnims.follow(e, life, age -> {
+            float fade = Math.min(1, (life - age) / 6F);
+            Vec3 head = e.position().add(0, 0.9, 0);
+            trail.addFirst(head);
+            while (trail.size() > 22) trail.removeLast();
+            Vec3[] pts = trail.toArray(new Vec3[0]);
+            // the body: segments thinning to the tail, gold to red, with a ridge of spines
+            for (int i = 0; i + 1 < pts.length; i++) {
+                float t = i / 22F;
+                float w = 0.55F * (1 - t) + 0.08F;
+                segment(pts[i], pts[i + 1], w).color(Fx.mix(0xFFE080, c, t), c).alpha(0.85F * fade).life(2).spawn();
+                if (i % 2 == 0) Fx.p(S.GLOW, pts[i]).color(light(c), c).size(w * 2.2F).alpha(0.35F * fade).life(2).spawn();
+                if (i % 3 == 1) Fx.p(S.SHARD, pts[i].add(0, w + 0.2, 0)).upright().color(0xFFFFFF, c).size(w * 1.2F).alpha(0.8F * fade).life(2).spawn();
+            }
+            Vec3 dir = pts.length > 2 ? pts[0].subtract(pts[2]) : new Vec3(0, -1, 0);
+            if (dir.lengthSqr() < 1e-4) dir = new Vec3(0, -1, 0);
+            dir = dir.normalize();
+            Vec3 side = Math.abs(dir.y) > 0.95 ? Fx.right(flatDir(e.getLookAngle())) : Fx.right(dir);
+            Vec3 up = side.cross(dir).normalize();
+            // the head: a bright snout ahead, horns sweeping back, two burning eyes
+            Vec3 snout = head.add(dir.scale(1.2));
+            Fx.p(S.GLOW, head).color(0xFFFFFF, c).size(1.6F).alpha(0.6F * fade).life(2).spawn();
+            segment(head, snout, 0.5F).color(0xFFF0C0, c).alpha(0.9F * fade).life(2).spawn();
+            for (int s = -1; s <= 1; s += 2) {
+                segment(head.add(side.scale(s * 0.3)).add(up.scale(0.3)), head.add(side.scale(s * 0.7)).add(up.scale(0.9)).subtract(dir.scale(1.0)), 0.12F)
+                        .color(0xFFFFFF, 0xFFD070).alpha(0.9F * fade).life(2).spawn();
+                Fx.p(S.GLOW, head.add(dir.scale(0.5)).add(side.scale(s * 0.25)).add(up.scale(0.2))).color(0xFFFFFF, 0xFF2010).size(0.25F).alpha(fade).life(2).spawn();
+            }
+            // the wings from the shoulders, beating
+            Vec3 root = pts.length > 4 ? pts[4] : head;
+            double flap = Math.sin(age * 0.5) * 0.8;
+            for (int s = -1; s <= 1; s += 2) {
+                for (int rib = 0; rib < 4; rib++) {
+                    double spread = 1.5 + rib * 0.9;
+                    Vec3 tip = root.add(side.scale(s * spread)).add(up.scale(flap * spread * 0.5)).subtract(dir.scale(rib * 0.7));
+                    segment(root, tip, 0.1F).color(0xFFE0A0, c).alpha(0.85F * fade).life(2).spawn();
+                    if (age % 2 == 0) {
+                        for (double f = 0.3; f < 1; f += 0.25) Fx.p(S.GLOW, root.add(tip.subtract(root).scale(f))).color(c).size(0.5F).alpha(0.18F * fade).life(3).spawn();
+                    }
+                }
+            }
+            if (age % 2 == 0) Fx.p(S.FLARE, head.add(Fx.randomUnit().scale(0.6))).vel(dir.scale(-0.1)).color(0xFFFFFF, c).size(0.4F, 0).life(10).spawn();
+            return false;
+        });
     }
 
     // ------------------------------------------------------------------ dashes

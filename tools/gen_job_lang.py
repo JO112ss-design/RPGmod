@@ -63,10 +63,10 @@ SKILLS = {  # id: (ja, ja desc, en, en desc)
  'lance_charge': ('突進', 'だんだん加速しながら突っ込み、当たった敵を槍に乗せて運ぶ（最大3体）。最後に速さに応じて投げ飛ばす。壁にぶつけると大ダメージ＋気絶。', 'Lance Charge', 'Charge, faster and faster, carrying the enemies you skewer (up to three); at the end they are flung off, harder the faster you went. Into a wall: a heavy hit and a stun.'),
  'spear_throw': ('槍投げ', '槍を投げて一直線の敵を貫く。槍は手元に戻る。', 'Spear Throw', 'Throw the spear through a line of enemies. It comes back.'),
  'spear_sweep': ('薙ぎ払い', '前方の広い扇形を薙ぎ払い、敵を吹き飛ばす。', 'Sweep', 'A wide arc in front of you that throws enemies back.'),
- 'leap_thrust': ('跳躍突き', '狙った地点へ跳び、落下の勢いで突き刺す。', 'Leap Thrust', 'Leap to the aimed spot and drive the spear down.'),
+ 'leap_thrust': ('跳躍突き', '槍を地面に突いて棒高跳びで狙った地点へ跳ぶ。着地点を突き、前方一直線に衝撃波が走って当たった敵を打ち上げる。', 'Leap Thrust', 'Plant the spear and vault onto the aimed spot; the landing sends a shockwave running straight on, throwing up whoever it passes.'),
  'counter_stance': ('迎撃の構え', '2秒間構える。その間に近づいた敵や攻撃してきた敵に自動で反撃する（受けたダメージは半分）。', 'Counter Stance', 'Brace for 2s: enemies that come close or hit you are struck back (you take half damage).'),
  'rapid_thrust': ('連突き', '正面に5回の素早い突き。', 'Rapid Thrust', 'Five quick thrusts straight ahead.'),
- 'dragon_fang': ('竜牙', '高く跳び上がり、落下とともに大範囲を穿つ。', 'Dragon Fang', 'Leap high and come down on a wide area.'),
+ 'dragon_fang': ('竜牙', '真上に跳び、槍を回転させながら落下する。着地で周りの敵を空中へ打ち上げる（近いほど高く強く）。', 'Dragon Fang', 'Leap straight up and come down spinning the spear; the landing throws the enemies around high into the air (nearer ones harder).'),
  'spear_rain': ('千本槍', '狙った範囲に3秒間槍を降らせる。槍は地面に刺さって残り、最後に一斉に炸裂する（近くに刺さった本数ぶん追加ダメージ、最大4本）。', 'Thousand Spears', 'Spears rain on the aimed area for 3s and stay stuck in the ground, then all burst at once (more damage per spear nearby, up to four).'),
  # ---- monk
  'combo': ('連撃', '目の前の敵に素早い3連打。当たるたびに気が溜まる。', 'Combo', 'Three quick punches in front of you. Each hit builds ki.'),
@@ -100,12 +100,12 @@ SKILLS = {  # id: (ja, ja desc, en, en desc)
  'battle_aura': ('闘気', '12秒間、気1つにつき与ダメージ+4%。', 'Battle Aura', 'For 12s, +4% damage per point of ki.'),
  'peerless': ('天地無双', '気をすべて使い、3＋気×2回の連続攻撃。最後の一撃は特大。', 'Peerless', 'Spend all ki: 3 + 2 per ki strikes, the last one huge.'),
  # ---- dragoon
- 'high_jump': ('ハイジャンプ', '高く跳び上がり（空中は無敵）、狙った場所へ急降下する。', 'High Jump', 'Leap high (untouchable in the air) and dive where you aim.'),
+ 'high_jump': ('ハイジャンプ', '高く跳んで1.5秒空中に留まり、着地点の照準を見ながら狙い直せる（空中は無敵）。急降下で狙った1体に大ダメージ、すぐ隣の敵には少し。', 'High Jump', 'Leap high and hang there 1.5s (untouchable), aiming with the reticle; dive onto one enemy for a heavy blow (a little to those right next to it).'),
  'dragon_spear': ('竜槍投げ', '当たると爆発する槍を投げる。', 'Dragon Spear', 'Throw a spear that explodes on impact.'),
  'dragon_scale': ('竜鱗', '10秒間、受けるダメージが減る。', 'Dragon Scale', 'Take less damage for 10s.'),
  'spiral_lance': ('螺旋槍', '前方に4回の回転突き。敵を槍先に引き寄せる。', 'Spiral Lance', 'Four drilling thrusts that drag enemies onto the spear.'),
  'sky_step': ('天翔', '空中でも使える跳躍。着地のダメージなし。', 'Sky Step', 'A jump off thin air. No fall damage.'),
- 'dragon_king': ('竜王降臨', '空高くから急降下し、燃える大範囲を攻撃する。', 'Dragon King', 'Rise high, then crash down on a wide area in flames.'),
+ 'dragon_king': ('竜王降臨', '空高くから竜の幻影とともに急降下し、大範囲を攻撃する。着地点は4秒間燃え続け、中の敵を焼く。', 'Dragon King', 'Rise high, then dive inside a phantom dragon onto a wide area; the ground burns for 4s, burning enemies in it.'),
  # ---- maestro
  'duet': ('二重奏', '12秒間、次の歌を今の歌と同時に演奏できる。', 'Duet', 'For 12s the next song plays alongside the current one.'),
  'modulate': ('転調', '演奏中の歌を、時間と点数はそのまま次の歌に切り替える（点数+4）。', 'Modulate', 'Switch the song being played to the next one, same time and points (+4 points).'),

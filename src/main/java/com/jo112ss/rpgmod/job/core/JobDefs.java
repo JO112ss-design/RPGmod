@@ -411,7 +411,7 @@ public final class JobDefs {
         advanced("lancer", "dragoon", 0x8A3A2A, "竜", List.of(JobStat.ATTACK_DAMAGE, JobStat.MAX_HEALTH, JobStat.MOVEMENT_SPEED, JobStat.CRIT_CHANCE),
                 stats(),
                 List.of(
-                        skill("high_jump", A, SkillEffect.WHIRL, 10, 18, 3.2, 3.5, 0, List.of(), 0, "跳"),
+                        skill("high_jump", A, SkillEffect.WHIRL, 10, 18, 4.0, 3.5, 0, List.of(), 0, "跳"),
                         skill("dragon_spear", A, SkillEffect.BOLT, 9, 18, 2.8, 24, 0, List.of(), 0, "爆"),
                         skill("dragon_scale", A, SkillEffect.BUFF, 25, 18, 0, 0, 10, List.of("minecraft:resistance"), 1, "鱗"),
                         skill("spiral_lance", A, SkillEffect.SWEEP, 9, 18, 1.0, 6, 0, List.of(), 0, "螺"),

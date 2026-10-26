@@ -231,17 +231,17 @@ public final class AutoTestClient {
             case "flowing_step" -> new int[] {2, 7, 12};
             case "shield_charge" -> new int[] {4, 9, 12};
             case "spear_throw" -> new int[] {6, 16};
-            case "leap_thrust" -> new int[] {8, 18};
+            case "leap_thrust" -> new int[] {6, 19, 24};
             case "counter_stance", "jolly_roger" -> new int[] {10};
             case "rapid_thrust" -> new int[] {7};
-            case "dragon_fang" -> new int[] {10, 24};
+            case "dragon_fang" -> new int[] {8, 14, 22};
             case "combo" -> new int[] {5};
             case "parry", "rum" -> new int[] {6};
             case "meditate", "hundred_fists" -> new int[] {20};
             case "war_song", "heal_song", "guard_song", "wind_song", "discord", "lullaby" -> new int[] {30};
             case "grand_concert" -> new int[] {25};
-            case "high_jump" -> new int[] {10, 30};
-            case "dragon_king" -> new int[] {16, 40};
+            case "high_jump" -> new int[] {24, 40, 48, 54};
+            case "dragon_king" -> new int[] {22, 27, 50};
             case "fleet_barrage" -> new int[] {12, 36, 70};
             case "anchor_throw" -> new int[] {4, 8, 12, 20};
             case "twin_cannon" -> new int[] {14, 50};
@@ -267,7 +267,7 @@ public final class AutoTestClient {
     }
 
     private static int length(String entry) {
-        String id = entry.startsWith("fp:") || entry.startsWith("up:") || entry.startsWith("down:") || entry.startsWith("front:") ? entry.substring(entry.indexOf(':') + 1) : entry;
+        String id = entry.startsWith("fp:") || entry.startsWith("up:") || entry.startsWith("down:") || entry.startsWith("front:") || entry.startsWith("steep:") ? entry.substring(entry.indexOf(':') + 1) : entry;
         return switch (id) {
             case "mob:pillar", "mob:dig", "mob:archer", "mob:items" -> 220;
             case "mob:creeper", "mob:spider" -> 120;
@@ -283,8 +283,9 @@ public final class AutoTestClient {
             case "bal:checks" -> 40;
             case "job:screen" -> 70;
             case "nj:pirate", "nj:lancer", "nj:monk", "nj:hybrids" -> 70;
-            case "dragon_king", "twin_cannon", "mimic" -> 70;
-            case "high_jump" -> 60;
+            case "dragon_king" -> 100;
+            case "twin_cannon", "mimic" -> 70;
+            case "high_jump" -> 75;
             case "fleet_barrage", "symphony", "grand_concerto" -> 110;
             case "bard:play" -> 300;
             case "cannon", "jolly_roger", "broadside" -> 60;
@@ -340,8 +341,11 @@ public final class AutoTestClient {
             showSkills.clear(); // group A, the rain skills made distinct: carpet bombing, ghost ships, stuck spears, focused arrows, coins to pick up
             showSkills.addAll(java.util.List.of("nj:pirate", "down:broadside", "nj:captain", "up:fleet_barrage", "nj:lancer", "spear_rain", "nj:shadow_hunter", "shadow_rain",
                     "nj:treasure_hunter", "treasure_rain", "nj:coins", "nj:restore"));
-            showSkills.clear(); // group B (after a pause, so what the earlier tests left running has died down), the dashes made distinct: accelerating skewer, blink behind, gather and slam, lightning, flowing zigzag, shield push (twice against a wall)
-            showSkills.addAll(java.util.List.of("nj:restore", "nj:restore", "nj:restore", "nj:lancer", "lance_charge", "nj:monk", "shrink_step", "nj:champion", "iron_mountain", "nj:spellblade", "front:thunder_thrust",
+            showSkills.clear(); // group C (after a pause), the jumps made distinct: pole vault and ground wave, straight up and spin down, hover and aim, the dragon
+            showSkills.addAll(java.util.List.of("nj:restore", "nj:restore", "nj:restore", "nj:lancer", "leap_thrust", "dragon_fang", "nj:dragoon", "steep:high_jump",
+                    "steep:dragon_king", "nj:restore"));
+            if (false) showSkills.clear(); // group B (after a pause, so what the earlier tests left running has died down), the dashes made distinct: accelerating skewer, blink behind, gather and slam, lightning, flowing zigzag, shield push (twice against a wall)
+            if (false) showSkills.addAll(java.util.List.of("nj:restore", "nj:restore", "nj:restore", "nj:lancer", "lance_charge", "nj:monk", "shrink_step", "nj:champion", "iron_mountain", "nj:spellblade", "front:thunder_thrust",
                     "nj:qi_master", "flowing_step", "nj:sentinel", "shield_charge", "nj:wall", "nj:lancer", "lance_charge", "nj:sentinel", "shield_charge", "nj:unwall", "nj:restore"));
             mc.options.gamma().set(1.0); // the night fight, brightly lit for the screenshots
             mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK);
@@ -449,7 +453,7 @@ public final class AutoTestClient {
         }
         boolean fp = entry.startsWith("fp:");
         // "up:" / "down:" turn the camera after the cast (the skill is already aimed) to see the sky or the ground
-        float tilt = entry.startsWith("up:") ? -28 : entry.startsWith("down:") ? 38 : Float.NaN;
+        float tilt = entry.startsWith("up:") ? -28 : entry.startsWith("down:") ? 38 : entry.startsWith("steep:") ? 62 : Float.NaN;
         boolean front = entry.startsWith("front:"); // the camera in front, looking back along the way you came
         String id = fp ? entry.substring(3) : Float.isNaN(tilt) && !front ? entry : entry.substring(entry.indexOf(':') + 1);
         if (front && k == 2) mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_FRONT);

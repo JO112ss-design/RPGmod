@@ -76,12 +76,12 @@ public final class MoreJobSkills {
             case "battle_aura" -> mark(c, ModEffects.BATTLE_AURA, null, 0xFF8030, 1);
             case "peerless" -> peerless(c);
             // dragoon
-            case "high_jump" -> dive(c, 1.7, 14, 18, 2.6, 0xC05030, false);
+            case "high_jump" -> highJump(c);
             case "dragon_spear" -> dragonSpear(c);
             case "dragon_scale" -> mark(c, null, null, 0xD04030, 2);
             case "spiral_lance" -> spiralLance(c);
             case "sky_step" -> skyStep(c);
-            case "dragon_king" -> dive(c, 2.2, 20, 26, 3.2, 0xFF6020, true);
+            case "dragon_king" -> dragonKing(c);
             // maestro
             case "duet" -> mark(c, ModEffects.DUET, null, 0x5FD3BC, 4);
             case "modulate" -> Bard.modulate(c);
@@ -426,7 +426,7 @@ public final class MoreJobSkills {
                 return true;
             }
             t.setPos(t.getX() + step.x, t.getY(), t.getZ() + step.z);
-            t.setDeltaMovement(step);
+            t.setDeltaMovement(Vec3.ZERO); // moved here; its own physics should not move it again
             speed[0] *= 0.82;
             // and bowls over whoever it meets, who stumble back
             for (LivingEntity o : enemies(p, t.position(), t.getBbWidth() / 2 + 1.0)) {
@@ -470,27 +470,109 @@ public final class MoreJobSkills {
 
     // ================================================================== dragoon
 
+    /** High jump: how long you hang in the air to aim, and the radius around the one struck that is hit too (lightly). */
+    static final int HOVER = 30;
+    static final double SPLASH = 2.0;
+
     /**
-     * Up into the sky (untouchable there), then down on the spot aimed at when falling begins: the
-     * high jump, and the dragon king (higher, wider, on fire).
+     * High into the sky, then you hang there 1.5s (untouchable) while a reticle shows where you will
+     * land: look around to aim. Then down like a spear: the enemy at the spot takes the whole blow,
+     * those right next to it only a little.
      */
-    private static boolean dive(Ctx c, double up, int apex, double reach, double speed, int color, boolean king) {
+    private static boolean highJump(Ctx c) {
         ServerPlayer p = c.p();
-        launch(p, new Vec3(0, up, 0));
-        p.addEffect(new MobEffectInstance(ModEffects.UNTOUCHABLE, apex + 10, 0, false, false, true), p);
+        int rise = 12;
+        int color = 0xC05030;
+        launch(p, new Vec3(0, 1.7, 0));
+        p.addEffect(new MobEffectInstance(ModEffects.UNTOUCHABLE, rise + HOVER + 10, 0, false, false, true), p);
         NewJobSkills.SOFT_LANDING.add(p.getUUID());
         ServerFx.of("x_aura", p.position()).follow(p).a(2).b(3).color(color).send(c.level());
-        sound(c, king ? SoundEvents.ENDER_DRAGON_GROWL : SoundEvents.ENDER_DRAGON_FLAP, king ? 1.2F : 1.0F);
+        sound(c, SoundEvents.ENDER_DRAGON_FLAP, 1.0F);
+        sound(c, p.position(), SoundEvents.BREEZE_JUMP, 1.0F, 0.6F);
+        final Vec3[] aim = {null};
+        SkillTasks.run(age -> {
+            if (!p.isAlive()) {
+                p.setNoGravity(false);
+                return true;
+            }
+            p.resetFallDistance();
+            if (age == rise) { // hang in the air
+                p.setNoGravity(true);
+                launch(p, Vec3.ZERO);
+                sound(c, p.position(), SoundEvents.PHANTOM_FLAP, 1.0F, 0.8F);
+            }
+            if (age >= rise && age < rise + HOVER) {
+                aim[0] = aimPoint(c, 24);
+                if (age % 2 == 0) {
+                    ServerFx.of("n_dive_mark", aim[0]).a(SPLASH).b(3).color(color).send(c.level());
+                    ServerFx.of("x_hit", p.position().add(0, 1, 0)).vec(new Vec3(0, -1, 0)).a(0.4).color(color).send(c.level());
+                }
+                if (age % 6 == 0) launch(p, Vec3.ZERO); // a little drifting is allowed, falling is not
+                return false;
+            }
+            if (age == rise + HOVER) {
+                p.setNoGravity(false);
+                Vec3 target = aim[0] != null ? aim[0] : aimPoint(c, 24);
+                Vec3 v = target.subtract(p.position()).normalize().scale(2.8);
+                launch(p, v.y > -0.5 ? v.add(0, -1.2, 0) : v);
+                ServerFx.of("x_dash", p.position()).vec(target).color(color).send(c.level());
+                ServerFx.of("n_spin", p.position()).follow(p).b(12).color(color).send(c.level());
+                sound(c, p.position(), SoundEvents.TRIDENT_THROW, 1.0F, 0.5F);
+                return false;
+            }
+            if (age < rise + HOVER || (!p.onGround() && age < rise + HOVER + 40)) return false;
+            Vec3 o = p.position();
+            LivingEntity main = NewJobSkills.nearest(enemies(p, o, SPLASH + 0.6), o);
+            List<LivingEntity> hit = new ArrayList<>();
+            if (main != null) {
+                hurt(c, main, c.dmg(1), melee(c));
+                hit.add(main);
+                ServerFx.of("x_strike", main.position()).a(1.2).color(color).point(mid(main)).send(c.level());
+                ServerFx.of("x_hit", mid(main)).vec(new Vec3(0, -1, 0)).a(1.8).color(color).send(c.level());
+            }
+            for (LivingEntity e : enemies(p, o, SPLASH)) {
+                if (e == main) continue;
+                hurt(c, e, c.dmg(0.2), melee(c));
+                pushAway(e, o, 0.5, 0.3);
+                hit.add(e);
+            }
+            ServerFx.of("x_ring", o).a(SPLASH * 1.2).b(2).color(color).points(hit).send(c.level());
+            ServerFx.of("x_spikes", o).vec(c.flat()).a(2).color(color).send(c.level());
+            sound(c, o, SoundEvents.MACE_SMASH_GROUND_HEAVY, 1.4F, 0.8F);
+            sound(c, o, SoundEvents.SPEAR_HIT, 1.4F, 0.6F);
+            SkillTasks.later(5, () -> NewJobSkills.SOFT_LANDING.remove(p.getUUID()));
+            return true;
+        });
+        return true;
+    }
+
+    /** Dragon king: the fire left where you land, and how long it burns. */
+    static final double KING_FIRE = 5;
+    static final int KING_FIRE_TICKS = 80;
+
+    /**
+     * Up into the sky, then down on the aimed spot inside a phantom dragon that dives with you. The
+     * landing blasts the area, and the ground stays on fire for 4s, burning enemies standing in it.
+     */
+    private static boolean dragonKing(Ctx c) {
+        ServerPlayer p = c.p();
+        int apex = 20;
+        int color = 0xFF6020;
+        launch(p, new Vec3(0, 2.2, 0));
+        p.addEffect(new MobEffectInstance(ModEffects.UNTOUCHABLE, apex + 14, 0, false, false, true), p);
+        NewJobSkills.SOFT_LANDING.add(p.getUUID());
+        ServerFx.of("x_aura", p.position()).follow(p).a(2).b(3).color(color).send(c.level());
+        sound(c, SoundEvents.ENDER_DRAGON_GROWL, 1.2F);
         sound(c, p.position(), SoundEvents.BREEZE_JUMP, 1.0F, 0.6F);
         SkillTasks.run(age -> {
             if (!p.isAlive()) return true;
             p.resetFallDistance();
             if (age == apex) {
-                Vec3 target = aimPoint(c, reach);
-                Vec3 v = target.subtract(p.position()).normalize().scale(speed);
+                Vec3 target = aimPoint(c, 26);
+                Vec3 v = target.subtract(p.position()).normalize().scale(2.6);
                 launch(p, v.y > -0.5 ? v.add(0, -1.2, 0) : v);
-                ServerFx.of("x_dash", p.position()).vec(target).color(color).send(c.level());
-                sound(c, p.position(), SoundEvents.TRIDENT_THROW, 1.0F, 0.5F);
+                ServerFx.of("n_dragon", p.position()).follow(p).b(24).color(color).send(c.level());
+                sound(c, p.position(), SoundEvents.ENDER_DRAGON_GROWL, 1.6F, 0.8F);
             }
             if (age <= apex + 1 || (!p.onGround() && age < apex + 40)) return false;
             double r = c.def().radius();
@@ -500,14 +582,24 @@ public final class MoreJobSkills {
                 double fall = 1 - 0.4 * Math.min(1, horizontal(e.position(), o) / r);
                 hurt(c, e, c.dmg(fall), melee(c));
                 pushAway(e, o, 0.7, 0.7);
-                if (king) e.igniteForSeconds(4);
+                e.igniteForSeconds(4);
             }
             ServerFx.of("earthshatter", o).a(r).send(c.level());
-            ServerFx.of("x_spikes", o).vec(c.flat()).a(Math.max(2, r * 0.6)).color(color).send(c.level());
-            if (king) ServerFx.of("x_burst", o.add(0, 0.3, 0)).a(r * 0.7).b(0).color(0xFF6020).points(hit).send(c.level());
-            else ServerFx.of("x_ring", o).a(r * 1.3).b(2).color(color).points(hit).send(c.level());
-            sound(c, o, SoundEvents.MACE_SMASH_GROUND_HEAVY, 1.4F, king ? 0.5F : 0.8F);
-            if (king) sound(c, o, SoundEvents.GENERIC_EXPLODE, 1.4F, 0.6F);
+            ServerFx.of("x_burst", o.add(0, 0.3, 0)).a(r * 0.7).b(0).color(color).points(hit).send(c.level());
+            ServerFx.of("x_zone", o).a(KING_FIRE).b(KING_FIRE_TICKS).vec(new Vec3(2, 1, 0)).color(color).send(c.level());
+            sound(c, o, SoundEvents.MACE_SMASH_GROUND_HEAVY, 1.4F, 0.5F);
+            sound(c, o, SoundEvents.GENERIC_EXPLODE, 1.4F, 0.6F);
+            // the burning ground
+            SkillTasks.run(f -> {
+                if (f % 10 == 0) {
+                    for (LivingEntity e : enemies(p, o, KING_FIRE)) {
+                        hurt(c, e, c.dmg(0.06), magic(c));
+                        e.igniteForSeconds(3);
+                    }
+                }
+                if (f % 20 == 0) sound(c, o, SoundEvents.FIRE_AMBIENT, 1.0F, 0.8F);
+                return f >= KING_FIRE_TICKS;
+            });
             SkillTasks.later(5, () -> NewJobSkills.SOFT_LANDING.remove(p.getUUID()));
             return true;
         });

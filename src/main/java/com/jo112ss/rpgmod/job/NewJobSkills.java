@@ -479,7 +479,7 @@ public final class NewJobSkills {
                 // where the player will be next tick, plus a spear's (or shield's) length
                 Vec3 at = p.position().add(dir.scale(v + 1.0 + e.getBbWidth() / 2)).add(side.scale(off));
                 e.setPos(at.x, p.getY(), at.z);
-                e.setDeltaMovement(dir.scale(v));
+                e.setDeltaMovement(Vec3.ZERO); // moved here; its own physics should not move it again
                 e.resetFallDistance();
             }
             return false;
@@ -584,36 +584,97 @@ public final class NewJobSkills {
     /** Players whose next landing does not hurt (leaps). */
     static final Set<UUID> SOFT_LANDING = new HashSet<>();
 
-    /** Leaps to the aimed spot and drives the spear down there. */
+    /** Leap thrust: the shockwave from the landing runs this far ahead, in this many ticks. */
+    static final double LEAP_WAVE = 8;
+    static final int LEAP_WAVE_TICKS = 8;
+
+    /**
+     * Plants the spear and vaults over it onto the aimed spot. Landing strikes the spot and sends a
+     * shockwave running straight on along the ground, throwing up whoever it passes.
+     */
     private static boolean leapThrust(Ctx c) {
         ServerPlayer p = c.p();
         Vec3 target = aimPoint(c, 12);
         Vec3 d = target.subtract(p.position());
         Vec3 flat = new Vec3(d.x, 0, d.z);
+        Vec3 dir = flat.lengthSqr() > 0.01 ? flat.normalize() : c.flat();
+        // the pole: the spear planted a step ahead, leaning back towards you, left standing a moment
+        WeaponMaterial mat = ModItems.materialOf(p.getMainHandItem().getItem());
+        Vec3 plant = ground(c, p.position().add(dir.scale(1.4)));
+        SkillProp pole = SkillProp.create(c.level(), SkillProp.SPEAR, plant.add(dir.scale(-0.9)).add(0, 1.4, 0), p.getYRot(), 16);
+        pole.setVariant(mat != null ? mat.ordinal() : 1);
+        pole.aimAt(plant.add(0, -0.6, 0));
         // players lose 9% of their speed in the air each tick: over the ~16 tick flight, distance = 8.5 x speed
-        Vec3 v = flat.scale(1 / 8.5).add(0, Math.max(0.55, 0.6 + d.y * 0.06), 0);
+        Vec3 v = flat.scale(1 / 8.5).add(0, Math.max(0.7, 0.75 + d.y * 0.06), 0);
         launch(p, v);
         SOFT_LANDING.add(p.getUUID());
-        sound(c, SoundEvents.BREEZE_JUMP, 1.1F);
-        ServerFx.of("x_dash", p.position()).vec(target).color(LANCE).send(c.level());
+        sound(c, SoundEvents.SPEAR_USE, 1.0F);
+        sound(c, p.position(), SoundEvents.BREEZE_JUMP, 1.0F, 1.1F);
         SkillTasks.run(age -> {
             if (!p.isAlive()) return true;
             p.resetFallDistance();
             if (age < 4 || (!p.onGround() && age < 40)) return false;
+            Vec3 o = p.position();
             double r = c.def().radius();
-            List<LivingEntity> hit = enemies(p, p.position(), r);
-            for (LivingEntity e : hit) {
-                hurt(c, e, c.dmg(1), melee(c));
-                pushAway(e, p.position(), 0.6, 0.5);
-            }
-            ServerFx.of("x_spikes", p.position()).vec(c.flat()).a(2).color(LANCE).send(c.level());
-            ServerFx.of("x_ring", p.position()).a(r * 1.3).b(1).color(LANCE).points(hit).send(c.level());
-            sound(c, p.position(), SoundEvents.MACE_SMASH_GROUND_HEAVY, 1.0F, 1.2F);
-            sound(c, p.position(), SoundEvents.SPEAR_HIT, 1.0F, 0.8F);
+            List<LivingEntity> hit = enemies(p, o, r);
+            for (LivingEntity e : hit) hurt(c, e, c.dmg(0.6), melee(c));
+            ServerFx.of("x_ring", o).a(r * 1.2).b(1).color(LANCE).points(hit).send(c.level());
+            ServerFx.of("n_ground_wave", o).vec(dir.scale(LEAP_WAVE)).b(LEAP_WAVE_TICKS).color(LANCE).send(c.level());
+            sound(c, o, SoundEvents.MACE_SMASH_GROUND_HEAVY, 1.0F, 1.2F);
+            sound(c, o, SoundEvents.SPEAR_HIT, 1.0F, 0.8F);
+            // the shockwave
+            Set<Integer> done = new HashSet<>();
+            for (LivingEntity e : hit) done.add(e.getId());
+            SkillTasks.run(w -> {
+                double reach = LEAP_WAVE * (w + 1) / LEAP_WAVE_TICKS;
+                Vec3 front = o.add(dir.scale(reach));
+                for (LivingEntity e : enemies(p, front, 1.6)) {
+                    if (!done.add(e.getId())) continue;
+                    hurt(c, e, c.dmg(1), melee(c));
+                    airborne(c, e, 0.55);
+                    ServerFx.of("x_hit", mid(e)).vec(new Vec3(0, 1, 0)).a(1.0).color(LANCE).send(c.level());
+                }
+                if (w % 2 == 0) sound(c, front, SoundEvents.ROOTED_DIRT_BREAK, 0.8F, 0.7F);
+                return w + 1 >= LEAP_WAVE_TICKS;
+            });
             SkillTasks.later(5, () -> SOFT_LANDING.remove(p.getUUID()));
             return true;
         });
         return true;
+    }
+
+    /**
+     * Throws an enemy straight up (a starting speed, blocks a tick) and lets it fall back, driving
+     * it here so it works on any mob (knockback resistance makes it go less high).
+     */
+    static void airborne(Ctx c, LivingEntity e, double vy) {
+        double resist = 1 - e.getAttributeValue(net.minecraft.world.entity.ai.attributes.Attributes.KNOCKBACK_RESISTANCE);
+        if (resist <= 0.05) return;
+        final double[] v = {vy * resist};
+        SkillTasks.run(age -> {
+            if (!e.isAlive() || age > 60) return true;
+            double dy = v[0];
+            if (!c.level().noCollision(e, e.getBoundingBox().move(0, dy, 0))) {
+                if (dy > 0) {
+                    v[0] = 0;
+                    return false;
+                }
+                // down onto the ground: as far as it goes
+                for (double s = dy + 0.1; s < 0; s += 0.1) {
+                    if (c.level().noCollision(e, e.getBoundingBox().move(0, s, 0))) {
+                        e.setPos(e.getX(), e.getY() + s, e.getZ());
+                        break;
+                    }
+                }
+                e.setDeltaMovement(Vec3.ZERO);
+                return true;
+            }
+            e.setPos(e.getX(), e.getY() + dy, e.getZ());
+            e.setDeltaMovement(Vec3.ZERO); // moved here; its own physics should not move it again
+            e.resetFallDistance();
+            v[0] = Math.max(-1.0, v[0] - 0.08);
+            return false;
+        });
     }
 
     /** Counter stance: the damage a counter does, set when it was used. */
@@ -673,10 +734,14 @@ public final class NewJobSkills {
         return true;
     }
 
-    /** Leaps high and comes down on a wide area. */
+    /**
+     * Jumps straight up, then comes down spinning the spear round; the landing smashes the ground
+     * and throws every enemy around high into the air (the nearer, the harder it is hit).
+     */
     private static boolean dragonFang(Ctx c) {
         ServerPlayer p = c.p();
-        launch(p, c.flat().scale(0.3).add(0, 1.35, 0));
+        int apex = 12;
+        launch(p, new Vec3(0, 1.35, 0));
         SOFT_LANDING.add(p.getUUID());
         ServerFx.of("x_aura", p.position()).follow(p).a(1.5).b(3).color(0xFF9030).send(c.level());
         sound(c, SoundEvents.ENDER_DRAGON_FLAP, 1.0F);
@@ -684,19 +749,19 @@ public final class NewJobSkills {
         SkillTasks.run(age -> {
             if (!p.isAlive()) return true;
             p.resetFallDistance();
-            if (age == 12) {
-                launch(p, c.flat().scale(0.2).add(0, -2.6, 0));
-                ServerFx.of("x_dash", p.position()).vec(p.position().add(0, -6, 0)).color(0xFF9030).send(c.level());
-                sound(c, p.position(), SoundEvents.TRIDENT_THROW, 1.0F, 0.6F);
+            if (age == apex) {
+                launch(p, new Vec3(0, -1.8, 0));
+                ServerFx.of("n_spin", p.position()).follow(p).b(14).color(0xFF9030).send(c.level());
+                sound(c, p.position(), SoundEvents.TRIDENT_RIPTIDE_3, 1.0F, 0.8F);
             }
-            if (age <= 13 || (!p.onGround() && age < 50)) return false;
+            if (age <= apex + 1 || (!p.onGround() && age < 50)) return false;
             double r = c.def().radius();
             Vec3 o = p.position();
             List<LivingEntity> hit = enemies(p, o, r);
             for (LivingEntity e : hit) {
-                double fall = 1 - 0.4 * Math.min(1, horizontal(e.position(), o) / r);
-                hurt(c, e, c.dmg(fall), melee(c));
-                pushAway(e, o, 0.7, 0.75);
+                double near = 1 - Math.min(1, horizontal(e.position(), o) / r);
+                hurt(c, e, c.dmg(0.6 + 0.4 * near), melee(c));
+                airborne(c, e, 0.6 + 0.5 * near);
             }
             ServerFx.of("earthshatter", o).a(r).send(c.level());
             ServerFx.of("x_burst", o.add(0, 0.3, 0)).a(r * 0.6).b(0).color(0xFF9030).points(hit).send(c.level());
