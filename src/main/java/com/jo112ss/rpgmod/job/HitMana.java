@@ -18,20 +18,27 @@ import net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent;
 import net.neoforged.neoforge.event.entity.player.AttackEntityEvent;
 
 /**
- * Physical jobs keep 100 MP and win it back by fighting: every normal attack that hits an enemy
- * gives MP for the time it took, so any weapon swung without pause gives about {@link #RATE} a
- * second (a dagger a little each hit, a hammer a lot). Half-charged swings give their share; an
- * arrow gives the full amount when drawn all the way; a pirate's round gives the time between shots.
- * Skills, sweeps and the bard's sound wave give nothing.
+ * Physical jobs keep 100 MP and win it back by fighting: a normal attack that hits an enemy gives
+ * MP for the time since the last gain ({@link #RATE} a second, at most {@link #CAP} ticks' worth),
+ * so any weapon swung without pause gives about the same a second. Gains are at least
+ * {@link #DELAY} ticks apart and only a swing charged to {@link #MIN_CHARGE} (an arrow drawn all
+ * the way, any round of a pirate's gun) counts, so mashing the button gives nothing. Skills, sweeps
+ * and the bard's sound wave give nothing. Their natural regeneration in combat is a third.
  */
 @EventBusSubscriber(modid = RpgMod.MODID)
 public final class HitMana {
     private HitMana() {}
 
     /** MP a second of steady normal attacks. */
-    public static final double RATE = 4.0;
-    /** MP of a fully drawn arrow (a full draw takes a second); a weaker one gives half. */
-    public static final double ARROW = 4.0;
+    public static final double RATE = 2.0;
+    /** Ticks a gain at least waits after the last one, and the most ticks one gain pays for. */
+    public static final int DELAY = 10, CAP = 30;
+    /** Charge a swing needs to count. */
+    public static final float MIN_CHARGE = 0.8F;
+    /** Natural regeneration of the physical jobs in combat (out of combat it is the usual). */
+    public static final double NATURAL = 1 / 3.0;
+
+    private static final Map<UUID, Long> LAST = new HashMap<>();
 
     /** Dev test: logs every gain. */
     public static boolean testLog;
@@ -61,27 +68,33 @@ public final class HitMana {
         DamageSource src = event.getSource();
         if (!(src.getEntity() instanceof ServerPlayer p) || !SkillExecutor.isEnemy(p, event.getEntity())) return;
         if (!physical(JobManager.data(p))) return;
-        double mp = 0;
         if (src.getDirectEntity() == p && src.is(DamageTypes.PLAYER_ATTACK)) {
             // only the swing's own target (not the sweep, nor a skill using the melee damage type)
             Swing s = SWINGS.remove(p.getUUID());
             if (s == null || s.target() != event.getEntity().getId() || p.level().getGameTime() - s.tick() > 1) return;
-            mp = RATE * p.getCurrentItemAttackStrengthDelay() / 20.0 * s.strength();
+            if (s.strength() < MIN_CHARGE) return;
         } else if (src.getDirectEntity() instanceof AbstractArrow arrow && arrow.getWeaponItem() != null
                 && arrow.getWeaponItem().getItem() instanceof BowItem) {
-            // shot from a bow (skill arrows have no weapon)
-            mp = arrow.isCritArrow() ? ARROW : ARROW * 0.5;
+            // shot from a bow (skill arrows have no weapon), drawn all the way
+            if (!arrow.isCritArrow()) return;
+        } else {
+            return;
         }
-        give(p, mp);
+        give(p);
     }
 
     /** A pirate's round hit an enemy. */
     public static void gunHit(ServerPlayer p) {
-        if (physical(JobManager.data(p))) give(p, RATE * Pirate.SHOT_GAP / 20.0);
+        if (physical(JobManager.data(p))) give(p);
     }
 
-    private static void give(ServerPlayer p, double mp) {
-        if (mp <= 0) return;
+    private static void give(ServerPlayer p) {
+        long now = p.level().getGameTime();
+        Long last = LAST.get(p.getUUID());
+        long gap = last == null ? CAP : Math.min(CAP, now - last);
+        if (gap < DELAY) return;
+        LAST.put(p.getUUID(), now);
+        double mp = RATE * gap / 20.0;
         JobManager.restoreMana(p, mp);
         if (testLog) RpgMod.LOGGER.info("[AUTOTEST] hitmana|{}|{}|{}", p.getMainHandItem().getItem(), String.format("%.2f", mp),
                 String.format("%.1f", JobManager.data(p).mana()));
@@ -89,5 +102,6 @@ public final class HitMana {
 
     public static void forget(UUID id) {
         SWINGS.remove(id);
+        LAST.remove(id);
     }
 }

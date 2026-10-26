@@ -294,7 +294,7 @@ public final class AutoTestClient {
             case "nj:counter_lance" -> 120;
             case "nj:songs_bard", "nj:songs_maestro", "nj:songs_singer" -> 90;
             case "nj:meditate" -> 140;
-            case "nj:hitmana" -> 200;
+            case "nj:hitmana" -> 240;
             case "nj:linger" -> 140;
             case "nj:ward" -> 210;
             case "nj:wardlinger" -> 80;

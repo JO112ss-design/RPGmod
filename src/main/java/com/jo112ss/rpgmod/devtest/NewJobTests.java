@@ -241,7 +241,21 @@ final class NewJobTests {
                 log("hitmana {}: a skill hit leaves mana {} -> {} (no gain)", job, String.format("%.2f", before), String.format("%.2f", d.mana()));
             });
         }
-        SkillTasks.later(130, () -> {
+        // the monk's knuckle is charged again before the delay: that hit gives nothing, the next one the time since the gain
+        SkillTasks.later(2 * 40 + 36, () -> {
+            double m = d.mana();
+            p.attack(t);
+            log("hitmana monk: charged hit 6 ticks after a gain {} -> {} (delay)", String.format("%.2f", m), String.format("%.2f", d.mana()));
+        });
+        SkillTasks.later(2 * 40 + 50, () -> {
+            double m = d.mana();
+            p.attack(t);
+            log("hitmana monk: charged hit 20 ticks after the gain {} -> {}", String.format("%.2f", m), String.format("%.2f", d.mana()));
+            d.setMana(0);
+        });
+        SkillTasks.later(2 * 40 + 50 + 41, () -> log("hitmana monk: natural regeneration in combat over 2s: {} (a third of {}/s)",
+                String.format("%.2f", d.mana()), String.format("%.2f", JobManager.manaRegen(p))));
+        SkillTasks.later(180, () -> {
             for (String job : new String[] {"bard", "spellsinger", "wizard"}) {
                 become(p, job);
                 log("hitmana {}: physical {} max mana {}", job, com.jo112ss.rpgmod.job.HitMana.physical(d), String.format("%.0f", JobManager.maxMana(p)));

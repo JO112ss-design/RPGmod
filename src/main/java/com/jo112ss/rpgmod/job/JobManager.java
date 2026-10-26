@@ -470,7 +470,8 @@ public final class JobManager {
             d.setMana(max);
             changed = true;
         } else if (d.mana() < max) {
-            double regen = manaRegen(player) * (resting ? JobConfig.REST_MULT.get() : 1);
+            // physical jobs: a third in combat (their MP comes from their hits), the usual out of it
+            double regen = manaRegen(player) * (resting ? JobConfig.REST_MULT.get() : HitMana.physical(d) ? HitMana.NATURAL : 1);
             if (player.hasEffect(com.jo112ss.rpgmod.registry.ModEffects.MANA_MEDITATE)) { // the spellblade meditating
                 regen = regen * MoreJobSkills.MEDITATE_MULT + max * MoreJobSkills.MEDITATE_SHARE;
             }
