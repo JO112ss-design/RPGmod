@@ -151,25 +151,26 @@ final class FxNewJobs {
             // a point on the ship: x along the keel, y up, z across (rolled a little)
             Ship at = (x, y, z) -> o.add(fu.scale(x)).add(fw.scale(z + y * roll)).add(0, y - z * roll, 0);
             float a = 0.85F * fade;
+            if (age % 2 == 1) return false; // drawn every other tick, each piece lasting two
             // the hull: rails at a few heights, narrowing to the keel, and a bow that rises
             for (int i = 0; i <= 4; i++) {
                 double y = i * 0.45, half = 3.4 + i * 0.3, side = 0.35 + i * 0.3;
                 for (int s = -1; s <= 1; s += 2) {
-                    segment(at.p(-half, y, s * side), at.p(half, y, s * side), 0.1F).color(i == 4 ? 0xFFFFFF : hull, hull).alpha(a * (i == 4 ? 1 : 0.6F)).life(2).spawn();
-                    segment(at.p(half, y, s * side), at.p(half + 1.4 - i * 0.1, y + 0.3, 0), 0.1F).color(hull).alpha(a * 0.7F).life(2).spawn();
-                    segment(at.p(-half, y, s * side), at.p(-half - 0.3, y + 0.2, 0), 0.1F).color(hull).alpha(a * 0.6F).life(2).spawn();
+                    shipLine(at.p(-half, y, s * side), at.p(half, y, s * side), 0.12F, i == 4 ? 0xFFFFFF : hull, hull, a * (i == 4 ? 1 : 0.6F));
+                    shipLine(at.p(half, y, s * side), at.p(half + 1.4 - i * 0.1, y + 0.3, 0), 0.12F, hull, hull, a * 0.7F);
+                    shipLine(at.p(-half, y, s * side), at.p(-half - 0.3, y + 0.2, 0), 0.12F, hull, hull, a * 0.6F);
                 }
             }
             for (double x = -3; x <= 3.01; x += 1.5) { // ribs
-                segment(at.p(x, 0, -0.35), at.p(x, 1.8, -1.55), 0.08F).color(hull).alpha(a * 0.5F).life(2).spawn();
-                segment(at.p(x, 0, 0.35), at.p(x, 1.8, 1.55), 0.08F).color(hull).alpha(a * 0.5F).life(2).spawn();
+                shipLine(at.p(x, 0, -0.35), at.p(x, 1.8, -1.55), 0.1F, hull, hull, a * 0.5F);
+                shipLine(at.p(x, 0, 0.35), at.p(x, 1.8, 1.55), 0.1F, hull, hull, a * 0.5F);
             }
             // masts and sails (square sails across the keel, bellied forward)
             double[][] masts = {{0.6, 7.6, 2.4}, {-2.4, 6.0, 1.8}};
             for (double[] m : masts) {
-                segment(at.p(m[0], 1.8, 0), at.p(m[0], m[1], 0), 0.12F).color(0xFFFFFF, hull).alpha(a).life(2).spawn();
-                segment(at.p(m[0], m[1] - 0.6, -m[2]), at.p(m[0], m[1] - 0.6, m[2]), 0.08F).color(hull).alpha(a * 0.8F).life(2).spawn();
-                if (age % 2 == 0) {
+                shipLine(at.p(m[0], 1.8, 0), at.p(m[0], m[1], 0), 0.14F, 0xFFFFFF, hull, a);
+                shipLine(at.p(m[0], m[1] - 0.6, -m[2]), at.p(m[0], m[1] - 0.6, m[2]), 0.1F, hull, hull, a * 0.8F);
+                {
                     for (double y = 3.0; y <= m[1] - 0.8; y += 0.7) {
                         for (double z = -m[2]; z <= m[2] + 0.01; z += 0.7) {
                             double belly = 0.6 * (1 - (z / m[2]) * (z / m[2])) * Math.sin(Math.PI * (y - 3.0) / (m[1] - 3.8));
@@ -183,9 +184,17 @@ final class FxNewJobs {
                 Vec3 drip = at.p(Fx.r(-3.5, 3.5), 0, Fx.r(-0.4, 0.4));
                 Fx.p(S.GLOW, drip).vel(0, -0.04, 0).color(hull).size(0.3F, 0.6F).alpha(0.35F * fade, 0).life(24).spawn();
             }
-            Fx.p(S.GLOW, at.p(-3.6, 2.4, 0)).color(0xFFFFFF, 0x9FFFE0).size(0.5F).alpha(0.8F * fade).life(2).spawn();
+            Fx.p(S.GLOW, at.p(-3.6, 2.4, 0)).color(0xFFFFFF, 0x9FFFE0).size(0.5F).alpha(0.8F * fade).life(3).spawn();
             return false;
         });
+    }
+
+    /** A thin glowing line in short pieces (one long beam sprite would be as wide as it is long). */
+    private static void shipLine(Vec3 a, Vec3 b, float width, int c0, int c1, float alpha) {
+        int n = Math.max(1, (int) Math.ceil(a.distanceTo(b) / (width * 6)));
+        for (int k = 0; k < n; k++) {
+            segment(a.add(b.subtract(a).scale(k / (double) n)), a.add(b.subtract(a).scale((k + 1) / (double) n)), width).color(c0, c1).alpha(alpha).life(3).spawn();
+        }
     }
 
     /** A big gold coin tumbling down onto pos in b ticks, glinting, and a splash of gold where it lands. */
@@ -212,6 +221,9 @@ final class FxNewJobs {
      * A dark hole in the air above an entity (followed for b ticks) that the shadow arrows come
      * out of: a turning dark circle with smoke curling at its edge.
      */
+    /** How high the shadow rain's portal hangs over the target's head (the server aims the arrows from it). */
+    static final double PORTAL_UP = 3.2;
+
     private static void darkPortal(P p) {
         Entity e = p.e();
         if (e == null) return;
@@ -219,7 +231,7 @@ final class FxNewJobs {
         int c = p.colorOr(0x6070C0);
         FxAnims.follow(e, life, age -> {
             float fade = Math.min(1, Math.min(age / 6F, (life - age) / 6F));
-            Vec3 top = e.position().add(0, e.getBbHeight() + 5.5, 0);
+            Vec3 top = e.position().add(0, e.getBbHeight() + PORTAL_UP, 0);
             // turned to the camera (a flat one would vanish when seen from below)
             Fx.p(S.CIRCLE_HEX, top).size(1.7F).color(c).alpha(0.8F * fade).angle(age * 0.08F).life(2).spawn();
             Fx.p(S.GLOW, top).alphaBlend().color(0x0A0A14).size(1.4F).alpha(0.9F * fade).life(2).spawn();
@@ -253,12 +265,12 @@ final class FxNewJobs {
 
     // ------------------------------------------------------------------ lancer
 
-    /** A spear falling from the sky onto pos, landing after b ticks. */
+    /** A spear falling from the sky onto pos, landing after b ticks (from a blocks up if over 1, else 7). */
     private static void spearFall(P p) {
         int c = p.colorOr(0xE0B070);
         Vec3 at = p.pos();
         int fall = Math.max(2, (int) p.b());
-        Vec3 sky = new Vec3(Fx.r(-0.6, 0.6), 7, Fx.r(-0.6, 0.6));
+        Vec3 sky = new Vec3(Fx.r(-0.6, 0.6), p.a() > 1 ? p.a() : 7, Fx.r(-0.6, 0.6));
         FxAnims.run(fall, age -> {
             double t = 1 - (double) age / fall;
             Vec3 tip = at.add(sky.scale(t));

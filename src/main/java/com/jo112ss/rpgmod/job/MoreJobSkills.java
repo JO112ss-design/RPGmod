@@ -1267,7 +1267,7 @@ public final class MoreJobSkills {
                     target[0] = t;
                 }
                 LivingEntity hitT = t;
-                ServerFx.of("n_spear_fall", hitT.position().add(0, hitT.getBbHeight() * 0.6, 0)).b(4).a(0.5).color(0x6070C0).send(c.level());
+                ServerFx.of("n_spear_fall", hitT.position().add(0, hitT.getBbHeight() * 0.6, 0)).b(4).a(hitT.getBbHeight() * 0.4 + 3.2).color(0x6070C0).send(c.level());
                 SkillTasks.later(4, () -> {
                     if (!hitT.isAlive()) return;
                     hurt(c, hitT, c.dmg(1), melee(c));
