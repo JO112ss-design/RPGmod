@@ -272,9 +272,8 @@ public final class Bard {
             int keep = WARD_LINGER_SECONDS * 20;
             int n = 0;
             for (ServerPlayer a : SkillExecutor.allies(p, radius(points))) {
-                MobEffectInstance abs = a.getEffect(MobEffects.ABSORPTION);
-                if (abs == null || a.getAbsorptionAmount() <= 0) continue;
-                a.addEffect(new MobEffectInstance(MobEffects.ABSORPTION, keep, abs.getAmplifier(), true, true), p);
+                if (!a.hasEffect(MobEffects.ABSORPTION) || a.getAbsorptionAmount() <= 0) continue;
+                keepWard(p, a, keep);
                 n++;
             }
             if (n > 0) p.sendSystemMessage(Component.translatable("rpgmod.bard.linger", Component.translatable("rpgmod.skill." + song), WARD_LINGER_SECONDS)
@@ -389,27 +388,43 @@ public final class Bard {
     /** Ward melody: once someone's absorption is broken, none for them for this long. */
     public static final int WARD_BROKEN_TICKS = 80;
 
-    /** Who has the ward melody's absorption now, and who broke it (until when they get none). */
-    private static final java.util.Set<UUID> WARDED = new java.util.HashSet<>();
+    /** Who has the ward melody's absorption, until when it was meant to last; who broke it (until when they get none). */
+    private static final Map<UUID, Long> WARDED = new HashMap<>();
     private static final Map<UUID, Long> WARD_BROKEN = new HashMap<>();
 
     /**
-     * Ward melody: vanilla absorption (yellow on the health bar). It is not topped up while it lasts:
-     * what a blow takes is gone; broken, it comes back only after {@link #WARD_BROKEN_TICKS}.
+     * Ward melody: vanilla absorption (yellow on the health bar), put on once for the rest of the
+     * song and never topped up (adding the effect again would refill it): what a blow takes is gone;
+     * broken, it comes back only after {@link #WARD_BROKEN_TICKS}.
      */
     private static void ward(ServerPlayer singer, ServerPlayer a, double f, int dur) {
         long now = a.level().getGameTime();
         UUID id = a.getUUID();
-        if (WARDED.contains(id) && !a.hasEffect(MobEffects.ABSORPTION)) { // it was broken
+        Long until = WARDED.get(id);
+        if (until != null && (now >= until || !a.hasEffect(MobEffects.ABSORPTION))) {
             WARDED.remove(id);
-            WARD_BROKEN.put(id, now + WARD_BROKEN_TICKS);
-            ServerFx.of("x_burst", a.position().add(0, 1.0, 0)).a(0.8).b(1).color(0x9FD8FF).send((ServerLevel) a.level());
-            a.level().playSound(null, a.blockPosition(), SoundEvents.GLASS_BREAK, SoundSource.PLAYERS, 0.7F, 1.4F);
+            if (now < until - 2) { // gone before its time: broken
+                WARD_BROKEN.put(id, now + WARD_BROKEN_TICKS);
+                ServerFx.of("x_burst", a.position().add(0, 1.0, 0)).a(0.8).b(1).color(0x9FD8FF).send((ServerLevel) a.level());
+                a.level().playSound(null, a.blockPosition(), SoundEvents.GLASS_BREAK, SoundSource.PLAYERS, 0.7F, 1.4F);
+            }
         }
-        if (WARD_BROKEN.getOrDefault(id, 0L) > now) return;
+        if (WARD_BROKEN.getOrDefault(id, 0L) > now || WARDED.containsKey(id)) return; // still on (kept as it is), or just broken
+        long songLeft = Math.max(0, JobManager.data(singer).songEnd() - now);
+        int ticks = (int) Math.max(dur, songLeft + 20);
         int amp = Math.max(0, (int) Math.round(a.getMaxHealth() * WARD_SHARE * f / 4.0) - 1);
-        a.addEffect(new MobEffectInstance(MobEffects.ABSORPTION, dur, amp, true, true), singer);
-        WARDED.add(id);
+        a.addEffect(new MobEffectInstance(MobEffects.ABSORPTION, ticks, amp, true, true), singer);
+        WARDED.put(id, now + ticks);
+    }
+
+    /** Makes someone's ward melody absorption last {@code ticks} more without refilling it. */
+    private static void keepWard(ServerPlayer singer, ServerPlayer a, int ticks) {
+        MobEffectInstance abs = a.getEffect(MobEffects.ABSORPTION);
+        if (abs == null || a.getAbsorptionAmount() <= 0) return;
+        float left = a.getAbsorptionAmount();
+        a.addEffect(new MobEffectInstance(MobEffects.ABSORPTION, ticks, abs.getAmplifier(), true, true), singer);
+        a.setAbsorptionAmount(left); // adding the effect tops it up: put back what was left
+        WARDED.put(a.getUUID(), a.level().getGameTime() + ticks);
     }
 
     /** Maestro's crescendo: the song swells at once (once per song). */
