@@ -365,7 +365,7 @@ public class Revenant extends Zombie implements RangedAttackMob {
             dashHit = true;
             float dmg = attack() * (role() == Role.THIEF ? DART : CHARGE);
             p.hurtServer(level, damageSources().mobAttack(this), dmg);
-            p.knockback(0.6, -lockDir.x, -lockDir.z);
+            p.knockback(0.6, -lockDir.x, -lockDir.z, damageSources().mobAttack(this), dmg);
             ServerFx.of("x_hit", p.position().add(0, 1, 0)).vec(lockDir).a(0.9).color(role().color).send(level);
             log("dash hits for {}", String.format("%.1f", dmg));
             break;
@@ -382,7 +382,7 @@ public class Revenant extends Zombie implements RangedAttackMob {
         }
         ServerFx.of("x_slash", position().add(0, 1.1, 0).add(lockDir.scale(1.6))).vec(lockDir).a(3.5).b(0.2).color(0xFF6040).points(hit).send(level);
         level.playSound(null, blockPosition(), SoundEvents.PLAYER_ATTACK_SWEEP, SoundSource.HOSTILE, 1.0F, 0.7F);
-        swing(net.minecraft.world.InteractionHand.MAIN_HAND);
+        swing(net.minecraft.world.InteractionHand.MAIN_HAND, getMainHandItem().getAttackAnimation(), true);
         log("cleaves {} for {}", hit.size(), String.format("%.1f", attack() * CLEAVE));
     }
 
