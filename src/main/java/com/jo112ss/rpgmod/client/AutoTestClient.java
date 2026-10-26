@@ -168,6 +168,7 @@ public final class AutoTestClient {
             case "nj:elites" -> new int[] {10, 34, 225};
             case "nj:revenants" -> new int[] {60, 75, 85, 95, 105, 120, 245};
             case "nj:gear" -> new int[] {60, 85};
+            case "nj:dgallery" -> new int[] {50, 90, 130, 170, 210, 250, 290, 330, 370, 410, 450, 490, 530};
             case "nj:dungeon" -> new int[] {45, 70, 90, 300, 500, 700, 900};
             case "sealing_chord", "holy_lance" -> new int[] {3, 8};
             case "earthshatter" -> new int[] {4, 10};
@@ -308,6 +309,7 @@ public final class AutoTestClient {
             case "nj:revenants" -> 360;
             case "nj:gear" -> 140;
             case "nj:dungeon" -> 1100;
+            case "nj:dgallery" -> 560;
             case "nj:linger" -> 140;
             case "nj:ward" -> 210;
             case "nj:wardlinger" -> 80;
@@ -404,7 +406,7 @@ public final class AutoTestClient {
             if (false) showSkills.clear(); // monster gear worn but not drawn; then the revenants with their weapons hidden
             if (false) showSkills.addAll(java.util.List.of("nj:restore", "nj:gear", "nj:revenants", "nj:restore"));
             showSkills.clear(); // a dungeon run: the altar, the rooms, the boss, the way home
-            showSkills.addAll(java.util.List.of("nj:restore", "nj:dungeon", "nj:restore"));
+            showSkills.addAll(java.util.List.of("nj:restore", "nj:dgallery", "nj:dungeon", "nj:restore"));
             if (false) showSkills.clear(); // spellsinger afterglow
             if (false) showSkills.addAll(java.util.List.of("nj:restore", "nj:wardlinger", "nj:ward", "nj:linger", "nj:restore"));
             if (false) showSkills.clear(); // songs: each with its own rhythm (bars from the song's style) and tune

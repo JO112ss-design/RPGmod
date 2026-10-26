@@ -99,6 +99,7 @@ final class NewJobTests {
             case "revenants" -> revenants(level, p);
             case "gear" -> hiddenGear(level, p);
             case "dungeon" -> dungeon(level, p);
+            case "dgallery" -> dungeonGallery(level, p);
             case "counter_lance" -> counterLance(level, p, dummies);
             case "wall", "unwall" -> wall(level, p, name.equals("wall"));
             default -> {
@@ -340,6 +341,37 @@ final class NewJobTests {
         SkillTasks.later(300, () -> {
             for (var z : level.getEntitiesOfClass(net.minecraft.world.entity.monster.zombie.Husk.class, p.getBoundingBox().inflate(20))) z.discard();
         });
+    }
+
+    /** One dungeon in every style, a different room of each in the picture. */
+    private static void dungeonGallery(ServerLevel level, ServerPlayer p) {
+        var server = level.getServer();
+        var dl = com.jo112ss.rpgmod.dungeon.Dungeons.level(server);
+        if (dl == null) return;
+        Vec3 home = p.position();
+        int n = 13;
+        for (int i = 0; i < n; i++) {
+            int k = i;
+            com.jo112ss.rpgmod.dungeon.DungeonData.Run[] run = {null};
+            SkillTasks.later(20 + k * 40, () -> {
+                var d = com.jo112ss.rpgmod.dungeon.DungeonData.get(server);
+                run[0] = d.open(level.dimension(), new net.minecraft.core.BlockPos(900000 + k, 0, 0), com.jo112ss.rpgmod.dungeon.Dungeons.Kind.RUN, 0, 1000L + k * 7919L);
+                run[0].room = 99; // a picture, not a fight
+                com.jo112ss.rpgmod.dungeon.DungeonBuilder.forceTheme = k;
+                long t0 = System.nanoTime();
+                com.jo112ss.rpgmod.dungeon.DungeonBuilder.build(dl, run[0]);
+                com.jo112ss.rpgmod.dungeon.DungeonBuilder.forceTheme = null;
+                int roomIdx = 1 + k % 4;
+                var room = run[0].rooms().get(roomIdx);
+                log("gallery {}: built in {} ms - {} (showing room {})", k, (System.nanoTime() - t0) / 1_000_000, com.jo112ss.rpgmod.dungeon.DungeonBuilder.lastDescription, roomIdx);
+                p.teleportTo(dl, com.jo112ss.rpgmod.dungeon.Dungeons.originX(run[0].slot) + 0.5, com.jo112ss.rpgmod.dungeon.Dungeons.FLOOR, room.z0() + 1.5,
+                        java.util.Set.of(), 0, 15, true);
+            });
+            SkillTasks.later(20 + k * 40 + 36, () -> {
+                p.teleportTo(level, home.x, home.y, home.z, java.util.Set.of(), p.getYRot(), 0, true);
+                com.jo112ss.rpgmod.dungeon.DungeonManager.abort(server, run[0]);
+            });
+        }
     }
 
     /** A whole dungeon run: offer a key, go in, fight the waves of each room, leave and come back, the boss, the way home; then a boss arena. */

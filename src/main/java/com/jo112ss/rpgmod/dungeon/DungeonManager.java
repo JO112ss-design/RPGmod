@@ -128,7 +128,7 @@ public final class DungeonManager {
         Component lv = fixed > 0 ? Component.translatable("rpgmod.dungeon.fixed", fixed) : Component.translatable("rpgmod.dungeon.scaled");
         for (ServerPlayer o : level.getEntitiesOfClass(ServerPlayer.class, new net.minecraft.world.phys.AABB(pos).inflate(24)))
             o.sendSystemMessage(Component.translatable("rpgmod.dungeon.opened", what, lv));
-        log("opened {} slot {} fixed level {} at {}", kind, r.slot, fixed, pos);
+        log("opened {} slot {} fixed level {} at {} - {}", kind, r.slot, fixed, pos, DungeonBuilder.lastDescription);
         return InteractionResult.SUCCESS;
     }
 
@@ -443,7 +443,7 @@ public final class DungeonManager {
         r.mobs.clear();
         var inside = Dungeons.players(dl, r.slot);
         int lv = levelFor(r, inside);
-        BlockPos chestAt = chestSpot(dl, r, room);
+        BlockPos chestAt = DungeonBuilder.chestSpot(dl, r.slot, room);
         placeChest(dl, chestAt, room.last() ? finalLoot(dl.getRandom(), lv, r.kind.boss()) : roomLoot(dl.getRandom()));
         ServerFx.of("dg_clear", Vec3.atBottomCenterOf(chestAt)).color(color(r.kind)).send(dl, 64);
         if (room.last()) {
@@ -458,12 +458,6 @@ public final class DungeonManager {
         }
         d.setDirty();
         log("room cleared (last {}), chest at {}", room.last(), chestAt);
-    }
-
-    private static BlockPos chestSpot(ServerLevel dl, Run r, Room room) {
-        BlockPos p = new BlockPos(Dungeons.originX(r.slot), Dungeons.FLOOR, room.zMid());
-        while (!dl.getBlockState(p).isAir() && p.getY() < Dungeons.FLOOR + 4) p = p.above();
-        return p;
     }
 
     private static void placeChest(ServerLevel dl, BlockPos at, List<ItemStack> loot) {
@@ -522,7 +516,7 @@ public final class DungeonManager {
     }
 
     /** An altar is broken in creative mode while its dungeon is open: the run ends. */
-    static void abort(MinecraftServer server, Run r) {
+    public static void abort(MinecraftServer server, Run r) {
         ServerLevel dl = Dungeons.level(server);
         DungeonData d = DungeonData.get(server);
         if (dl != null) {
