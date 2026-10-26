@@ -345,5 +345,5 @@ for n, col, mk in [('foresight', (255, 176, 112, 255), m_eye), ('battle_aura', (
                    ('immovable', (192, 176, 128, 255), m_tower), ('counter_lance', (224, 192, 128, 255), m_spear), ('fortress', (240, 216, 144, 255), m_tower),
                    ('ambush', (74, 90, 128, 255), m_dagger), ('night_hunt', (90, 100, 160, 255), m_moon), ('hunted', (192, 48, 64, 255), m_target),
                    ('treasure', (212, 175, 55, 255), m_coin), ('double_down', (232, 192, 64, 255), m_two),
-                   ('gold_rush', (255, 200, 48, 255), m_coins)]:
+                   ('gold_rush', (255, 200, 48, 255), m_coins), ('mana_meditate', (111, 168, 255, 255), m_notes)]:
     icon(n, badge(col, mk))

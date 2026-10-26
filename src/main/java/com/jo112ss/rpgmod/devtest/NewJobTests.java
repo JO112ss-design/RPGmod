@@ -51,6 +51,8 @@ final class NewJobTests {
             case "bard" -> become(p, "bard");
             case "hybrids" -> hybrids(level, p, dummies);
             case "coins" -> coins(level, p);
+            case "sb0", "sb1", "sb2" -> spellblade(p, name.charAt(2) - '0');
+            case "meditate" -> meditate(level, p);
             case "counter_lance" -> counterLance(level, p, dummies);
             case "wall", "unwall" -> wall(level, p, name.equals("wall"));
             default -> {
@@ -139,6 +141,39 @@ final class NewJobTests {
                 d.setMastery("wizard", wz);
             });
         }
+    }
+
+    /** The spellblade with an element and full mana, sword magic casts logged. */
+    private static void spellblade(ServerPlayer p, int el) {
+        JobData d = JobManager.data(p);
+        if (!"spellblade".equals(d.jobId())) become(p, "spellblade");
+        d.setCoatMode(el);
+        d.setMana(JobManager.maxMana(p));
+        com.jo112ss.rpgmod.job.SpellbladeMagic.testLog = true;
+        JobManager.sync(p);
+        log("spellblade element {} mana {} / {}", el, String.format("%.0f", d.mana()), String.format("%.0f", JobManager.maxMana(p)));
+    }
+
+    /** Mana meditation: mana back over 3s with it and without; using it again stands you up; mana share with no one near. */
+    private static void meditate(ServerLevel level, ServerPlayer p) {
+        JobData d = JobManager.data(p);
+        if (!"spellblade".equals(d.jobId())) become(p, "spellblade");
+        var med = JobDefs.skill("mana_meditate");
+        d.setMana(0);
+        SkillTasks.later(60, () -> {
+            double plain = d.mana();
+            d.setMana(0);
+            SkillExecutor.execute(p, med, 1);
+            SkillTasks.later(60, () -> {
+                log("meditate: mana over 3s plain {} meditating {} (max {}), effect {}", String.format("%.1f", plain), String.format("%.1f", d.mana()),
+                        String.format("%.0f", JobManager.maxMana(p)), p.hasEffect(ModEffects.MANA_MEDITATE));
+                SkillExecutor.execute(p, med, 1);
+                log("meditate: used again -> effect {}", p.hasEffect(ModEffects.MANA_MEDITATE));
+                boolean shared = SkillExecutor.execute(p, JobDefs.skill("mana_share"), 1);
+                log("mana share alone: {}", shared);
+                d.setMana(JobManager.maxMana(p));
+            });
+        });
     }
 
     /** Counter lance: blows taken while braced are cut and stored, and the next hit carries the store. */

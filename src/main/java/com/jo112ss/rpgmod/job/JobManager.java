@@ -471,6 +471,9 @@ public final class JobManager {
             changed = true;
         } else if (d.mana() < max) {
             double regen = manaRegen(player) * (resting ? JobConfig.REST_MULT.get() : 1);
+            if (player.hasEffect(com.jo112ss.rpgmod.registry.ModEffects.MANA_MEDITATE)) { // the spellblade meditating
+                regen = regen * MoreJobSkills.MEDITATE_MULT + max * MoreJobSkills.MEDITATE_SHARE;
+            }
             d.setMana(Math.min(max, d.mana() + regen));
             changed = true;
         }
@@ -766,6 +769,7 @@ public final class JobManager {
 
     static boolean cast(ServerPlayer player, JobData d, SkillDef def) {
         long now = player.level().getGameTime();
+        if (!"mana_meditate".equals(def.id())) MoreJobHooks.endMeditation(player); // another skill breaks the meditation
         long ready = d.cooldownEnd(def.id());
         if (ready > now) {
             tell(player, "rpgmod.job.cooldown", String.format("%.1f", (ready - now) / 20.0));

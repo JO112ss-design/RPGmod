@@ -54,6 +54,48 @@ public final class JobClient {
         return !l.leftSpell().isEmpty();
     }
 
+    // ---- spellblade: sword magic on the right button
+
+    /** Ticks right click has been held with the spellblade's sword (-1 = not charging). */
+    public static int swordCharge = -1;
+    /** The current right-button press started on a door, chest...: no sword magic until it is let go. */
+    private static boolean swordPressUsed;
+
+    public static boolean swordCasting() {
+        Minecraft mc = Minecraft.getInstance();
+        return mc.player != null && "spellblade".equals(data().jobId()) && ModItems.typeOf(mc.player.getMainHandItem().getItem()) == WeaponType.SWORD;
+    }
+
+    /** Aiming at something to use (a door, a chest, a button...): right click keeps its usual meaning there. */
+    private static boolean aimingAtUsable(Minecraft mc) {
+        if (!(mc.hitResult instanceof net.minecraft.world.phys.BlockHitResult bh) || bh.getType() != net.minecraft.world.phys.HitResult.Type.BLOCK) return false;
+        var state = mc.level.getBlockState(bh.getBlockPos());
+        var b = state.getBlock();
+        return state.getMenuProvider(mc.level, bh.getBlockPos()) != null || b instanceof net.minecraft.world.level.block.DoorBlock
+                || b instanceof net.minecraft.world.level.block.TrapDoorBlock || b instanceof net.minecraft.world.level.block.FenceGateBlock
+                || b instanceof net.minecraft.world.level.block.ButtonBlock || b instanceof net.minecraft.world.level.block.LeverBlock
+                || b instanceof net.minecraft.world.level.block.BedBlock || b instanceof net.minecraft.world.level.block.BaseEntityBlock;
+    }
+
+    private static void tickSwordCast(Minecraft mc) {
+        boolean down = mc.player != null && mc.gui.screen() == null && mc.options.keyUse.isDown();
+        if (!down) swordPressUsed = false;
+        boolean want = down && !swordPressUsed && swordCasting();
+        if (want && swordCharge < 0) {
+            if (aimingAtUsable(mc)) {
+                swordPressUsed = true;
+                return;
+            }
+            swordCharge = 0;
+            send(JobActionPayload.SWORD_CAST, 1, "");
+        } else if (want) {
+            swordCharge++;
+        } else if (swordCharge >= 0) {
+            swordCharge = -1;
+            send(JobActionPayload.SWORD_CAST, 0, "");
+        }
+    }
+
     private static void tickLeftCast(Minecraft mc) {
         boolean want = mc.player != null && mc.gui.screen() == null && leftCasting() && JobKeys.LEFT_SPELL.isDown();
         if (want && leftCharge < 0) {
@@ -87,6 +129,11 @@ public final class JobClient {
             event.setSwingHand(false);
             return;
         }
+        if (event.isUseItem() && event.getHand() == net.minecraft.world.InteractionHand.MAIN_HAND && swordCasting() && !aimingAtUsable(mc)) {
+            event.setCanceled(true); // the right button charges sword magic (see tickSwordCast)
+            event.setSwingHand(false);
+            return;
+        }
         if (event.isUseItem() && event.getHand() == net.minecraft.world.InteractionHand.MAIN_HAND && com.jo112ss.rpgmod.job.DualWield.canDualWield(mc.player)) {
             var hit = mc.hitResult;
             if (hit != null && hit.getType() == net.minecraft.world.phys.HitResult.Type.BLOCK) return; // doors, chests... as usual
@@ -102,6 +149,7 @@ public final class JobClient {
     public static void onTick(ClientTickEvent.Post event) {
         Minecraft mc = Minecraft.getInstance();
         tickLeftCast(mc);
+        tickSwordCast(mc);
         BardClient.tick();
         if (pendingSelect && mc.player != null && mc.gui.screen() == null && mc.player.tickCount > 20) {
             pendingSelect = false;

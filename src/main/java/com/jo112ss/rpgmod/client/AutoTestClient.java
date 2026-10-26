@@ -219,6 +219,7 @@ public final class AutoTestClient {
             case "mob:dragonhp" -> new int[] {100, 140};
             case "nj:pirate", "nj:lancer", "nj:monk" -> new int[] {8};
             case "nj:counter_lance" -> new int[] {58, 101};
+            case "magic_slash" -> new int[] {3, 9, 16};
             case "boarding_shot" -> new int[] {4, 9};
             case "quick_draw", "spear_sweep", "ki_blast", "whirl_kick", "grapple", "finale" -> new int[] {3};
             case "cannon" -> new int[] {12, 44};
@@ -268,6 +269,7 @@ public final class AutoTestClient {
     }
 
     private static int length(String entry) {
+        if (entry.startsWith("sword:")) return Integer.parseInt(entry.substring(6)) + 40;
         if (entry.contains("@")) entry = entry.substring(0, entry.indexOf('@'));
         String id = entry.startsWith("fp:") || entry.startsWith("up:") || entry.startsWith("down:") || entry.startsWith("front:") || entry.startsWith("steep:") || entry.startsWith("sf:") ? entry.substring(entry.indexOf(':') + 1) : entry;
         return switch (id) {
@@ -286,6 +288,7 @@ public final class AutoTestClient {
             case "job:screen" -> 70;
             case "nj:pirate", "nj:lancer", "nj:monk", "nj:hybrids" -> 70;
             case "nj:counter_lance" -> 120;
+            case "nj:meditate" -> 140;
             case "dragon_king" -> 100;
             case "twin_cannon", "mimic" -> 70;
             case "high_jump" -> 75;
@@ -344,8 +347,11 @@ public final class AutoTestClient {
             showSkills.clear(); // group A, the rain skills made distinct: carpet bombing, ghost ships, stuck spears, focused arrows, coins to pick up
             showSkills.addAll(java.util.List.of("nj:pirate", "down:broadside", "nj:captain", "up:fleet_barrage", "nj:lancer", "spear_rain", "nj:shadow_hunter", "shadow_rain",
                     "nj:treasure_hunter", "treasure_rain", "nj:coins", "nj:restore"));
-            showSkills.clear(); // counter lance: braced blows stored, the next hit carries them
-            showSkills.addAll(java.util.List.of("nj:restore", "nj:restore", "nj:counter_lance", "nj:restore"));
+            showSkills.clear(); // spellblade: sword magic by element and stage, the three magic slashes, meditation
+            showSkills.addAll(java.util.List.of("nj:restore", "nj:restore", "nj:sb0", "sword:4", "sword:40", "nj:sb1", "sword:4", "sword:40", "nj:sb2", "sword:4", "sword:40",
+                    "nj:sb0", "magic_slash", "nj:sb1", "magic_slash", "nj:sb2", "magic_slash", "nj:meditate", "nj:restore"));
+            if (false) showSkills.clear(); // counter lance: braced blows stored, the next hit carries them
+            if (false) showSkills.addAll(java.util.List.of("nj:restore", "nj:restore", "nj:counter_lance", "nj:restore"));
             if (false) showSkills.clear(); // group C (after a pause), the jumps made distinct: pole vault and ground wave, straight up and spin down, hover and aim, the dragon
             if (false) showSkills.addAll(java.util.List.of("nj:restore", "nj:restore", "nj:restore", "nj:lancer", "leap_thrust@26", "dragon_fang", "nj:dragoon", "steep:high_jump",
                     "steep:dragon_king", "sf:dragon_king", "nj:restore"));
@@ -454,6 +460,17 @@ public final class AutoTestClient {
                 case 86 -> shot(mc, String.format("c%02d_left_released", i));
                 default -> { }
             }
+            return;
+        }
+        if (entry.startsWith("sword:")) { // hold right click with the spellblade's sword this many ticks
+            int hold = Integer.parseInt(entry.substring(6));
+            if (k == 0) {
+                mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK);
+                mc.player.getInventory().setSelectedSlot(6);
+            }
+            if (k == 3) mc.options.keyUse.setDown(true);
+            if (k == 3 + hold) mc.options.keyUse.setDown(false);
+            if (k == 2 + hold || k == 3 + hold + 6 || k == 3 + hold + 14) shot(mc, String.format("w%02d_sword%d_%d", i, hold, k));
             return;
         }
         boolean fp = entry.startsWith("fp:");

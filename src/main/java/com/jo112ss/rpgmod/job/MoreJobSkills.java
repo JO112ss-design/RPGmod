@@ -45,7 +45,7 @@ public final class MoreJobSkills {
             "rising_dragon", "ki_wave", "iron_mountain", "foresight", "battle_aura", "peerless",
             "high_jump", "dragon_spear", "dragon_scale", "spiral_lance", "sky_step", "dragon_king",
             "duet", "modulate", "heroic_song", "requiem", "shock_chord", "symphony",
-            "element_shift", "magic_slash", "thunder_thrust", "frost_blade", "flame_wheel", "spell_guard", "arcane_edge", "elemental_burst",
+            "element_shift", "magic_slash", "thunder_thrust", "mana_share", "mana_meditate", "spell_guard", "arcane_edge", "elemental_burst",
             "qi_bullet", "refine_qi", "healing_palm", "hard_qi", "qi_burst", "flowing_step", "heaven_earth", "blooming_fists",
             "guard_thrust", "shield_charge", "immovable", "spear_wall", "counter_lance", "provoke", "fortress", "holy_lance",
             "resonance", "grand_concerto", "sealing_chord",
@@ -93,8 +93,8 @@ public final class MoreJobSkills {
             case "element_shift" -> elementShift(c);
             case "magic_slash" -> magicSlash(c);
             case "thunder_thrust" -> thunderThrust(c);
-            case "frost_blade" -> frostBlade(c);
-            case "flame_wheel" -> flameWheel(c);
+            case "mana_share" -> manaShare(c);
+            case "mana_meditate" -> manaMeditate(c);
             case "spell_guard" -> mark(c, ModEffects.SPELL_GUARD, GUARD_POWER, ELEMENT_COLORS[element(c.p())], 2);
             case "arcane_edge" -> arcaneEdge(c);
             case "elemental_burst" -> elementalBurst(c);
@@ -223,9 +223,9 @@ public final class MoreJobSkills {
     }
 
     /** The first enemy along a line from the eyes (and where the line stops). */
-    private record Ray(LivingEntity hit, Vec3 end) {}
+    record Ray(LivingEntity hit, Vec3 end) {}
 
-    private static Ray ray(Ctx c, Vec3 dir, double range) {
+    static Ray ray(Ctx c, Vec3 dir, double range) {
         Vec3 eye = c.p().getEyePosition();
         dir = dir.normalize();
         BlockHitResult block = c.level().clip(new ClipContext(eye, eye.add(dir.scale(range)), ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, c.p()));
@@ -856,33 +856,108 @@ public final class MoreJobSkills {
         return true;
     }
 
-    /** A flying crescent of the sword's element; goes through enemies. */
+    /**
+     * A flying slash of the sword's element, each its own way:
+     * fire - a spinning wheel of flame that bursts on the first thing it meets;
+     * ice - a wide, slow crescent along the ground that goes through everything, freezing;
+     * thunder - a flash that strikes the first enemy at once and jumps on to three more.
+     */
     private static boolean magicSlash(Ctx c) {
+        return switch (element(c.p())) {
+            case 0 -> fireSlash(c);
+            case 1 -> iceSlash(c);
+            default -> thunderSlash(c);
+        };
+    }
+
+    private static boolean fireSlash(Ctx c) {
         ServerPlayer p = c.p();
-        int el = element(p);
-        double range = c.def().radius(), speed = 1.5;
         Vec3 dir = c.look();
         Vec3 start = c.chest().add(c.flat().scale(0.8));
-        ServerFx.of("x_wave", start).vec(dir.scale(speed)).a(range).b(2.4).color(ELEMENT_COLORS[el]).send(c.level());
-        sound(c, SoundEvents.PLAYER_ATTACK_SWEEP, 1.3F);
+        Ray r = ray(c, dir, c.def().radius());
+        Vec3 to = r.end();
+        int flight = Math.max(2, (int) Math.ceil(start.distanceTo(to) / 1.1));
+        ServerFx.of("n_slash", start).vec(to).a(flight).b(0).send(c.level());
+        sound(c, SoundEvents.PLAYER_ATTACK_SWEEP, 1.1F);
+        sound(c, p.position(), SoundEvents.FIRECHARGE_USE, 0.8F, 1.3F);
+        LivingEntity aimed = r.hit();
+        SkillTasks.later(flight, () -> {
+            Vec3 at = aimed != null && aimed.isAlive() && aimed.position().distanceTo(to) < 3 ? mid(aimed) : to;
+            List<LivingEntity> hit = enemies(p, at, 2.5);
+            for (LivingEntity e : hit) {
+                hurt(c, e, c.dmg(e == aimed ? 1 : 0.6), melee(c));
+                e.igniteForSeconds(4);
+            }
+            ServerFx.of("x_burst", at).a(1.8).b(0).color(ELEMENT_COLORS[0]).points(hit).send(c.level());
+            sound(c, at, SoundEvents.GENERIC_EXPLODE, 0.6F, 1.5F);
+        });
+        return true;
+    }
+
+    private static boolean iceSlash(Ctx c) {
+        ServerPlayer p = c.p();
+        Vec3 dir = c.flat();
+        double range = c.def().radius() * 0.8, speed = 0.7, half = 2.0;
+        Vec3 start = p.position().add(dir.scale(1.0)).add(0, 0.9, 0);
+        ServerFx.of("n_slash", start).vec(start.add(dir.scale(range))).a((int) Math.ceil(range / speed)).b(1).send(c.level());
+        sound(c, SoundEvents.PLAYER_ATTACK_SWEEP, 0.7F);
+        sound(c, p.position(), SoundEvents.GLASS_BREAK, 0.8F, 1.4F);
         Set<Integer> done = new HashSet<>();
+        Vec3 side = Fx3.right(dir);
         final Vec3[] pos = {start};
         final double[] gone = {0};
         SkillTasks.run(age -> {
-            Vec3 from = pos[0], to = from.add(dir.scale(speed));
-            BlockHitResult block = c.level().clip(new ClipContext(from, to, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, p));
-            boolean wall = block.getType() != HitResult.Type.MISS;
-            if (wall) to = block.getLocation();
-            for (LivingEntity e : c.level().getEntitiesOfClass(LivingEntity.class, new AABB(from, to).inflate(1.3), e -> isEnemy(p, e))) {
+            Vec3 to = pos[0].add(dir.scale(speed));
+            for (LivingEntity e : c.level().getEntitiesOfClass(LivingEntity.class, new AABB(to.add(side.scale(half)), to.subtract(side.scale(half))).inflate(0.6, 1.4, 0.6),
+                    e -> isEnemy(p, e))) {
                 if (!done.add(e.getId())) continue;
-                hurt(c, e, c.dmg(1), melee(c));
-                elementHit(p, c.level(), e, el, c.dmg(1));
-                ServerFx.of("x_hit", mid(e)).vec(dir).a(1).color(ELEMENT_COLORS[el]).send(c.level());
+                hurt(c, e, c.dmg(0.8), melee(c));
+                e.addEffect(new MobEffectInstance(MobEffects.SLOWNESS, 60, 2), p);
+                e.setTicksFrozen(Math.max(e.getTicksFrozen(), e.getTicksRequiredToFreeze() + 60));
+                ServerFx.of("x_hit", mid(e)).vec(dir).a(0.9).color(ELEMENT_COLORS[1]).send(c.level());
             }
             pos[0] = to;
             gone[0] += speed;
-            return wall || gone[0] >= range;
+            return gone[0] >= range;
         });
+        return true;
+    }
+
+    private static boolean thunderSlash(Ctx c) {
+        ServerPlayer p = c.p();
+        Vec3 start = c.chest().add(c.flat().scale(0.8));
+        Ray r = ray(c, c.look(), c.def().radius() * 1.3);
+        ServerFx.of("n_slash", start).vec(r.end()).a(1).b(2).send(c.level());
+        sound(c, SoundEvents.PLAYER_ATTACK_SWEEP, 1.6F);
+        sound(c, p.position(), SoundEvents.LIGHTNING_BOLT_IMPACT, 0.6F, 1.8F);
+        if (r.hit() == null) return true;
+        LivingEntity t = r.hit();
+        hurt(c, t, c.dmg(1.2), melee(c));
+        Set<Integer> done = new HashSet<>();
+        done.add(t.getId());
+        LivingEntity from = t;
+        for (int k = 0; k < 3; k++) { // jumps on
+            LivingEntity next = null;
+            double bd = 36;
+            for (LivingEntity o : enemies(p, from.position(), 6)) {
+                double dd = o.distanceToSqr(from);
+                if (!done.contains(o.getId()) && dd < bd) {
+                    bd = dd;
+                    next = o;
+                }
+            }
+            if (next == null) break;
+            done.add(next.getId());
+            LivingEntity a = from, b = next;
+            int delay = 2 + k * 2;
+            SkillTasks.later(delay, () -> {
+                if (!b.isAlive()) return;
+                hurt(c, b, c.dmg(0.6), melee(c));
+                ServerFx.of("x_bolt", mid(a)).vec(mid(b).subtract(mid(a)).normalize().scale(2.5)).a(6).b(0.12).color(ELEMENT_COLORS[2]).follow(b).send(c.level());
+                sound(c, b.position(), SoundEvents.LIGHTNING_BOLT_IMPACT, 0.4F, 2.0F);
+            });
+            from = next;
+        }
         return true;
     }
 
@@ -924,37 +999,58 @@ public final class MoreJobSkills {
         return true;
     }
 
-    private static boolean frostBlade(Ctx c) {
-        List<LivingEntity> hit = cone(c, c.def().radius(), 65);
-        for (LivingEntity e : hit) {
-            hurt(c, e, c.dmg(1), melee(c));
-            apply(e, c.def(), c.p());
-            e.setTicksFrozen(Math.max(e.getTicksFrozen(), 140));
+    /** Mana share: what each ally gets, and how far away they may be. */
+    public static final double SHARE_MANA = 100, SHARE_RANGE = 24;
+
+    /** Gives every other player nearby (with a job) a share of mana. */
+    private static boolean manaShare(Ctx c) {
+        ServerPlayer p = c.p();
+        List<ServerPlayer> got = new ArrayList<>();
+        for (ServerPlayer a : others(p, allies(p, SHARE_RANGE))) {
+            if (!JobManager.data(a).hasJob()) continue;
+            JobManager.restoreMana(a, SHARE_MANA);
+            got.add(a);
+            ServerFx.of("x_link", p.position().add(0, 1.2, 0)).vec(a.position().add(0, 1.2, 0)).color(0x6FA8FF).send(c.level());
+            ServerFx.of("x_burst", a.position().add(0, 1.0, 0)).a(0.9).b(2).color(0x6FA8FF).send(c.level());
+            a.sendSystemMessage(Component.translatable("rpgmod.job.mana_given", p.getDisplayName(), (int) SHARE_MANA).withStyle(ChatFormatting.AQUA), true);
+            c.level().playSound(null, a.blockPosition(), SoundEvents.AMETHYST_BLOCK_CHIME, net.minecraft.sounds.SoundSource.PLAYERS, 1.0F, 1.4F);
         }
-        ServerFx.of("x_slash", c.chest().add(c.flat().scale(1.2))).vec(c.flat()).a(c.def().radius()).b(0.2).color(0x9FE8FF).points(hit).send(c.level());
-        for (LivingEntity e : hit) ServerFx.of("x_burst", e.position()).a(1).b(1).color(0x9FE8FF).send(c.level());
-        sound(c, SoundEvents.GLASS_BREAK, 0.9F);
-        sound(c, c.p().position(), SoundEvents.PLAYER_ATTACK_SWEEP, 0.8F, 1.2F);
+        if (got.isEmpty()) {
+            fail(p, "rpgmod.job.no_ally");
+            return false;
+        }
+        ServerFx.of("x_aura", p.position()).follow(p).a(1.2).b(2).color(0x6FA8FF).send(c.level());
+        sound(c, SoundEvents.BEACON_POWER_SELECT, 1.6F);
+        p.sendSystemMessage(Component.translatable("rpgmod.job.mana_shared", got.size(), (int) SHARE_MANA).withStyle(ChatFormatting.AQUA), true);
         return true;
     }
 
-    private static boolean flameWheel(Ctx c) {
+    /** Mana meditation: mana per second while meditating (share of the maximum, on top of the normal regeneration x this). */
+    public static final double MEDITATE_SHARE = 0.06, MEDITATE_MULT = 3;
+
+    /**
+     * Sits down to meditate: mana comes back much faster. It lasts until the duration runs out, you
+     * use it again, move, attack or use another skill.
+     */
+    private static boolean manaMeditate(Ctx c) {
         ServerPlayer p = c.p();
-        double r = c.def().radius();
+        if (p.hasEffect(ModEffects.MANA_MEDITATE)) { // used again: stand up
+            MoreJobHooks.endMeditation(p);
+            return true;
+        }
+        int t = ticks(c.def().duration());
+        p.addEffect(new MobEffectInstance(ModEffects.MANA_MEDITATE, t, 0, false, false, true), p);
+        launch(p, Vec3.ZERO);
+        Vec3 at = p.position();
+        sound(c, SoundEvents.BEACON_ACTIVATE, 1.4F);
         SkillTasks.run(age -> {
-            if (!p.isAlive()) return true;
-            if (age == 0 || age == 10) {
-                List<LivingEntity> hit = enemies(p, p.position(), r);
-                for (LivingEntity e : hit) {
-                    hurt(c, e, c.dmg(1), melee(c));
-                    e.igniteForSeconds(4);
-                    if (age == 10) pushAway(e, p.position(), 0.6, 0.2);
-                }
-                ServerFx.of("whirlwind", p.position()).follow(p).a(r).send(c.level());
-                ServerFx.of("x_ring", p.position()).a(r).b(1).color(0xFF6A20).points(hit).send(c.level());
-                sound(c, p.position(), SoundEvents.FIRECHARGE_USE, 0.9F, 0.8F);
+            if (!p.isAlive() || !p.hasEffect(ModEffects.MANA_MEDITATE)) return true;
+            if (horizontal(p.position(), at) > 0.6 || Math.abs(p.getY() - at.y) > 1.2) { // moved: the meditation breaks
+                MoreJobHooks.endMeditation(p);
+                return true;
             }
-            return age >= 10;
+            if (age % 10 == 0) ServerFx.of("n_meditate", p.position()).follow(p).b(12).color(0x6FA8FF).send(c.level());
+            return false;
         });
         return true;
     }

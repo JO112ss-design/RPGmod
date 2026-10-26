@@ -198,6 +198,13 @@ public final class JobData {
 
     public JobData() {}
 
+    /** Skills that were replaced by others in the same panel cell: equipped ones carry over. */
+    private static final Map<String, String> RENAMED = Map.of("flame_wheel", "mana_meditate", "frost_blade", "mana_share");
+
+    private static String renamed(String id) {
+        return RENAMED.getOrDefault(id, id);
+    }
+
     private JobData(String job, int level, long exp, List<Integer> unlocked, List<String> slots, double mana, Map<String, Long> cooldowns, int panelVersion, int coatMode, int bonusPoints,
                     List<Integer> advUnlocked, int advPanelVersion, Change change) {
         this.advanced = change.advanced();
@@ -215,7 +222,7 @@ public final class JobData {
         this.level = Math.max(1, level);
         this.exp = Math.max(0, exp);
         this.unlocked.addAll(unlocked);
-        for (int k = 0; k < SLOTS && k < slots.size(); k++) this.slots[k] = slots.get(k);
+        for (int k = 0; k < SLOTS && k < slots.size(); k++) this.slots[k] = renamed(slots.get(k));
         this.mana = mana;
         this.cooldowns.putAll(cooldowns);
     }
@@ -666,7 +673,7 @@ public final class JobData {
         Saved s = saved.remove(base);
         if (s != null && s.version() == SkillPanel.version(base)) {
             unlocked.addAll(s.unlocked());
-            for (int k = 0; k < SLOTS && k < s.slots().size(); k++) slots[k] = s.slots().get(k);
+            for (int k = 0; k < SLOTS && k < s.slots().size(); k++) slots[k] = renamed(s.slots().get(k));
         } else {
             unlocked.add(0);
         }

@@ -456,8 +456,8 @@ public final class JobDefs {
                         skill("element_shift", A, SkillEffect.BUFF, 2, 0, 0, 0, 0, List.of(), 0, "属"),
                         skill("magic_slash", A, SkillEffect.BOLT, 6, 14, 2.4, 16, 0, List.of(), 0, "斬"),
                         skill("thunder_thrust", A, SkillEffect.DASH, 8, 16, 2.2, 8, 0, List.of(), 0, "雷"),
-                        skill("frost_blade", A, SkillEffect.SWEEP, 9, 16, 2.0, 4.5, 2, List.of("minecraft:slowness"), 3, "氷"),
-                        skill("flame_wheel", A, SkillEffect.WHIRL, 10, 18, 1.8, 4.5, 0, List.of(), 0, "炎"),
+                        skill("mana_share", A, SkillEffect.BUFF, 30, 20, 0, 24, 0, List.of(), 0, "譲"),
+                        skill("mana_meditate", A, SkillEffect.BUFF, 1, 0, 0, 0, 15, List.of(), 0, "瞑"),
                         skill("spell_guard", A, SkillEffect.BUFF, 20, 18, 0, 0, 6, List.of(), 0, "護")),
                 List.of(
                         skill("arcane_edge", U, SkillEffect.SWEEP, 90, 45, 7.0, 8, 0, List.of(), 0, "極"),

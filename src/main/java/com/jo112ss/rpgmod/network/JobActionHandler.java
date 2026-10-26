@@ -25,6 +25,11 @@ public final class JobActionHandler {
                 com.jo112ss.rpgmod.job.DualWield.strike(player, p.arg());
                 return;
             }
+            case JobActionPayload.SWORD_CAST -> {
+                if (p.arg() == 1) com.jo112ss.rpgmod.job.SpellbladeMagic.press(player);
+                else com.jo112ss.rpgmod.job.SpellbladeMagic.release(player);
+                return;
+            }
             case JobActionPayload.JUDGE_NOTE -> { // limited by the notes that have come so far
                 com.jo112ss.rpgmod.job.Bard.judge(player, p.arg());
                 return;
@@ -53,6 +58,7 @@ public final class JobActionHandler {
     public static void forget(UUID id) {
         LAST.remove(id);
         com.jo112ss.rpgmod.job.SpellCasting.forget(id);
+        com.jo112ss.rpgmod.job.SpellbladeMagic.forget(id);
         com.jo112ss.rpgmod.job.DualWield.forget(id);
     }
 }

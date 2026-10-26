@@ -55,6 +55,7 @@ public final class MoreJobHooks {
             JobData d = JobManager.data(sp);
             if (sp.hasEffect(ModEffects.BATTLE_AURA)) amount *= (float) (1 + BATTLE_AURA_PER_KI * d.ki());
             if (sp.hasEffect(ModEffects.HEROIC)) amount *= (float) (1 + HEROIC);
+            if (sp.hasEffect(ModEffects.MANA_MEDITATE)) endMeditation(sp); // attacking breaks the meditation
             // counter lance: the stored blows ride on your next spear thrust (your own swing, not a skill or anything lingering)
             double stored = victim instanceof Player || !NewJobHooks.melee(src, sp) ? 0 : MoreJobSkills.lanceStore(sp);
             if (stored > 0) {
@@ -165,6 +166,14 @@ public final class MoreJobHooks {
         ItemEntity item = new ItemEntity(level, victim.getX(), victim.getY() + 0.5, victim.getZ(), loot);
         level.addFreshEntity(item);
         ServerFx.of("x_burst", victim.position().add(0, 0.5, 0)).a(1).b(4).color(0xD4AF37).send(level);
+    }
+
+    /** Ends the spellblade's mana meditation (if any). */
+    public static void endMeditation(ServerPlayer p) {
+        if (!p.hasEffect(ModEffects.MANA_MEDITATE)) return;
+        p.removeEffect(ModEffects.MANA_MEDITATE);
+        ServerFx.of("x_burst", p.position().add(0, 0.8, 0)).a(0.7).b(2).color(0x6FA8FF).send((ServerLevel) p.level());
+        p.level().playSound(null, p.blockPosition(), SoundEvents.BEACON_DEACTIVATE, SoundSource.PLAYERS, 0.6F, 1.6F);
     }
 
     @SubscribeEvent

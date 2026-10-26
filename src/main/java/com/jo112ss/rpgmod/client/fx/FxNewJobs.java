@@ -40,6 +40,11 @@ final class FxNewJobs {
             case "n_spin" -> spin(p);
             case "n_dive_mark" -> diveMark(p);
             case "n_dragon" -> dragon(p);
+            case "n_fireball" -> fireball(p);
+            case "n_ice_field" -> iceField(p);
+            case "n_thunder" -> thunderStrike(p);
+            case "n_slash" -> elementSlash(p);
+            case "n_meditate" -> meditate(p);
             default -> {
                 return false;
             }
@@ -257,6 +262,147 @@ final class FxNewJobs {
     @FunctionalInterface
     private interface Ship {
         Vec3 p(double x, double y, double z);
+    }
+
+    // ------------------------------------------------------------------ spellblade
+
+    /** A fireball from pos to vec in b ticks (a = size): a churning ball of flame with a smoky, sparking tail. */
+    private static void fireball(P p) {
+        Vec3 from = p.pos(), to = p.vec();
+        int flight = Math.max(1, (int) p.b());
+        float size = Math.max(0.3F, p.a());
+        Vec3 d = to.subtract(from);
+        flash(from, 0xFF8030, size * 1.5F, 3);
+        FxAnims.run(flight, age -> {
+            for (int k = 0; k < 2; k++) {
+                Vec3 at = from.add(d.scale((age + k * 0.5) / flight));
+                Fx.p(S.GLOW, at).color(0xFFFFFF, 0xFFB040).size(size * 1.3F).alpha(0.9F, 0).life(2).spawn();
+                Fx.p(S.FLARE, at.add(Fx.randomUnit().scale(size * 0.3))).color(0xFFD060, 0xFF4010).size(size * 1.1F, 0).randomAngle().spin(0.3F).life(4).spawn();
+                Fx.p(S.GLOW, at.add(Fx.randomUnit().scale(size * 0.4))).vel(d.normalize().scale(-0.05).add(0, 0.03, 0)).color(0xFF8030, 0xC02000).size(size * 0.6F, 0).alpha(0.8F, 0).life(8).spawn();
+                if (k == 0) smoke(at, 0x403028, size * 0.6F, size * 1.6F, 16).alpha(0.4F, 0).spawn();
+                if (Fx.RND.nextInt(3) == 0) Fx.p(S.SPARK, at).vel(Fx.randomUnit().scale(0.08)).color(0xFFFFFF, 0xFFA030).size(0.1F, 0).gravity(0.2F).life(10).spawn();
+            }
+            return false;
+        });
+    }
+
+    /**
+     * Frost erupting from the ground (pos, a = radius, b = stage 1..3): a cold ring racing outward
+     * with ice spikes jutting up behind it, mist and snow, the inside left white.
+     */
+    private static void iceField(P p) {
+        Vec3 o = p.pos().add(0, 0.05, 0);
+        float r = Math.max(1, p.a());
+        int st = Math.max(1, (int) p.b());
+        int c = 0x9FE8FF;
+        ground(S.CIRCLE_HEX, o, r, c, 30).alpha(0.7F, 0).fadeIn(0.1F).spin(0.02F).spawn();
+        flash(o.add(0, 0.5, 0), c, 1 + st * 0.6F, 5);
+        int ticks = (int) Math.ceil(r / 1.2);
+        FxAnims.run(ticks + 1, age -> {
+            double rr = r * (age + 1) / (ticks + 1.0);
+            ground(S.RING, o, (float) rr, c, 4).alpha(0.8F, 0).spawn();
+            int n = Fx.n((int) (rr * 4 * st / 2 + 4));
+            for (int i = 0; i < n; i++) {
+                double a = Fx.r(0, Math.PI * 2), d = rr - Fx.r(0, 1.2);
+                if (d < 0) continue;
+                Vec3 v = o.add(Math.cos(a) * d, 0, Math.sin(a) * d);
+                float h = (float) Fx.r(0.4, 0.8 + 0.35 * st);
+                Fx.p(S.SHARD, v.add(0, h * 0.5, 0)).upright().color(0xFFFFFF, c).size(h, h * 0.8F).alpha(0.95F, 0).life(24 + Fx.RND.nextInt(10)).spawn();
+                if (Fx.RND.nextInt(3) == 0) smoke(v, 0xD8F4FF, 0.4F, 1.1F, 26).vel(0, 0.02, 0).alpha(0.5F, 0).spawn();
+            }
+            for (int i = 0, m = Fx.n(4 * st); i < m; i++) {
+                Vec3 v = o.add(Fx.r(-rr, rr), Fx.r(0.2, 2.5), Fx.r(-rr, rr));
+                Fx.vanilla(ParticleTypes.SNOWFLAKE, v.x, v.y, v.z, Fx.r(-0.05, 0.05), -0.02, Fx.r(-0.05, 0.05));
+            }
+            return false;
+        });
+    }
+
+    /**
+     * Lightning on an entity (followed; a = stage 1..3, vec = the sword hand): an arc from the sword,
+     * then bolts from the sky (one per stage), a flash and a scorched ring.
+     */
+    private static void thunderStrike(P p) {
+        Entity e = p.e();
+        int st = Math.max(1, (int) p.a());
+        int c = 0xFFF07A;
+        Vec3 at = e != null ? e.position() : p.pos();
+        Vec3 mid = at.add(0, e != null ? e.getBbHeight() * 0.6 : 1, 0);
+        drawBolt(bolt(p.vec(), mid, 0.5, 3), c, 0.06F, 4, 0);
+        for (int k = 0; k < st; k++) {
+            Vec3 sky = at.add(Fx.r(-0.8, 0.8), 10 + k, Fx.r(-0.8, 0.8));
+            drawBolt(bolt(sky, mid, 1.0, 4), 0xFFFFFF, 0.1F + 0.04F * st, 5, 2 + k * 2);
+            drawBolt(bolt(sky, mid, 1.4, 3), c, 0.06F, 6, 2 + k * 2);
+        }
+        FxAnims.later(2, () -> {
+            flash(mid, c, 1.5F + st * 0.7F, 5);
+            ground(S.RING, at.add(0, 0.05, 0), 0.4F, c, 10).size(0.4F, 1.2F + st * 0.8F).easeOut().alpha(0.9F, 0).spawn();
+            ground(S.HEX, at.add(0, 0.05, 0), 0.6F + st * 0.3F, 0x303030, 30).alphaBlend().lit().alpha(0.7F, 0).spawn();
+            spray(mid, new Vec3(0, 1, 0), 1.4, 6 + st * 4, 0.35, S.SPARK, 0xFFFFFF, c, 0.12F, 10, 0.4F);
+            if (st == 3) FxAnims.shake(at, 0.3F, 6, 16);
+        });
+    }
+
+    /**
+     * The spellblade's flying slash (pos -> vec over a ticks), its look by element (b): 0 a spinning
+     * wheel of fire; 1 a wide, slow crescent of ice skimming the ground, leaving frost; 2 a flash of
+     * lightning, there at once.
+     */
+    private static void elementSlash(P p) {
+        Vec3 from = p.pos(), to = p.vec();
+        int ticks = Math.max(1, Math.round(p.a()));
+        int el = (int) p.b();
+        Vec3 d = to.subtract(from);
+        Vec3 dir = d.lengthSqr() > 1e-4 ? d.normalize() : new Vec3(0, 0, 1);
+        Vec3 side = Fx.right(flatDir(dir));
+        switch (el) {
+            case 0 -> FxAnims.run(ticks, age -> { // the fire wheel
+                Vec3 at = from.add(d.scale((double) age / ticks));
+                for (int k = 0; k < 3; k++) {
+                    float ang = age * 0.9F + k * 2.1F;
+                    Fx.p(S.SLASH, at).fixed(Fx.basis(side, new Vec3(0, 1, 0))).size(1.1F).color(0xFFE0A0, 0xFF5A10).alpha(0.9F, 0).angle(ang).life(3).spawn();
+                }
+                Fx.p(S.GLOW, at).color(0xFFFFFF, 0xFF8030).size(0.9F).alpha(0.6F, 0).life(3).spawn();
+                for (int i = 0; i < 3; i++) Fx.p(S.FLARE, at.add(Fx.randomUnit().scale(0.6))).vel(dir.scale(-0.08).add(0, 0.04, 0)).color(0xFFD060, 0xFF3010).size(0.35F, 0).life(10).spawn();
+                return false;
+            });
+            case 1 -> FxAnims.run(ticks, age -> { // the ice crescent
+                Vec3 at = from.add(d.scale((double) age / ticks));
+                Fx.p(S.SLASH, at).fixed(Fx.basis(side, dir.scale(-1))).size(2.6F).color(0xFFFFFF, 0x9FE8FF).alpha(0.9F, 0).angle(0.8F).life(3).spawn();
+                Fx.p(S.SLASH, at).fixed(Fx.basis(side, dir.scale(-1))).size(2.1F).color(0xE0FAFF, 0x6FC8F0).alpha(0.6F, 0).angle(0.8F).life(4).spawn();
+                for (int i = 0; i < 3; i++) {
+                    Vec3 v = at.add(side.scale(Fx.r(-2, 2))).subtract(0, 0.8, 0);
+                    Fx.p(S.SHARD, v.add(0, 0.3, 0)).upright().color(0xFFFFFF, 0x9FE8FF).size(0.5F, 0.3F).alpha(0.9F, 0).life(30).spawn();
+                }
+                if (age % 2 == 0) Fx.vanilla(ParticleTypes.SNOWFLAKE, at.x, at.y, at.z, 0, -0.02, 0);
+                return false;
+            });
+            default -> { // the lightning flash
+                drawBolt(bolt(from, to, 0.35, 4), 0xFFFFFF, 0.08F, 4, 0);
+                drawBolt(bolt(from, to, 0.6, 3), 0xFFF07A, 0.05F, 5, 0);
+                Fx.p(S.SLASH, from.add(dir.scale(1.2))).fixed(Fx.basis(side, dir.scale(-1))).size(1.6F).color(0xFFFFFF, 0xFFF07A).alpha(1, 0).angle(0.8F).life(4).spawn();
+                flash(to, 0xFFF07A, 1.2F, 4);
+            }
+        }
+    }
+
+    /** Meditating (entity, b ticks; re-sent while it lasts): a circle under them, motes of mana drawn in and rising. */
+    private static void meditate(P p) {
+        Entity e = p.e();
+        if (e == null) return;
+        int c = p.colorOr(0x6FA8FF);
+        int life = Math.max(2, (int) p.b());
+        ground(S.CIRCLE_ARCANE, e.position().add(0, 0.05, 0), 1.3F, c, life + 2).alpha(0.6F).spin(0.03F).follow(e).spawn();
+        FxAnims.follow(e, life, age -> {
+            Vec3 core = e.position().add(0, 1.0, 0);
+            for (int i = 0; i < 2; i++) {
+                double a = Fx.r(0, Math.PI * 2);
+                Vec3 from = core.add(Math.cos(a) * 1.6, Fx.r(-0.8, 0.6), Math.sin(a) * 1.6);
+                Fx.p(S.GLOW, from).vel(core.subtract(from).scale(1 / 10.0)).color(0xFFFFFF, c).size(0.12F, 0.2F).alpha(0.3F, 0.9F).life(10).spawn();
+            }
+            if (age % 3 == 0) Fx.p(S.GLOW, e.position().add(Fx.r(-0.4, 0.4), 0.2, Fx.r(-0.4, 0.4))).vel(0, 0.05, 0).color(c).size(0.15F, 0).life(24).spawn();
+            return false;
+        });
     }
 
     // ------------------------------------------------------------------ jumps and slams
