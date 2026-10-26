@@ -89,7 +89,7 @@ public final class AdvSkills {
             case "mana_well" -> manaWell(c);
             case "phase_shift" -> phaseShift(c);
             case "arcane_seal" -> arcaneSeal(c);
-            case "armageddon" -> armageddon(c);
+            case "armageddon" -> UltSkills.greatBeam(c);
             case "inferno" -> inferno(c);
             case "absolute_zero" -> absoluteZero(c);
             case "thunderstorm" -> thunderstorm(c);
@@ -610,46 +610,6 @@ public final class AdvSkills {
             if (age % 10 == 0) for (LivingEntity e : enemies(c.p(), at, r)) apply(e, c.def(), c.p(), 1.5 / Math.max(0.1, c.def().duration()));
             return age >= life - 1;
         });
-        return true;
-    }
-
-    /** Meteors keep falling on the aimed area for four seconds. */
-    private static boolean armageddon(Ctx c) {
-        Vec3 centre = aimPoint(c, 40);
-        double area = c.def().radius();
-        double r = 3.5;
-        int n = 10, fall = 20;
-        sound(c, SoundEvents.WITHER_SPAWN, 0.6F);
-        ServerFx.of("x_zone", centre).vec(new Vec3(2, 1, 0)).a(area).b(n * 8 + fall).color(FIRE).send(c.level());
-        for (int i = 0; i < n; i++) {
-            int k = i;
-            SkillTasks.later(i * 8, () -> {
-                // half of them go for an enemy in the area, the rest land at random
-                List<LivingEntity> in = enemies(c.p(), centre, area);
-                Vec3 at;
-                if (!in.isEmpty() && k % 2 == 0) {
-                    at = in.get(c.p().getRandom().nextInt(in.size())).position();
-                } else {
-                    double a = c.p().getRandom().nextDouble() * Math.PI * 2, d = Math.sqrt(c.p().getRandom().nextDouble()) * area;
-                    at = ground(c, centre.add(Math.cos(a) * d, 0, Math.sin(a) * d));
-                }
-                Vec3 sky = new Vec3(Math.cos(k * 1.3) * 9, 12, Math.sin(k * 1.3) * 9);
-                ServerFx.of("meteor", at).vec(sky).a(r).b(fall).send(c.level());
-                sound(c, at.add(sky.scale(0.5)), SoundEvents.FIREWORK_ROCKET_LAUNCH, 1.5F, 0.4F);
-                Vec3 land = at;
-                SkillTasks.later(fall, () -> {
-                    List<LivingEntity> hit = enemies(c.p(), land, r);
-                    for (LivingEntity e : hit) {
-                        double off = 1 - 0.5 * Math.min(1, horizontal(e.position(), land) / r);
-                        hurt(c, e, c.dmg(off), magic(c));
-                        e.igniteForSeconds((float) c.def().duration());
-                        pushAway(e, land, 0.6, 0.45);
-                    }
-                    ServerFx.of("meteor_impact", land).a(r).points(hit).send(c.level());
-                    sound(c, land, SoundEvents.GENERIC_EXPLODE.value(), 2.0F, 0.7F + c.p().getRandom().nextFloat() * 0.2F);
-                });
-            });
-        }
         return true;
     }
 

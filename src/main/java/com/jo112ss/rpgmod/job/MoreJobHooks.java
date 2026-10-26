@@ -146,7 +146,7 @@ public final class MoreJobHooks {
                 }
             }
             if (vp.hasEffect(ModEffects.IMMOVABLE)) amount *= 0.6F;
-            if (vp.hasEffect(ModEffects.FORTRESS)) amount *= 0.5F;
+            if (vp.hasEffect(ModEffects.FORTRESS)) amount = UltSkills.fortressCut(vp, amount);
         }
         event.setAmount(amount);
     }

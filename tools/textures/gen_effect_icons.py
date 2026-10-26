@@ -347,5 +347,8 @@ for n, col, mk in [('foresight', (255, 176, 112, 255), m_eye), ('battle_aura', (
                    ('treasure', (212, 175, 55, 255), m_coin), ('double_down', (232, 192, 64, 255), m_two),
                    ('gold_rush', (255, 200, 48, 255), m_coins), ('mana_meditate', (111, 168, 255, 255), m_notes),
                    ('rhapsody', (255, 90, 168, 255), m_star), ('fanfare', (255, 208, 80, 255), m_notes), ('ward_melody', (159, 216, 255, 255), m_shield),
-                   ('drain_tune', (122, 96, 255, 255), m_notes)]:
+                   ('drain_tune', (122, 96, 255, 255), m_notes),
+                   ('holy_aegis', (255, 224, 112, 255), m_shield), ('rewind', (255, 240, 160, 255), m_star), ('symphony', (255, 224, 112, 255), m_notes),
+                   ('silenced', (176, 112, 224, 255), m_notes), ('time_stop', (176, 200, 255, 255), m_eye), ('shadow_clone', (106, 74, 154, 255), m_two),
+                   ('war_god', (255, 80, 48, 255), m_flame)]:
     icon(n, badge(col, mk))

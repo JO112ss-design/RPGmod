@@ -64,7 +64,7 @@ public final class NewJobSkills {
             case "leap_thrust" -> leapThrust(c);
             case "counter_stance" -> counterStance(c);
             case "rapid_thrust" -> rapidThrust(c);
-            case "dragon_fang" -> dragonFang(c);
+            case "dragon_fang" -> UltSkills.dragonFang(c);
             case "spear_rain" -> spearRain(c);
             // monk
             case "combo" -> combo(c);
@@ -737,46 +737,6 @@ public final class NewJobSkills {
                 sound(c, p.position(), SoundEvents.SPEAR_ATTACK, 0.8F, 1.2F + age * 0.03F);
             }
             return age >= 12;
-        });
-        return true;
-    }
-
-    /**
-     * Jumps straight up, then comes down spinning the spear round; the landing smashes the ground
-     * and throws every enemy around high into the air (the nearer, the harder it is hit).
-     */
-    private static boolean dragonFang(Ctx c) {
-        ServerPlayer p = c.p();
-        int apex = 12;
-        launch(p, new Vec3(0, 1.35, 0));
-        SOFT_LANDING.add(p.getUUID());
-        ServerFx.of("x_aura", p.position()).follow(p).a(1.5).b(3).color(0xFF9030).send(c.level());
-        sound(c, SoundEvents.ENDER_DRAGON_FLAP, 1.0F);
-        sound(c, p.position(), SoundEvents.BREEZE_JUMP, 1.0F, 0.6F);
-        SkillTasks.run(age -> {
-            if (!p.isAlive()) return true;
-            p.resetFallDistance();
-            if (age == apex) {
-                launch(p, new Vec3(0, -1.8, 0));
-                ServerFx.of("n_spin", p.position()).follow(p).b(14).color(0xFF9030).send(c.level());
-                sound(c, p.position(), SoundEvents.TRIDENT_RIPTIDE_3, 1.0F, 0.8F);
-            }
-            if (age <= apex + 1 || (!p.onGround() && age < 50)) return false;
-            double r = c.def().radius();
-            Vec3 o = p.position();
-            List<LivingEntity> hit = enemies(p, o, r);
-            for (LivingEntity e : hit) {
-                double near = 1 - Math.min(1, horizontal(e.position(), o) / r);
-                hurt(c, e, c.dmg(0.6 + 0.4 * near), melee(c));
-                airborne(c, e, 0.6 + 0.5 * near);
-            }
-            ServerFx.of("earthshatter", o).a(r).send(c.level());
-            ServerFx.of("x_burst", o.add(0, 0.3, 0)).a(r * 0.6).b(0).color(0xFF9030).points(hit).send(c.level());
-            ServerFx.of("x_spikes", o).vec(c.flat()).a(r).color(LANCE).send(c.level());
-            sound(c, o, SoundEvents.MACE_SMASH_GROUND_HEAVY, 1.6F, 0.6F);
-            sound(c, o, SoundEvents.GENERIC_EXPLODE, 1.0F, 0.7F);
-            SkillTasks.later(5, () -> SOFT_LANDING.remove(p.getUUID()));
-            return true;
         });
         return true;
     }

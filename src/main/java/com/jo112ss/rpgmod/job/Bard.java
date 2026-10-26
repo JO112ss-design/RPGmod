@@ -223,6 +223,26 @@ public final class Bard {
         p.level().playSound(null, p.getX(), p.getY(), p.getZ(), s, SoundSource.PLAYERS, grade == MISS ? 0.6F : grade == PERFECT ? 1.0F : 0.75F,
                 grade == MISS ? 0.6F : SongChart.pitch(d.song(), perf.notes++));
         if (grade != MISS) ServerFx.of("n_note", p.position().add(0, 1.6, 0)).follow(p).b(grade).color(songColor(d.song())).send((ServerLevel) p.level());
+        if (grade != MISS && p.hasEffect(ModEffects.SYMPHONY)) UltSkills.symphonyNote(p, grade, d.songPoints());
+    }
+
+    /**
+     * Grand concerto: every spellsinger song set on the lute leaves its afterglow at once, as if
+     * played with full points (the ward melody's shield is put on first). Returns how many.
+     */
+    static int lingerAll(ServerPlayer p) {
+        JobData d = JobManager.data(p);
+        var l = lute(p).getOrDefault(com.jo112ss.rpgmod.registry.ModRegistries.SPELL_LOADOUT.get(), SpellLoadout.EMPTY);
+        java.util.Set<String> done = new java.util.LinkedHashSet<>();
+        int max = JobData.MAX_SONG_POINTS;
+        for (String id : l.spells()) {
+            if (id == null || !SINGER_SONGS.contains(id) || !d.knows(id) || !done.add(id)) continue;
+            var def = com.jo112ss.rpgmod.job.core.JobDefs.skill(id);
+            Ctx c = new Ctx(p, (ServerLevel) p.level(), def, JobManager.powerMultiplier(p, def), 1.0);
+            if (id.equals("ward_melody")) pulse(c, p, id, max, 40);
+            linger(new Perf(c), p, max);
+        }
+        return done.size();
     }
 
     /** Every tick for every player (cheap when not playing). */

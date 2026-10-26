@@ -70,7 +70,7 @@ public final class JobDefs {
     /** Skills whose power is not a damage ratio although their effect type usually is (and the reverse). */
     private static final java.util.Set<String> NO_POWER_LINE = java.util.Set.of();
     private static final java.util.Set<String> DAMAGE_TOO = java.util.Set.of("decoy", "reprisal", "grand_rune", "counter_stance", "parry",
-            "foresight", "counter_lance", "symphony", "mimic");
+            "foresight", "counter_lance", "symphony", "mimic", "fortress", "berserk");
     /** Damage skills that keep their ratio (see SKILL_DAMAGE): the wizard's plain bolt is its normal attack. */
     private static final java.util.Set<String> UNSCALED = java.util.Set.of("magic_bolt", "reprisal"); // reprisal: 15% of attack, as asked
 
@@ -94,7 +94,7 @@ public final class JobDefs {
                         skill("intimidate", SkillKind.ACTIVE, SkillEffect.SWEEP, 8, 15, 1.0, 4.5, 8, List.of("rpgmod:attack_down"), 1, "圧"),
                         skill("taunt", SkillKind.ACTIVE, SkillEffect.BUFF, 8, 15, 0, 10, 6, List.of("minecraft:resistance"), 0, "挑")),
                 List.of(
-                        skill("berserk", SkillKind.ULTIMATE, SkillEffect.BUFF, 60, 40, 0, 0, 15, List.of("minecraft:strength", "minecraft:speed"), 1, "狂"),
+                        skill("berserk", SkillKind.ULTIMATE, SkillEffect.BUFF, 60, 40, 3.0, 7, 15, List.of(), 0, "神"),
                         skill("earthshatter", SkillKind.ULTIMATE, SkillEffect.WHIRL, 60, 40, 8.0, 7, 4, List.of("minecraft:slowness"), 1, "砕")),
                 List.of());
         // ---- Ranger: bows
@@ -122,7 +122,7 @@ public final class JobDefs {
                         skill("guardian_dome", SkillKind.ACTIVE, SkillEffect.BUFF, 30, 25, 0, 5, 24, List.of(), 0, "囲"),
                         skill("holy_wave", SkillKind.ACTIVE, SkillEffect.SWEEP, 5, 15, 2.0, 10, 0, List.of(), 0, "波")),
                 List.of(
-                        skill("divine_aegis", SkillKind.ULTIMATE, SkillEffect.BUFF, 75, 40, 0, 8, 12, List.of("minecraft:resistance", "minecraft:absorption"), 1, "盾"),
+                        skill("divine_aegis", SkillKind.ULTIMATE, SkillEffect.BUFF, 75, 40, 0, 24, 6, List.of(), 0, "盾"),
                         skill("judgement", SkillKind.ULTIMATE, SkillEffect.WHIRL, 60, 40, 6.0, 6.5, 0, List.of(), 0, "審")),
                 List.of());
         // ---- Wizard: spells on the staff, skills 1/2 for mana and mobility
@@ -137,7 +137,7 @@ public final class JobDefs {
                         skill("chrono", SkillKind.ACTIVE, SkillEffect.BUFF, 45, 42, 0.5, 0, 0, List.of(), 0, "時")),
                 List.of(
                         skill("meteor", SkillKind.ULTIMATE, SkillEffect.WHIRL, 100, 112, 9.0, 5.5, 5, List.of(), 0, "隕"),
-                        skill("time_warp", SkillKind.ULTIMATE, SkillEffect.DEBUFF, 90, 84, 0, 10, 8, List.of("minecraft:slowness", "minecraft:weakness"), 2, "遅")),
+                        skill("time_warp", SkillKind.ULTIMATE, SkillEffect.DEBUFF, 90, 84, 0, 10, 3, List.of("minecraft:slowness", "minecraft:weakness"), 3, "止")),
                 List.of(
                         skill("magic_bolt", SkillKind.SPELL, SkillEffect.BOLT, 0.3, 5, 1.1, 28, 0, List.of(), 0, "弾"),
                         skill("flame_burst", SkillKind.SPELL, SkillEffect.WHIRL, 6, 28, 2.1, 7, 4, List.of(), 0, "炎"),
@@ -159,7 +159,7 @@ public final class JobDefs {
                         skill("guardian_angel", SkillKind.ACTIVE, SkillEffect.BUFF, 60, 35, 0, 12, 5, List.of(), 0, "天")),
                 List.of(
                         skill("sanctuary", SkillKind.ULTIMATE, SkillEffect.HEAL, 100, 84, 2.8, 6, 0, List.of(), 0, "域"),
-                        skill("guardian_light", SkillKind.ULTIMATE, SkillEffect.BUFF, 100, 84, 0, 10, 15, List.of("minecraft:absorption", "minecraft:resistance", "minecraft:regeneration"), 1, "光")),
+                        skill("guardian_light", SkillKind.ULTIMATE, SkillEffect.BUFF, 100, 84, 0, 10, 15, List.of(), 0, "光")),
                 List.of(
                         skill("heal", SkillKind.SPELL, SkillEffect.HEAL, 6, 21, 0.9, 4, 0, List.of(), 0, "癒"),
                         skill("group_heal", SkillKind.SPELL, SkillEffect.HEAL, 12, 42, 0.6, 10, 0, List.of(), 0, "群"),
@@ -176,7 +176,7 @@ public final class JobDefs {
                         skill("shadow_bind", SkillKind.ACTIVE, SkillEffect.DEBUFF, 7, 15, 1.0, 12, 3, List.of(), 0, "縛")),
                 List.of(
                         skill("assassinate", SkillKind.ULTIMATE, SkillEffect.SWEEP, 60, 40, 7.0, 12, 0, List.of(), 0, "殺"),
-                        skill("shadow_dance", SkillKind.ULTIMATE, SkillEffect.STEALTH, 60, 40, 0, 0, 10, List.of("minecraft:strength", "minecraft:speed"), 1, "舞")),
+                        skill("shadow_dance", SkillKind.ULTIMATE, SkillEffect.BUFF, 60, 40, 0, 0, 10, List.of(), 0, "舞")),
                 List.of());
         // ---- Enchanter: buffs allies, weakens enemies
         job("enchanter", 0xE67EB5, "付", List.of(JobStat.MANA_REGEN, JobStat.MAGIC_ATTACK, JobStat.COOLDOWN_REDUCTION, JobStat.MAX_MANA),
@@ -231,7 +231,7 @@ public final class JobDefs {
                         skill("counter_stance", SkillKind.ACTIVE, SkillEffect.BUFF, 7, 8, 3.0, 5, 2, List.of(), 0, "構"),
                         skill("rapid_thrust", SkillKind.ACTIVE, SkillEffect.SWEEP, 5, 15, 0.7, 6, 0, List.of(), 0, "連")),
                 List.of(
-                        skill("dragon_fang", SkillKind.ULTIMATE, SkillEffect.WHIRL, 60, 40, 6.0, 6, 0, List.of(), 0, "竜"),
+                        skill("dragon_fang", SkillKind.ULTIMATE, SkillEffect.WHIRL, 60, 40, 6.0, 3, 3, List.of(), 0, "竜"),
                         skill("spear_rain", SkillKind.ULTIMATE, SkillEffect.WHIRL, 60, 40, 0.9, 6, 3, List.of(), 0, "雨")),
                 List.of());
         // ---- Monk: fast fists; hits build ki, the big moves spend it
@@ -333,7 +333,7 @@ public final class JobDefs {
                         skill("phase_shift", A, SkillEffect.BLINK, 12, 20, 0, 14, 0, List.of(), 0, "位"),
                         skill("arcane_seal", A, SkillEffect.DEBUFF, 22, 30, 0, 6, 8, List.of("minecraft:slowness", "rpgmod:exposed"), 0, "封")),
                 List.of(
-                        skill("armageddon", U, SkillEffect.WHIRL, 120, 140, 3.0, 12, 5, List.of(), 0, "滅")),
+                        skill("armageddon", U, SkillEffect.BOLT, 120, 140, 12.0, 30, 3, List.of(), 0, "滅")),
                 List.of(
                         skill("inferno", S, SkillEffect.WHIRL, 12, 50, 2.5, 4.5, 4, List.of(), 0, "獄"),
                         skill("absolute_zero", S, SkillEffect.DEBUFF, 16, 55, 3.5, 7, 3, List.of(), 0, "零"),
@@ -437,7 +437,7 @@ public final class JobDefs {
                         skill("requiem", A, SkillEffect.HEAL, 40, 35, 0, 10, 10, List.of(), 0, "鎮"),
                         skill("shock_chord", A, SkillEffect.WHIRL, 8, 20, 2.4, 6, 0, List.of(), 0, "響")),
                 List.of(
-                        skill("symphony", U, SkillEffect.BUFF, 100, 60, 0.5, 10, 12, List.of(), 0, "楽")),
+                        skill("symphony", U, SkillEffect.BUFF, 100, 60, 0.8, 10, 12, List.of(), 0, "楽")),
                 List.of());
         // fusion spells (spellmaster, a charged spell in each hand): never learnt, the power listed
         // here is replaced by 1.2 x the two fused spells' worth (see SpellCasting)
@@ -484,7 +484,7 @@ public final class JobDefs {
                         skill("flowing_step", A, SkillEffect.DASH, 3.5, 8, 1.0, 6, 0, List.of(), 0, "流")),
                 List.of(
                         skill("heaven_earth", U, SkillEffect.HEAL, 75, 40, 2.0, 8, 0, List.of(), 0, "天"),
-                        skill("blooming_fists", U, SkillEffect.SWEEP, 60, 40, 0.5, 4, 3, List.of(), 0, "花")));
+                        skill("blooming_fists", U, SkillEffect.WHIRL, 60, 40, 4.0, 5, 8, List.of(), 0, "花")));
         // ---- Sentinel: spear in one hand, shield in the other
         hybrid("sentinel", "paladin", "lancer", 0xB8A060, "哨", List.of(JobStat.ARMOR, JobStat.MAX_HEALTH, JobStat.ATTACK_DAMAGE, JobStat.COOLDOWN_REDUCTION),
                 stats(JobStat.MAX_HEALTH, 6, JobStat.ARMOR, 4, JobStat.ATTACK_DAMAGE, 4),
@@ -497,7 +497,7 @@ public final class JobDefs {
                         skill("counter_lance", A, SkillEffect.BUFF, 6, 8, 2.6, 0, 3, List.of(), 0, "返"),
                         skill("provoke", A, SkillEffect.DEBUFF, 7.5, 15, 0, 10, 6, List.of(), 0, "挑")),
                 List.of(
-                        skill("fortress", U, SkillEffect.BUFF, 75, 40, 0, 8, 10, List.of(), 0, "砦"),
+                        skill("fortress", U, SkillEffect.BUFF, 75, 40, 2.0, 8, 10, List.of(), 0, "砦"),
                         skill("holy_lance", U, SkillEffect.SWEEP, 60, 40, 6.0, 12, 0, List.of(), 0, "聖")));
         // ---- Spellsinger: songs that put magic on the party's weapons
         hybrid("spellsinger", "enchanter", "bard", 0x9A6AD8, "律", List.of(JobStat.MAGIC_ATTACK, JobStat.MANA_REGEN, JobStat.COOLDOWN_REDUCTION, JobStat.MAX_HEALTH),
@@ -509,7 +509,7 @@ public final class JobDefs {
                         skill("arcane_note", A, SkillEffect.BOLT, 6, 14, 1.4, 16, 0, List.of(), 0, "符")),
                 List.of(
                         skill("grand_concerto", U, SkillEffect.BUFF, 90, 50, 0, 10, 10, List.of(), 0, "協"),
-                        skill("sealing_chord", U, SkillEffect.WHIRL, 90, 42, 3.5, 10, 0, List.of(), 0, "曲")),
+                        skill("sealing_chord", U, SkillEffect.WHIRL, 90, 42, 0.8, 16, 0, List.of(), 0, "曲")),
                 List.of(
                         skill("flame_melody", SkillKind.SPELL, SkillEffect.BUFF, 3, 14, 0, 6, 12, List.of(), 0, "炎"),
                         skill("haste_tune", SkillKind.SPELL, SkillEffect.BUFF, 3, 14, 0, 6, 12, List.of(), 0, "速"),

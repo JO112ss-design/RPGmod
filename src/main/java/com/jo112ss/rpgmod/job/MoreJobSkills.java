@@ -90,7 +90,7 @@ public final class MoreJobSkills {
             case "heroic_song" -> heroicSong(c);
             case "requiem" -> requiem(c);
             case "shock_chord" -> shockChord(c);
-            case "symphony" -> symphony(c);
+            case "symphony" -> UltSkills.symphony(c);
             // spellblade
             case "element_shift" -> elementShift(c);
             case "magic_slash" -> magicSlash(c);
@@ -112,7 +112,7 @@ public final class MoreJobSkills {
             case "qi_burst" -> qiBurst(c);
             case "flowing_step" -> flowingStep(c);
             case "heaven_earth" -> heavenEarth(c);
-            case "blooming_fists" -> bloomingFists(c);
+            case "blooming_fists" -> UltSkills.bloomingFists(c);
             // sentinel
             case "guard_thrust" -> guardThrust(c);
             case "shield_charge" -> shieldCharge(c);
@@ -123,12 +123,12 @@ public final class MoreJobSkills {
             case "spear_wall" -> spearWall(c);
             case "counter_lance" -> counterLance(c);
             case "provoke" -> provoke(c);
-            case "fortress" -> fortress(c);
+            case "fortress" -> UltSkills.fortress(c);
             case "holy_lance" -> holyLance(c);
             // spellsinger (the five songs are started by NewJobSkills)
             case "resonance" -> resonance(c);
-            case "grand_concerto" -> grandConcerto(c);
-            case "sealing_chord" -> sealingChord(c);
+            case "grand_concerto" -> UltSkills.grandConcerto(c);
+            case "sealing_chord" -> UltSkills.sealingChord(c);
             // shadow hunter
             case "vital_shot" -> vitalShot(c);
             case "stealth" -> stealth(c);
@@ -787,28 +787,6 @@ public final class MoreJobSkills {
         return true;
     }
 
-    /** 12s: the four songs at full strength, and every enemy around takes the music each second. */
-    private static boolean symphony(Ctx c) {
-        ServerPlayer p = c.p();
-        int life = ticks(c.def().duration());
-        double r = c.def().radius();
-        ServerFx.of("n_notes", p.position()).follow(p).a(c.def().duration()).b(1).color(0xFFE070).send(c.level());
-        ServerFx.of("x_ring", p.position()).a(r).b(3).color(0xFFE070).send(c.level());
-        sound(c, SoundEvents.PLAYER_LEVELUP, 1.0F);
-        SkillTasks.run(age -> {
-            if (!p.isAlive()) return true;
-            if (age % 20 == 0) {
-                Bard.grand(p, r, 30);
-                List<LivingEntity> foes = enemies(p, p.position(), r);
-                for (LivingEntity e : foes) hurt(c, e, c.dmg(1), magic(c));
-                ServerFx.of("n_song", p.position()).follow(p).a(r).b(1.2).color(0xFFE070).points(foes).send(c.level());
-                for (float pitch : new float[] {1.0F, 1.26F, 1.5F, 2.0F}) sound(c, p.position(), SoundEvents.NOTE_BLOCK_BELL, 0.45F, pitch * (age % 40 == 0 ? 1F : 0.89F));
-            }
-            return age >= life;
-        });
-        return true;
-    }
-
     // ================================================================== spellblade
 
     /** 0 fire, 1 ice, 2 thunder (kept in the coating slot of the job data, which the spellblade has no other use for). */
@@ -1269,27 +1247,6 @@ public final class MoreJobSkills {
         return true;
     }
 
-    /** 3s of punches; every hit that lands gives back 1% of your health. */
-    private static boolean bloomingFists(Ctx c) {
-        ServerPlayer p = c.p();
-        int life = ticks(c.def().duration());
-        SkillTasks.run(age -> {
-            if (!p.isAlive()) return true;
-            if (age % 3 == 0) {
-                List<LivingEntity> hit = cone(c, c.def().radius(), 45);
-                for (LivingEntity e : hit) {
-                    hurt(c, e, c.dmg(1), melee(c));
-                    push(e, c.flat(), 0.06, 0.02);
-                }
-                if (!hit.isEmpty()) HealthScale.heal(p, p.getMaxHealth() * 0.01F * hit.size());
-                ServerFx.of("n_fist", c.chest().add(c.flat().scale(1.6))).vec(c.flat()).color(age % 6 == 0 ? 0xFFA0C8 : 0xFFE0F0).points(hit).send(c.level());
-                sound(c, p.position(), SoundEvents.PLAYER_ATTACK_WEAK, 0.7F, 1.0F + p.getRandom().nextFloat() * 0.5F);
-            }
-            return age >= life;
-        });
-        return true;
-    }
-
     // ================================================================== sentinel
 
     /** A straight thrust; you hold your guard up after it (resistance for 2s). */
@@ -1380,21 +1337,6 @@ public final class MoreJobSkills {
         return true;
     }
 
-    /** Everyone around takes half damage for 10s; you cannot be moved. */
-    private static boolean fortress(Ctx c) {
-        ServerPlayer p = c.p();
-        int t = ticks(c.def().duration());
-        List<ServerPlayer> allies = allies(p, c.def().radius());
-        for (ServerPlayer a : allies) a.addEffect(new MobEffectInstance(ModEffects.FORTRESS, t, 0), p);
-        p.addEffect(new MobEffectInstance(ModEffects.IMMOVABLE, t, 0), p);
-        ServerFx.of("x_wall", p.position().add(c.flat().scale(1.5))).vec(c.flat()).a(3).b(t).color(0xF0D890).send(c.level());
-        ServerFx.of("x_aura", p.position()).follow(p).a(c.def().duration()).b(2).color(0xF0D890).points(others(p, allies)).send(c.level());
-        ServerFx.of("x_ring", p.position()).a(c.def().radius()).b(2).color(0xF0D890).send(c.level());
-        sound(c, SoundEvents.BEACON_ACTIVATE, 0.9F);
-        sound(c, p.position(), SoundEvents.ANVIL_LAND, 0.6F, 0.8F);
-        return true;
-    }
-
     /** A spear of light straight ahead, through everything in the way. */
     private static boolean holyLance(Ctx c) {
         ServerPlayer p = c.p();
@@ -1431,47 +1373,6 @@ public final class MoreJobSkills {
         ServerFx.of("x_ring", p.position()).a(c.def().radius()).b(3).color(0x9A6AD8).points(others(p, allies)).send(c.level());
         ServerFx.of("n_notes", p.position()).follow(p).a(1.5).b(1).color(0xC8A0FF).send(c.level());
         sound(c, SoundEvents.AMETHYST_BLOCK_RESONATE, 1.0F);
-        return true;
-    }
-
-    private static boolean grandConcerto(Ctx c) {
-        ServerPlayer p = c.p();
-        int life = ticks(c.def().duration());
-        double r = c.def().radius();
-        ServerFx.of("n_notes", p.position()).follow(p).a(c.def().duration()).b(1).color(0xC8A0FF).send(c.level());
-        ServerFx.of("x_ring", p.position()).a(r).b(3).color(0x9A6AD8).send(c.level());
-        sound(c, SoundEvents.PLAYER_LEVELUP, 1.1F);
-        SkillTasks.run(age -> {
-            if (!p.isAlive()) return true;
-            if (age % 20 == 0) {
-                Bard.concerto(p, r, 30);
-                ServerFx.of("n_song", p.position()).follow(p).a(r).b(1.2).color(0xC8A0FF).send(c.level());
-                for (float pitch : new float[] {0.84F, 1.0F, 1.26F}) sound(c, p.position(), SoundEvents.NOTE_BLOCK_CHIME, 0.45F, pitch * (age % 40 == 0 ? 1F : 1.12F));
-            }
-            return age >= life;
-        });
-        return true;
-    }
-
-    /** Ends the performance with a sealing chord: damage by the points, and the enemies are left exposed. */
-    private static boolean sealingChord(Ctx c) {
-        ServerPlayer p = c.p();
-        JobData d = JobManager.data(p);
-        int points = Bard.performing(p) ? d.songPoints() : 0;
-        double r = Bard.radius(points);
-        List<LivingEntity> hit = enemies(p, p.position(), r);
-        for (LivingEntity e : hit) {
-            hurt(c, e, c.dmg(0.6 + 0.02 * points), magic(c));
-            e.addEffect(new MobEffectInstance(ModEffects.EXPOSED, 120, 1), p);
-            e.addEffect(new MobEffectInstance(MobEffects.SLOWNESS, 60, 2), p);
-        }
-        Bard.stop(p);
-        d.setSongPoints(0);
-        JobManager.sync(p);
-        ServerFx.of("x_ring", p.position()).a(r).b(3).color(0xB070E0).points(hit).send(c.level());
-        ServerFx.of("n_finale", p.position()).a(r).b(points).color(0x9A6AD8).send(c.level());
-        sound(c, SoundEvents.NOTE_BLOCK_BELL, 0.6F);
-        sound(c, p.position(), SoundEvents.ENCHANTMENT_TABLE_USE, 1.0F, 0.5F);
         return true;
     }
 

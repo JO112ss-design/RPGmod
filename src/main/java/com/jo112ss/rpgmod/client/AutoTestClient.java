@@ -238,7 +238,7 @@ public final class AutoTestClient {
             case "leap_thrust" -> new int[] {6, 19, 24};
             case "counter_stance", "jolly_roger" -> new int[] {10};
             case "rapid_thrust" -> new int[] {7};
-            case "dragon_fang" -> new int[] {8, 14, 22};
+            case "dragon_fang" -> new int[] {10, 30, 58};
             case "combo" -> new int[] {5};
             case "parry", "rum" -> new int[] {6};
             case "meditate", "hundred_fists" -> new int[] {20};
@@ -295,6 +295,7 @@ public final class AutoTestClient {
             case "nj:songs_bard", "nj:songs_maestro", "nj:songs_singer" -> 90;
             case "nj:meditate" -> 140;
             case "nj:hitmana" -> 240;
+            case "nj:ults" -> 1040;
             case "nj:linger" -> 140;
             case "nj:ward" -> 210;
             case "nj:wardlinger" -> 80;
@@ -361,6 +362,10 @@ public final class AutoTestClient {
             showSkills.addAll(java.util.List.of("nj:statsdump"));
             showSkills.clear(); // physical MP: normal hits give MP back; the bard line keeps 100 and pays for the wave
             showSkills.addAll(java.util.List.of("nj:restore", "nj:hitmana", "nj:statsdump", "nj:restore"));
+            showSkills.clear(); // the reworked ultimates: server checks, then each one on camera
+            showSkills.addAll(java.util.List.of("nj:restore", "nj:ults", "nj:restore", "nj:fighter", "berserk", "nj:assassin", "shadow_dance", "nj:paladin", "divine_aegis",
+                    "nj:healer", "guardian_light", "nj:sentinel", "fortress", "nj:qi_master", "blooming_fists", "nj:wizard", "time_warp", "nj:spellmaster", "armageddon",
+                    "nj:lancer", "dragon_fang", "nj:spellsinger", "sealing_chord", "nj:restore"));
             if (false) showSkills.clear(); // spellsinger afterglow
             if (false) showSkills.addAll(java.util.List.of("nj:restore", "nj:wardlinger", "nj:ward", "nj:linger", "nj:restore"));
             if (false) showSkills.clear(); // songs: each with its own rhythm (bars from the song's style) and tune

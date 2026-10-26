@@ -91,6 +91,7 @@ final class NewJobTests {
             }
             case "meditate" -> meditate(level, p);
             case "hitmana" -> hitMana(p, dummies);
+            case "ults" -> ults(level, p, dummies);
             case "counter_lance" -> counterLance(level, p, dummies);
             case "wall", "unwall" -> wall(level, p, name.equals("wall"));
             default -> {
@@ -269,6 +270,111 @@ final class NewJobTests {
             log("hitmana bard: with 1 MP the wave is refused: {} MP", String.format("%.0f", d.mana()));
             d.setMana(100);
             com.jo112ss.rpgmod.job.HitMana.testLog = false;
+        });
+    }
+
+    /** The twelve reworked ultimates, one after the other (UltSkills logs what each does). */
+    private static void ults(ServerLevel level, ServerPlayer p, List<? extends LivingEntity> dummies) {
+        LivingEntity t = front(dummies);
+        if (t == null) return;
+        JobData d = JobManager.data(p);
+        var mode = p.gameMode();
+        boolean inv = p.getAbilities().invulnerable;
+        p.setGameMode(net.minecraft.world.level.GameType.SURVIVAL);
+        p.getAbilities().invulnerable = false;
+        com.jo112ss.rpgmod.job.UltSkills.testLog = true;
+        java.util.function.Consumer<String> cast = id -> {
+            d.setMana(JobManager.maxMana(p));
+            p.lookAt(net.minecraft.commands.arguments.EntityAnchorArgument.Anchor.EYES, t.position().add(0, t.getBbHeight() * 0.5, 0));
+            boolean ok = SkillExecutor.execute(p, JobDefs.skill(id), JobManager.powerMultiplier(p, JobDefs.skill(id)));
+            log("ult cast {}: {}", id, ok);
+        };
+        java.util.function.Supplier<String> hp = () -> String.format("%.1f", p.getHealth());
+        // fighter: war god, two of the five shockwave swings
+        SkillTasks.later(0, () -> become(p, "fighter"));
+        SkillTasks.later(30, () -> cast.accept("berserk"));
+        SkillTasks.later(31, () -> p.attack(t));
+        SkillTasks.later(50, () -> {
+            p.attack(t);
+            var e = p.getEffect(ModEffects.WAR_GOD);
+            log("ult war god charges left {}", e == null ? 0 : e.getAmplifier() + 1);
+        });
+        // assassin: the shadows copy a hit
+        SkillTasks.later(60, () -> become(p, "assassin"));
+        SkillTasks.later(90, () -> cast.accept("shadow_dance"));
+        SkillTasks.later(91, () -> p.attack(t));
+        // paladin: untouchable
+        SkillTasks.later(110, () -> become(p, "paladin"));
+        SkillTasks.later(140, () -> cast.accept("divine_aegis"));
+        SkillTasks.later(141, () -> {
+            String a = hp.get();
+            p.hurtServer(level, level.damageSources().mobAttack(t), 20);
+            log("ult divine aegis: a 20 blow {} -> {}", a, hp.get());
+        });
+        // healer: half of a blow comes back over 3s
+        SkillTasks.later(150, () -> become(p, "healer"));
+        SkillTasks.later(180, () -> cast.accept("guardian_light"));
+        SkillTasks.later(181, () -> {
+            p.removeEffect(ModEffects.HOLY_AEGIS);
+            p.setHealth(p.getMaxHealth());
+            p.hurtServer(level, level.damageSources().mobAttack(t), 20);
+            log("ult rewind: after the blow {}", hp.get());
+        });
+        SkillTasks.later(245, () -> log("ult rewind: 3s later {} (max {})", hp.get(), String.format("%.1f", p.getMaxHealth())));
+        // sentinel: the fortress keeps 30% off and hits back at the end
+        SkillTasks.later(250, () -> become(p, "sentinel", true));
+        SkillTasks.later(280, () -> cast.accept("fortress"));
+        SkillTasks.later(282, () -> {
+            p.setHealth(p.getMaxHealth());
+            String a = hp.get();
+            p.hurtServer(level, level.damageSources().mobAttack(t), 20);
+            log("ult fortress: a 20 blow {} -> {}", a, hp.get());
+        });
+        // god hand: hits from the flowers heal; they burst at the end
+        SkillTasks.later(300, () -> become(p, "qi_master"));
+        SkillTasks.later(330, () -> {
+            p.setHealth(p.getMaxHealth() * 0.5F);
+            cast.accept("blooming_fists");
+        });
+        SkillTasks.later(336, () -> p.attack(t));
+        // wizard: time stop, a hit while stopped lands at the end
+        SkillTasks.later(500, () -> become(p, "wizard"));
+        SkillTasks.later(530, () -> cast.accept("time_warp"));
+        SkillTasks.later(533, () -> {
+            float a = t.getHealth();
+            p.attack(t);
+            log("ult time stop: hit while stopped took {} now (noAI {})", String.format("%.1f", a - t.getHealth()), t instanceof net.minecraft.world.entity.Mob m && m.isNoAi());
+        });
+        // spellmaster: the beam
+        SkillTasks.later(610, () -> become(p, "wizard", true));
+        SkillTasks.later(640, () -> cast.accept("armageddon"));
+        // lancer: spinning charge
+        SkillTasks.later(720, () -> become(p, "lancer"));
+        SkillTasks.later(750, () -> cast.accept("dragon_fang"));
+        // maestro: symphony (a perfect note)
+        SkillTasks.later(830, () -> songs(level, p, "bard", true, List.of("war_song", "heal_song", "", "", "guard_song", "rhapsody"), 0, 5));
+        SkillTasks.later(870, () -> {
+            cast.accept("symphony");
+            log("ult symphony effect {} performing {}", p.hasEffect(ModEffects.SYMPHONY), com.jo112ss.rpgmod.job.Bard.performing(p));
+            com.jo112ss.rpgmod.job.UltSkills.symphonyNoteForTest(p);
+        });
+        // spellsinger: every afterglow at once, then the sealing notes
+        SkillTasks.later(900, () -> songs(level, p, "spellsinger", false, List.of("ward_melody", "drain_tune", "flame_melody"), 0, -1));
+        SkillTasks.later(940, () -> {
+            cast.accept("grand_concerto");
+            var fl = p.getEffect(ModEffects.FLAME_SONG);
+            var dr = p.getEffect(ModEffects.DRAIN_TUNE);
+            log("ult grand concerto: flame {}t drain {}t absorption {}", fl == null ? 0 : fl.getDuration(), dr == null ? 0 : dr.getDuration(),
+                    String.format("%.1f", p.getAbsorptionAmount()));
+        });
+        SkillTasks.later(960, () -> cast.accept("sealing_chord"));
+        SkillTasks.later(1000, () -> log("ult sealing chord: front dummy silenced {}", t.hasEffect(ModEffects.SILENCED)));
+        SkillTasks.later(1010, () -> {
+            p.setGameMode(mode);
+            p.getAbilities().invulnerable = inv;
+            p.onUpdateAbilities();
+            p.setHealth(p.getMaxHealth());
+            com.jo112ss.rpgmod.job.UltSkills.testLog = false;
         });
     }
 

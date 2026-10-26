@@ -69,7 +69,7 @@ public final class SkillExecutor {
             case "whirlwind" -> whirlwind(c);
             case "intimidate" -> intimidate(c);
             case "taunt" -> taunt(c);
-            case "berserk" -> selfBuff(c, "berserk", SoundEvents.RAVAGER_ROAR, 0.8F);
+            case "berserk" -> UltSkills.warGod(c);
             case "earthshatter" -> earthshatter(c);
             // ranger
             case "multishot" -> multishot(c);
@@ -90,7 +90,7 @@ public final class SkillExecutor {
             case "lay_on_hands" -> heal(c, "lay_on_hands", true);
             case "guardian_dome" -> guardianDome(c);
             case "holy_wave" -> holyWave(c);
-            case "divine_aegis" -> partyBuff(c, "divine_aegis", SoundEvents.BEACON_ACTIVATE, 1.3F);
+            case "divine_aegis" -> UltSkills.divineAegis(c);
             case "judgement" -> judgement(c);
             // wizard
             case "mana_surge" -> mana(c, "mana_surge");
@@ -103,7 +103,7 @@ public final class SkillExecutor {
             case "blizzard" -> blizzard(c);
             case "gravity" -> gravity(c);
             case "meteor" -> meteor(c);
-            case "time_warp" -> timeWarp(c);
+            case "time_warp" -> UltSkills.timeStop(c);
             case "magic_bolt" -> magicBolt(c);
             case "flame_burst" -> flameBurst(c);
             case "frost_nova" -> frostNova(c);
@@ -120,7 +120,7 @@ public final class SkillExecutor {
             case "nourish" -> nourish(c);
             case "purify" -> purify(c);
             case "sanctuary" -> sanctuary(c);
-            case "guardian_light" -> partyBuff(c, "guardian_light", SoundEvents.BEACON_ACTIVATE, 1.5F);
+            case "guardian_light" -> UltSkills.guardianLight(c);
             // assassin
             case "shadow_step" -> shadowStep(c);
             case "backstab" -> backstab(c);
@@ -129,7 +129,7 @@ public final class SkillExecutor {
             case "throwing_knives" -> throwingKnives(c);
             case "shadow_bind" -> shadowBind(c);
             case "assassinate" -> assassinate(c);
-            case "shadow_dance" -> selfBuff(c, "shadow_dance", SoundEvents.ILLUSIONER_MIRROR_MOVE, 0.8F);
+            case "shadow_dance" -> UltSkills.shadowDance(c);
             // enchanter
             case "empower" -> partyBuff(c, "empower", SoundEvents.ENCHANTMENT_TABLE_USE, 1.2F);
             case "haste" -> partyBuff(c, "haste", SoundEvents.BREEZE_JUMP, 1.4F);
@@ -747,17 +747,6 @@ public final class SkillExecutor {
             sound(c, at, SoundEvents.GENERIC_EXPLODE, 2.5F, 0.7F);
             sound(c, at, SoundEvents.MACE_SMASH_GROUND_HEAVY, 1.5F, 0.5F);
         });
-        return true;
-    }
-
-    static boolean timeWarp(Ctx c) {
-        double r = c.def.radius();
-        Vec3 o = c.p.position();
-        List<LivingEntity> hit = enemies(c.p, o, r);
-        for (LivingEntity e : hit) apply(e, c.def, c.p);
-        ServerFx.of("time_warp", o).a(r).b(ticks(c.def.duration())).points(hit).send(c.level);
-        sound(c, SoundEvents.BELL_RESONATE, 0.5F);
-        sound(c, o, SoundEvents.ILLUSIONER_PREPARE_BLINDNESS, 1.0F, 0.5F);
         return true;
     }
 

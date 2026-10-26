@@ -179,6 +179,14 @@ public final class ModEffects {
     /** The spellblade meditating: mana comes back much faster. */
     public static final DeferredHolder<MobEffect, MobEffect> MANA_MEDITATE = marker("mana_meditate", MobEffectCategory.BENEFICIAL, 0x6FA8FF);
     public static final DeferredHolder<MobEffect, MobEffect> GOLD_RUSH = marker("gold_rush", MobEffectCategory.BENEFICIAL, 0xFFC830);
+    // the reworked ultimates (see UltSkills)
+    public static final DeferredHolder<MobEffect, MobEffect> HOLY_AEGIS = marker("holy_aegis", MobEffectCategory.BENEFICIAL, 0xFFE070);
+    public static final DeferredHolder<MobEffect, MobEffect> REWIND = marker("rewind", MobEffectCategory.BENEFICIAL, 0xFFF0A0);
+    public static final DeferredHolder<MobEffect, MobEffect> SYMPHONY = marker("symphony", MobEffectCategory.BENEFICIAL, 0xFFE070);
+    public static final DeferredHolder<MobEffect, MobEffect> SILENCED = marker("silenced", MobEffectCategory.HARMFUL, 0xB070E0);
+    public static final DeferredHolder<MobEffect, MobEffect> TIME_STOP = marker("time_stop", MobEffectCategory.HARMFUL, 0xB0C8FF);
+    public static final DeferredHolder<MobEffect, MobEffect> SHADOW_CLONE = marker("shadow_clone", MobEffectCategory.BENEFICIAL, 0x6A4A9A);
+    public static final DeferredHolder<MobEffect, MobEffect> WAR_GOD = marker("war_god", MobEffectCategory.BENEFICIAL, 0xFF5030);
 
     /** Bard: playing (slower, cannot attack). */
     public static final DeferredHolder<MobEffect, MobEffect> PERFORMING = EFFECTS.register("performing",
