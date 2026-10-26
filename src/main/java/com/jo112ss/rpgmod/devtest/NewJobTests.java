@@ -419,7 +419,20 @@ final class NewJobTests {
         }));
         steps.add(wait.apply(20));
         steps.add(act.apply(() -> into.accept(1)));
+        net.minecraft.world.entity.monster.spider.Spider[] spider = {null};
+        steps.add(wait.apply(5));
+        steps.add(act.apply(() -> { // a spider in the lit room: it must still come for the player
+            var s = net.minecraft.world.entity.EntityTypes.SPIDER.create(dl, net.minecraft.world.entity.EntitySpawnReason.EVENT);
+            s.snapTo(p.getX() + 6, p.getY(), p.getZ() + 6, 0, 0);
+            s.setPersistenceRequired();
+            dl.addFreshEntity(s);
+            spider[0] = s;
+            run.get().mobs.add(s.getUUID());
+            log("dungeon: spider placed, light {} (spiders leave you alone above 0.5)", String.format("%.2f", s.getLightLevelDependentMagicValue()));
+        }));
         steps.add(wait.apply(30)); // the first wave in the picture
+        steps.add(act.apply(() -> log("dungeon: spider target after 1.5 s: {}, distance {}", spider[0].getTarget() != null ? "player" : "none",
+                String.format("%.1f", spider[0].distanceTo(p)))));
         steps.add(fight.apply(1));
         steps.add(act.apply(() -> into.accept(2)));
         steps.add(fight.apply(2));
