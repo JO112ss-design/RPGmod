@@ -75,6 +75,7 @@ public final class MobLevels {
         apply(mob, lv);
         Elite.roll(mob, lv);
         MobGear.equip(mob, lv);
+        if (mob instanceof com.jo112ss.rpgmod.mob.revenant.Revenant r) r.armForLevel();
         com.jo112ss.rpgmod.mob.ai.MobAi.onFirstLevel(mob, lv);
     }
 

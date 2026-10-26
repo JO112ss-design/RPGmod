@@ -110,7 +110,12 @@ public class Revenant extends Zombie implements RangedAttackMob {
 
     private boolean armed;
 
-    /** The job's weapon, by the level the revenant got (called on its first step, once it has one). */
+    /** The job's weapon for the level it was just given. */
+    public void armForLevel() {
+        arm();
+    }
+
+    /** The job's weapon, by the level the revenant got (on joining; or on its first step when levels are off). */
     private void arm() {
         armed = true;
         int lv = Math.max(1, MobLevels.level(this));
@@ -372,11 +377,19 @@ public class Revenant extends Zombie implements RangedAttackMob {
         }
     }
 
+    public static final double CLEAVE_REACH = 3.8;
+
     private void cleave(ServerLevel level) {
         List<Player> hit = new ArrayList<>();
-        for (Player p : level.getEntitiesOfClass(Player.class, getBoundingBox().inflate(4), p -> p.isAlive() && !p.isSpectator() && !p.isCreative())) {
+        for (Player p : level.getEntitiesOfClass(Player.class, getBoundingBox().inflate(5), p -> p.isAlive() && !p.isSpectator() && !p.isCreative())) {
             Vec3 to = p.position().subtract(position()).multiply(1, 0, 1);
-            if (to.length() > 3.8 || (to.lengthSqr() > 0.01 && to.normalize().dot(lockDir) < Math.cos(Math.toRadians(50)))) continue;
+            double dist = to.length() - p.getBbWidth() / 2;
+            boolean inArc = dist < 1.2 || to.normalize().dot(lockDir) >= Math.cos(Math.toRadians(55));
+            if (dist > CLEAVE_REACH || !inArc) {
+                log("cleave misses {} ({} away, angle {})", p.getName().getString(), String.format("%.2f", dist),
+                        String.format("%.0f", Math.toDegrees(Math.acos(Math.max(-1, Math.min(1, to.normalize().dot(lockDir)))))));
+                continue;
+            }
             p.hurtServer(level, damageSources().mobAttack(this), attack() * CLEAVE);
             hit.add(p);
         }

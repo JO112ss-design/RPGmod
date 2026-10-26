@@ -398,10 +398,11 @@ final class NewJobTests {
                     String.format("%.3f", zombie.getAttributeValue(net.minecraft.world.entity.ai.attributes.Attributes.MOVEMENT_SPEED)));
         });
         // the priest heals the hurt warrior
-        SkillTasks.later(20, () -> {
+        SkillTasks.later(50, () -> {
             var w = party.get(0);
-            w.hurtServer(level, p.damageSources().playerAttack(p), w.getMaxHealth() * 0.6F);
-            log("revenants: warrior hurt to {}", String.format("%.1f", w.getHealth()));
+            float before = w.getHealth();
+            boolean hit = w.hurtServer(level, level.damageSources().generic(), w.getMaxHealth() * 0.6F);
+            log("revenants: warrior hurt {} {} -> {}", hit, String.format("%.1f", before), String.format("%.1f", w.getHealth()));
         });
         SkillTasks.later(150, () -> log("revenants: warrior health now {} / {}", String.format("%.1f", party.get(0).getHealth()), String.format("%.0f", party.get(0).getMaxHealth())));
         // a cave spawn: a zombie about to appear under a roof below y 40 comes as revenants (the roof first, so the sky light updates)
