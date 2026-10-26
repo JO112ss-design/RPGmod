@@ -93,8 +93,8 @@ final class FxRevenant {
         Vec3 o = p.pos();
         float r = Math.max(1, p.a());
         int life = Math.max(6, (int) p.b());
-        ground(S.RING, o, r * 2.1F, c, life).color(0xFFA070, c).alpha(0.95F, 0.95F).spawn();
-        ground(S.CIRCLE_HEX, o, 0.3F, c, life).color(0xFF8050, c).size(0.3F, r * 2).alpha(0.3F, 0.7F).spin(0.06F).spawn();
+        ground(S.RING, o, r * 1.05F, c, life).color(0xFFA070, c).alpha(0.95F, 0.95F).spawn();
+        ground(S.CIRCLE_HEX, o, 0.3F, c, life).color(0xFF8050, c).size(0.2F, r).alpha(0.3F, 0.7F).spin(0.06F).spawn();
         Fx.p(S.CROSS, o.add(0, 0.08, 0)).flat().color(0xFFFFFF, c).size(0.7F).alpha(0.9F, 0.9F).angle(0.785F).life(life).spawn();
     }
 
