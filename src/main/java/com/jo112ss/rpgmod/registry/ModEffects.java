@@ -171,6 +171,11 @@ public final class ModEffects {
     /** Treasure hunter: each hit is doubled or halved (luck helps). */
     public static final DeferredHolder<MobEffect, MobEffect> DOUBLE_DOWN = marker("double_down", MobEffectCategory.BENEFICIAL, 0xE8C040);
     /** Treasure rain coins picked up: +5% damage per level (up to five). */
+    /** Bard songs: rhapsody (crit chance per level), fanfare (skills come back sooner), the spellsinger's ward and drain. */
+    public static final DeferredHolder<MobEffect, MobEffect> RHAPSODY = marker("rhapsody", MobEffectCategory.BENEFICIAL, 0xFF5AA8);
+    public static final DeferredHolder<MobEffect, MobEffect> FANFARE = marker("fanfare", MobEffectCategory.BENEFICIAL, 0xFFD050);
+    public static final DeferredHolder<MobEffect, MobEffect> WARD_MELODY = marker("ward_melody", MobEffectCategory.BENEFICIAL, 0x9FD8FF);
+    public static final DeferredHolder<MobEffect, MobEffect> DRAIN_TUNE = marker("drain_tune", MobEffectCategory.BENEFICIAL, 0x7A60FF);
     /** The spellblade meditating: mana comes back much faster. */
     public static final DeferredHolder<MobEffect, MobEffect> MANA_MEDITATE = marker("mana_meditate", MobEffectCategory.BENEFICIAL, 0x6FA8FF);
     public static final DeferredHolder<MobEffect, MobEffect> GOLD_RUSH = marker("gold_rush", MobEffectCategory.BENEFICIAL, 0xFFC830);

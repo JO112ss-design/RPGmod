@@ -44,7 +44,7 @@ public final class MoreJobSkills {
             "twin_cannon", "scattershot", "anchor_throw", "rally", "deadshot", "fleet_barrage",
             "rising_dragon", "ki_wave", "iron_mountain", "foresight", "battle_aura", "peerless",
             "high_jump", "dragon_spear", "dragon_scale", "spiral_lance", "sky_step", "dragon_king",
-            "duet", "modulate", "heroic_song", "requiem", "shock_chord", "symphony",
+            "crescendo", "spell_perform", "arcane_note", "modulate", "heroic_song", "requiem", "shock_chord", "symphony",
             "element_shift", "magic_slash", "thunder_thrust", "mana_share", "mana_meditate", "spell_guard", "arcane_edge", "elemental_burst",
             "qi_bullet", "refine_qi", "healing_palm", "hard_qi", "qi_burst", "flowing_step", "heaven_earth", "blooming_fists",
             "guard_thrust", "shield_charge", "immovable", "spear_wall", "counter_lance", "provoke", "fortress", "holy_lance",
@@ -83,7 +83,9 @@ public final class MoreJobSkills {
             case "sky_step" -> skyStep(c);
             case "dragon_king" -> dragonKing(c);
             // maestro
-            case "duet" -> mark(c, ModEffects.DUET, null, 0x5FD3BC, 4);
+            case "crescendo" -> Bard.crescendo(c);
+            case "spell_perform" -> Bard.perform(c);
+            case "arcane_note" -> arcaneNote(c);
             case "modulate" -> Bard.modulate(c);
             case "heroic_song" -> heroicSong(c);
             case "requiem" -> requiem(c);
@@ -998,6 +1000,35 @@ public final class MoreJobSkills {
             }
             sound(c, from.add(to).scale(0.5), SoundEvents.LIGHTNING_BOLT_THUNDER, 0.8F, 1.3F);
         });
+        return true;
+    }
+
+    /** Up to three notes of magic fly at the nearest enemies, each homing in on its own. */
+    private static boolean arcaneNote(Ctx c) {
+        ServerPlayer p = c.p();
+        List<LivingEntity> foes = new ArrayList<>(enemies(p, p.position(), c.def().radius()));
+        foes.removeIf(e -> !canSee(c.level(), p.getEyePosition(), mid(e), p));
+        if (foes.isEmpty()) {
+            fail(p, "rpgmod.job.no_target");
+            return false;
+        }
+        foes.sort(java.util.Comparator.comparingDouble(e -> e.distanceToSqr(p)));
+        int n = Math.min(3, foes.size());
+        for (int k = 0; k < 3; k++) {
+            LivingEntity t = foes.get(k % n);
+            int delay = k * 3;
+            SkillTasks.later(delay, () -> {
+                if (!t.isAlive() || !p.isAlive()) return;
+                Vec3 start = c.hand();
+                Vec3 dir = mid(t).subtract(start).normalize();
+                ServerFx.of("n_wave", start).vec(dir.scale(1.2)).a(c.def().radius() + 4).color(0x9A6AD8).follow(t).send(c.level());
+                projectile(c, start, dir, 1.2, c.def().radius() + 4, t, 0.35, (e, at, d) -> {
+                    hurt(c, e, c.dmg(1), magic(c));
+                    ServerFx.of("x_hit", at).vec(d).a(0.8).color(0x9A6AD8).send(c.level());
+                }, (at, d, wall) -> { });
+                sound(c, p.position(), SoundEvents.NOTE_BLOCK_CHIME, 0.9F, 1.2F + k * 0.2F);
+            });
+        }
         return true;
     }
 

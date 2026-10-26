@@ -350,7 +350,8 @@ public final class JobData {
 
     /** Staff slots this caster can fill: four (right hand), eight for the spellmaster (four per hand). */
     public int spellSlots() {
-        return isAdvancedAs("spellmaster") ? SpellLoadout.SLOTS : SpellLoadout.BASE_SLOTS;
+        // the spellmaster's two hands, the maestro's two songs at once
+        return isAdvancedAs("spellmaster") || isAdvancedAs("maestro") ? SpellLoadout.SLOTS : SpellLoadout.BASE_SLOTS;
     }
 
     /** Can this skill be set on the staff and charged? (spells) */
@@ -622,6 +623,19 @@ public final class JobData {
     }
 
     /** Remaining cooldowns of every skill except {@code except} are multiplied by {@code factor}. */
+    /** Takes {@code ticks} off every running cooldown (the bard's fanfare). */
+    public void shiftCooldowns(long now, long ticks) {
+        cooldowns.replaceAll((k, v) -> v <= now ? v : Math.max(now, v - ticks));
+    }
+
+    /** Dev test only: every cell of both panels learnt. */
+    public void devUnlockAll() {
+        SkillPanel p = panel();
+        if (p != null) for (var n : p.nodes()) if (!unlocked.contains(n.id())) unlocked.add(n.id());
+        SkillPanel ap = panel(true);
+        if (ap != null) for (var n : ap.nodes()) if (!advUnlocked.contains(n.id())) advUnlocked.add(n.id());
+    }
+
     public void scaleCooldowns(long now, double factor, String except) {
         cooldowns.replaceAll((k, v) -> k.equals(except) || v <= now ? v : now + Math.round((v - now) * factor));
     }

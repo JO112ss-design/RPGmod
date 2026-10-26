@@ -36,9 +36,12 @@ public final class JobClient {
         else pendingSelect = true;
     }
 
+    /** Holding where spells are set: the staff, or the lute for the bard's family (songs). */
     public static boolean holdingStaff() {
         Minecraft mc = Minecraft.getInstance();
-        return mc.player != null && ModItems.typeOf(mc.player.getMainHandItem().getItem()) == WeaponType.STAFF;
+        if (mc.player == null) return false;
+        WeaponType want = data().songJob() ? WeaponType.LUTE : WeaponType.STAFF;
+        return ModItems.typeOf(mc.player.getMainHandItem().getItem()) == want;
     }
 
     // ---- spellmaster: the left-click spell

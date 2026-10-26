@@ -38,8 +38,9 @@ public final class NewJobSkills {
             "lance_charge", "spear_throw", "spear_sweep", "leap_thrust", "counter_stance", "rapid_thrust", "dragon_fang", "spear_rain",
             "combo", "ki_blast", "parry", "whirl_kick", "meditate", "shrink_step", "hundred_fists", "diamond_body",
             "war_song", "heal_song", "guard_song", "wind_song", "discord", "lullaby", "grand_concert", "finale",
-            // the spellsinger's songs start the same performance (they were missing here, so they did nothing)
-            "flame_melody", "haste_tune", "mana_chord", "seal_melody", "thunder_tune");
+            "rhapsody", "fanfare", "dirge", "perform", "sonic_boom", "cheer",
+            // the spellsinger's songs start the same performance
+            "flame_melody", "haste_tune", "mana_chord", "seal_melody", "thunder_tune", "ward_melody", "drain_tune");
 
     static boolean has(String id) {
         return IDS.contains(id);
@@ -75,8 +76,12 @@ public final class NewJobSkills {
             case "hundred_fists" -> hundredFists(c);
             case "diamond_body" -> diamondBody(c);
             // bard
-            case "war_song", "heal_song", "guard_song", "wind_song", "discord", "lullaby",
-                 "flame_melody", "haste_tune", "mana_chord", "seal_melody", "thunder_tune" -> Bard.start(c, (int) Math.round(c.def().duration()));
+            // a song on its own (normally they are played by "perform" from the lute)
+            case "war_song", "heal_song", "guard_song", "wind_song", "discord", "lullaby", "rhapsody", "fanfare", "dirge",
+                 "flame_melody", "haste_tune", "mana_chord", "seal_melody", "thunder_tune", "ward_melody", "drain_tune" -> Bard.start(c, (int) Math.round(c.def().duration()));
+            case "perform" -> Bard.perform(c);
+            case "sonic_boom" -> sonicBoom(c);
+            case "cheer" -> Bard.cheer(c);
             case "grand_concert" -> grandConcert(c);
             case "finale" -> finale(c);
             default -> false;
@@ -777,6 +782,21 @@ public final class NewJobSkills {
     }
 
     /** Spears rain on the aimed area for 3s. */
+    /** A blast of sound from the lute: everything in a cone in front is hit and thrown back. */
+    private static boolean sonicBoom(Ctx c) {
+        ServerPlayer p = c.p();
+        double r = c.def().radius();
+        List<LivingEntity> hit = cone(c, r, 40);
+        for (LivingEntity e : hit) {
+            hurt(c, e, c.dmg(1), magic(c));
+            pushAway(e, p.position(), 1.1, 0.35);
+        }
+        ServerFx.of("n_sonic", c.hand()).vec(c.flat()).a(r).color(Bard.COLOR).send(c.level());
+        sound(c, SoundEvents.NOTE_BLOCK_BASS, 0.5F);
+        sound(c, p.position(), SoundEvents.WARDEN_SONIC_BOOM, 0.5F, 1.6F);
+        return true;
+    }
+
     /** Spears in the ground at once, from a thousand spears, burst this hard each (up to four on one enemy). */
     static final double SPEAR_BURST = 0.6;
 

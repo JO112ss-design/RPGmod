@@ -45,6 +45,7 @@ final class FxNewJobs {
             case "n_thunder" -> thunderStrike(p);
             case "n_slash" -> elementSlash(p);
             case "n_meditate" -> meditate(p);
+            case "n_sonic" -> sonic(p);
             default -> {
                 return false;
             }
@@ -383,6 +384,31 @@ final class FxNewJobs {
                 Fx.p(S.SLASH, from.add(dir.scale(1.2))).fixed(Fx.basis(side, dir.scale(-1))).size(1.6F).color(0xFFFFFF, 0xFFF07A).alpha(1, 0).angle(0.8F).life(4).spawn();
                 flash(to, 0xFFF07A, 1.2F, 4);
             }
+        }
+    }
+
+    /** A blast of sound (pos = the lute, vec = direction, a = reach): rings of sound racing out in a cone. */
+    private static void sonic(P p) {
+        int c = p.colorOr(0x48C9B0);
+        Vec3 o = p.pos();
+        Vec3 dir = flatDir(p.vec());
+        float reach = Math.max(2, p.a());
+        Vec3 side = Fx.right(dir);
+        flash(o, c, 1.2F, 4);
+        for (int k = 0; k < 4; k++) {
+            int delay = k * 2;
+            FxAnims.later(delay, () -> {
+                FxAnims.run(6, age -> {
+                    double d = reach * (age + 1) / 6.0;
+                    Vec3 at = o.add(dir.scale(d));
+                    Fx.p(S.WAVE, at).fixed(Fx.across(dir)).color(0xFFFFFF, c).size((float) (0.4 + d * 0.55)).alpha(0.7F, 0).life(3).spawn();
+                    for (int i = -2; i <= 2; i++) {
+                        Vec3 v = at.add(side.scale(i * d * 0.18));
+                        Fx.p(S.NOTE, v.add(0, Fx.r(-0.3, 0.5), 0)).color(0xFFFFFF, c).size(0.18F, 0).alpha(0.9F, 0).life(6).spawn();
+                    }
+                    return false;
+                });
+            });
         }
     }
 

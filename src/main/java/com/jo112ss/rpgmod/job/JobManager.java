@@ -533,6 +533,7 @@ public final class JobManager {
     public static SkillDef selectedSpell(Player player, ItemStack staff) {
         JobData d = data(player);
         if (!d.hasJob() || !d.castsSpells()) return null;
+        if (d.songJob()) return null; // songs are played from the lute, never charged on a staff
         SpellLoadout loadout = staff.getOrDefault(ModRegistries.SPELL_LOADOUT.get(), SpellLoadout.EMPTY);
         return usable(d, JobDefs.skill(loadout.selectedSpell()));
     }
@@ -595,6 +596,8 @@ public final class JobManager {
         double rate = JobStats.compute(data(player)).get(JobStat.CRIT_CHANCE);
         var keen = player.getEffect(com.jo112ss.rpgmod.registry.ModEffects.KEEN); // berserker's roar
         if (keen != null) rate += 25 * (keen.getAmplifier() + 1);
+        var rhapsody = player.getEffect(com.jo112ss.rpgmod.registry.ModEffects.RHAPSODY); // bard's song
+        if (rhapsody != null) rate += Bard.RHAPSODY_CRIT * (rhapsody.getAmplifier() + 1);
         rate += com.jo112ss.rpgmod.gem.Gear.total(player, com.jo112ss.rpgmod.smithing.core.OptionType.CRIT_CHANCE, weaponOf(player, source));
         return Math.min(100, rate);
     }
@@ -794,6 +797,7 @@ public final class JobManager {
 
     /** Mana a skill costs right now (the spellmaster's overload makes spells 50% dearer). */
     public static double manaCost(Player player, SkillDef def) {
+        if ("perform".equals(def.id()) || "spell_perform".equals(def.id())) return Bard.performCost(player); // the songs set on the lute
         if ("mana_share".equals(def.id())) return Math.ceil(maxMana(player) * MoreJobSkills.SHARE_COST); // a share of your own maximum
         boolean overload = def.kind() == SkillKind.SPELL && player.hasEffect(com.jo112ss.rpgmod.registry.ModEffects.OVERLOAD);
         return overload ? Math.ceil(def.mana() * 1.5) : def.mana();
@@ -816,9 +820,11 @@ public final class JobManager {
 
     // ------------------------------------------------------------------ wizard spell loadout
 
+    /** Where spells are set: the staff, or for the bard's family the lute (songs). */
     private static ItemStack heldStaff(ServerPlayer player) {
         ItemStack s = player.getMainHandItem();
-        return ModItems.typeOf(s.getItem()) == WeaponType.STAFF ? s : ItemStack.EMPTY;
+        WeaponType want = data(player).songJob() ? WeaponType.LUTE : WeaponType.STAFF;
+        return ModItems.typeOf(s.getItem()) == want ? s : ItemStack.EMPTY;
     }
 
     public static void setSpell(ServerPlayer player, int slot, String spellId) {
@@ -846,7 +852,7 @@ public final class JobManager {
         staff.set(ModRegistries.SPELL_LOADOUT.get(), l.withSelected(slot));
         String spell = l.spell(slot);
         if (!spell.isEmpty()) {
-            player.sendSystemMessage(Component.translatable("rpgmod.job.spell_selected", Component.translatable("rpgmod.skill." + spell))
+            player.sendSystemMessage(Component.translatable(data(player).songJob() ? "rpgmod.bard.song_selected" : "rpgmod.job.spell_selected", Component.translatable("rpgmod.skill." + spell))
                     .withStyle(ChatFormatting.LIGHT_PURPLE), true);
         }
     }
@@ -855,12 +861,12 @@ public final class JobManager {
     public static void selectLeftSpell(ServerPlayer player, int slot) {
         ItemStack staff = heldStaff(player);
         JobData d = data(player);
-        if (staff.isEmpty() || !d.isAdvancedAs("spellmaster") || !SpellLoadout.isLeft(slot) || slot >= d.spellSlots()) return;
+        if (staff.isEmpty() || !(d.isAdvancedAs("spellmaster") || d.isAdvancedAs("maestro")) || !SpellLoadout.isLeft(slot) || slot >= d.spellSlots()) return;
         SpellLoadout l = staff.getOrDefault(ModRegistries.SPELL_LOADOUT.get(), SpellLoadout.EMPTY);
         staff.set(ModRegistries.SPELL_LOADOUT.get(), l.withSelectedLeft(slot));
         String spell = l.spell(slot);
         if (!spell.isEmpty()) {
-            player.sendSystemMessage(Component.translatable("rpgmod.job.left_spell_selected", Component.translatable("rpgmod.skill." + spell))
+            player.sendSystemMessage(Component.translatable(d.songJob() ? "rpgmod.bard.second_selected" : "rpgmod.job.left_spell_selected", Component.translatable("rpgmod.skill." + spell))
                     .withStyle(ChatFormatting.AQUA), true);
         }
     }

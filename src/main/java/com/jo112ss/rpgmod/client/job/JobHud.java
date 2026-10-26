@@ -123,8 +123,8 @@ public final class JobHud {
             }
             String hint = font.substrByWidth(JobKeys.SPELL_WHEEL.getTranslatedKeyMessage(), SLOT).getString();
             g.text(font, hint, x + (SLOT - font.width(hint)) / 2, y + SLOT + 2, 0xFFB09CFF, true);
-            // spellmaster: the left-click spell next to it
-            if (d.isAdvancedAs("spellmaster")) {
+            // spellmaster: the left-click spell next to it; maestro: the second song
+            if (d.isAdvancedAs("spellmaster") || d.isAdvancedAs("maestro")) {
                 SkillDef left = JobDefs.skill(l.leftSpell());
                 int lx = x - SLOT - 6;
                 g.fill(lx - 2, y - 2, lx + SLOT + 2, y + SLOT + 2, 0xFF7FD8FF);
@@ -137,7 +137,8 @@ public final class JobHud {
                         g.fill(lx + 1, y + SLOT - 1 - h, lx + SLOT - 1, y + SLOT - 1, 0xB0000000);
                     }
                 }
-                String lk = font.substrByWidth(JobKeys.LEFT_SPELL.getTranslatedKeyMessage(), SLOT + 4).getString();
+                String lk = d.songJob() ? Component.translatable("rpgmod.hud.song2").getString()
+                        : font.substrByWidth(JobKeys.LEFT_SPELL.getTranslatedKeyMessage(), SLOT + 4).getString();
                 g.text(font, lk, lx + (SLOT - font.width(lk)) / 2, y + SLOT + 2, 0xFF7FD8FF, true);
                 // left-click charge gauge, under the right-click one
                 if (JobClient.leftCharge >= 0 && left != null) {

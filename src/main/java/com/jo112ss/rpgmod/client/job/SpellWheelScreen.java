@@ -42,7 +42,7 @@ public class SpellWheelScreen extends Screen {
     }
 
     private boolean twoHands() {
-        return JobClient.data().isAdvancedAs("spellmaster");
+        return JobClient.data().isAdvancedAs("spellmaster") || JobClient.data().isAdvancedAs("maestro");
     }
 
     private SpellLoadout loadout() {
@@ -125,7 +125,9 @@ public class SpellWheelScreen extends Screen {
             Ui.circle(g, rx, cy, (int) ((RING + 30) * open), tint, 1);
             Ui.circle(g, rx, cy, 16, (tint & 0xFFFFFF) | 0xA0000000, 1);
             if (two) {
-                Component name = Component.translatable(left ? "rpgmod.wheel.left_hand" : "rpgmod.wheel.right_hand",
+                boolean songs = JobClient.data().songJob(); // the maestro: the two songs played together
+                Component name = songs ? Component.translatable(left ? "rpgmod.wheel.song2" : "rpgmod.wheel.song1")
+                        : Component.translatable(left ? "rpgmod.wheel.left_hand" : "rpgmod.wheel.right_hand",
                         (left ? JobKeys.LEFT_SPELL : net.minecraft.client.Minecraft.getInstance().options.keyUse).getTranslatedKeyMessage());
                 g.centeredText(font, name, rx, cy - RING - 44, left ? 0xFF7FD8FF : 0xFFB09CFF);
             }
@@ -160,7 +162,7 @@ public class SpellWheelScreen extends Screen {
             }
         }
         if (hovered < 0) {
-            if (two) g.centeredText(font, Component.translatable("rpgmod.wheel.hint_hands"), width / 2, cy + RING + 40, 0xFFB8B0D8);
+            if (two) g.centeredText(font, Component.translatable(JobClient.data().songJob() ? "rpgmod.wheel.hint_songs" : "rpgmod.wheel.hint_hands"), width / 2, cy + RING + 40, 0xFFB8B0D8);
             else g.centeredText(font, Component.translatable("rpgmod.wheel.hint"), width / 2, cy - 4, 0xFFB8B0D8);
         }
     }

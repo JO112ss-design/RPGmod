@@ -290,7 +290,7 @@ public class JobScreen extends Screen {
             int x = tabX(i);
             g.fill(x, top + 18, x + 74, top + 32, sel ? Ui.argb(accent) : hover ? Ui.EDGE_LIGHT : Ui.EDGE);
             g.fill(x + 1, top + 19, x + 73, top + 32, sel ? Ui.mix(Ui.argb(accent), 0xFF101218, 0.55f) : Ui.BG_INNER);
-            g.centeredText(font, Component.translatable("rpgmod.jobscreen.tab." + tabs.get(i).name().toLowerCase(java.util.Locale.ROOT)),
+            g.centeredText(font, Component.translatable("rpgmod.jobscreen.tab." + (tabs.get(i) == Tab.SPELLS && JobClient.data().songJob() ? "songs" : tabs.get(i).name().toLowerCase(java.util.Locale.ROOT))),
                     x + 37, top + 21, sel ? Ui.TEXT : Ui.DIM);
         }
         g.fill(left + 1, top + 32, left + W - 1, top + 33, Ui.argb(accent));
@@ -810,14 +810,15 @@ public class JobScreen extends Screen {
     }
 
     private void drawSpells(GuiGraphicsExtractor g, JobData d, int mouseX, int mouseY) {
-        g.text(font, Component.translatable("rpgmod.jobscreen.staff"), left + 10, top + 38, Ui.GOLD, false);
+        boolean songs = d.songJob(); // the bard's family: songs on the lute
+        g.text(font, Component.translatable(songs ? "rpgmod.jobscreen.lute" : "rpgmod.jobscreen.staff"), left + 10, top + 38, Ui.GOLD, false);
         if (!JobClient.holdingStaff()) {
-            g.centeredText(font, Component.translatable("rpgmod.jobscreen.need_staff"), left + 112, top + 64, Ui.BAD);
+            g.centeredText(font, Component.translatable(songs ? "rpgmod.jobscreen.need_lute" : "rpgmod.jobscreen.need_staff"), left + 112, top + 64, Ui.BAD);
         } else {
             ItemStack staff = minecraft.player.getMainHandItem();
             SpellLoadout l = staff.getOrDefault(ModRegistries.SPELL_LOADOUT.get(), SpellLoadout.EMPTY);
             int size = spellSlotSize();
-            boolean twoHands = d.isAdvancedAs("spellmaster");
+            boolean twoHands = d.isAdvancedAs("spellmaster") || d.isAdvancedAs("maestro");
             for (int s = 0; s < d.spellSlots(); s++) {
                 int x = spellSlotX(s), y = top + 50;
                 boolean sel = s == selectedSpellSlot;
@@ -829,14 +830,14 @@ public class JobScreen extends Screen {
                 boolean chosen = leftSlot ? l.selectedLeft() == s : l.selected() == s;
                 String mark = chosen ? (leftSlot ? "◆" : "●") : "";
                 int col = chosen ? Ui.argb(leftSlot ? 0x7FD8FF : 0xB09CFF) : Ui.DIM;
-                g.text(font, (twoHands ? (leftSlot ? "L" : "R") : "") + (s % SpellLoadout.BASE_SLOTS + 1) + mark, x, y + size + 4, col, false);
+                g.text(font, (twoHands ? (songs ? (leftSlot ? "B" : "A") : (leftSlot ? "L" : "R")) : "") + (s % SpellLoadout.BASE_SLOTS + 1) + mark, x, y + size + 4, col, false);
                 if (in(mouseX, mouseY, x, y, size, size) && def != null) hoveredSkill = def.id();
             }
             if (twoHands) {
-                g.text(font, Component.translatable("rpgmod.jobscreen.hands_legend"), left + 10, top + 86, Ui.DIM, false);
+                g.text(font, Component.translatable(songs ? "rpgmod.jobscreen.songs_legend" : "rpgmod.jobscreen.hands_legend"), left + 10, top + 86, Ui.DIM, false);
             }
         }
-        g.textWithWordWrap(font, Component.translatable("rpgmod.jobscreen.spell_hint", JobKeys.SPELL_WHEEL.getTranslatedKeyMessage()),
+        g.textWithWordWrap(font, Component.translatable(songs ? "rpgmod.jobscreen.song_hint" : "rpgmod.jobscreen.spell_hint", JobKeys.SPELL_WHEEL.getTranslatedKeyMessage()),
                 left + 222, top + 40, W - 230, Ui.DIM, false);
         drawListToggle(g, d, mouseX, mouseY);
         drawCards(g, d, spellList(d), mouseX, mouseY, false);

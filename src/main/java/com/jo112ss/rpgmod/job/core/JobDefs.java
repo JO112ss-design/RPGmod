@@ -254,16 +254,23 @@ public final class JobDefs {
                 stats(JobStat.MAX_MANA, 50, JobStat.MAGIC_ATTACK, 3, JobStat.MANA_REGEN, 0.5),
                 stats(JobStat.MAGIC_ATTACK, 0.6, JobStat.ATTACK_DAMAGE, 0.3, JobStat.MAX_MANA, 1, JobStat.MAX_HEALTH, hpGrow(0.6, 0)),
                 List.of(
-                        skill("war_song", SkillKind.ACTIVE, SkillEffect.BUFF, 3, 14, 0, 6, 12, List.of(), 0, "戦"),
-                        skill("heal_song", SkillKind.ACTIVE, SkillEffect.BUFF, 3, 18, 0, 6, 12, List.of(), 0, "癒"),
-                        skill("guard_song", SkillKind.ACTIVE, SkillEffect.BUFF, 3, 14, 0, 6, 12, List.of(), 0, "守"),
-                        skill("wind_song", SkillKind.ACTIVE, SkillEffect.BUFF, 3, 14, 0, 6, 12, List.of(), 0, "風"),
-                        skill("discord", SkillKind.ACTIVE, SkillEffect.DEBUFF, 3, 18, 0.5, 6, 12, List.of(), 0, "乱"),
-                        skill("lullaby", SkillKind.ACTIVE, SkillEffect.DEBUFF, 3, 18, 0, 6, 12, List.of("minecraft:slowness", "rpgmod:attack_down"), 3, "眠")),
+                        // the songs are set on the lute (like spells on a staff); "perform" plays the selected one
+                        skill("perform", SkillKind.ACTIVE, SkillEffect.BUFF, 3, 0, 0, 0, 12, List.of(), 0, "奏"),
+                        skill("sonic_boom", SkillKind.ACTIVE, SkillEffect.SWEEP, 8, 14, 1.6, 6, 0, List.of(), 0, "響"),
+                        skill("cheer", SkillKind.ACTIVE, SkillEffect.BUFF, 20, 20, 0, 8, 5, List.of(), 0, "鼓")),
                 List.of(
-                        skill("grand_concert", SkillKind.ULTIMATE, SkillEffect.BUFF, 90, 50, 0, 10, 10, List.of(), 0, "奏"),
+                        skill("grand_concert", SkillKind.ULTIMATE, SkillEffect.BUFF, 90, 50, 0, 10, 10, List.of(), 0, "合"),
                         skill("finale", SkillKind.ULTIMATE, SkillEffect.WHIRL, 90, 42, 3.0, 10, 0, List.of(), 0, "幕")),
-                List.of());
+                List.of(
+                        skill("war_song", SkillKind.SPELL, SkillEffect.BUFF, 3, 14, 0, 6, 12, List.of(), 0, "戦"),
+                        skill("heal_song", SkillKind.SPELL, SkillEffect.BUFF, 3, 18, 0, 6, 12, List.of(), 0, "癒"),
+                        skill("guard_song", SkillKind.SPELL, SkillEffect.BUFF, 3, 14, 0, 6, 12, List.of(), 0, "守"),
+                        skill("wind_song", SkillKind.SPELL, SkillEffect.BUFF, 3, 14, 0, 6, 12, List.of(), 0, "風"),
+                        skill("discord", SkillKind.SPELL, SkillEffect.DEBUFF, 3, 18, 0.5, 6, 12, List.of(), 0, "乱"),
+                        skill("lullaby", SkillKind.SPELL, SkillEffect.DEBUFF, 3, 18, 0, 6, 12, List.of("minecraft:slowness", "rpgmod:attack_down"), 3, "眠"),
+                        skill("rhapsody", SkillKind.SPELL, SkillEffect.BUFF, 3, 16, 0, 6, 12, List.of(), 0, "狂"),
+                        skill("fanfare", SkillKind.SPELL, SkillEffect.BUFF, 3, 20, 0, 6, 12, List.of(), 0, "凱"),
+                        skill("dirge", SkillKind.SPELL, SkillEffect.DEBUFF, 3, 20, 0.4, 6, 12, List.of(), 0, "葬")));
     }
 
     // ------------------------------------------------------------------ advanced jobs (level 100+)
@@ -423,7 +430,7 @@ public final class JobDefs {
         advanced("bard", "maestro", 0x2FA38C, "指", List.of(JobStat.MAX_MANA, JobStat.MAGIC_ATTACK, JobStat.MANA_REGEN, JobStat.COOLDOWN_REDUCTION),
                 stats(JobStat.MAX_MANA, 0.5),
                 List.of(
-                        skill("duet", A, SkillEffect.BUFF, 20, 25, 0, 0, 12, List.of(), 0, "二"),
+                        skill("crescendo", A, SkillEffect.BUFF, 15, 10, 0, 0, 0, List.of(), 0, "昂"),
                         skill("modulate", A, SkillEffect.BUFF, 4, 8, 0, 0, 0, List.of(), 0, "転"),
                         skill("heroic_song", A, SkillEffect.BUFF, 30, 30, 0, 12, 10, List.of("minecraft:resistance", "minecraft:speed"), 0, "英"),
                         skill("requiem", A, SkillEffect.HEAL, 40, 35, 0, 10, 10, List.of(), 0, "鎮"),
@@ -496,15 +503,20 @@ public final class JobDefs {
                 stats(JobStat.MAX_MANA, 50, JobStat.MAGIC_ATTACK, 4, JobStat.MANA_REGEN, 0.5),
                 stats(JobStat.MAGIC_ATTACK, 0.6, JobStat.ATTACK_DAMAGE, 0.3, JobStat.MAX_MANA, 1, JobStat.MAX_HEALTH, hpGrow(0.6, 0)),
                 List.of(
-                        skill("flame_melody", A, SkillEffect.BUFF, 3, 14, 0, 6, 12, List.of(), 0, "炎"),
-                        skill("haste_tune", A, SkillEffect.BUFF, 3, 14, 0, 6, 12, List.of(), 0, "速"),
-                        skill("mana_chord", A, SkillEffect.BUFF, 3, 14, 0, 6, 12, List.of(), 0, "魔"),
-                        skill("seal_melody", A, SkillEffect.DEBUFF, 3, 18, 0, 6, 12, List.of(), 0, "封"),
-                        skill("thunder_tune", A, SkillEffect.DEBUFF, 3, 18, 1.2, 6, 12, List.of(), 0, "雷"),
-                        skill("resonance", A, SkillEffect.BUFF, 30, 30, 0, 10, 0, List.of(), 0, "共")),
+                        skill("spell_perform", A, SkillEffect.BUFF, 3, 0, 0, 0, 12, List.of(), 0, "奏"),
+                        skill("resonance", A, SkillEffect.BUFF, 30, 30, 0, 10, 0, List.of(), 0, "共"),
+                        skill("arcane_note", A, SkillEffect.BOLT, 6, 14, 1.4, 16, 0, List.of(), 0, "符")),
                 List.of(
-                        skill("grand_concerto", U, SkillEffect.BUFF, 90, 50, 0, 10, 10, List.of(), 0, "奏"),
-                        skill("sealing_chord", U, SkillEffect.WHIRL, 90, 42, 3.5, 10, 0, List.of(), 0, "曲")));
+                        skill("grand_concerto", U, SkillEffect.BUFF, 90, 50, 0, 10, 10, List.of(), 0, "協"),
+                        skill("sealing_chord", U, SkillEffect.WHIRL, 90, 42, 3.5, 10, 0, List.of(), 0, "曲")),
+                List.of(
+                        skill("flame_melody", SkillKind.SPELL, SkillEffect.BUFF, 3, 14, 0, 6, 12, List.of(), 0, "炎"),
+                        skill("haste_tune", SkillKind.SPELL, SkillEffect.BUFF, 3, 14, 0, 6, 12, List.of(), 0, "速"),
+                        skill("mana_chord", SkillKind.SPELL, SkillEffect.BUFF, 3, 14, 0, 6, 12, List.of(), 0, "魔"),
+                        skill("seal_melody", SkillKind.SPELL, SkillEffect.DEBUFF, 3, 18, 0, 6, 12, List.of(), 0, "封"),
+                        skill("thunder_tune", SkillKind.SPELL, SkillEffect.DEBUFF, 3, 18, 1.2, 6, 12, List.of(), 0, "雷"),
+                        skill("ward_melody", SkillKind.SPELL, SkillEffect.BUFF, 3, 18, 0, 6, 12, List.of(), 0, "護"),
+                        skill("drain_tune", SkillKind.SPELL, SkillEffect.BUFF, 3, 16, 0, 6, 12, List.of(), 0, "吸")));
         // ---- Shadow hunter: unseen, then the shot to the weak spot
         hybrid("shadow_hunter", "assassin", "ranger", 0x3A4A6A, "影", List.of(JobStat.ATTACK_DAMAGE, JobStat.CRIT_CHANCE, JobStat.MOVEMENT_SPEED, JobStat.ATTACK_SPEED),
                 stats(JobStat.ATTACK_DAMAGE, 4, JobStat.CRIT_CHANCE, 5, JobStat.MOVEMENT_SPEED, 5),
@@ -537,7 +549,13 @@ public final class JobDefs {
 
     private static void hybrid(String id, String baseA, String baseB, int color, String glyph, List<JobStat> panelStats, Map<JobStat, Double> base,
                                Map<JobStat, Double> perLevel, List<SkillDef> actives, List<SkillDef> ultimates) {
-        job(id, color, glyph, panelStats, base, perLevel, actives, ultimates, List.of());
+        hybrid(id, baseA, baseB, color, glyph, panelStats, base, perLevel, actives, ultimates, List.of());
+    }
+
+    /** A hybrid with spells of its own (the spellsinger's songs, set on the lute). */
+    private static void hybrid(String id, String baseA, String baseB, int color, String glyph, List<JobStat> panelStats, Map<JobStat, Double> base,
+                               Map<JobStat, Double> perLevel, List<SkillDef> actives, List<SkillDef> ultimates, List<SkillDef> spells) {
+        job(id, color, glyph, panelStats, base, perLevel, actives, ultimates, spells);
         HYBRIDS.put(id, List.of(baseA, baseB));
     }
 

@@ -21,12 +21,14 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 
 /**
- * The bard's performance. A song skill starts a song (12s): after a one second lead-in a note comes
+ * The bard's performance. Songs are set on the lute like spells on a staff (four slots, picked with
+ * the spell wheel); the "perform" skill plays the selected song - the maestro always plays two, the
+ * inner and the outer ring's. A song lasts 12s: after a one second lead-in a note comes
  * every half second, and the bard clicks (attack button) in time with it - judged on the client
  * against the synced start time: perfect +2, good +1, miss -3 to the song's points (0..20). Every
  * second the song works on everyone around: the points set its strength (60% to 120%) and reach
  * (6 to 10 blocks). Ending a song with 16+ points plays an encore (6s more, once). While playing the
- * bard walks slower and cannot attack.
+ * bard walks slower and cannot attack with the left button (the lute's sound wave still works).
  */
 public final class Bard {
     private Bard() {}
@@ -39,11 +41,14 @@ public final class Bard {
 
     /** A song in progress. */
     private static final class Perf {
-        final Ctx c;
+        Ctx c;
         int judged;
         boolean encore;
-        /** Maestro's duet: a second song playing along (null = none). */
+        /** The maestro's second song playing along (null = none), and its own context (power). */
         String second;
+        Ctx secondCtx;
+        /** Maestro's crescendo used in this song. */
+        boolean crescendo;
 
         Perf(Ctx c) {
             this.c = c;
@@ -54,8 +59,8 @@ public final class Bard {
 
     public static boolean isSong(String id) {
         return switch (id) {
-            case "war_song", "heal_song", "guard_song", "wind_song", "discord", "lullaby",
-                 "flame_melody", "haste_tune", "mana_chord", "seal_melody", "thunder_tune" -> true;
+            case "war_song", "heal_song", "guard_song", "wind_song", "discord", "lullaby", "rhapsody", "fanfare", "dirge",
+                 "flame_melody", "haste_tune", "mana_chord", "seal_melody", "thunder_tune", "ward_melody", "drain_tune" -> true;
             default -> false;
         };
     }
@@ -73,6 +78,11 @@ public final class Bard {
             case "mana_chord" -> 0x6A8CFF;
             case "seal_melody" -> 0xB070E0;
             case "thunder_tune" -> 0xFFF07A;
+            case "rhapsody" -> 0xFF5AA8;
+            case "fanfare" -> 0xFFD050;
+            case "dirge" -> 0x8A7AB8;
+            case "ward_melody" -> 0x9FD8FF;
+            case "drain_tune" -> 0x7A60FF;
             default -> COLOR;
         };
     }
@@ -91,20 +101,76 @@ public final class Bard {
         return !d.song().isEmpty() && d.songEnd() > p.level().getGameTime();
     }
 
+    /** The maestro's second song costs this share of its mana. */
+    public static final double SECOND_SONG_COST = 0.5;
+
+    /** The lute in the main hand (or empty). */
+    public static net.minecraft.world.item.ItemStack lute(Player p) {
+        var s = p.getMainHandItem();
+        return com.jo112ss.rpgmod.item.ModItems.typeOf(s.getItem()) == com.jo112ss.rpgmod.item.WeaponType.LUTE ? s : net.minecraft.world.item.ItemStack.EMPTY;
+    }
+
+    /** A song set on the lute that this player knows, or null. */
+    private static com.jo112ss.rpgmod.job.core.SkillDef song(JobData d, String id) {
+        var def = com.jo112ss.rpgmod.job.core.JobDefs.skill(id);
+        return def != null && isSong(id) && d.knows(id) ? def : null;
+    }
+
+    /** The songs "perform" would play now: the selected one, and for the maestro the outer ring's too. */
+    public static com.jo112ss.rpgmod.job.core.SkillDef[] selectedSongs(Player p) {
+        JobData d = JobManager.data(p);
+        var l = lute(p).getOrDefault(com.jo112ss.rpgmod.registry.ModRegistries.SPELL_LOADOUT.get(), SpellLoadout.EMPTY);
+        var first = song(d, l.selectedSpell());
+        var second = d.isAdvancedAs("maestro") ? song(d, l.leftSpell()) : null;
+        if (second != null && first != null && second.id().equals(first.id())) second = null;
+        if (first == null && second != null) {
+            first = second;
+            second = null;
+        }
+        return new com.jo112ss.rpgmod.job.core.SkillDef[] {first, second};
+    }
+
+    /** Mana "perform" costs now (the selected song, plus half of the maestro's second). */
+    public static double performCost(Player p) {
+        var s = selectedSongs(p);
+        if (s[0] == null) return 0;
+        return Math.ceil(s[0].mana() + (s[1] != null ? s[1].mana() * SECOND_SONG_COST : 0));
+    }
+
+    /** The "perform" skill: plays the song(s) set on the lute. */
+    static boolean perform(Ctx c) {
+        ServerPlayer p = c.p();
+        var songs = selectedSongs(p);
+        if (songs[0] == null) {
+            SkillExecutor.fail(p, lute(p).isEmpty() ? "rpgmod.bard.need_lute" : "rpgmod.bard.no_song");
+            return false;
+        }
+        // (the mana is checked and paid by the cast: see JobManager.manaCost)
+        ServerLevel level = c.level();
+        Ctx first = new Ctx(p, level, songs[0], JobManager.powerMultiplier(p, songs[0]), 1.0);
+        Ctx second = songs[1] == null ? null : new Ctx(p, level, songs[1], JobManager.powerMultiplier(p, songs[1]), 1.0);
+        return start(first, second, (int) Math.round(c.def().duration()));
+    }
+
     /** Starts (or restarts) a song for {@code seconds}. */
     static boolean start(Ctx c, int seconds) {
+        return start(c, null, seconds);
+    }
+
+    /** Starts (or restarts) a song for {@code seconds}, with a second one playing along (maestro). */
+    static boolean start(Ctx c, Ctx secondCtx, int seconds) {
         ServerPlayer p = c.p();
         JobData d = JobManager.data(p);
         long now = p.level().getGameTime();
-        Perf old = PERF.get(p.getUUID());
-        boolean duet = old != null && performing(p) && p.hasEffect(ModEffects.DUET) && !d.song().equals(c.def().id());
-        String second = duet ? d.song() : null;
         d.setSong(c.def().id(), now, now + LEAD + seconds * 20L);
         Perf perf = new Perf(c);
-        perf.second = second;
+        if (secondCtx != null) {
+            perf.second = secondCtx.def().id();
+            perf.secondCtx = secondCtx;
+            p.sendSystemMessage(Component.translatable("rpgmod.bard.duet", Component.translatable("rpgmod.skill." + c.def().id()),
+                    Component.translatable("rpgmod.skill." + perf.second)).withStyle(ChatFormatting.AQUA), true);
+        }
         PERF.put(p.getUUID(), perf);
-        if (duet) p.sendSystemMessage(Component.translatable("rpgmod.bard.duet", Component.translatable("rpgmod.skill." + second),
-                Component.translatable("rpgmod.skill." + c.def().id())).withStyle(ChatFormatting.AQUA), true);
         JobManager.sync(p);
         ServerFx.of("x_ring", p.position()).a(radius(d.songPoints())).b(1).color(songColor(c.def().id())).send(c.level());
         ServerFx.of("n_notes", p.position()).follow(p).a(1.5).color(songColor(c.def().id())).send(c.level());
@@ -174,7 +240,7 @@ public final class Bard {
             p.addEffect(new MobEffectInstance(ModEffects.PERFORMING, 30, 0, false, false, true));
             if (t >= LEAD) {
                 pulse(perf.c, p, d.song(), d.songPoints());
-                if (perf.second != null) pulse(perf.c, p, perf.second, d.songPoints());
+                if (perf.second != null) pulse(perf.secondCtx, p, perf.second, d.songPoints());
             }
         }
     }
@@ -229,9 +295,88 @@ public final class Bard {
                     level.playSound(null, e.blockPosition(), SoundEvents.LIGHTNING_BOLT_IMPACT, SoundSource.PLAYERS, 0.5F, 1.6F);
                 }
             }
+            case "rhapsody" -> allies(p, r, a -> a.addEffect(new MobEffectInstance(ModEffects.RHAPSODY, 30, amp, true, true), p));
+            case "fanfare" -> allies(p, r, a -> {
+                a.addEffect(new MobEffectInstance(ModEffects.FANFARE, 30, 0, true, true), p);
+                JobData ad = JobManager.data(a);
+                if (ad.hasJob()) { // the skills come back sooner: a share of a second off every second
+                    ad.shiftCooldowns(a.level().getGameTime(), Math.round(20 * FANFARE_SPEED * f));
+                    JobManager.sync(a);
+                }
+            });
+            case "dirge" -> {
+                List<LivingEntity> foes = SkillExecutor.enemies(p, p.position(), r);
+                float each = (float) (songPower(c, song) * f);
+                for (LivingEntity e : foes) SkillExecutor.hurt(c, e, each, SkillExecutor.magic(c));
+                if (!foes.isEmpty()) {
+                    ServerFx.of("hit", p.position()).color(color).a(0.6).points(foes).send(level);
+                    var party = SkillExecutor.allies(p, r);
+                    float heal = each * foes.size() * DIRGE_DRAIN / Math.max(1, party.size());
+                    for (ServerPlayer a : party) HealthScale.heal(a, heal);
+                }
+            }
+            case "ward_melody" -> allies(p, r, a -> {
+                a.addEffect(new MobEffectInstance(ModEffects.WARD_MELODY, 30, 0, true, true), p);
+                MoreJobHooks.ward(a, a.getMaxHealth() * WARD_SHARE * f);
+            });
+            case "drain_tune" -> allies(p, r, a -> a.addEffect(new MobEffectInstance(ModEffects.DRAIN_TUNE, 30, amp, true, true), p));
             default -> { }
         }
         ServerFx.of("n_song", p.position()).follow(p).a(r).b(f).color(color).send(level);
+    }
+
+    /** Rhapsody: crit chance (percent) per level of the song (levels 2 to 6 by the points). */
+    public static final double RHAPSODY_CRIT = 3;
+
+    /** Fanfare: seconds of cooldown taken off every second (at full strength 1.0 x this... times the strength). */
+    public static final double FANFARE_SPEED = 0.35;
+    /** Dirge: share of the damage dealt that heals the party (split among them). */
+    public static final float DIRGE_DRAIN = 0.3F;
+    /** Ward melody: the barrier kept up on each ally, a share of their max health (times the strength). */
+    public static final double WARD_SHARE = 0.05;
+
+    /** Maestro's crescendo: the song swells at once (once per song). */
+    static boolean crescendo(Ctx c) {
+        ServerPlayer p = c.p();
+        Perf perf = PERF.get(p.getUUID());
+        if (perf == null || !performing(p)) {
+            SkillExecutor.fail(p, "rpgmod.bard.not_playing");
+            return false;
+        }
+        if (perf.crescendo) {
+            SkillExecutor.fail(p, "rpgmod.bard.crescendo_used");
+            return false;
+        }
+        perf.crescendo = true;
+        JobData d = JobManager.data(p);
+        d.setSongPoints(d.songPoints() + CRESCENDO_POINTS);
+        JobManager.sync(p);
+        ServerFx.of("x_ring", p.position()).a(radius(d.songPoints())).b(2).color(songColor(d.song())).send(c.level());
+        ServerFx.of("n_notes", p.position()).follow(p).a(2).color(songColor(d.song())).send(c.level());
+        p.level().playSound(null, p.blockPosition(), SoundEvents.NOTE_BLOCK_BELL.value(), SoundSource.PLAYERS, 1.0F, 1.2F);
+        p.level().playSound(null, p.blockPosition(), SoundEvents.NOTE_BLOCK_BELL.value(), SoundSource.PLAYERS, 0.8F, 1.6F);
+        return true;
+    }
+
+    public static final int CRESCENDO_POINTS = 6, CHEER_POINTS = 6;
+
+    /** Cheer: +6 to the song playing (if any), and a short burst of the war song on the party. */
+    static boolean cheer(Ctx c) {
+        ServerPlayer p = c.p();
+        JobData d = JobManager.data(p);
+        if (performing(p)) {
+            d.setSongPoints(d.songPoints() + CHEER_POINTS);
+            JobManager.sync(p);
+        }
+        int t = (int) Math.round(c.def().duration() * 20);
+        for (ServerPlayer a : SkillExecutor.allies(p, c.def().radius())) {
+            a.addEffect(new MobEffectInstance(ModEffects.WAR_SONG, t, 2, true, true), p);
+            ServerFx.of("n_note", a.position().add(0, 2.0, 0)).follow(a).b(PERFECT).color(0xFFD050).send(c.level());
+        }
+        ServerFx.of("x_ring", p.position()).a(c.def().radius()).b(1).color(0xFFD050).send(c.level());
+        p.level().playSound(null, p.blockPosition(), SoundEvents.NOTE_BLOCK_PLING.value(), SoundSource.PLAYERS, 1.0F, 1.5F);
+        p.level().playSound(null, p.blockPosition(), SoundEvents.NOTE_BLOCK_PLING.value(), SoundSource.PLAYERS, 0.8F, 2.0F);
+        return true;
     }
 
     /** A song's damage per second before the strength: its own ratio x the magic attack when it started. */
@@ -241,8 +386,8 @@ public final class Bard {
     }
 
     /** The bard's songs, and the spellsinger's, in the order modulation walks through them. */
-    private static final List<String> BARD_SONGS = List.of("war_song", "heal_song", "guard_song", "wind_song", "discord", "lullaby");
-    private static final List<String> SINGER_SONGS = List.of("flame_melody", "haste_tune", "mana_chord", "seal_melody", "thunder_tune");
+    private static final List<String> BARD_SONGS = List.of("war_song", "heal_song", "guard_song", "wind_song", "discord", "lullaby", "rhapsody", "fanfare", "dirge");
+    private static final List<String> SINGER_SONGS = List.of("flame_melody", "haste_tune", "mana_chord", "seal_melody", "thunder_tune", "ward_melody", "drain_tune");
 
     /** Maestro's modulation: the next song, same time left and points, plus a little. */
     static boolean modulate(Ctx c) {
@@ -252,8 +397,22 @@ public final class Bard {
             SkillExecutor.fail(p, "rpgmod.bard.not_playing");
             return false;
         }
+        // the next song this player knows (one never learnt is skipped)
         List<String> order = SINGER_SONGS.contains(d.song()) ? SINGER_SONGS : BARD_SONGS;
-        String next = order.get((order.indexOf(d.song()) + 1) % order.size());
+        String next = d.song();
+        for (int k = 1; k <= order.size(); k++) {
+            String s = order.get((order.indexOf(d.song()) + k) % order.size());
+            if (d.knows(s) && !s.equals(PERF.get(p.getUUID()) == null ? null : PERF.get(p.getUUID()).second)) {
+                next = s;
+                break;
+            }
+        }
+        if (next.equals(d.song())) {
+            SkillExecutor.fail(p, "rpgmod.bard.no_song");
+            return false;
+        }
+        Perf playing = PERF.get(p.getUUID());
+        if (playing != null) playing.c = new Ctx(p, c.level(), com.jo112ss.rpgmod.job.core.JobDefs.skill(next), JobManager.powerMultiplier(p, com.jo112ss.rpgmod.job.core.JobDefs.skill(next)), 1.0);
         d.setSong(next, d.songStart(), d.songEnd());
         d.setSongPoints(d.songPoints() + 4);
         JobManager.sync(p);
