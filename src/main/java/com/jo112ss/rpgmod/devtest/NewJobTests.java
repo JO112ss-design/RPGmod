@@ -361,7 +361,7 @@ final class NewJobTests {
         SkillTasks.run(age -> {
             p.setHealth(p.getMaxHealth());
             p.addEffect(new net.minecraft.world.effect.MobEffectInstance(net.minecraft.world.effect.MobEffects.RESISTANCE, 20, 4, false, false));
-            return age >= 380;
+            return age >= 560;
         });
         int[] slot = {-1};
         java.util.function.Supplier<com.jo112ss.rpgmod.dungeon.DungeonData.Run> run = () -> com.jo112ss.rpgmod.dungeon.DungeonData.get(server).bySlot(slot[0]);
@@ -436,7 +436,29 @@ final class NewJobTests {
             net.neoforged.neoforge.common.NeoForge.EVENT_BUS.post(spawnEvent);
             log("dungeon: setting a spawn point inside is refused: {}", spawnEvent.isCanceled());
         });
-        SkillTasks.later(370, () -> {
+        // a boss offering: the golem's arena, straight to the fight
+        SkillTasks.later(380, () -> {
+            ItemStack core = new ItemStack(com.jo112ss.rpgmod.registry.ModRegistries.GOLEM_CORE.get());
+            com.jo112ss.rpgmod.dungeon.DungeonManager.offer(level, altar, p, core);
+            var r = com.jo112ss.rpgmod.dungeon.DungeonData.get(server).byAltar(level.dimension(), altar);
+            slot[0] = r != null ? r.slot : -1;
+            log("dungeon: offered a golem core -> {} rooms, slot {}", r != null ? r.rooms().size() : 0, slot[0]);
+            com.jo112ss.rpgmod.dungeon.DungeonManager.enter(level, altar, p);
+        });
+        SkillTasks.later(400, () -> into.accept(1));
+        SkillTasks.later(450, () -> {
+            var r = run.get();
+            for (var u : r.mobs) if (dl.getEntity(u) instanceof LivingEntity e) log("dungeon: arena boss {} Lv{} alive {} health {} / {}", e.getType().getDescriptionId(),
+                    com.jo112ss.rpgmod.mob.MobLevels.level(e), e.isAlive(), String.format("%.0f", e.getHealth()), String.format("%.0f", e.getMaxHealth()));
+        });
+        SkillTasks.later(470, finishOff);
+        SkillTasks.later(490, () -> {
+            var r = run.get();
+            log("dungeon: arena won - closing {}", r != null ? r.closing : "gone");
+            if (r != null && r.closing > 20) r.closing = 20;
+        });
+        SkillTasks.later(530, () -> log("dungeon: after the arena - in {}, run {}", p.level().dimension().identifier(), run.get() == null ? "closed" : "open"));
+        SkillTasks.later(545, () -> {
             level.removeBlock(altar, false);
             p.teleportTo(level, home.x, home.y, home.z, java.util.Set.of(), p.getYRot(), 0, true);
             p.setGameMode(mode);
