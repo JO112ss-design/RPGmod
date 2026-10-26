@@ -515,7 +515,6 @@ public final class MoreJobSkills {
                 Vec3 target = aim[0] != null ? aim[0] : aimPoint(c, 24);
                 Vec3 v = target.subtract(p.position()).normalize().scale(2.8);
                 launch(p, v.y > -0.5 ? v.add(0, -1.2, 0) : v);
-                ServerFx.of("x_dash", p.position()).vec(target).color(color).send(c.level());
                 ServerFx.of("n_spin", p.position()).follow(p).b(12).color(color).send(c.level());
                 sound(c, p.position(), SoundEvents.TRIDENT_THROW, 1.0F, 0.5F);
                 return false;

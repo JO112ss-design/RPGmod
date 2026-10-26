@@ -131,6 +131,11 @@ public final class AutoTestServer {
             castRequest = null;
             logLastCast();
             resetArena();
+            int at = id.indexOf('@');
+            if (at > 0) { // "skill@pitch": cast looking this far down
+                player.teleportTo(level, player.getX(), player.getY(), player.getZ(), java.util.Set.of(), 0F, Float.parseFloat(id.substring(at + 1)), false);
+                id = id.substring(0, at);
+            }
             if (id.equals("!reset")) { // the client test drives this one itself (staff charging)
                 player.getInventory().setSelectedSlot(0);
                 return;
@@ -184,7 +189,7 @@ public final class AutoTestServer {
             lastCast = def.id();
             sinceCast = 0;
         }
-        if (sinceCast >= 0 && ++sinceCast == 40) logLastCast();
+        if (sinceCast >= 0 && ++sinceCast == 100) logLastCast(); // (or at the next cast, if sooner)
         sceneStep(level);
         MobScenes.tick(level, player);
         if (arena != null && player.tickCount % 10 == 0 && !MobScenes.active()) {

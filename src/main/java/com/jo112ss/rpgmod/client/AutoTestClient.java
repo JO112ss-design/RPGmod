@@ -267,6 +267,7 @@ public final class AutoTestClient {
     }
 
     private static int length(String entry) {
+        if (entry.contains("@")) entry = entry.substring(0, entry.indexOf('@'));
         String id = entry.startsWith("fp:") || entry.startsWith("up:") || entry.startsWith("down:") || entry.startsWith("front:") || entry.startsWith("steep:") ? entry.substring(entry.indexOf(':') + 1) : entry;
         return switch (id) {
             case "mob:pillar", "mob:dig", "mob:archer", "mob:items" -> 220;
@@ -342,7 +343,7 @@ public final class AutoTestClient {
             showSkills.addAll(java.util.List.of("nj:pirate", "down:broadside", "nj:captain", "up:fleet_barrage", "nj:lancer", "spear_rain", "nj:shadow_hunter", "shadow_rain",
                     "nj:treasure_hunter", "treasure_rain", "nj:coins", "nj:restore"));
             showSkills.clear(); // group C (after a pause), the jumps made distinct: pole vault and ground wave, straight up and spin down, hover and aim, the dragon
-            showSkills.addAll(java.util.List.of("nj:restore", "nj:restore", "nj:restore", "nj:lancer", "leap_thrust", "dragon_fang", "nj:dragoon", "steep:high_jump",
+            showSkills.addAll(java.util.List.of("nj:restore", "nj:restore", "nj:restore", "nj:lancer", "leap_thrust@26", "dragon_fang", "nj:dragoon", "steep:high_jump",
                     "steep:dragon_king", "nj:restore"));
             if (false) showSkills.clear(); // group B (after a pause, so what the earlier tests left running has died down), the dashes made distinct: accelerating skewer, blink behind, gather and slam, lightning, flowing zigzag, shield push (twice against a wall)
             if (false) showSkills.addAll(java.util.List.of("nj:restore", "nj:restore", "nj:restore", "nj:lancer", "lance_charge", "nj:monk", "shrink_step", "nj:champion", "iron_mountain", "nj:spellblade", "front:thunder_thrust",
@@ -462,7 +463,7 @@ public final class AutoTestClient {
         if (k == 4 && entry.startsWith("nj:") && !entry.equals("nj:restore")) mc.player.getInventory().setSelectedSlot(6);
         if (k == 0) {
             mc.options.setCameraType(fp ? net.minecraft.client.CameraType.FIRST_PERSON : net.minecraft.client.CameraType.THIRD_PERSON_BACK);
-            AutoTestServer.requestCast(id);
+            AutoTestServer.requestCast(id); // "skill@pitch": cast looking that far down
         }
         if ((id.equals("powder_keg") || id.equals("anchor_throw")) && k >= 3 && k <= 24) {
             // where the thrown prop is on this client each tick (it should glide, not jump)
@@ -472,6 +473,7 @@ public final class AutoTestClient {
                         String.format("%.2f", e.getY() - mc.player.getY()), String.format("%.2f", e.getZ() - mc.player.getZ()), e.onGround());
             }
         }
+        if (id.contains("@")) id = id.substring(0, id.indexOf('@'));
         int[] times = shotTimes(id);
         for (int j = 0; j < times.length; j++) {
             if (k == times[j] + 1) shot(mc, String.format("%s%02d_%s%s", fp ? "f" : "s", i, id, times.length > 1 ? "_" + (j + 1) : ""));
