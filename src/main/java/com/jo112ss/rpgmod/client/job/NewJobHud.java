@@ -37,7 +37,7 @@ public final class NewJobHud {
     /** The sword magic charging: three segments, filling up to each stage, the reached ones lit. */
     private static void swordCharge(GuiGraphicsExtractor g, int el, int sw, int sh) {
         int held = JobClient.swordCharge;
-        int[] at = {0, com.jo112ss.rpgmod.job.SpellbladeMagic.STAGE2, com.jo112ss.rpgmod.job.SpellbladeMagic.STAGE3};
+        int[] at = {com.jo112ss.rpgmod.job.SpellbladeMagic.STAGE1, com.jo112ss.rpgmod.job.SpellbladeMagic.STAGE2, com.jo112ss.rpgmod.job.SpellbladeMagic.STAGE3};
         int seg = 18, gap = 3, w = seg * 3 + gap * 2;
         int x0 = sw / 2 - w / 2, y = sh / 2 + 22;
         int col = 0xFF000000 | com.jo112ss.rpgmod.job.MoreJobSkills.ELEMENT_COLORS[el];
@@ -45,9 +45,9 @@ public final class NewJobHud {
             int x = x0 + i * (seg + gap);
             g.fill(x - 1, y - 1, x + seg + 1, y + 4, 0xA0000000);
             float f;
-            if (i == 0) f = 1;
-            else f = Math.max(0, Math.min(1, (held - at[i - 1]) / (float) (at[i] - at[i - 1])));
-            boolean reached = i == 0 || held >= at[i];
+            int from = i == 0 ? 0 : at[i - 1];
+            f = Math.max(0, Math.min(1, (held - from) / (float) (at[i] - from)));
+            boolean reached = held >= at[i];
             g.fill(x, y, x + Math.round(seg * f), y + 3, reached ? col : 0xFF808080);
         }
     }

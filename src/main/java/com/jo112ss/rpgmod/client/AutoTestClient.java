@@ -348,7 +348,7 @@ public final class AutoTestClient {
             showSkills.addAll(java.util.List.of("nj:pirate", "down:broadside", "nj:captain", "up:fleet_barrage", "nj:lancer", "spear_rain", "nj:shadow_hunter", "shadow_rain",
                     "nj:treasure_hunter", "treasure_rain", "nj:coins", "nj:restore"));
             showSkills.clear(); // spellblade: sword magic by element and stage, the three magic slashes, meditation
-            showSkills.addAll(java.util.List.of("nj:restore", "nj:restore", "nj:restore", "nj:restore", "nj:sb0", "sword:4", "sword:40", "nj:sb1", "sword:4", "sword:40", "nj:sb2", "sword:4", "sword:40",
+            showSkills.addAll(java.util.List.of("nj:restore", "nj:restore", "nj:restore", "nj:restore", "nj:sb0", "sword:8", "sword:18", "sword:60", "nj:sb1", "sword:18", "sword:60", "nj:sb2", "sword:18", "sword:60",
                     "nj:sb0", "magic_slash", "nj:sb1", "magic_slash", "nj:sb2", "magic_slash", "nj:meditate", "nj:restore"));
             if (false) showSkills.clear(); // counter lance: braced blows stored, the next hit carries them
             if (false) showSkills.addAll(java.util.List.of("nj:restore", "nj:restore", "nj:counter_lance", "nj:restore"));

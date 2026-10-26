@@ -27,7 +27,7 @@ import net.minecraft.world.phys.Vec3;
 
 /**
  * The spellblade's sword magic: hold right click with a sword to charge a spell of the sword's
- * element, release to cast it. Three stages (a tap, then {@link #STAGE2} and {@link #STAGE3} ticks
+ * element, release to cast it. Three stages ({@link #STAGE1}, {@link #STAGE2} and {@link #STAGE3} ticks held; let go sooner and it fizzles at no cost
  * held): each stage hits much harder and costs much more mana.
  * <ul>
  * <li>fire: a fireball that bursts where it hits (a small area);</li>
@@ -39,7 +39,7 @@ public final class SpellbladeMagic {
     private SpellbladeMagic() {}
 
     /** Ticks held for the second and third stage. */
-    public static final int STAGE2 = 16, STAGE3 = 36;
+    public static final int STAGE1 = 16, STAGE2 = 36, STAGE3 = 56;
     /** Mana per element (fire, ice, thunder) and stage. */
     public static final int[][] COST = {{10, 24, 45}, {12, 28, 50}, {14, 32, 55}};
     /** Damage ratio (x attack + magic attack) per element and stage. */
@@ -66,7 +66,7 @@ public final class SpellbladeMagic {
     }
 
     public static int stage(int held) {
-        return held >= STAGE3 ? 3 : held >= STAGE2 ? 2 : 1;
+        return held >= STAGE3 ? 3 : held >= STAGE2 ? 2 : held >= STAGE1 ? 1 : 0;
     }
 
     /** Right click pressed with the sword: start charging (if a first-stage spell can be paid for). */
@@ -90,7 +90,7 @@ public final class SpellbladeMagic {
                 if (ch != null && ch.start() == now) CHARGING.remove(p.getUUID()); // sword put away
                 return true;
             }
-            if (age == STAGE2 || age == STAGE3) {
+            if (age == STAGE1 || age == STAGE2 || age == STAGE3) {
                 level.playSound(null, p.blockPosition(), SoundEvents.AMETHYST_BLOCK_RESONATE, SoundSource.PLAYERS, 1.0F, age == STAGE3 ? 1.8F : 1.3F);
                 ServerFx.of("x_burst", p.position().add(0, 1.0, 0)).a(age == STAGE3 ? 1.2 : 0.8).b(el == 0 ? 0 : el == 1 ? 1 : 2).color(color).send(level);
             }
@@ -107,6 +107,10 @@ public final class SpellbladeMagic {
         int el = ch.element();
         JobData d = JobManager.data(p);
         int st = stage(held);
+        if (st == 0) { // not held long enough: nothing happens, nothing is paid
+            p.sendSystemMessage(Component.translatable("rpgmod.job.fizzle").withStyle(ChatFormatting.GRAY), true);
+            return;
+        }
         while (st > 1 && d.mana() < COST[el][st - 1]) st--;
         if (d.mana() < COST[el][st - 1]) {
             p.sendSystemMessage(Component.translatable("rpgmod.job.no_mana").withStyle(ChatFormatting.RED), true);
