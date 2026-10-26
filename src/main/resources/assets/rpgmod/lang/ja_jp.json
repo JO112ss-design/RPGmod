@@ -1155,7 +1155,7 @@
   "rpgmod.skill.dirge": "葬送曲",
   "rpgmod.skill.dirge.desc": "周りの敵から毎秒HPを吸い、その3割で周りの味方を回復する。",
   "rpgmod.skill.ward_melody": "守護の旋律",
-  "rpgmod.skill.ward_melody.desc": "周りの味方に毎秒小さなバリア（最大HPの最大6%）を張る。",
+  "rpgmod.skill.ward_melody.desc": "周りの味方に衝撃吸収（最大HPの約6〜12%）を付ける。削られた分は演奏中も戻らず、割れると4秒間は付かない。",
   "rpgmod.skill.drain_tune": "吸魔の調べ",
   "rpgmod.skill.drain_tune.desc": "周りの味方の攻撃が当たるたびに、MPが少し回復する。",
   "rpgmod.bard.need_lute": "リュートを手に持ってください",

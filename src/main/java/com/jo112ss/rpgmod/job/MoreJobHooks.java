@@ -145,18 +145,6 @@ public final class MoreJobHooks {
                     });
                 }
             }
-            // ward melody (spellsinger's song): a barrier that takes the blow first
-            Float ward = WARD.get(vp.getUUID());
-            if (ward != null && ward > 0 && vp.hasEffect(ModEffects.WARD_MELODY) && amount > 0) {
-                float taken = Math.min(ward, amount);
-                amount -= taken;
-                WARD.put(vp.getUUID(), ward - taken);
-                ServerFx.of("x_hit", vp.position().add(0, 1.1, 0)).vec(new net.minecraft.world.phys.Vec3(0, 1, 0)).a(0.7).color(0x9FD8FF).send(level);
-                if (amount <= 0) {
-                    event.setCanceled(true);
-                    return;
-                }
-            }
             if (vp.hasEffect(ModEffects.IMMOVABLE)) amount *= 0.6F;
             if (vp.hasEffect(ModEffects.FORTRESS)) amount *= 0.5F;
         }
@@ -193,13 +181,6 @@ public final class MoreJobHooks {
     public static final double DRAIN_MANA = 1.0;
     public static final int DRAIN_GAP = 6;
     private static final Map<UUID, Long> LAST_DRAIN = new java.util.HashMap<>();
-    /** Ward melody: each player's barrier left. */
-    private static final Map<UUID, Float> WARD = new java.util.HashMap<>();
-
-    /** Ward melody: tops the barrier up to {@code amount} (it does not stack beyond that). */
-    public static void ward(ServerPlayer p, double amount) {
-        WARD.merge(p.getUUID(), (float) amount, Math::max);
-    }
 
     /** Ends the spellblade's mana meditation (if any). */
     public static void endMeditation(ServerPlayer p) {
@@ -215,7 +196,6 @@ public final class MoreJobHooks {
         MoreJobSkills.FORESIGHT_POWER.remove(id);
         MoreJobSkills.LANCE_STORE.remove(id);
         LAST_DRAIN.remove(id);
-        WARD.remove(id);
         MoreJobSkills.GUARD_POWER.remove(id);
     }
 

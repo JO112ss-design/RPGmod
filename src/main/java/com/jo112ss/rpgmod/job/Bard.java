@@ -348,10 +348,7 @@ public final class Bard {
                     for (ServerPlayer a : party) HealthScale.heal(a, heal);
                 }
             }
-            case "ward_melody" -> allies(p, r, a -> {
-                a.addEffect(new MobEffectInstance(ModEffects.WARD_MELODY, dur, 0, true, true), p);
-                MoreJobHooks.ward(a, a.getMaxHealth() * WARD_SHARE * f);
-            });
+            case "ward_melody" -> allies(p, r, a -> ward(p, a, f, dur));
             case "drain_tune" -> allies(p, r, a -> a.addEffect(new MobEffectInstance(ModEffects.DRAIN_TUNE, dur, amp, true, true), p));
             default -> { }
         }
@@ -365,8 +362,33 @@ public final class Bard {
     public static final double FANFARE_SPEED = 0.35;
     /** Dirge: share of the damage dealt that heals the party (split among them). */
     public static final float DIRGE_DRAIN = 0.3F;
-    /** Ward melody: the barrier kept up on each ally, a share of their max health (times the strength). */
-    public static final double WARD_SHARE = 0.05;
+    /** Ward melody: absorption on each ally worth this share of their max health (times the strength). */
+    public static final double WARD_SHARE = 0.1;
+    /** Ward melody: once someone's absorption is broken, none for them for this long. */
+    public static final int WARD_BROKEN_TICKS = 80;
+
+    /** Who has the ward melody's absorption now, and who broke it (until when they get none). */
+    private static final java.util.Set<UUID> WARDED = new java.util.HashSet<>();
+    private static final Map<UUID, Long> WARD_BROKEN = new HashMap<>();
+
+    /**
+     * Ward melody: vanilla absorption (yellow on the health bar). It is not topped up while it lasts:
+     * what a blow takes is gone; broken, it comes back only after {@link #WARD_BROKEN_TICKS}.
+     */
+    private static void ward(ServerPlayer singer, ServerPlayer a, double f, int dur) {
+        long now = a.level().getGameTime();
+        UUID id = a.getUUID();
+        if (WARDED.contains(id) && !a.hasEffect(MobEffects.ABSORPTION)) { // it was broken
+            WARDED.remove(id);
+            WARD_BROKEN.put(id, now + WARD_BROKEN_TICKS);
+            ServerFx.of("x_burst", a.position().add(0, 1.0, 0)).a(0.8).b(1).color(0x9FD8FF).send((ServerLevel) a.level());
+            a.level().playSound(null, a.blockPosition(), SoundEvents.GLASS_BREAK, SoundSource.PLAYERS, 0.7F, 1.4F);
+        }
+        if (WARD_BROKEN.getOrDefault(id, 0L) > now) return;
+        int amp = Math.max(0, (int) Math.round(a.getMaxHealth() * WARD_SHARE * f / 4.0) - 1);
+        a.addEffect(new MobEffectInstance(MobEffects.ABSORPTION, dur, amp, true, true), singer);
+        WARDED.add(id);
+    }
 
     /** Maestro's crescendo: the song swells at once (once per song). */
     static boolean crescendo(Ctx c) {

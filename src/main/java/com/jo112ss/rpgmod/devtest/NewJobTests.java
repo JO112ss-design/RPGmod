@@ -52,6 +52,7 @@ final class NewJobTests {
             case "hybrids" -> hybrids(level, p, dummies);
             case "coins" -> coins(level, p);
             case "linger" -> linger(level, p);
+            case "ward" -> ward(level, p, dummies);
             case "songs_bard" -> songs(level, p, "bard", false, List.of("war_song", "rhapsody", "fanfare", "dirge"), 2, -1);
             case "songs_maestro" -> songs(level, p, "bard", true, List.of("war_song", "heal_song", "", "", "guard_song", "rhapsody"), 0, 5);
             case "songs_singer" -> songs(level, p, "spellsinger", false, List.of("ward_melody", "drain_tune", "flame_melody"), 0, -1);
@@ -270,7 +271,35 @@ final class NewJobTests {
         });
         SkillTasks.later(63, () -> log("songs {}: after 3s effects {} ward {} sonic boom cooldown left {}t (200 - 60 plain)", job,
                 p.getActiveEffects().stream().map(e -> e.getEffect().getRegisteredName()).toList(),
-                p.hasEffect(ModEffects.WARD_MELODY), d.cooldownEnd("sonic_boom") - level.getGameTime()));
+                String.format("%.1f", p.getAbsorptionAmount()), d.cooldownEnd("sonic_boom") - level.getGameTime()));
+    }
+
+    /** Ward melody: absorption on the health bar, not topped up when hit, gone for a while once broken. */
+    private static void ward(ServerLevel level, ServerPlayer p, List<? extends LivingEntity> dummies) {
+        become(p, "spellsinger");
+        if (dummies.isEmpty()) return;
+        LivingEntity mob = dummies.get(0);
+        var mode = p.gameMode();
+        boolean inv = p.getAbilities().invulnerable;
+        p.setGameMode(net.minecraft.world.level.GameType.SURVIVAL);
+        p.getAbilities().invulnerable = false;
+        SkillExecutor.execute(p, JobDefs.skill("ward_melody"), JobManager.powerMultiplier(p, JobDefs.skill("ward_melody")));
+        JobManager.data(p).setSongPoints(10);
+        SkillTasks.later(45, () -> {
+            float a0 = p.getAbsorptionAmount();
+            p.hurtServer(level, level.damageSources().mobAttack(mob), 3);
+            log("ward: absorption {} (max hp {}), after a small blow {} health {}", String.format("%.1f", a0), String.format("%.0f", p.getMaxHealth()),
+                    String.format("%.1f", p.getAbsorptionAmount()), String.format("%.1f", p.getHealth()));
+        });
+        SkillTasks.later(70, () -> log("ward: a second later {} (not topped up)", String.format("%.1f", p.getAbsorptionAmount())));
+        SkillTasks.later(72, () -> p.hurtServer(level, level.damageSources().mobAttack(mob), 30));
+        SkillTasks.later(100, () -> log("ward: broken -> absorption {} effect {}", String.format("%.1f", p.getAbsorptionAmount()), p.hasEffect(net.minecraft.world.effect.MobEffects.ABSORPTION)));
+        SkillTasks.later(190, () -> {
+            log("ward: later -> absorption {} effect {}", String.format("%.1f", p.getAbsorptionAmount()), p.hasEffect(net.minecraft.world.effect.MobEffects.ABSORPTION));
+            p.setGameMode(mode);
+            p.getAbilities().invulnerable = inv;
+            p.setHealth(p.getMaxHealth());
+        });
     }
 
     /** Spellsinger's afterglow: a song ending at 15 points leaves its effect on for 7.5s; a bard's does not. */

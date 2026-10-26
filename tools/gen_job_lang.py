@@ -116,7 +116,7 @@ SKILLS = {  # id: (ja, ja desc, en, en desc)
  'rhapsody': ('狂詩曲', '周りの味方の会心率が上がる（点数で+9〜18%）。', 'Rhapsody', 'Raises the crit chance of the party around (+9 to 18% by the points).'),
  'fanfare': ('凱歌', '周りの味方のスキルのクールダウンが早く回る。', 'Fanfare', 'The party around gets its skills back sooner.'),
  'dirge': ('葬送曲', '周りの敵から毎秒HPを吸い、その3割で周りの味方を回復する。', 'Dirge', 'Drains the enemies around every second; 30% of it heals the party.'),
- 'ward_melody': ('守護の旋律', '周りの味方に毎秒小さなバリア（最大HPの最大6%）を張る。', 'Ward Melody', 'Every second the party around gets a small barrier (up to 6% of max health).'),
+ 'ward_melody': ('守護の旋律', '周りの味方に衝撃吸収（最大HPの約6〜12%）を付ける。削られた分は演奏中も戻らず、割れると4秒間は付かない。', 'Ward Melody', 'Allies around get absorption (about 6-12% of max health). What a blow takes stays gone while the song plays; once broken it does not come back for 4s.'),
  'drain_tune': ('吸魔の調べ', '周りの味方の攻撃が当たるたびに、MPが少し回復する。', 'Drain Tune', 'Every hit the party around lands gives back a little mana.'),
  'duet': ('二重奏', '12秒間、次の歌を今の歌と同時に演奏できる。', 'Duet', 'For 12s the next song plays alongside the current one.'),
  'modulate': ('転調', '演奏中の歌を、時間と点数はそのまま次の歌に切り替える（点数+4）。', 'Modulate', 'Switch the song being played to the next one, same time and points (+4 points).'),
