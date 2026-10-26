@@ -594,18 +594,12 @@ public final class DungeonManager {
 
     @SubscribeEvent
     public static void onDeathLog(net.neoforged.neoforge.event.entity.living.LivingDeathEvent event) {
-        if (!testLog || !Dungeons.isDungeon(event.getEntity().level())) return;
+        if (!testLog || event.getEntity().level().isClientSide() || !Dungeons.isDungeon(event.getEntity().level())) return;
         var src = event.getSource();
         log("death of {} by {} (attacker {}, direct {}) health {}", event.getEntity().getType().getDescriptionId(), src.getMsgId(),
                 src.getEntity() != null ? src.getEntity().getType().getDescriptionId() : "-", src.getDirectEntity() != null ? src.getDirectEntity().getType().getDescriptionId() : "-",
                 event.getEntity().getHealth());
-        if (src.getMsgId().equals("generic") && genericTraces++ < 2) {
-            log("  entity {} dead {} removed {}", event.getEntity().getId(), event.getEntity().isDeadOrDying(), event.getEntity().isRemoved());
-            for (var st : Thread.currentThread().getStackTrace()) log("  at {}.{}:{}", st.getClassName(), st.getMethodName(), st.getLineNumber());
-        }
     }
-
-    private static int genericTraces;
 
     /** Chances of a key from an elite and from a fallen adventurer (killed by a player). */
     public static final double KEY_ELITE = 0.12, KEY_REVENANT = 0.04;

@@ -75,7 +75,9 @@ public final class DungeonBuilder {
                 boolean edge = x == x0 || x == x1 || z == z0 || z == z1;
                 int dx = x - ox, dz = z - r.zMid();
                 // floor: a checker of the two floor blocks, the accent in a cross through the middle
-                BlockState floor = (dx == 0 || dz == 0) ? t.floorAccent() : ((dx + dz) & 1) == 0 ? t.floor() : t.floor();
+                BlockState floor = (dx == 0 || dz == 0) ? t.floorAccent() : t.floor();
+                // glowing tiles in the floor: the ceiling is too high in the big rooms to light it
+                if (!edge && Math.floorMod(dx, 6) == 3 && Math.floorMod(dz - r.z0(), 6) == 3) floor = t.light();
                 set(level, x, y0, z, edge ? t.wall() : floor);
                 boolean lamp = !edge && Math.floorMod(dx, 4) == 0 && Math.floorMod(dz, 4) == 0;
                 set(level, x, y1, z, lamp ? t.light() : t.ceiling());

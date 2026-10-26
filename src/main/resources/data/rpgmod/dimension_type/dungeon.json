@@ -8,7 +8,7 @@
   "height": 256,
   "logical_height": 256,
   "infiniburn": "#minecraft:infiniburn_overworld",
-  "ambient_light": 0.15,
+  "ambient_light": 0.35,
   "monster_spawn_light_level": 0,
   "monster_spawn_block_light_limit": 0,
   "skybox": "none",
