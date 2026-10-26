@@ -256,7 +256,7 @@ public final class AutoTestClient {
             case "spear_wall", "requiem", "fortress", "night_hunt" -> new int[] {12};
             case "elemental_burst" -> new int[] {2, 12, 22};
             case "symphony", "grand_concerto" -> new int[] {25};
-            case "magic_slash", "ki_wave", "holy_lance", "vital_shot", "scattershot", "shock_chord" -> new int[] {3};
+            case "ki_wave", "holy_lance", "vital_shot", "scattershot", "shock_chord" -> new int[] {3};
             case "mob:downed" -> new int[] {50, 120, 200};
             case "mob:stairs" -> new int[] {60, 300, 550, 700};
             case "mob:exit" -> new int[] {60, 200, 340, 480};
