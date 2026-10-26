@@ -299,6 +299,7 @@ public final class AutoTestClient {
             case "high_jump" -> 75;
             case "fleet_barrage", "symphony", "grand_concerto" -> 110;
             case "bard:play" -> 300;
+            case "bard:play:war_song", "bard:play:lullaby", "bard:play:wind_song", "bard:play:discord" -> 300;
             case "cannon", "jolly_roger", "broadside" -> 60;
             case "spear_rain", "treasure_rain" -> 95;
             case "perf" -> 1800;
@@ -352,8 +353,10 @@ public final class AutoTestClient {
             showSkills.clear(); // group A, the rain skills made distinct: carpet bombing, ghost ships, stuck spears, focused arrows, coins to pick up
             showSkills.addAll(java.util.List.of("nj:pirate", "down:broadside", "nj:captain", "up:fleet_barrage", "nj:lancer", "spear_rain", "nj:shadow_hunter", "shadow_rain",
                     "nj:treasure_hunter", "treasure_rain", "nj:coins", "nj:restore"));
-            showSkills.clear(); // songs on the lute: bard, maestro (two at once), spellsinger; the new skills; the songs tab
-            showSkills.addAll(java.util.List.of("nj:restore", "nj:restore", "nj:restore", "nj:songs_bard", "sonic_boom", "nj:songs_maestro", "maestro_tab", "crescendo",
+            showSkills.clear(); // songs: each with its own rhythm (bars from the song's style) and tune
+            showSkills.addAll(java.util.List.of("nj:restore", "nj:restore", "nj:restore", "nj:bard", "bard:play:war_song", "bard:play:lullaby", "bard:play:wind_song", "bard:play:discord", "nj:restore"));
+            if (false) showSkills.clear(); // songs on the lute: bard, maestro (two at once), spellsinger; the new skills; the songs tab
+            if (false) showSkills.addAll(java.util.List.of("nj:restore", "nj:restore", "nj:restore", "nj:songs_bard", "sonic_boom", "nj:songs_maestro", "maestro_tab", "crescendo",
                     "nj:songs_singer", "arcane_note", "cheer", "nj:restore"));
             if (false) showSkills.clear(); // spellblade: sword magic by element and stage, the three magic slashes, meditation
             if (false) showSkills.addAll(java.util.List.of("nj:restore", "nj:restore", "nj:restore", "nj:restore", "nj:sb0", "swordtwice", "nj:sb0", "swordsneak", "nj:sblow", "sword:60", "nj:sb0", "swordwalk", "nj:sb0", "sword:8", "sword:18", "sword:60", "nj:sb1", "sword:18", "sword:60", "nj:sb2", "sword:18", "sword:60", "nj:sbquick", "sword:36", "nj:sbcrit", "sword:18", "nj:nocrit", "nj:sb1", "sword:60",
@@ -435,20 +438,24 @@ public final class AutoTestClient {
             }
             return;
         }
-        if (entry.equals("bard:play")) { // a song played on the note lane: on time, missing every seventh note
+        if (entry.startsWith("bard:play")) { // a song played on the note lane: on time, missing some notes ("bard:play:<song>")
             if (k == 0) {
                 mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK);
-                AutoTestServer.requestCast("war_song");
+                AutoTestServer.requestCast(entry.length() > 10 ? entry.substring(10) : "war_song");
             }
             var d = com.jo112ss.rpgmod.client.job.JobClient.data();
             if (k > 4 && com.jo112ss.rpgmod.client.job.BardClient.performing()) {
                 long since = mc.level.getGameTime() - d.songStart() - com.jo112ss.rpgmod.job.Bard.LEAD;
-                long note = since / com.jo112ss.rpgmod.job.Bard.BEAT;
-                if (since >= 0 && since % com.jo112ss.rpgmod.job.Bard.BEAT == 0 && note % 7 != 6) com.jo112ss.rpgmod.client.job.BardClient.click();
+                int[] hit = {-1};
+                com.jo112ss.rpgmod.job.SongChart.forEach(d.song(), d.songStart(), since, since, id -> {
+                    hit[0] = id;
+                    return 1;
+                });
+                if (since >= 0 && hit[0] >= 0 && hit[0] % 7 != 6) com.jo112ss.rpgmod.client.job.BardClient.click(); // on every note but some
             }
             if (k == 60 || k == 150 || k == 275) {
                 RpgMod.LOGGER.info("[AUTOTEST] bard lane k={} points={} song={} ends in {}", k, d.songPoints(), d.song(), d.songEnd() - mc.level.getGameTime());
-                shot(mc, String.format("b%02d_lane_%d", i, k));
+                shot(mc, String.format("b%02d_lane_%s_%d", i, d.song(), k));
             }
             return;
         }

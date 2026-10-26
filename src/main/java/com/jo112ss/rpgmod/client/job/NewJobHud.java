@@ -108,17 +108,23 @@ public final class NewJobHud {
         g.fill(hitX - (int) (BardClient.PERFECT_WINDOW * SPEED), y0, hitX + (int) (BardClient.PERFECT_WINDOW * SPEED), y0 + LANE_H, 0x40FFE070);
         g.fill(hitX, y0 - 2, hitX + 1, y0 + LANE_H + 2, 0xFFFFFFFF);
         // the notes coming in from the right
-        int from = (int) Math.floor((now - first) / Bard.BEAT) - 1;
-        for (int idx = Math.max(0, from); idx < from + LANE_W / (Bard.BEAT * SPEED) + 3; idx++) {
-            long t = first + (long) idx * Bard.BEAT;
-            if (t >= d.songEnd()) break;
-            if (BardClient.judged(idx)) continue;
+        // bar lines, faint, so the rhythm reads
+        double span = (double) LANE_W / SPEED;
+        for (int bar = (int) Math.floor((now - first) / com.jo112ss.rpgmod.job.SongChart.BAR); bar * (double) com.jo112ss.rpgmod.job.SongChart.BAR < now - first + span; bar++) {
+            long t = first + (long) bar * com.jo112ss.rpgmod.job.SongChart.BAR;
             int x = hitX + (int) Math.round((t - now) * SPEED);
-            if (x < x0 - 2 || x > x0 + LANE_W - 6) continue;
+            if (bar >= 0 && x > x0 && x < x0 + LANE_W) g.fill(x, y0 + 1, x + 1, y0 + LANE_H - 1, 0x30FFFFFF);
+        }
+        com.jo112ss.rpgmod.job.SongChart.forEach(d.song(), d.songStart(), now - first - 8, now - first + span, idx -> {
+            long t = first + com.jo112ss.rpgmod.job.SongChart.offset(d.song(), d.songStart(), idx);
+            if (t >= d.songEnd() || BardClient.judged(idx)) return 0;
+            int x = hitX + (int) Math.round((t - now) * SPEED);
+            if (x < x0 - 2 || x > x0 + LANE_W - 6) return 0;
             g.fill(x - 4, y0 + 3, x + 5, y0 + LANE_H - 3, color);
             g.fill(x - 3, y0 + 4, x + 4, y0 + LANE_H - 4, 0xFFFFFFFF);
             g.fill(x - 2, y0 + 5, x + 3, y0 + LANE_H - 5, color);
-        }
+            return 0;
+        });
         // song name, points, time left
         Component name = d.song2().isEmpty() ? Component.translatable("rpgmod.skill." + d.song())
                 : Component.translatable("rpgmod.skill." + d.song()).append(" ＋ ").append(Component.translatable("rpgmod.skill." + d.song2()));

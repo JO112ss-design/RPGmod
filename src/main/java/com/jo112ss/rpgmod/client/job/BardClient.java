@@ -2,13 +2,14 @@ package com.jo112ss.rpgmod.client.job;
 
 import com.jo112ss.rpgmod.job.Bard;
 import com.jo112ss.rpgmod.job.JobData;
+import com.jo112ss.rpgmod.job.SongChart;
 import com.jo112ss.rpgmod.network.JobActionPayload;
 import java.util.BitSet;
 import net.minecraft.client.Minecraft;
 
 /**
- * The bard's note lane on the client: notes come every {@link Bard#BEAT} ticks after the song's
- * start; a click within 2 ticks of a note is perfect, within 4 good, otherwise a miss (as is a note
+ * The bard's note lane on the client: notes come to the song's chart ({@link SongChart}) after the
+ * song's start; a click within 2 ticks of a note is perfect, within 4 good, otherwise a miss (as is a note
  * that goes by unplayed). Each judgement is sent to the server, which keeps the song's points.
  */
 public final class BardClient {
@@ -50,7 +51,7 @@ public final class BardClient {
         }
     }
 
-    /** The attack button while playing. */
+    /** The attack button while playing: judged against the nearest note of the song's chart. */
     public static void click() {
         Minecraft mc = Minecraft.getInstance();
         JobData d = JobClient.data();
@@ -58,12 +59,16 @@ public final class BardClient {
         double now = now(mc);
         long first = firstNote(d);
         if (now < first - GOOD_WINDOW) return; // the lead-in: nothing to play yet
-        int idx = (int) Math.round((now - first) / Bard.BEAT);
-        double diff = Math.abs(now - (first + (long) idx * Bard.BEAT));
+        int id = SongChart.nearest(d.song(), d.songStart(), now - first);
+        if (id < 0) {
+            judge(mc, Bard.MISS);
+            return;
+        }
+        double diff = Math.abs(now - (first + SongChart.offset(d.song(), d.songStart(), id)));
         int grade;
-        if (JUDGED.get(idx) || diff > GOOD_WINDOW) grade = Bard.MISS; // between notes, or a note played twice
+        if (JUDGED.get(id) || diff > GOOD_WINDOW) grade = Bard.MISS; // between notes, or a note played twice
         else grade = diff <= PERFECT_WINDOW ? Bard.PERFECT : Bard.GOOD;
-        if (!JUDGED.get(idx) && diff <= GOOD_WINDOW) JUDGED.set(idx);
+        if (!JUDGED.get(id) && diff <= GOOD_WINDOW) JUDGED.set(id);
         judge(mc, grade);
     }
 
@@ -82,12 +87,15 @@ public final class BardClient {
         sync(d);
         double now = now(mc);
         long first = firstNote(d);
-        int last = (int) Math.floor((now - GOOD_WINDOW - 0.5 - first) / Bard.BEAT);
-        for (int idx = Math.max(0, last - 2); idx <= last; idx++) {
-            long t = first + (long) idx * Bard.BEAT;
-            if (t >= d.songEnd() || JUDGED.get(idx)) continue;
-            JUDGED.set(idx);
-            judge(mc, Bard.MISS);
-        }
+        double gone = now - GOOD_WINDOW - 0.5 - first;
+        if (gone < 0) return;
+        SongChart.forEach(d.song(), d.songStart(), gone - 30, gone, id -> {
+            long t = first + SongChart.offset(d.song(), d.songStart(), id);
+            if (t < d.songEnd() && !JUDGED.get(id)) {
+                JUDGED.set(id);
+                judge(mc, Bard.MISS);
+            }
+            return 0;
+        });
     }
 }

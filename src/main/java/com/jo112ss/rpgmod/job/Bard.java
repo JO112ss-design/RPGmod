@@ -43,6 +43,8 @@ public final class Bard {
     private static final class Perf {
         Ctx c;
         int judged;
+        /** Notes played well so far (they walk through the song's tune). */
+        int notes;
         boolean encore;
         /** The maestro's second song playing along (null = none), and its own context (power). */
         String second;
@@ -192,25 +194,23 @@ public final class Bard {
         JobManager.sync(p);
     }
 
-    private static final float[] SCALE = {0.5F, 0.56F, 0.63F, 0.67F, 0.75F, 0.84F, 0.94F, 1.0F, 1.12F, 1.26F, 1.33F, 1.5F, 1.68F, 1.89F, 2.0F};
-
     /** A judged note from the client. */
     public static void judge(ServerPlayer p, int grade) {
         Perf perf = PERF.get(p.getUUID());
         JobData d = JobManager.data(p);
         if (perf == null || !performing(p)) return;
         long now = p.level().getGameTime();
-        // no more judgements than notes that have come so far (+1 for timing slack)
-        long due = (now - d.songStart() - LEAD) / BEAT + 2;
+        // no more judgements than notes that have come so far (with a little timing slack)
+        long due = SongChart.count(d.song(), d.songStart(), now - d.songStart() - LEAD + 6) + 1;
         if (perf.judged >= due) return;
         perf.judged++;
         int add = grade == PERFECT ? 2 : grade == GOOD ? 1 : -3;
         d.setSongPoints(d.songPoints() + add);
         JobManager.sync(p);
-        // the bard's note, on the scale while it goes well, a dull thud on a miss
-        int step = Math.floorMod(perf.judged * 2 + (perf.judged / 4), SCALE.length);
-        Holder<SoundEvent> s = grade == MISS ? SoundEvents.NOTE_BLOCK_BASS : grade == PERFECT ? SoundEvents.NOTE_BLOCK_HARP : SoundEvents.NOTE_BLOCK_GUITAR;
-        p.level().playSound(null, p.getX(), p.getY(), p.getZ(), s, SoundSource.PLAYERS, grade == MISS ? 0.6F : 0.9F, grade == MISS ? 0.6F : SCALE[step]);
+        // the bard's note: the song's own instrument and tune while it goes well, a dull thud on a miss
+        Holder<SoundEvent> s = grade == MISS ? SoundEvents.NOTE_BLOCK_BASS : SongChart.instrument(d.song());
+        p.level().playSound(null, p.getX(), p.getY(), p.getZ(), s, SoundSource.PLAYERS, grade == MISS ? 0.6F : grade == PERFECT ? 1.0F : 0.75F,
+                grade == MISS ? 0.6F : SongChart.pitch(d.song(), perf.notes++));
         if (grade != MISS) ServerFx.of("n_note", p.position().add(0, 1.6, 0)).follow(p).b(grade).color(songColor(d.song())).send((ServerLevel) p.level());
     }
 
