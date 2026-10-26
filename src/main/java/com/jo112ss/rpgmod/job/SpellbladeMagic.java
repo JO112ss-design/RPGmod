@@ -47,8 +47,6 @@ public final class SpellbladeMagic {
     /** Fireball burst radius and frost field radius per stage. */
     static final double[] FIRE_R = {1.6, 2.2, 3.0}, ICE_R = {3.5, 9.0, 11.7};
     static final double FIRE_RANGE = 28, ICE_RANGE = 16, THUNDER_RANGE = 24, FIREBALL_SPEED = 1.2;
-    /** A pause after each cast before the next charge can start. */
-    static final int RECAST = 8;
 
     /** Dev test: log every cast. */
     public static boolean testLog;
@@ -56,7 +54,6 @@ public final class SpellbladeMagic {
     private record Charge(long start, int element) {}
 
     private static final Map<UUID, Charge> CHARGING = new HashMap<>();
-    private static final Map<UUID, Long> NEXT = new HashMap<>();
 
     /** Can this player charge sword magic right now (spellblade, sword in hand)? */
     public static boolean canUse(ServerPlayer p) {
@@ -85,7 +82,6 @@ public final class SpellbladeMagic {
         if (!canUse(p) || CHARGING.containsKey(p.getUUID())) return;
         ServerLevel level = (ServerLevel) p.level();
         long now = level.getGameTime();
-        if (NEXT.getOrDefault(p.getUUID(), 0L) > now) return;
         int el = MoreJobSkills.element(p);
         if (JobManager.data(p).mana() < COST[el][0]) {
             p.sendSystemMessage(Component.translatable("rpgmod.job.no_mana").withStyle(ChatFormatting.RED), true);
@@ -142,7 +138,6 @@ public final class SpellbladeMagic {
         };
         if (!ok) return;
         d.setMana(d.mana() - COST[el][st - 1]);
-        NEXT.put(p.getUUID(), level.getGameTime() + RECAST);
         JobManager.markCombat(p);
         JobManager.sync(p);
         MoreJobHooks.endMeditation(p);
@@ -168,7 +163,6 @@ public final class SpellbladeMagic {
 
     public static void forget(UUID id) {
         CHARGING.remove(id);
-        NEXT.remove(id);
     }
 
     /** Sword magic never crits (its charge is what makes it strong). */

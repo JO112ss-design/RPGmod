@@ -80,14 +80,14 @@ public final class JobClient {
     private static void tickSwordCast(Minecraft mc) {
         boolean down = mc.player != null && mc.gui.screen() == null && mc.options.keyUse.isDown();
         if (!down) swordPressUsed = false;
-        boolean want = down && !swordPressUsed && swordCasting();
+        boolean want = down && (swordCharge >= 0 || !swordPressUsed) && swordCasting();
         if (want && swordCharge < 0) {
-            if (aimingAtUsable(mc)) {
-                swordPressUsed = true;
-                return;
-            }
-            swordCharge = 0;
+            swordPressUsed = true; // decided once per press
+            if (aimingAtUsable(mc) || mc.player.isShiftKeyDown()) return; // sneak: the right button as usual (off hand, blocks...)
             send(JobActionPayload.SWORD_CAST, 1, "");
+            int el = Math.floorMod(data().coatMode(), 3);
+            if (data().mana() < com.jo112ss.rpgmod.job.SpellbladeMagic.COST[el][0]) return; // the server says why
+            swordCharge = 0;
         } else if (want) {
             swordCharge++;
         } else if (swordCharge >= 0) {
@@ -141,7 +141,8 @@ public final class JobClient {
             event.setSwingHand(false);
             return;
         }
-        if (event.isUseItem() && event.getHand() == net.minecraft.world.InteractionHand.MAIN_HAND && swordCasting() && !aimingAtUsable(mc)) {
+        if (event.isUseItem() && event.getHand() == net.minecraft.world.InteractionHand.MAIN_HAND && swordCasting() && !aimingAtUsable(mc)
+                && !mc.player.isShiftKeyDown()) {
             event.setCanceled(true); // the right button charges sword magic (see tickSwordCast)
             event.setSwingHand(false);
             return;

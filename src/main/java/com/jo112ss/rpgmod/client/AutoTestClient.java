@@ -350,7 +350,7 @@ public final class AutoTestClient {
             showSkills.addAll(java.util.List.of("nj:pirate", "down:broadside", "nj:captain", "up:fleet_barrage", "nj:lancer", "spear_rain", "nj:shadow_hunter", "shadow_rain",
                     "nj:treasure_hunter", "treasure_rain", "nj:coins", "nj:restore"));
             showSkills.clear(); // spellblade: sword magic by element and stage, the three magic slashes, meditation
-            showSkills.addAll(java.util.List.of("nj:restore", "nj:restore", "nj:restore", "nj:restore", "nj:sblow", "sword:60", "nj:sb0", "swordwalk", "nj:sb0", "sword:8", "sword:18", "sword:60", "nj:sb1", "sword:18", "sword:60", "nj:sb2", "sword:18", "sword:60", "nj:sbquick", "sword:36", "nj:sbcrit", "sword:18", "nj:nocrit", "nj:sb1", "sword:60",
+            showSkills.addAll(java.util.List.of("nj:restore", "nj:restore", "nj:restore", "nj:restore", "nj:sb0", "swordtwice", "nj:sb0", "swordsneak", "nj:sblow", "sword:60", "nj:sb0", "swordwalk", "nj:sb0", "sword:8", "sword:18", "sword:60", "nj:sb1", "sword:18", "sword:60", "nj:sb2", "sword:18", "sword:60", "nj:sbquick", "sword:36", "nj:sbcrit", "sword:18", "nj:nocrit", "nj:sb1", "sword:60",
                     "nj:sb0", "magic_slash", "nj:sb1", "magic_slash", "nj:sb2", "magic_slash", "nj:meditate", "nj:restore"));
             if (false) showSkills.clear(); // counter lance: braced blows stored, the next hit carries them
             if (false) showSkills.addAll(java.util.List.of("nj:restore", "nj:restore", "nj:counter_lance", "nj:restore"));
@@ -461,6 +461,25 @@ public final class AutoTestClient {
                 case 80 -> com.jo112ss.rpgmod.client.job.JobKeys.LEFT_SPELL.setDown(false);
                 case 86 -> shot(mc, String.format("c%02d_left_released", i));
                 default -> { }
+            }
+            return;
+        }
+        if (entry.equals("swordtwice")) { // release and press again at once: both must cast
+            if (k == 0) mc.player.getInventory().setSelectedSlot(6);
+            if (k == 3) mc.options.keyUse.setDown(true);
+            if (k == 21) mc.options.keyUse.setDown(false);
+            if (k == 22) mc.options.keyUse.setDown(true);
+            if (k == 40) mc.options.keyUse.setDown(false);
+            return;
+        }
+        if (entry.equals("swordsneak")) { // sneak + right click: no sword magic
+            if (k == 0) mc.player.getInventory().setSelectedSlot(6);
+            if (k == 2) mc.options.keyShift.setDown(true);
+            if (k == 4) mc.options.keyUse.setDown(true);
+            if (k == 20) RpgMod.LOGGER.info("[AUTOTEST] sword sneak: charging {}", com.jo112ss.rpgmod.client.job.JobClient.swordCharge);
+            if (k == 26) {
+                mc.options.keyUse.setDown(false);
+                mc.options.keyShift.setDown(false);
             }
             return;
         }
