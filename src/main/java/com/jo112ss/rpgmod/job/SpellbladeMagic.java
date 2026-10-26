@@ -43,7 +43,7 @@ public final class SpellbladeMagic {
     /** Mana per element (fire, ice, thunder) and stage. */
     public static final int[][] COST = {{10, 24, 45}, {12, 28, 50}, {14, 32, 55}};
     /** Damage ratio (x attack + magic attack) per element and stage. */
-    static final double[][] POWER = {{1.2, 2.4, 4.2}, {0.7, 1.4, 2.4}, {2.0, 4.0, 7.0}};
+    static final double[][] POWER = {{0.84, 1.68, 2.94}, {0.49, 0.98, 1.68}, {1.4, 2.8, 4.9}};
     /** Fireball burst radius and frost field radius per stage. */
     static final double[] FIRE_R = {1.6, 2.2, 3.0}, ICE_R = {3.5, 5.0, 6.5};
     static final double FIRE_RANGE = 28, ICE_RANGE = 16, THUNDER_RANGE = 24, FIREBALL_SPEED = 1.2;
