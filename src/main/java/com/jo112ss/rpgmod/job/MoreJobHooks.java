@@ -59,6 +59,8 @@ public final class MoreJobHooks {
             double stored = victim instanceof Player ? 0 : MoreJobSkills.lanceStore(sp);
             if (stored > 0) {
                 amount += (float) stored;
+                RpgMod.LOGGER.info("[AUTOTEST] counter lance released {} on {} by {} (direct {})", String.format("%.1f", stored), victim.getName().getString(),
+                        src.getMsgId(), src.getDirectEntity() == null ? "-" : src.getDirectEntity().getName().getString());
                 MoreJobSkills.LANCE_STORE.remove(sp.getUUID());
                 sp.removeEffect(ModEffects.COUNTER_LANCE);
                 ServerFx.of("x_burst", victim.position().add(0, victim.getBbHeight() * 0.5, 0)).a(1.6).b(2).color(0xFFD27A).send(level);
