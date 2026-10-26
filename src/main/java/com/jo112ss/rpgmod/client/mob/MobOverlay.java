@@ -269,9 +269,12 @@ public final class MobOverlay {
             boolean seen = mc.level.clip(new ClipContext(eye, p.getEyePosition(partial), ClipContext.Block.VISUAL, ClipContext.Fluid.NONE, mc.player))
                     .getType() == HitResult.Type.MISS;
             float scale = (float) Math.max(0.6, Math.min(1.0, 1.1 - dist / 40));
-            allyPlate(g, mc.font, p, s[0], s[1], scale, seen ? 1f : 0.55f);
+            allyPlate(g, mc.font, p, s[0], s[1], scale, seen ? 0.9f : 0.4f);
         }
     }
+
+    /** Ally plates: a teal marker and blue bar (monsters have filled badges and green-red bars), kept small and light. */
+    private static final int ALLY_MARK = 0xFF5FE0C0, ALLY_BAR = 0xFF5FB8FF;
 
     private static void allyPlate(GuiGraphicsExtractor g, Font font, net.minecraft.world.entity.player.Player p, float x, float y, float scale, float fade) {
         String tag = p.getData(ModRegistries.JOB_TAG);
@@ -280,42 +283,42 @@ public final class MobOverlay {
         String lv = sep > 0 ? tag.substring(sep + 1) : "";
         var def = job.isEmpty() ? null : com.jo112ss.rpgmod.job.core.JobDefs.JOBS.get(job);
         int color = def != null ? 0xFF000000 | def.color() : 0xFF8A8F99;
-        Component label = def != null ? Component.translatable("rpgmod.job." + job).append(" Lv" + lv) : Component.translatable("rpgmod.ally.no_job");
+        Component label = def != null ? Component.translatable("rpgmod.job." + job).append(" " + lv) : Component.translatable("rpgmod.ally.no_job");
         boolean downed = com.jo112ss.rpgmod.compat.Downed.is(p);
         float hp = p.getHealth(), max = Math.max(1, p.getMaxHealth());
         float frac = Math.max(0, Math.min(1, hp / max));
 
-        int labelW = font.width(label) + 8;
-        Component down = Component.translatable("rpgmod.ally.downed");
-        int downW = downed ? font.width(down) + 6 : 0;
-        int w = Math.max(56, labelW + downW);
-
         g.pose().pushMatrix();
         g.pose().translate(x, y);
-        g.pose().scale(scale, scale);
-        int left = -w / 2, top = -22;
-        // badge: job colour, darker edge
-        g.fill(left, top, left + labelW, top + 11, a(Ui.alpha(color, 0xE0), fade));
-        g.fill(left, top + 11, left + labelW, top + 12, a(Ui.mix(color, 0xFF000000, 0.5f), fade));
-        g.text(font, label, left + 4, top + 2, a(0xFF101218, fade), false);
+        g.pose().scale(scale * 0.8f, scale * 0.8f);
+        int textW = font.width(label);
+        int w = Math.max(30, textW + 8);
+        int left = -w / 2, top = -16;
+        // the line: a dot in the job's colour, then job and level as plain shadowed text (no filled badge)
+        g.fill(left, top + 2, left + 4, top + 6, a(color, fade));
+        g.text(font, label, left + 7, top, a(0xFFE8F4F0, fade * 0.9f), true);
         if (downed) {
-            g.fill(left + labelW, top, left + labelW + downW, top + 12, a(0xE0C02828, fade));
-            g.text(font, down, left + labelW + 3, top + 2, a(0xFFFFFFFF, fade), false);
+            Component down = Component.translatable("rpgmod.ally.downed");
+            g.text(font, down, -font.width(down) / 2, top - 10, a(0xFFFF5A5A, fade), true);
+        } else {
+            // a small marker above: this is a friend
+            int my = top - 6;
+            for (int r = 0; r < 3; r++) g.fill(-3 + r, my + r, 4 - r, my + r + 1, a(ALLY_MARK, fade));
         }
-        // health bar
-        int by = top + 14, bh = 4;
-        g.fill(left - 1, by - 1, left + w + 1, by + bh + 1, a(0xD0000000, fade));
-        g.fill(left, by, left + w, by + bh, a(0xFF2A1416, fade));
-        int hc = downed ? 0xFF8A8F99 : frac > 0.5f ? Ui.mix(0xFFE8D35A, 0xFF5FD65A, (frac - 0.5f) * 2) : Ui.mix(0xFFE04848, 0xFFE8D35A, frac * 2);
-        int fw = Math.round(w * frac);
-        g.fill(left, by, left + fw, by + bh, a(hc, fade));
-        g.fill(left, by, left + fw, by + 1, a(Ui.mix(hc, 0xFFFFFFFF, 0.45f), fade));
-        String hpText = fmt(hp) + " / " + fmt(max);
-        g.pose().pushMatrix();
-        g.pose().translate(0, by + bh + 2);
-        g.pose().scale(0.75f, 0.75f);
-        g.text(font, hpText, -font.width(hpText) / 2, 0, a(0xFFDDE2EA, fade), true);
-        g.pose().popMatrix();
+        // a thin health bar in blue (monsters' bars are green to red)
+        int bw = Math.max(30, w - 8), bx = -bw / 2, by = top + 10, bh = 2;
+        g.fill(bx - 1, by - 1, bx + bw + 1, by + bh + 1, a(0x90000000, fade));
+        int hc = downed ? 0xFF8A8F99 : frac > 0.3f ? ALLY_BAR : 0xFFFF6A5A;
+        g.fill(bx, by, bx + Math.round(bw * frac), by + bh, a(hc, fade));
+        // numbers only when they are hurt badly (a healer's cue), small
+        if (!downed && frac < 0.5f) {
+            String hpText = fmt(hp) + " / " + fmt(max);
+            g.pose().pushMatrix();
+            g.pose().translate(0, by + bh + 2);
+            g.pose().scale(0.7f, 0.7f);
+            g.text(font, hpText, -font.width(hpText) / 2, 0, a(0xFFFFB0A8, fade), true);
+            g.pose().popMatrix();
+        }
         g.pose().popMatrix();
     }
 
