@@ -122,7 +122,7 @@ public final class Elite {
             if (mob.getRandom().nextDouble() >= MobConfig.eliteChance()) return;
             int n = lv >= 130 ? 3 : lv >= 60 ? 2 : 1;
             List<Trait> pool = new ArrayList<>(List.of(Trait.values()));
-            if (mob instanceof net.minecraft.world.entity.monster.Slime) pool.remove(Trait.SPLIT); // they split anyway
+            if (mob instanceof net.minecraft.world.entity.monster.cubemob.Slime) pool.remove(Trait.SPLIT); // they split anyway
             mask = 0;
             for (int i = 0; i < n && !pool.isEmpty(); i++) mask |= pool.remove(mob.getRandom().nextInt(pool.size())).bit();
         }
@@ -200,8 +200,8 @@ public final class Elite {
         int mask = traits(attacker);
         if (mask == 0 || event.getEntity() == attacker) return;
         LivingEntity v = event.getEntity();
-        if ((mask & Trait.VAMPIRE.bit()) != 0 && event.getNewDamage() > 0) {
-            attacker.heal(event.getNewDamage() * VAMPIRE_SHARE);
+        if ((mask & Trait.VAMPIRE.bit()) != 0 && event.getHealthDamage() > 0) {
+            attacker.heal(event.getHealthDamage() * VAMPIRE_SHARE);
             if (attacker.level() instanceof ServerLevel sl) ServerFx.of("elite_drain", v.position().add(0, v.getBbHeight() * 0.5, 0)).follow(attacker).send(sl);
         }
         if ((mask & Trait.BLAZE.bit()) != 0) v.igniteForSeconds(3);

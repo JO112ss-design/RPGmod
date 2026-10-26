@@ -280,7 +280,7 @@ final class NewJobTests {
         Vec3 face = net.minecraft.world.phys.Vec3.directionFromRotation(0, p.getYRot());
         Vec3 side = new Vec3(-face.z, 0, face.x);
         java.util.function.BiFunction<Integer, Double, net.minecraft.world.entity.monster.zombie.Zombie> spawn = (mask, off) -> {
-            var z = net.minecraft.world.entity.EntityType.ZOMBIE.create(level, net.minecraft.world.entity.EntitySpawnReason.COMMAND);
+            var z = net.minecraft.world.entity.EntityTypes.ZOMBIE.create(level, net.minecraft.world.entity.EntitySpawnReason.COMMAND);
             Vec3 at = p.position().add(face.scale(6)).add(side.scale(off));
             z.snapTo(at.x, at.y, at.z, p.getYRot() + 180, 0);
             z.setNoAi(true);
