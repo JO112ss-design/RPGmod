@@ -279,14 +279,16 @@ final class NewJobTests {
     private static void elites(ServerLevel level, ServerPlayer p) {
         Vec3 face = net.minecraft.world.phys.Vec3.directionFromRotation(0, p.getYRot());
         Vec3 side = new Vec3(-face.z, 0, face.x);
-        java.util.function.BiFunction<Integer, Double, net.minecraft.world.entity.monster.zombie.Zombie> spawn = (mask, off) -> {
-            var z = net.minecraft.world.entity.EntityTypes.ZOMBIE.create(level, net.minecraft.world.entity.EntitySpawnReason.COMMAND);
+        java.util.function.BiFunction<Integer, Double, net.minecraft.world.entity.Mob> spawn = (mask, off) -> {
+            var z = net.minecraft.world.entity.EntityTypes.HUSK.create(level, net.minecraft.world.entity.EntitySpawnReason.COMMAND); // husks do not burn in the sun
             Vec3 at = p.position().add(face.scale(6)).add(side.scale(off));
             z.snapTo(at.x, at.y, at.z, p.getYRot() + 180, 0);
             z.setNoAi(true);
             com.jo112ss.rpgmod.mob.Elite.forceNext = mask;
             level.addFreshEntity(z);
             com.jo112ss.rpgmod.mob.Elite.forceNext = null;
+            // no random gear: the same armour on all of them, so the hits compare
+            for (var slot : net.minecraft.world.entity.EquipmentSlot.values()) z.setItemSlot(slot, ItemStack.EMPTY);
             return z;
         };
         var plain = spawn.apply(0, -6.0);
@@ -302,11 +304,14 @@ final class NewJobTests {
             float a = plain.getHealth(), b = iron.getHealth();
             plain.hurtServer(level, p.damageSources().playerAttack(p), 100);
             iron.hurtServer(level, p.damageSources().playerAttack(p), 100);
-            float c = ward.getHealth();
-            ward.hurtServer(level, p.damageSources().source(com.jo112ss.rpgmod.job.SkillExecutor.magicKey(), p, p), 100);
-            log("elites: a 100 hit takes plain {} iron {} (−35%); 100 magic on the ward takes {} (half)", String.format("%.1f", a - plain.getHealth()),
-                    String.format("%.1f", b - iron.getHealth()), String.format("%.1f", c - ward.getHealth()));
+            log("elites: a 100 hit takes plain {} iron {} (-35%)", String.format("%.1f", a - plain.getHealth()), String.format("%.1f", b - iron.getHealth()));
             regen.hurtServer(level, p.damageSources().playerAttack(p), 300);
+        });
+        SkillTasks.later(50, () -> { // magic, once the hurt time is over
+            float c = ward.getHealth(), d = plain.getHealth();
+            ward.hurtServer(level, p.damageSources().source(com.jo112ss.rpgmod.job.SkillExecutor.magicKey(), p, p), 100);
+            plain.hurtServer(level, p.damageSources().source(com.jo112ss.rpgmod.job.SkillExecutor.magicKey(), p, p), 100);
+            log("elites: 100 magic takes plain {} ward {} (half)", String.format("%.1f", d - plain.getHealth()), String.format("%.1f", c - ward.getHealth()));
         });
         float[] afterHit = {0};
         SkillTasks.later(32, () -> afterHit[0] = regen.getHealth());
@@ -314,13 +319,13 @@ final class NewJobTests {
                 String.format("%.0f", regen.getMaxHealth())));
         // the guardian: a target, then (within 10s) the warning and the shields
         split.setTarget(p);
-        SkillTasks.later(240, () -> log("elites: guardian shields - absorption on plain {} iron {}", String.format("%.1f", plain.getAbsorptionAmount()),
-                String.format("%.1f", iron.getAbsorptionAmount())));
+        SkillTasks.later(240, () -> log("elites: guardian shields (8 blocks) - absorption on the ward (6 away) {} regen (3 away) {}, the plain one (12 away) {}",
+                String.format("%.1f", ward.getAbsorptionAmount()), String.format("%.1f", regen.getAbsorptionAmount()), String.format("%.1f", plain.getAbsorptionAmount())));
         SkillTasks.later(250, () -> {
-            int before = level.getEntitiesOfClass(net.minecraft.world.entity.monster.zombie.Zombie.class, p.getBoundingBox().inflate(20)).size();
+            int before = level.getEntitiesOfClass(net.minecraft.world.entity.monster.zombie.Husk.class, p.getBoundingBox().inflate(20)).size();
             split.hurtServer(level, p.damageSources().playerAttack(p), 1e6F);
             SkillTasks.later(2, () -> {
-                var halves = level.getEntitiesOfClass(net.minecraft.world.entity.monster.zombie.Zombie.class, p.getBoundingBox().inflate(20),
+                var halves = level.getEntitiesOfClass(net.minecraft.world.entity.monster.zombie.Husk.class, p.getBoundingBox().inflate(20),
                         z -> z.entityTags().contains(com.jo112ss.rpgmod.mob.Elite.HALF));
                 log("elites: split -> zombies {} before, halves {} (health {} / {}, elite {})", before, halves.size(),
                         halves.isEmpty() ? "-" : String.format("%.0f", halves.get(0).getHealth()), halves.isEmpty() ? "-" : String.format("%.0f", halves.get(0).getMaxHealth()),
@@ -328,7 +333,7 @@ final class NewJobTests {
             });
         });
         SkillTasks.later(300, () -> {
-            for (var z : level.getEntitiesOfClass(net.minecraft.world.entity.monster.zombie.Zombie.class, p.getBoundingBox().inflate(20))) z.discard();
+            for (var z : level.getEntitiesOfClass(net.minecraft.world.entity.monster.zombie.Husk.class, p.getBoundingBox().inflate(20))) z.discard();
         });
     }
 
