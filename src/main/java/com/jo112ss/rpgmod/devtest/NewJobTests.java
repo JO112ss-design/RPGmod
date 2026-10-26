@@ -356,9 +356,19 @@ final class NewJobTests {
         log("revenants: groups of {} - alone {}% pair {}% party of four {}%, priests alone {}, alone by job {}", n, sizes[1] * 100 / n, sizes[2] * 100 / n, sizes[4] * 100 / n,
                 lonePriest, alone);
         var mode = p.gameMode();
+        Vec3 home = p.position();
+        // a clean field away from the training dummies and what earlier scenes left behind
+        Vec3 field = home.add(120, 0, 0);
+        p.teleportTo(field.x, field.y, field.z);
+        for (var m : level.getEntitiesOfClass(net.minecraft.world.entity.Mob.class, p.getBoundingBox().inflate(40))) m.discard();
         p.setGameMode(net.minecraft.world.level.GameType.SURVIVAL);
-        p.getAbilities().invulnerable = true; // hunted, but takes nothing
+        p.getAbilities().invulnerable = false; // they only hunt players they can hurt...
         p.onUpdateAbilities();
+        SkillTasks.run(age -> { // ...so keep the tester standing
+            p.setHealth(p.getMaxHealth());
+            p.addEffect(new net.minecraft.world.effect.MobEffectInstance(net.minecraft.world.effect.MobEffects.RESISTANCE, 20, 4, false, false));
+            return age >= 300;
+        });
         Vec3 face = Vec3.directionFromRotation(0, p.getYRot());
         Vec3 side = new Vec3(-face.z, 0, face.x);
         Vec3 at = p.position().add(face.scale(12));
@@ -376,7 +386,7 @@ final class NewJobTests {
             r.readyIn(r.role() == Revenant.Role.PRIEST ? 40 : 12);
             r.setTarget(p);
         }
-        SkillTasks.later(2, () -> {
+        SkillTasks.later(15, () -> { // equipment attributes settle a tick after arming
             com.jo112ss.rpgmod.mob.MobLevels.apply(zombie, com.jo112ss.rpgmod.mob.MobLevels.level(party.get(0)));
             for (var slot : net.minecraft.world.entity.EquipmentSlot.values()) zombie.setItemSlot(slot, ItemStack.EMPTY);
             com.jo112ss.rpgmod.mob.MobGear.refreshWeapon(zombie);
@@ -394,11 +404,13 @@ final class NewJobTests {
             log("revenants: warrior hurt to {}", String.format("%.1f", w.getHealth()));
         });
         SkillTasks.later(150, () -> log("revenants: warrior health now {} / {}", String.format("%.1f", party.get(0).getHealth()), String.format("%.0f", party.get(0).getMaxHealth())));
-        // a cave spawn: a zombie about to appear under a roof below y 40 comes as revenants
-        SkillTasks.later(200, () -> {
-            net.minecraft.core.BlockPos base = net.minecraft.core.BlockPos.containing(p.position().subtract(face.scale(14)));
-            for (int dx = -1; dx <= 1; dx++) for (int dz = -1; dz <= 1; dz++)
+        // a cave spawn: a zombie about to appear under a roof below y 40 comes as revenants (the roof first, so the sky light updates)
+        net.minecraft.core.BlockPos base = net.minecraft.core.BlockPos.containing(field.subtract(face.scale(14)));
+        SkillTasks.later(140, () -> {
+            for (int dx = -3; dx <= 3; dx++) for (int dz = -3; dz <= 3; dz++)
                 level.setBlockAndUpdate(base.offset(dx, 4, dz), net.minecraft.world.level.block.Blocks.STONE.defaultBlockState());
+        });
+        SkillTasks.later(200, () -> {
             var z = net.minecraft.world.entity.EntityTypes.ZOMBIE.create(level, net.minecraft.world.entity.EntitySpawnReason.NATURAL);
             z.snapTo(base.getX() + 0.5, base.getY(), base.getZ() + 0.5, 0, 0);
             RevenantSpawns.forceChance = 1.0;
@@ -414,6 +426,9 @@ final class NewJobTests {
         SkillTasks.later(300, () -> {
             for (var r : level.getEntitiesOfClass(Revenant.class, p.getBoundingBox().inflate(60))) r.discard();
             zombie.discard();
+            for (int dx = -3; dx <= 3; dx++) for (int dz = -3; dz <= 3; dz++)
+                level.setBlockAndUpdate(base.offset(dx, 4, dz), net.minecraft.world.level.block.Blocks.AIR.defaultBlockState());
+            p.teleportTo(home.x, home.y, home.z);
             p.setGameMode(mode);
             p.getAbilities().invulnerable = false;
             p.onUpdateAbilities();
