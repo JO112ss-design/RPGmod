@@ -343,35 +343,43 @@ final class NewJobTests {
         });
     }
 
-    /** One dungeon in every style, a different room of each in the picture. */
+    /** One dungeon in every style, a different room of each in the picture (moving slot to slot, never leaving the dimension). */
     private static void dungeonGallery(ServerLevel level, ServerPlayer p) {
         var server = level.getServer();
         var dl = com.jo112ss.rpgmod.dungeon.Dungeons.level(server);
         if (dl == null) return;
         Vec3 home = p.position();
-        int n = 13;
+        int n = 13, step = 60;
+        com.jo112ss.rpgmod.dungeon.DungeonData.Run[] runs = new com.jo112ss.rpgmod.dungeon.DungeonData.Run[n];
         for (int i = 0; i < n; i++) {
             int k = i;
-            com.jo112ss.rpgmod.dungeon.DungeonData.Run[] run = {null};
-            SkillTasks.later(20 + k * 40, () -> {
+            SkillTasks.later(20 + k * step, () -> {
                 var d = com.jo112ss.rpgmod.dungeon.DungeonData.get(server);
-                run[0] = d.open(level.dimension(), new net.minecraft.core.BlockPos(900000 + k, 0, 0), com.jo112ss.rpgmod.dungeon.Dungeons.Kind.RUN, 0, 1000L + k * 7919L);
-                run[0].room = 99; // a picture, not a fight
+                runs[k] = d.open(level.dimension(), new net.minecraft.core.BlockPos(900000 + k, 0, 0), com.jo112ss.rpgmod.dungeon.Dungeons.Kind.RUN, 0, 1000L + k * 7919L);
+                runs[k].room = 99; // a picture, not a fight
                 com.jo112ss.rpgmod.dungeon.DungeonBuilder.forceTheme = k;
                 long t0 = System.nanoTime();
-                com.jo112ss.rpgmod.dungeon.DungeonBuilder.build(dl, run[0]);
+                var steps = com.jo112ss.rpgmod.dungeon.DungeonBuilder.steps(dl, runs[k]);
+                long worst = 0;
+                for (Runnable r : steps) {
+                    long s0 = System.nanoTime();
+                    r.run();
+                    worst = Math.max(worst, System.nanoTime() - s0);
+                }
                 com.jo112ss.rpgmod.dungeon.DungeonBuilder.forceTheme = null;
                 int roomIdx = 1 + k % 4;
-                var room = run[0].rooms().get(roomIdx);
-                log("gallery {}: built in {} ms - {} (showing room {})", k, (System.nanoTime() - t0) / 1_000_000, com.jo112ss.rpgmod.dungeon.DungeonBuilder.lastDescription, roomIdx);
-                p.teleportTo(dl, com.jo112ss.rpgmod.dungeon.Dungeons.originX(run[0].slot) + 0.5, com.jo112ss.rpgmod.dungeon.Dungeons.FLOOR, room.z0() + 1.5,
+                var room = runs[k].rooms().get(roomIdx);
+                log("gallery {}: built in {} ms (longest step {} ms) - {} (showing room {})", k, (System.nanoTime() - t0) / 1_000_000, worst / 1_000_000,
+                        com.jo112ss.rpgmod.dungeon.DungeonBuilder.lastDescription, roomIdx);
+                p.teleportTo(dl, com.jo112ss.rpgmod.dungeon.Dungeons.originX(runs[k].slot) + 0.5, com.jo112ss.rpgmod.dungeon.Dungeons.FLOOR, room.z0() + 1.5,
                         java.util.Set.of(), 0, 15, true);
-            });
-            SkillTasks.later(20 + k * 40 + 36, () -> {
-                p.teleportTo(level, home.x, home.y, home.z, java.util.Set.of(), p.getYRot(), 0, true);
-                com.jo112ss.rpgmod.dungeon.DungeonManager.abort(server, run[0]);
+                if (k > 0) com.jo112ss.rpgmod.dungeon.DungeonManager.abort(server, runs[k - 1]);
             });
         }
+        SkillTasks.later(20 + n * step, () -> {
+            p.teleportTo(level, home.x, home.y, home.z, java.util.Set.of(), p.getYRot(), 0, true);
+            com.jo112ss.rpgmod.dungeon.DungeonManager.abort(server, runs[n - 1]);
+        });
     }
 
     /** A whole dungeon run: offer a key, go in, fight the waves of each room, leave and come back, the boss, the way home; then a boss arena. */

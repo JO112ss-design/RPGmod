@@ -88,29 +88,58 @@ public final class DungeonBuilder {
     /** What a room ended up looking like (for the logs). */
     public static String lastDescription = "";
 
-    /** Builds the whole dungeon of {@code run}. */
+    /** Builds the whole dungeon of {@code run} at once. */
     public static void build(ServerLevel level, DungeonData.Run run) {
+        for (Runnable step : steps(level, run)) step.run();
+    }
+
+    /**
+     * The dungeon in steps, to spread over a few ticks: the entrance, the first room and the way
+     * between them first (so it can be entered at once), then one room and its corridor at a time.
+     */
+    public static List<Runnable> steps(ServerLevel level, DungeonData.Run run) {
         RandomSource rnd = RandomSource.create(run.seed);
         Theme t = THEMES.get(forceTheme != null ? Math.floorMod(forceTheme, THEMES.size()) : rnd.nextInt(THEMES.size()));
         int ox = Dungeons.originX(run.slot);
         List<Room> rooms = run.rooms();
+        Shape[] shapes = new Shape[rooms.size()];
+        Layout[] layouts = new Layout[rooms.size()];
         StringBuilder desc = new StringBuilder(t.name());
+        for (int i = 1; i < rooms.size(); i++) {
+            shapes[i] = Shape.values()[rnd.nextInt(Shape.values().length)];
+            layouts[i] = pickLayout(rooms.get(i), rnd);
+            desc.append(" | ").append(shapes[i]).append('/').append(layouts[i]);
+        }
+        lastDescription = desc.toString();
+        long seed = run.seed;
+        List<Runnable> out = new java.util.ArrayList<>();
         for (int i = 0; i < rooms.size(); i++) {
-            Room r = rooms.get(i);
-            Shape shape = i == 0 ? Shape.SQUARE : Shape.values()[rnd.nextInt(Shape.values().length)];
-            shell(level, ox, r, t, shape, rnd);
-            if (i == 0) {
-                entrance(level, ox, r, t);
+            int k = i;
+            Runnable room = () -> {
+                Room r = rooms.get(k);
+                RandomSource rr = RandomSource.create(seed * 31 + k);
+                if (k == 0) {
+                    shell(level, ox, r, t, Shape.SQUARE, rr);
+                    entrance(level, ox, r, t);
+                } else {
+                    shell(level, ox, r, t, shapes[k], rr);
+                    layout(level, ox, r, t, shapes[k], layouts[k], rr);
+                    dress(level, ox, r, t, shapes[k], rr);
+                }
+                // the corridor from the room before: it cuts the doorways through both walls
+                if (k > 0) corridor(level, ox, rooms.get(k - 1).z1() + 1, r.z0() - 1, t, k - 1 > 0);
+            };
+            if (k <= 1 && !out.isEmpty()) {
+                Runnable first = out.remove(0);
+                out.add(() -> {
+                    first.run();
+                    room.run();
+                });
             } else {
-                Layout lay = pickLayout(r, rnd);
-                layout(level, ox, r, t, shape, lay, rnd);
-                dress(level, ox, r, t, shape, rnd);
-                desc.append(" | ").append(shape).append('/').append(lay);
+                out.add(room);
             }
         }
-        // corridors last: they cut the doorways through the walls the rooms put up
-        for (int i = 0; i + 1 < rooms.size(); i++) corridor(level, ox, rooms.get(i).z1() + 1, rooms.get(i + 1).z0() - 1, t, i > 0);
-        lastDescription = desc.toString();
+        return out;
     }
 
     private static Layout pickLayout(Room r, RandomSource rnd) {

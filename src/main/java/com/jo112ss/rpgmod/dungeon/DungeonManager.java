@@ -119,7 +119,10 @@ public final class DungeonManager {
         int fixed = stack.is(ModRegistries.SEALED_KEY.get()) ? sealedLevel(stack) : 0;
         if (!p.getAbilities().instabuild) stack.shrink(1);
         Run r = d.open(level.dimension(), pos, kind, fixed, level.getRandom().nextLong());
-        DungeonBuilder.build(dl, r);
+        // the entrance and the first room now, the rest one room a tick (a whole dungeon at once would stall the server)
+        List<Runnable> build = DungeonBuilder.steps(dl, r);
+        build.remove(0).run();
+        for (int i = 0; i < build.size(); i++) com.jo112ss.rpgmod.job.SkillTasks.later(i + 1, build.get(i));
         AltarBlock.setActive(level, pos, true);
         Vec3 top = Vec3.atBottomCenterOf(pos.above());
         ServerFx.of("dg_open", top).color(color(kind)).send(level);
