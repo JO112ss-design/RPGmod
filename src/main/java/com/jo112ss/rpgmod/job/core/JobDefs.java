@@ -217,7 +217,7 @@ public final class JobDefs {
                         skill("grapple", SkillKind.ACTIVE, SkillEffect.DASH, 9, 11, 0.8, 20, 0, List.of(), 0, "鉤"),
                         skill("rum", SkillKind.ACTIVE, SkillEffect.BUFF, 30, 14, 0, 0, 8, List.of("minecraft:haste"), 1, "酒")),
                 List.of(
-                        skill("broadside", SkillKind.ULTIMATE, SkillEffect.WHIRL, 90, 42, 2.0, 7, 4, List.of(), 0, "斉"),
+                        skill("broadside", SkillKind.ULTIMATE, SkillEffect.WHIRL, 90, 42, 1.2, 7, 4, List.of(), 0, "斉"),
                         skill("jolly_roger", SkillKind.ULTIMATE, SkillEffect.BUFF, 90, 35, 0, 10, 15, List.of(), 0, "旗")),
                 List.of());
         // ---- Lancer: long reach and charges; hits from the far end of the spear count for more

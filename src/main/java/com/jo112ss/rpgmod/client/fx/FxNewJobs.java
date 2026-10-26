@@ -141,7 +141,7 @@ final class FxNewJobs {
         if (u.lengthSqr() < 1e-4) u = new Vec3(1, 0, 0);
         Vec3 w = new Vec3(-u.z, 0, u.x);
         int life = Math.max(20, (int) p.b());
-        int hull = p.colorOr(0x7FE8D8), sail = 0xD8FFF8;
+        int hull = p.colorOr(0x7FE8D8), sail = 0x9FE8E0;
         Vec3 fu = u, fw = w;
         FxAnims.run(life, age -> {
             float fade = Math.min(1, Math.min(age / 12F, (life - age) / 12F));
@@ -170,10 +170,10 @@ final class FxNewJobs {
                 segment(at.p(m[0], 1.8, 0), at.p(m[0], m[1], 0), 0.12F).color(0xFFFFFF, hull).alpha(a).life(2).spawn();
                 segment(at.p(m[0], m[1] - 0.6, -m[2]), at.p(m[0], m[1] - 0.6, m[2]), 0.08F).color(hull).alpha(a * 0.8F).life(2).spawn();
                 if (age % 2 == 0) {
-                    for (double y = 3.0; y <= m[1] - 0.8; y += 0.55) {
-                        for (double z = -m[2]; z <= m[2] + 0.01; z += 0.55) {
+                    for (double y = 3.0; y <= m[1] - 0.8; y += 0.7) {
+                        for (double z = -m[2]; z <= m[2] + 0.01; z += 0.7) {
                             double belly = 0.6 * (1 - (z / m[2]) * (z / m[2])) * Math.sin(Math.PI * (y - 3.0) / (m[1] - 3.8));
-                            Fx.p(S.GLOW, at.p(m[0] + belly, y, z)).fixed(Fx.across(fu)).color(sail).size(0.42F).alpha(0.22F * fade).life(3).spawn();
+                            Fx.p(S.GLOW, at.p(m[0] + belly, y, z)).fixed(Fx.across(fu)).color(sail).size(0.45F).alpha(0.07F * fade).life(3).spawn();
                         }
                     }
                 }
@@ -220,8 +220,9 @@ final class FxNewJobs {
         FxAnims.follow(e, life, age -> {
             float fade = Math.min(1, Math.min(age / 6F, (life - age) / 6F));
             Vec3 top = e.position().add(0, e.getBbHeight() + 5.5, 0);
-            Fx.p(S.CIRCLE_HEX, top).flat().size(1.6F).color(c).alpha(0.8F * fade).spin(0).angle(age * 0.08F).life(2).spawn();
-            Fx.p(S.GLOW, top).flat().alphaBlend().color(0x0A0A14).size(1.3F).alpha(0.85F * fade).life(2).spawn();
+            // turned to the camera (a flat one would vanish when seen from below)
+            Fx.p(S.CIRCLE_HEX, top).size(1.7F).color(c).alpha(0.8F * fade).angle(age * 0.08F).life(2).spawn();
+            Fx.p(S.GLOW, top).alphaBlend().color(0x0A0A14).size(1.4F).alpha(0.9F * fade).life(2).spawn();
             if (age % 2 == 0) {
                 double a = Fx.r(0, Math.PI * 2);
                 Vec3 edge = top.add(Math.cos(a) * 1.4, 0, Math.sin(a) * 1.4);
