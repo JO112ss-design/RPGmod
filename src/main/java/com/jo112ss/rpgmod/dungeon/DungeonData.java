@@ -36,6 +36,8 @@ public final class DungeonData extends SavedData {
         /** Index of the room being fought or next to fight (0 = the entrance hall, never fought). */
         public int room = 1;
         public boolean fighting;
+        /** The wave being fought (0-2), ticks until the next one comes, and the room's monster level and party size. */
+        public int wave, waveDelay, level, party = 1;
         public Set<UUID> mobs = new HashSet<>();
         /** Ticks left before everyone is sent back, once the last room is cleared (-1 = not yet). */
         public int closing = -1;
@@ -54,6 +56,10 @@ public final class DungeonData extends SavedData {
             t.putIntArray("altar", new int[] {altar.getX(), altar.getY(), altar.getZ()});
             t.putInt("room", room);
             t.putBoolean("fighting", fighting);
+            t.putInt("wave", wave);
+            t.putInt("waveDelay", waveDelay);
+            t.putInt("level", level);
+            t.putInt("party", party);
             ListTag l = new ListTag();
             for (UUID u : mobs) l.add(new IntArrayTag(UUIDUtil.uuidToIntArray(u)));
             t.put("mobs", l);
@@ -77,6 +83,10 @@ public final class DungeonData extends SavedData {
             if (a.length == 3) r.altar = new BlockPos(a[0], a[1], a[2]);
             r.room = t.getIntOr("room", 1);
             r.fighting = t.getBooleanOr("fighting", false);
+            r.wave = t.getIntOr("wave", 0);
+            r.waveDelay = t.getIntOr("waveDelay", 0);
+            r.level = t.getIntOr("level", 1);
+            r.party = t.getIntOr("party", 1);
             for (Tag e : t.getListOrEmpty("mobs")) if (e instanceof IntArrayTag ia && ia.getAsIntArray().length == 4) r.mobs.add(UUIDUtil.uuidFromIntArray(ia.getAsIntArray()));
             r.closing = t.getIntOr("closing", -1);
             r.seed = t.getLongOr("seed", 0);

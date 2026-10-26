@@ -41,21 +41,21 @@ public final class Dungeons {
         }
     }
 
-    public static final int CORRIDOR = 5;
+    public static final int CORRIDOR = 6;
 
-    /** The entrance hall, then the rooms. */
+    /** The entrance hall, then the rooms (each about three times the floor of the first version). */
     public static List<Room> layout(Kind kind) {
         List<Room> out = new ArrayList<>();
-        out.add(new Room(4, 0, 8, 6, false));
-        int z = 9 + CORRIDOR + 1;
+        out.add(new Room(6, 0, 12, 7, false));
+        int z = 13 + CORRIDOR + 1;
         if (kind == Kind.RUN) {
             for (int i = 0; i < 3; i++) {
-                out.add(new Room(7, z, z + 14, 7, false));
-                z += 15 + CORRIDOR + 1;
+                out.add(new Room(13, z, z + 26, 9, false));
+                z += 27 + CORRIDOR + 1;
             }
-            out.add(new Room(11, z, z + 22, 11, true));
+            out.add(new Room(20, z, z + 40, 14, true));
         } else {
-            out.add(new Room(14, z, z + 28, 14, true));
+            out.add(new Room(25, z, z + 50, 16, true));
         }
         return out;
     }
@@ -79,7 +79,7 @@ public final class Dungeons {
 
     public static AABB area(int slot) {
         int ox = originX(slot);
-        return new AABB(ox - 64, FLOOR - 16, -16, ox + 64, FLOOR + 48, 260);
+        return new AABB(ox - 64, FLOOR - 16, -16, ox + 64, FLOOR + 48, 300);
     }
 
     /** Interior of a room (where standing makes it start). */
@@ -89,7 +89,7 @@ public final class Dungeons {
     }
 
     public static Vec3 entry(int slot) {
-        return new Vec3(originX(slot) + 0.5, FLOOR, 6.5);
+        return new Vec3(originX(slot) + 0.5, FLOOR, 8.5);
     }
 
     /** The exit circle in the entrance hall: stand on it to go back. */

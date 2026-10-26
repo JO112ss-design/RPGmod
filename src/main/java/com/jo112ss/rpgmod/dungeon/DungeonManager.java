@@ -247,12 +247,27 @@ public final class DungeonManager {
             }
             return;
         }
+        if (r.waveDelay > 0) { // a breather between waves
+            if (--r.waveDelay == 0) spawnWave(dl, d, r, room, Dungeons.players(dl, r.slot));
+            return;
+        }
+        if (t % 20 == 0) retarget(dl, r);
         if (t % 10 != 0) return;
         BlockPos c = new BlockPos(Dungeons.originX(r.slot), Dungeons.FLOOR, room.zMid());
         if (!dl.areEntitiesLoaded(ChunkPos.pack(c))) return; // nobody near: the monsters are asleep, not gone
         for (UUID u : r.mobs) {
             Entity e = dl.getEntity(u);
             if (e instanceof LivingEntity le && le.isAlive()) return;
+        }
+        if (r.wave + 1 < waves(r)) {
+            r.wave++;
+            r.waveDelay = waveDelayTicks;
+            r.mobs.clear();
+            d.setDirty();
+            for (ServerPlayer p : Dungeons.players(dl, r.slot)) p.sendSystemMessage(Component.translatable("rpgmod.dungeon.wave_cleared", r.wave, waves(r)), true);
+            dl.playSound(null, c, SoundEvents.RAID_HORN.value(), SoundSource.HOSTILE, 0.6F, 1.4F);
+            log("room {} wave {} beaten", r.room, r.wave);
+            return;
         }
         clearRoom(dl, d, r, room);
     }
@@ -274,14 +289,36 @@ public final class DungeonManager {
     private static final List<EntityType<? extends Mob>> STRONG = List.of(EntityTypes.ZOMBIE, EntityTypes.SKELETON, EntityTypes.HUSK, EntityTypes.STRAY, EntityTypes.SPIDER,
             EntityTypes.VINDICATOR);
 
+    public static final int WAVES = 3;
+    /** Ticks between waves (dev tests shorten it). */
+    public static int waveDelayTicks = 60;
+
+    /** How many waves a room has: three, or the boss alone in an arena opened by a boss offering. */
+    static int waves(Run r) {
+        return r.kind.boss() ? 1 : WAVES;
+    }
+
     private static void startRoom(ServerLevel dl, DungeonData d, Run r, Room room, List<ServerPlayer> inside) {
-        int n = Math.max(1, inside.size());
-        int lv = levelFor(r, inside);
-        RandomSource rnd = dl.getRandom();
+        r.party = Math.max(1, inside.size());
+        r.level = levelFor(r, inside);
         r.mobs.clear();
         r.fighting = true;
+        r.wave = 0;
+        r.waveDelay = 0;
+        Component title = room.last() ? Component.translatable("rpgmod.dungeon.room_last") : Component.translatable("rpgmod.dungeon.room", r.room, r.rooms().size() - 1);
+        for (ServerPlayer p : inside) p.sendSystemMessage(title, true);
+        dl.playSound(null, new BlockPos(Dungeons.originX(r.slot), Dungeons.FLOOR, room.zMid()), SoundEvents.WITHER_SPAWN, SoundSource.HOSTILE, 0.4F, room.last() ? 0.7F : 1.3F);
+        spawnWave(dl, d, r, room, inside);
+    }
+
+    /** The monsters of the current wave: the first two are the rank and file, the third brings the strong one (or the boss). */
+    private static void spawnWave(ServerLevel dl, DungeonData d, Run r, Room room, List<ServerPlayer> inside) {
+        int n = r.party, lv = r.level;
+        RandomSource rnd = dl.getRandom();
+        boolean finalWave = r.wave + 1 >= waves(r);
         List<Spawn> plan = new ArrayList<>();
-        if (room.last()) {
+        int traits = lv >= 100 ? 3 : 2;
+        if (room.last() && finalWave) {
             boolean boss = r.kind.boss() || (forceBoss != null ? forceBoss : rnd.nextDouble() < BOSS_CHANCE);
             if (boss) {
                 Kind k = r.kind.boss() ? r.kind : rnd.nextBoolean() ? Kind.KING_SLIME : Kind.GOLEM;
@@ -290,29 +327,55 @@ public final class DungeonManager {
                 int count = 2 + (n >= 3 ? 1 : 0);
                 for (int i = 0; i < count; i++) plan.add(strong(rnd, 3));
             }
-        } else {
-            int traits = lv >= 100 ? 3 : 2;
+        } else if (finalWave) {
             if (r.room >= 2 && rnd.nextFloat() < 0.35F) { // a party of fallen adventurers, one of them strong
                 Revenant.Role[] party = {Revenant.Role.WARRIOR, Revenant.Role.MAGE, rnd.nextBoolean() ? Revenant.Role.ARCHER : Revenant.Role.THIEF, Revenant.Role.PRIEST};
                 for (int i = 0; i < party.length; i++) plan.add(new Spawn(ModRegistries.REVENANT.get(), party[i], i == 0 ? mask(rnd, traits) : 0, false));
-                for (int i = 1; i < n; i++) plan.add(new Spawn(ADDS.get(rnd.nextInt(ADDS.size())), null, 0, false));
+                adds(plan, rnd, n);
             } else {
                 plan.add(strong(rnd, traits));
-                for (int i = 0; i < 2 + n; i++) plan.add(new Spawn(ADDS.get(rnd.nextInt(ADDS.size())), null, 0, false));
+                adds(plan, rnd, 2 + n);
+            }
+        } else if (room.last() && r.wave == 1) {
+            plan.add(strong(rnd, traits)); // the last room's second wave already has a strong one
+            adds(plan, rnd, 3 + n);
+        } else {
+            adds(plan, rnd, (room.last() ? 4 : 3) + n);
+            if (r.wave == 1 && r.room >= 2 && rnd.nextBoolean()) { // a pair of fallen adventurers joins
+                Revenant.Role[] roles = {Revenant.Role.WARRIOR, Revenant.Role.MAGE, Revenant.Role.ARCHER, Revenant.Role.THIEF};
+                plan.add(new Spawn(ModRegistries.REVENANT.get(), roles[rnd.nextInt(roles.length)], 0, false));
+                plan.add(new Spawn(ModRegistries.REVENANT.get(), Revenant.Role.PRIEST, 0, false));
             }
         }
-        for (int i = 0; i < plan.size(); i++) {
-            Spawn s = plan.get(i);
+        for (Spawn s : plan) {
             BlockPos at = s.boss() ? new BlockPos(Dungeons.originX(r.slot), Dungeons.FLOOR, room.zMid() + room.half() / 2)
-                    : DungeonBuilder.spawnSpot(r.slot, room, rnd, i, plan.size());
+                    : DungeonBuilder.spawnSpot(dl, r.slot, room, rnd, inside);
             Mob m = spawn(dl, s, at, lv, n, inside);
             if (m != null) r.mobs.add(m.getUUID());
         }
         d.setDirty();
-        Component title = room.last() ? Component.translatable("rpgmod.dungeon.room_last") : Component.translatable("rpgmod.dungeon.room", r.room, r.rooms().size() - 1);
-        for (ServerPlayer p : inside) p.sendSystemMessage(title, true);
-        dl.playSound(null, new BlockPos(Dungeons.originX(r.slot), Dungeons.FLOOR, room.zMid()), SoundEvents.WITHER_SPAWN, SoundSource.HOSTILE, 0.4F, room.last() ? 0.7F : 1.3F);
-        log("room {} starts: {} monsters at Lv{} for {} players (last {})", r.room, r.mobs.size(), lv, n, room.last());
+        Component wave = Component.translatable("rpgmod.dungeon.wave", r.wave + 1, waves(r));
+        if (waves(r) > 1) for (ServerPlayer p : inside) p.sendSystemMessage(wave, true);
+        log("room {} wave {}: {} monsters at Lv{} for {} players (last {})", r.room, r.wave + 1, r.mobs.size(), lv, n, room.last());
+    }
+
+    private static void adds(List<Spawn> plan, RandomSource rnd, int count) {
+        for (int i = 0; i < count; i++) plan.add(new Spawn(ADDS.get(rnd.nextInt(ADDS.size())), null, 0, false));
+    }
+
+    /** Monsters keep after the players: spiders in a lit room would otherwise leave them alone, and any that lost track pick the nearest again. */
+    private static void retarget(ServerLevel dl, Run r) {
+        var inside = Dungeons.players(dl, r.slot);
+        inside.removeIf(p -> p.isCreative() || com.jo112ss.rpgmod.compat.Downed.is(p));
+        if (inside.isEmpty()) return;
+        for (UUID u : r.mobs) {
+            if (!(dl.getEntity(u) instanceof Mob m) || !m.isAlive()) continue;
+            LivingEntity t = m.getTarget();
+            if (t != null && t.isAlive() && !(t instanceof Player pl && (pl.isCreative() || pl.isSpectator()))) continue;
+            ServerPlayer near = null;
+            for (ServerPlayer p : inside) if (near == null || p.distanceToSqr(m) < near.distanceToSqr(m)) near = p;
+            m.setTarget(near);
+        }
     }
 
     /** One monster to spawn: its type, a job for revenants, elite traits (0 = none), a boss? */

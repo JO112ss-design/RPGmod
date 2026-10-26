@@ -168,7 +168,7 @@ public final class AutoTestClient {
             case "nj:elites" -> new int[] {10, 34, 225};
             case "nj:revenants" -> new int[] {60, 75, 85, 95, 105, 120, 245};
             case "nj:gear" -> new int[] {60, 85};
-            case "nj:dungeon" -> new int[] {16, 32, 50, 62, 100, 190, 235, 250, 300, 420, 445};
+            case "nj:dungeon" -> new int[] {45, 70, 90, 300, 500, 700, 900};
             case "sealing_chord", "holy_lance" -> new int[] {3, 8};
             case "earthshatter" -> new int[] {4, 10};
             case "earthshatter_", "frost_nova", "flame_burst", "berserk", "holy_guard", "lay_on_hands", "heal", "arcane_shield", "shadow_dance" -> new int[] {6};
@@ -307,7 +307,7 @@ public final class AutoTestClient {
             case "nj:elites" -> 320;
             case "nj:revenants" -> 360;
             case "nj:gear" -> 140;
-            case "nj:dungeon" -> 580;
+            case "nj:dungeon" -> 1100;
             case "nj:linger" -> 140;
             case "nj:ward" -> 210;
             case "nj:wardlinger" -> 80;

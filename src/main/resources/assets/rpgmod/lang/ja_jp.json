@@ -1224,5 +1224,7 @@
   "rpgmod.dungeon.room_last": "§4最終部屋",
   "rpgmod.dungeon.room_cleared": "§a部屋を制圧した！先へ進める",
   "rpgmod.dungeon.cleared": "§6ダンジョンクリア！§r %s 秒後に祭壇へ帰還します。宝箱をお忘れなく",
-  "rpgmod.dungeon.altar_locked": "ダンジョンが開いている間は祭壇を壊せません"
+  "rpgmod.dungeon.altar_locked": "ダンジョンが開いている間は祭壇を壊せません",
+  "rpgmod.dungeon.wave": "§cウェーブ %s/%s",
+  "rpgmod.dungeon.wave_cleared": "§eウェーブ %s/%s 突破！次が来る…"
 }

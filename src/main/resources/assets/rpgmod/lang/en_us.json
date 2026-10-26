@@ -1224,5 +1224,7 @@
   "rpgmod.dungeon.room_last": "§4The last room",
   "rpgmod.dungeon.room_cleared": "§aRoom cleared! The way on is open",
   "rpgmod.dungeon.cleared": "§6Dungeon cleared!§r Back to the altar in %s s - mind the chest",
-  "rpgmod.dungeon.altar_locked": "The altar cannot be broken while its dungeon is open"
+  "rpgmod.dungeon.altar_locked": "The altar cannot be broken while its dungeon is open",
+  "rpgmod.dungeon.wave": "§cWave %s/%s",
+  "rpgmod.dungeon.wave_cleared": "§eWave %s/%s beaten! More are coming..."
 }

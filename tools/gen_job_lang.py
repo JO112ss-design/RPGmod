@@ -406,6 +406,8 @@ UI = {  # key: (ja, en)
  'rpgmod.dungeon.returning': ('帰還まで %s 秒', 'Returning in %s s'),
  'rpgmod.dungeon.room': ('§c第%s部屋（全%s部屋）', '§cRoom %s of %s'),
  'rpgmod.dungeon.room_last': ('§4最終部屋', '§4The last room'),
+ 'rpgmod.dungeon.wave': ('§cウェーブ %s/%s', '§cWave %s/%s'),
+ 'rpgmod.dungeon.wave_cleared': ('§eウェーブ %s/%s 突破！次が来る…', '§eWave %s/%s beaten! More are coming...'),
  'rpgmod.dungeon.room_cleared': ('§a部屋を制圧した！先へ進める', '§aRoom cleared! The way on is open'),
  'rpgmod.dungeon.cleared': ('§6ダンジョンクリア！§r %s 秒後に祭壇へ帰還します。宝箱をお忘れなく', '§6Dungeon cleared!§r Back to the altar in %s s - mind the chest'),
  'rpgmod.dungeon.altar_locked': ('ダンジョンが開いている間は祭壇を壊せません', 'The altar cannot be broken while its dungeon is open'),

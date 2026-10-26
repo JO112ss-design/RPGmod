@@ -342,10 +342,11 @@ final class NewJobTests {
         });
     }
 
-    /** A whole dungeon run: offer a key, go in, clear the rooms, leave and come back, the boss, the way home. */
+    /** A whole dungeon run: offer a key, go in, fight the waves of each room, leave and come back, the boss, the way home; then a boss arena. */
     private static void dungeon(ServerLevel level, ServerPlayer p) {
         com.jo112ss.rpgmod.dungeon.DungeonManager.testLog = true;
         com.jo112ss.rpgmod.dungeon.DungeonManager.forceBoss = true;
+        com.jo112ss.rpgmod.dungeon.DungeonManager.waveDelayTicks = 10;
         var server = level.getServer();
         var dl = com.jo112ss.rpgmod.dungeon.Dungeons.level(server);
         log("dungeon: dimension {}", dl != null ? dl.dimension().identifier() : "MISSING");
@@ -358,10 +359,11 @@ final class NewJobTests {
         p.setGameMode(net.minecraft.world.level.GameType.SURVIVAL);
         p.getAbilities().invulnerable = false;
         p.onUpdateAbilities();
+        boolean[] done = {false};
         SkillTasks.run(age -> {
             p.setHealth(p.getMaxHealth());
             p.addEffect(new net.minecraft.world.effect.MobEffectInstance(net.minecraft.world.effect.MobEffects.RESISTANCE, 20, 4, false, false));
-            return age >= 560;
+            return done[0] || age > 2400;
         });
         int[] slot = {-1};
         java.util.function.Supplier<com.jo112ss.rpgmod.dungeon.DungeonData.Run> run = () -> com.jo112ss.rpgmod.dungeon.DungeonData.get(server).bySlot(slot[0]);
@@ -370,100 +372,124 @@ final class NewJobTests {
             int ox = com.jo112ss.rpgmod.dungeon.Dungeons.originX(slot[0]);
             p.teleportTo(dl, ox + 0.5, com.jo112ss.rpgmod.dungeon.Dungeons.FLOOR, room.z0() + 2.5, java.util.Set.of(), 0, 10, true);
         };
-        Runnable killAll = () -> {
+        // the steps run one after the other; each says when it is done
+        List<java.util.function.IntPredicate> steps = new java.util.ArrayList<>();
+        java.util.function.IntFunction<java.util.function.IntPredicate> wait = n -> a -> a >= n;
+        java.util.function.Function<Runnable, java.util.function.IntPredicate> act = r -> a -> {
+            r.run();
+            return true;
+        };
+        // fight a room through: strike whatever is alive every few ticks until the room is won
+        java.util.function.IntFunction<java.util.function.IntPredicate> fight = i -> a -> {
             var r = run.get();
-            if (r == null) return;
-            int n = 0;
-            for (var u : List.copyOf(r.mobs)) {
-                if (dl.getEntity(u) instanceof LivingEntity e && e.isAlive()) {
-                    log("dungeon: monster {} Lv{} health {} / {} elite {}", e.getType().getDescriptionId(), com.jo112ss.rpgmod.mob.MobLevels.level(e),
-                            String.format("%.0f", e.getHealth()), String.format("%.0f", e.getMaxHealth()), com.jo112ss.rpgmod.mob.Elite.traits(e));
+            if (r == null || r.room > i || r.closing >= 0) {
+                log("dungeon: room {} won after {} ticks", i, a);
+                return true;
+            }
+            if (a % 5 == 0) {
+                for (var u : List.copyOf(r.mobs)) {
+                    if (!(dl.getEntity(u) instanceof LivingEntity e) || !e.isAlive()) continue;
+                    if (a % 40 == 0) log("dungeon: wave {} monster {} Lv{} health {} / {} elite {} target {}", r.wave + 1, e.getType().getDescriptionId(),
+                            com.jo112ss.rpgmod.mob.MobLevels.level(e), String.format("%.0f", e.getHealth()), String.format("%.0f", e.getMaxHealth()),
+                            com.jo112ss.rpgmod.mob.Elite.traits(e), e instanceof net.minecraft.world.entity.Mob m && m.getTarget() != null ? "player" : "-");
+                    if (a % 40 == 0) continue; // the log round lets the picture show them first
                     e.hurtServer(dl, p.damageSources().playerAttack(p), 1e7F);
-                    n++;
+                    if (e.isAlive() && e instanceof com.jo112ss.rpgmod.mob.boss.BloodMoonBoss) e.discard(); // bosses cap what they take
                 }
             }
-            log("dungeon: struck {} monsters", n);
+            if (a > 900) {
+                log("dungeon: room {} NOT won", i);
+                return true;
+            }
+            return false;
         };
-        Runnable finishOff = () -> { // bosses cap the damage they take: end them for the test
-            var r = run.get();
-            if (r == null) return;
-            for (var u : List.copyOf(r.mobs)) if (dl.getEntity(u) instanceof LivingEntity e && e.isAlive()) e.discard();
-        };
-        SkillTasks.later(10, () -> {
+        steps.add(wait.apply(10));
+        steps.add(act.apply(() -> {
             ItemStack key = new ItemStack(com.jo112ss.rpgmod.registry.ModRegistries.DUNGEON_KEY.get(), 2);
             var res = com.jo112ss.rpgmod.dungeon.DungeonManager.offer(level, altar, p, key);
             var r = com.jo112ss.rpgmod.dungeon.DungeonData.get(server).byAltar(level.dimension(), altar);
             slot[0] = r != null ? r.slot : -1;
             log("dungeon: offered a key -> {} ({} keys left), slot {}, altar lit {}", res, key.getCount(), slot[0],
                     level.getBlockState(altar).getValue(com.jo112ss.rpgmod.dungeon.AltarBlock.ACTIVE));
-        });
-        SkillTasks.later(20, () -> {
+        }));
+        steps.add(wait.apply(10));
+        steps.add(act.apply(() -> {
             com.jo112ss.rpgmod.dungeon.DungeonManager.enter(level, altar, p);
             log("dungeon: entered - in {} at {}", p.level().dimension().identifier(), p.blockPosition());
-        });
-        SkillTasks.later(40, () -> into.accept(1));
-        SkillTasks.later(70, killAll);
-        SkillTasks.later(90, () -> {
-            var r = run.get();
-            log("dungeon: after room 1 - next room {} fighting {}", r.room, r.fighting);
-            into.accept(2);
-        });
-        SkillTasks.later(110, killAll);
+        }));
+        steps.add(wait.apply(20));
+        steps.add(act.apply(() -> into.accept(1)));
+        steps.add(wait.apply(30)); // the first wave in the picture
+        steps.add(fight.apply(1));
+        steps.add(act.apply(() -> into.accept(2)));
+        steps.add(fight.apply(2));
         // leave by the exit circle, then come back in (joining a run in progress)
-        SkillTasks.later(130, () -> p.teleportTo(dl, com.jo112ss.rpgmod.dungeon.Dungeons.originX(slot[0]) + 0.5, com.jo112ss.rpgmod.dungeon.Dungeons.FLOOR, 1.5,
-                java.util.Set.of(), 180, 0, true));
-        SkillTasks.later(170, () -> log("dungeon: after the exit circle - in {} at {} (altar {})", p.level().dimension().identifier(), p.blockPosition(), altar));
-        SkillTasks.later(175, () -> com.jo112ss.rpgmod.dungeon.DungeonManager.enter(level, altar, p));
-        SkillTasks.later(185, () -> {
+        steps.add(act.apply(() -> p.teleportTo(dl, com.jo112ss.rpgmod.dungeon.Dungeons.originX(slot[0]) + 0.5, com.jo112ss.rpgmod.dungeon.Dungeons.FLOOR, 1.5,
+                java.util.Set.of(), 180, 0, true)));
+        steps.add(wait.apply(40));
+        steps.add(act.apply(() -> log("dungeon: after the exit circle - in {} at {} (altar {})", p.level().dimension().identifier(), p.blockPosition(), altar)));
+        steps.add(act.apply(() -> com.jo112ss.rpgmod.dungeon.DungeonManager.enter(level, altar, p)));
+        steps.add(wait.apply(10));
+        steps.add(act.apply(() -> {
             log("dungeon: back in - next room {}", run.get().room);
             into.accept(3);
-        });
-        SkillTasks.later(200, killAll);
-        SkillTasks.later(220, () -> into.accept(4));
-        SkillTasks.later(260, killAll);
-        SkillTasks.later(266, finishOff);
-        SkillTasks.later(285, () -> {
+        }));
+        steps.add(fight.apply(3));
+        steps.add(act.apply(() -> into.accept(4)));
+        steps.add(wait.apply(30)); // the last room in the picture
+        steps.add(fight.apply(4));
+        steps.add(act.apply(() -> {
             var r = run.get();
             log("dungeon: after the last room - closing {}", r != null ? r.closing : "gone");
             if (r != null && r.closing > 40) r.closing = 40; // the test does not wait the full 30 s
-        });
-        SkillTasks.later(340, () -> {
+        }));
+        steps.add(wait.apply(60));
+        steps.add(act.apply(() -> {
             log("dungeon: sent back - in {} at {}, run {}, altar lit {}", p.level().dimension().identifier(), p.blockPosition(), run.get() == null ? "closed" : "open",
                     level.getBlockState(altar).getValue(com.jo112ss.rpgmod.dungeon.AltarBlock.ACTIVE));
-            // the protections inside
             var spawnEvent = new net.neoforged.neoforge.event.entity.player.PlayerSetSpawnEvent(p, new ServerPlayer.RespawnConfig(
                     net.minecraft.world.level.storage.LevelData.RespawnData.of(com.jo112ss.rpgmod.dungeon.Dungeons.DIM, net.minecraft.core.BlockPos.ZERO, 0, 0), true));
             net.neoforged.neoforge.common.NeoForge.EVENT_BUS.post(spawnEvent);
             log("dungeon: setting a spawn point inside is refused: {}", spawnEvent.isCanceled());
-        });
+        }));
         // a boss offering: the golem's arena, straight to the fight
-        SkillTasks.later(380, () -> {
+        steps.add(act.apply(() -> {
             ItemStack core = new ItemStack(com.jo112ss.rpgmod.registry.ModRegistries.GOLEM_CORE.get());
             com.jo112ss.rpgmod.dungeon.DungeonManager.offer(level, altar, p, core);
             var r = com.jo112ss.rpgmod.dungeon.DungeonData.get(server).byAltar(level.dimension(), altar);
             slot[0] = r != null ? r.slot : -1;
             log("dungeon: offered a golem core -> {} rooms, slot {}", r != null ? r.rooms().size() : 0, slot[0]);
             com.jo112ss.rpgmod.dungeon.DungeonManager.enter(level, altar, p);
-        });
-        SkillTasks.later(400, () -> into.accept(1));
-        SkillTasks.later(450, () -> {
-            var r = run.get();
-            for (var u : r.mobs) if (dl.getEntity(u) instanceof LivingEntity e) log("dungeon: arena boss {} Lv{} alive {} health {} / {}", e.getType().getDescriptionId(),
-                    com.jo112ss.rpgmod.mob.MobLevels.level(e), e.isAlive(), String.format("%.0f", e.getHealth()), String.format("%.0f", e.getMaxHealth()));
-        });
-        SkillTasks.later(470, finishOff);
-        SkillTasks.later(490, () -> {
+        }));
+        steps.add(wait.apply(20));
+        steps.add(act.apply(() -> into.accept(1)));
+        steps.add(wait.apply(40)); // the golem in the picture
+        steps.add(fight.apply(1));
+        steps.add(act.apply(() -> {
             var r = run.get();
             log("dungeon: arena won - closing {}", r != null ? r.closing : "gone");
             if (r != null && r.closing > 20) r.closing = 20;
-        });
-        SkillTasks.later(530, () -> log("dungeon: after the arena - in {}, run {}", p.level().dimension().identifier(), run.get() == null ? "closed" : "open"));
-        SkillTasks.later(545, () -> {
+        }));
+        steps.add(wait.apply(40));
+        steps.add(act.apply(() -> {
+            log("dungeon: after the arena - in {}, run {}", p.level().dimension().identifier(), run.get() == null ? "closed" : "open");
             level.removeBlock(altar, false);
             p.teleportTo(level, home.x, home.y, home.z, java.util.Set.of(), p.getYRot(), 0, true);
             p.setGameMode(mode);
             com.jo112ss.rpgmod.dungeon.DungeonManager.testLog = false;
             com.jo112ss.rpgmod.dungeon.DungeonManager.forceBoss = null;
+            com.jo112ss.rpgmod.dungeon.DungeonManager.waveDelayTicks = 60;
+            done[0] = true;
+        }));
+        int[] idx = {0}, start = {0};
+        SkillTasks.run(age -> {
+            if (idx[0] >= steps.size()) return true;
+            if (steps.get(idx[0]).test(age - start[0])) {
+                idx[0]++;
+                start[0] = age + 1;
+                if (idx[0] < steps.size()) log("dungeon: step {} at tick {}", idx[0], age + 1);
+            }
+            return age > 2400;
         });
     }
 

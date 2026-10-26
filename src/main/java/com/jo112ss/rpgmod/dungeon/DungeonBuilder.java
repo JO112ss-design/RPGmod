@@ -168,12 +168,21 @@ public final class DungeonBuilder {
     }
 
     /** Where a room's monsters appear: spread over its far half. */
-    static BlockPos spawnSpot(int slot, Room r, RandomSource rnd, int i, int n) {
+    static BlockPos spawnSpot(ServerLevel level, int slot, Room r, RandomSource rnd, List<? extends net.minecraft.world.entity.Entity> players) {
         int ox = Dungeons.originX(slot);
-        double t = n <= 1 ? 0.5 : i / (double) (n - 1);
-        int x = ox + (int) Math.round((t - 0.5) * 2 * (r.half() - 2)) + rnd.nextInt(3) - 1;
-        int z = r.zMid() + 1 + rnd.nextInt(Math.max(1, (r.z1() - r.zMid()) - 2));
-        return new BlockPos(x, Dungeons.FLOOR, z);
+        BlockPos best = new BlockPos(ox, Dungeons.FLOOR, r.zMid() + r.half() / 2);
+        for (int tries = 0; tries < 40; tries++) {
+            int x = ox - (r.half() - 2) + rnd.nextInt(2 * (r.half() - 2) + 1);
+            int z = r.z0() + 2 + rnd.nextInt(Math.max(1, r.z1() - r.z0() - 3));
+            BlockPos p = new BlockPos(x, Dungeons.FLOOR, z);
+            while (!level.getBlockState(p).isAir() && p.getY() < Dungeons.FLOOR + 2) p = p.above(); // on top of a raised centre
+            if (!level.getBlockState(p).isAir() || !level.getBlockState(p.above()).isAir() || !level.getBlockState(p.above(2)).isAir()) continue;
+            boolean near = false;
+            for (var e : players) if (e.distanceToSqr(p.getX() + 0.5, p.getY(), p.getZ() + 0.5) < 8 * 8) near = true;
+            if (!near) return p;
+            best = p;
+        }
+        return best;
     }
 
     /** Clears the dungeon's blocks (after the run, so the slot holds nothing). */
