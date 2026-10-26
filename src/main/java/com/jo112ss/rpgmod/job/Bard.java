@@ -105,8 +105,12 @@ public final class Bard {
 
     /** Every song plays this long (not longer at higher levels), plus the encore. */
     public static final int SONG_SECONDS = 12;
-    /** The spellsinger's afterglow: seconds of lingering effect per point at the end of the song (0 to 10s). */
-    public static final double LINGER_PER_POINT = 0.5;
+    /**
+     * The spellsinger's afterglow: seconds its song's effects stay on per point at the end of the song
+     * (up to 100s); the ward melody's absorption stays this long on whoever still has it.
+     */
+    public static final double LINGER_PER_POINT = 5;
+    public static final int WARD_LINGER_SECONDS = 200;
 
     /** The maestro's second song costs this share of its mana. */
     public static final double SECOND_SONG_COST = 0.5;
@@ -262,9 +266,23 @@ public final class Bard {
      */
     private static void linger(Perf perf, ServerPlayer p, int points) {
         if (!"spellsinger".equals(JobManager.data(p).jobId())) return;
+        String song = perf.c.def().id();
+        if (song.equals("ward_melody")) {
+            // the absorption the party still has stays on (as it is: not topped up)
+            int keep = WARD_LINGER_SECONDS * 20;
+            int n = 0;
+            for (ServerPlayer a : SkillExecutor.allies(p, radius(points))) {
+                MobEffectInstance abs = a.getEffect(MobEffects.ABSORPTION);
+                if (abs == null || a.getAbsorptionAmount() <= 0) continue;
+                a.addEffect(new MobEffectInstance(MobEffects.ABSORPTION, keep, abs.getAmplifier(), true, true), p);
+                n++;
+            }
+            if (n > 0) p.sendSystemMessage(Component.translatable("rpgmod.bard.linger", Component.translatable("rpgmod.skill." + song), WARD_LINGER_SECONDS)
+                    .withStyle(ChatFormatting.LIGHT_PURPLE), true);
+            return;
+        }
         int ticks = (int) Math.round(points * LINGER_PER_POINT * 20);
         if (ticks < 20) return;
-        String song = perf.c.def().id();
         pulse(perf.c, p, song, points, ticks);
         if (song.equals("mana_chord") || song.equals("thunder_tune")) {
             SkillTasks.run(age -> {
@@ -283,6 +301,7 @@ public final class Bard {
         ServerLevel level = (ServerLevel) p.level();
         double f = factor(points), r = radius(points);
         int amp = Math.max(0, (int) Math.round(5 * f) - 1);
+        int singerAmp = Math.max(0, (int) Math.round(3 * f) - 1); // the spellsinger's songs: lower
         int color = songColor(song);
         switch (song) {
             case "war_song" -> allies(p, r, a -> a.addEffect(new MobEffectInstance(ModEffects.WAR_SONG, dur, amp, true, true), p));
@@ -307,15 +326,16 @@ public final class Bard {
                 }
             }
             // spellsinger: magic on the party's weapons
-            case "flame_melody" -> allies(p, r, a -> a.addEffect(new MobEffectInstance(ModEffects.FLAME_SONG, dur, amp, true, true), p));
+            // the spellsinger's songs are weaker than the bard's, but they stay on long after the song (see linger)
+            case "flame_melody" -> allies(p, r, a -> a.addEffect(new MobEffectInstance(ModEffects.FLAME_SONG, dur, singerAmp, true, true), p));
             case "haste_tune" -> allies(p, r, a -> {
-                a.addEffect(new MobEffectInstance(MobEffects.HASTE, dur, f >= 0.9 ? 1 : 0, true, true), p);
-                a.addEffect(new MobEffectInstance(MobEffects.SPEED, dur, f >= 0.9 ? 1 : 0, true, true), p);
+                a.addEffect(new MobEffectInstance(MobEffects.HASTE, dur, 0, true, true), p);
+                a.addEffect(new MobEffectInstance(MobEffects.SPEED, dur, 0, true, true), p);
             });
-            case "mana_chord" -> allies(p, r, a -> JobManager.restoreMana(a, JobManager.maxMana(a) * 0.02 * f));
+            case "mana_chord" -> allies(p, r, a -> JobManager.restoreMana(a, JobManager.maxMana(a) * SINGER_MANA * f));
             case "seal_melody" -> {
                 for (LivingEntity e : SkillExecutor.enemies(p, p.position(), r)) {
-                    e.addEffect(new MobEffectInstance(ModEffects.EXPOSED, dur, f >= 0.9 ? 1 : 0), p);
+                    e.addEffect(new MobEffectInstance(ModEffects.EXPOSED, dur, 0), p);
                     e.addEffect(new MobEffectInstance(MobEffects.SLOWNESS, dur, 0), p);
                 }
             }
@@ -323,7 +343,7 @@ public final class Bard {
                 List<LivingEntity> foes = SkillExecutor.enemies(p, p.position(), r);
                 if (!foes.isEmpty()) {
                     LivingEntity e = foes.get(p.getRandom().nextInt(foes.size()));
-                    SkillExecutor.hurt(c, e, (float) (songPower(c, song) * f), SkillExecutor.magic(c));
+                    SkillExecutor.hurt(c, e, (float) (songPower(c, song) * f * SINGER_DAMAGE), SkillExecutor.magic(c));
                     ServerFx.of("x_strike", e.position()).a(1).color(color).point(e.position().add(0, e.getBbHeight() * 0.5, 0)).send(level);
                     level.playSound(null, e.blockPosition(), SoundEvents.LIGHTNING_BOLT_IMPACT, SoundSource.PLAYERS, 0.5F, 1.6F);
                 }
@@ -349,7 +369,7 @@ public final class Bard {
                 }
             }
             case "ward_melody" -> allies(p, r, a -> ward(p, a, f, dur));
-            case "drain_tune" -> allies(p, r, a -> a.addEffect(new MobEffectInstance(ModEffects.DRAIN_TUNE, dur, amp, true, true), p));
+            case "drain_tune" -> allies(p, r, a -> a.addEffect(new MobEffectInstance(ModEffects.DRAIN_TUNE, dur, singerAmp, true, true), p));
             default -> { }
         }
         ServerFx.of("n_song", p.position()).follow(p).a(r).b(f).color(color).send(level);
@@ -362,8 +382,10 @@ public final class Bard {
     public static final double FANFARE_SPEED = 0.35;
     /** Dirge: share of the damage dealt that heals the party (split among them). */
     public static final float DIRGE_DRAIN = 0.3F;
-    /** Ward melody: absorption on each ally worth this share of their max health (times the strength). */
-    public static final double WARD_SHARE = 0.1;
+    /** Ward melody: absorption on each ally worth this share of their max health (times the strength: 15% to 30%). */
+    public static final double WARD_SHARE = 0.25;
+    /** The spellsinger's songs: mana per second (share of the max, times the strength) and the thunder's damage share. */
+    public static final double SINGER_MANA = 0.012, SINGER_DAMAGE = 0.6;
     /** Ward melody: once someone's absorption is broken, none for them for this long. */
     public static final int WARD_BROKEN_TICKS = 80;
 

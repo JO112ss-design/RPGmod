@@ -53,6 +53,17 @@ final class NewJobTests {
             case "coins" -> coins(level, p);
             case "linger" -> linger(level, p);
             case "ward" -> ward(level, p, dummies);
+            case "wardlinger" -> {
+                become(p, "spellsinger");
+                SkillExecutor.execute(p, JobDefs.skill("ward_melody"), JobManager.powerMultiplier(p, JobDefs.skill("ward_melody")));
+                JobManager.data(p).setSongPoints(14);
+                SkillTasks.later(30, () -> JobManager.data(p).setSong(JobManager.data(p).song(), JobManager.data(p).songStart(), level.getGameTime() + 5));
+                SkillTasks.later(50, () -> {
+                    var abs = p.getEffect(net.minecraft.world.effect.MobEffects.ABSORPTION);
+                    log("ward linger: song over {}, absorption {} for {} ticks more (max hp {})", !com.jo112ss.rpgmod.job.Bard.performing(p),
+                            String.format("%.1f", p.getAbsorptionAmount()), abs == null ? 0 : abs.getDuration(), String.format("%.0f", p.getMaxHealth()));
+                });
+            }
             case "songs_bard" -> songs(level, p, "bard", false, List.of("war_song", "rhapsody", "fanfare", "dirge"), 2, -1);
             case "songs_maestro" -> songs(level, p, "bard", true, List.of("war_song", "heal_song", "", "", "guard_song", "rhapsody"), 0, 5);
             case "songs_singer" -> songs(level, p, "spellsinger", false, List.of("ward_melody", "drain_tune", "flame_melody"), 0, -1);

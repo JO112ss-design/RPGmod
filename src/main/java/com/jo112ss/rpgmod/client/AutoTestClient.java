@@ -296,6 +296,7 @@ public final class AutoTestClient {
             case "nj:meditate" -> 140;
             case "nj:linger" -> 140;
             case "nj:ward" -> 210;
+            case "nj:wardlinger" -> 80;
             case "dragon_king" -> 100;
             case "twin_cannon", "mimic" -> 70;
             case "high_jump" -> 75;
@@ -356,7 +357,7 @@ public final class AutoTestClient {
             showSkills.addAll(java.util.List.of("nj:pirate", "down:broadside", "nj:captain", "up:fleet_barrage", "nj:lancer", "spear_rain", "nj:shadow_hunter", "shadow_rain",
                     "nj:treasure_hunter", "treasure_rain", "nj:coins", "nj:restore"));
             showSkills.clear(); // spellsinger afterglow
-            showSkills.addAll(java.util.List.of("nj:restore", "nj:ward", "nj:linger", "nj:restore"));
+            showSkills.addAll(java.util.List.of("nj:restore", "nj:ward", "nj:wardlinger", "nj:linger", "nj:restore"));
             if (false) showSkills.clear(); // songs: each with its own rhythm (bars from the song's style) and tune
             if (false) showSkills.addAll(java.util.List.of("nj:restore", "nj:restore", "nj:restore", "nj:bard", "bard:play:war_song", "bard:play:lullaby", "bard:play:wind_song", "bard:play:discord", "nj:restore"));
             if (false) showSkills.clear(); // songs on the lute: bard, maestro (two at once), spellsinger; the new skills; the songs tab

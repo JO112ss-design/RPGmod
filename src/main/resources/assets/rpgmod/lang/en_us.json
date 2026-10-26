@@ -1155,7 +1155,7 @@
   "rpgmod.skill.dirge": "Dirge",
   "rpgmod.skill.dirge.desc": "Drains the enemies around every second; 30% of it heals the party.",
   "rpgmod.skill.ward_melody": "Ward Melody",
-  "rpgmod.skill.ward_melody.desc": "Allies around get absorption (about 6-12% of max health). What a blow takes stays gone while the song plays; once broken it does not come back for 4s.",
+  "rpgmod.skill.ward_melody.desc": "Allies around get absorption (15-30% of max health). What a blow takes stays gone; once broken it does not come back for 4s. When the song ends, the absorption the party still has stays on for 200s.",
   "rpgmod.skill.drain_tune": "Drain Tune",
   "rpgmod.skill.drain_tune.desc": "Every hit the party around lands gives back a little mana.",
   "rpgmod.bard.need_lute": "Hold the lute",
