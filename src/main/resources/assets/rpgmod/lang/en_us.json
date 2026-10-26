@@ -1031,7 +1031,7 @@
   "rpgmod.skill.spear_wall": "Spear Wall",
   "rpgmod.skill.spear_wall.desc": "Plant a ring of spears for 8s; enemies inside are struck and pushed out.",
   "rpgmod.skill.counter_lance": "Counter Lance",
-  "rpgmod.skill.counter_lance.desc": "Brace behind the shield for 3s: blows do 60% less, and what the shield took is stored x4 (up to a cap). Your next hit within 6s after carries it all.",
+  "rpgmod.skill.counter_lance.desc": "Brace behind the shield for 3s: blows do 60% less, and what the shield took is stored x4 (up to a cap). Your next melee hit within 6s after carries it all.",
   "rpgmod.skill.provoke": "Provoke",
   "rpgmod.skill.provoke.desc": "Every enemy around turns on you; you brace.",
   "rpgmod.skill.fortress": "Fortress",

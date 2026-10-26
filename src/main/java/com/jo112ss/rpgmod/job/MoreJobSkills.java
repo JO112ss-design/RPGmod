@@ -167,7 +167,7 @@ public final class MoreJobSkills {
 
     /**
      * Counter lance: for 3s you brace behind the shield. Each blow takes 60% less, and what the
-     * shield took is stored (x4, up to a cap); your next hit within 6s after the stance carries it all.
+     * shield took is stored (x4, up to a cap); your next melee hit within 6s after the stance carries it all.
      */
     private static boolean counterLance(Ctx c) {
         ServerPlayer p = c.p();
