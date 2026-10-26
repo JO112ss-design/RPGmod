@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/cube_bottom_top",
+  "textures": {
+    "top": "rpgmod:block/dungeon_altar_top",
+    "bottom": "rpgmod:block/dungeon_altar_bottom",
+    "side": "rpgmod:block/dungeon_altar_side"
+  }
+}

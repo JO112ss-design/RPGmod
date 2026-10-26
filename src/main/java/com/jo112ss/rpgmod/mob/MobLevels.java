@@ -44,6 +44,9 @@ public final class MobLevels {
         return Identifier.fromNamespaceAndPath(RpgMod.MODID, p);
     }
 
+    /** The level the next monster to join gets, instead of a roll (dungeons set it). */
+    public static Integer forceLevel;
+
     public static int level(Entity e) {
         return e == null ? 0 : e.getData(ModRegistries.MOB_LEVEL);
     }
@@ -71,7 +74,7 @@ public final class MobLevels {
             return;
         }
         ServerLevel sl = (ServerLevel) event.getLevel();
-        int lv = mob instanceof EnderDragon ? dragonLevel(sl) : rollLevel(sl, mob.blockPosition(), mob.getRandom().nextDouble());
+        int lv = forceLevel != null ? forceLevel : mob instanceof EnderDragon ? dragonLevel(sl) : rollLevel(sl, mob.blockPosition(), mob.getRandom().nextDouble());
         apply(mob, lv);
         Elite.roll(mob, lv);
         MobGear.equip(mob, lv);

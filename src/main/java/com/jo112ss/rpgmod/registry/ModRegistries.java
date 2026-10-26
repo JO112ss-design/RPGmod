@@ -98,6 +98,21 @@ public final class ModRegistries {
 
     public static final DeferredItem<BlockItem> SOCKET_TABLE_ITEM = ITEMS.registerSimpleBlockItem("socket_table", SOCKET_TABLE);
 
+    /** The dungeon altar and what can be offered on it. */
+    public static final DeferredBlock<com.jo112ss.rpgmod.dungeon.AltarBlock> DUNGEON_ALTAR = BLOCKS.registerBlock("dungeon_altar",
+            com.jo112ss.rpgmod.dungeon.AltarBlock::new,
+            p -> p.mapColor(MapColor.COLOR_BLACK).strength(5.0F, 1200.0F).requiresCorrectToolForDrops().sound(SoundType.DEEPSLATE_BRICKS)
+                    .lightLevel(com.jo112ss.rpgmod.dungeon.AltarBlock::light));
+    public static final DeferredItem<BlockItem> DUNGEON_ALTAR_ITEM = ITEMS.registerSimpleBlockItem("dungeon_altar", DUNGEON_ALTAR);
+    public static final DeferredItem<net.minecraft.world.item.Item> DUNGEON_KEY = ITEMS.registerSimpleItem("dungeon_key",
+            p -> p.stacksTo(16).rarity(net.minecraft.world.item.Rarity.UNCOMMON));
+    public static final DeferredItem<net.minecraft.world.item.Item> SEALED_KEY = ITEMS.registerSimpleItem("sealed_key",
+            p -> p.stacksTo(16).rarity(net.minecraft.world.item.Rarity.RARE));
+    public static final DeferredItem<net.minecraft.world.item.Item> SLIME_CROWN = ITEMS.registerSimpleItem("slime_crown",
+            p -> p.stacksTo(16).rarity(net.minecraft.world.item.Rarity.RARE));
+    public static final DeferredItem<net.minecraft.world.item.Item> GOLEM_CORE = ITEMS.registerSimpleItem("golem_core",
+            p -> p.stacksTo(16).rarity(net.minecraft.world.item.Rarity.RARE));
+
     public static final DeferredHolder<MenuType<?>, MenuType<com.jo112ss.rpgmod.gem.SocketMenu>> SOCKET_MENU = MENUS.register("socket",
             () -> IMenuTypeExtension.create((windowId, inv, buf) -> new com.jo112ss.rpgmod.gem.SocketMenu(windowId, inv)));
 
@@ -149,6 +164,11 @@ public final class ModRegistries {
             .displayItems((params, output) -> {
                 output.accept(FORGING_ANVIL_ITEM.get());
                 output.accept(SOCKET_TABLE_ITEM.get());
+                output.accept(DUNGEON_ALTAR_ITEM.get());
+                output.accept(DUNGEON_KEY.get());
+                for (int lv : new int[] {30, 60, 100, 150}) output.accept(com.jo112ss.rpgmod.dungeon.DungeonManager.sealedKey(lv));
+                output.accept(SLIME_CROWN.get());
+                output.accept(GOLEM_CORE.get());
                 // one gem of every special effect, and one of every stat (rare, at its top value)
                 for (com.jo112ss.rpgmod.gem.GemSpecial s : com.jo112ss.rpgmod.gem.GemSpecial.values()) {
                     output.accept(com.jo112ss.rpgmod.gem.GemItems.stack(com.jo112ss.rpgmod.gem.Gem.of(s)));

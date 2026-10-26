@@ -194,7 +194,7 @@ public class Golem extends Monster implements BloodMoonBoss {
     @Override
     public void recomputeHealth(boolean fill) {
         if (!(this.level() instanceof ServerLevel sl)) return;
-        int online = Math.max(1, sl.getServer().getPlayerList().getPlayerCount());
+        int online = com.jo112ss.rpgmod.dungeon.Dungeons.bossPlayers(this, sl);
         onlineSeen = online;
         double hp = MobConfig.golemHealth() * MobLevelMath.healthMultiplier(MobConfig.rules(), bossLevel())
                 * (1 + MobConfig.bossPerPlayer() * (online - 1));
@@ -258,8 +258,8 @@ public class Golem extends Monster implements BloodMoonBoss {
         if (punchCooldown > 0) punchCooldown--;
         if (this.tickCount % 10 == 0) updateBossBar(sl);
         if (this.tickCount % 20 == 0) {
-            if (sl.getServer().getPlayerList().getPlayerCount() != onlineSeen && healthTarget > 0) recomputeHealth(false);
-            if (state != State.LEAVE && !BloodMoon.isBloodMoon(sl) && !BloodMoon.testKeep) startLeaving(sl);
+            if (com.jo112ss.rpgmod.dungeon.Dungeons.bossPlayers(this, sl) != onlineSeen && healthTarget > 0) recomputeHealth(false);
+            if (state != State.LEAVE && !BloodMoon.isBloodMoon(sl) && !BloodMoon.testKeep && !com.jo112ss.rpgmod.dungeon.Dungeons.isDungeon(sl)) startLeaving(sl);
             if (shielded() && pillars(sl).isEmpty()) breakShield(sl);
         }
         if (shielded() && this.tickCount % 6 == 0) {
@@ -848,7 +848,7 @@ public class Golem extends Monster implements BloodMoonBoss {
             fissures.clear();
             setState(State.ARMOUR, 30);
         }
-        int online = Math.max(1, sl.getServer().getPlayerList().getPlayerCount());
+        int online = com.jo112ss.rpgmod.dungeon.Dungeons.bossPlayers(this, sl);
         int n = Math.min(6, 3 + (online - 1));
         double phase0 = this.random.nextDouble() * Math.PI * 2;
         for (int i = 0; i < n; i++) {

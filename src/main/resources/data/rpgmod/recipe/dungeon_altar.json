@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    " E ",
+    "GCG",
+    "OOO"
+  ],
+  "key": {
+    "E": "minecraft:ender_eye",
+    "G": "minecraft:gold_ingot",
+    "C": "minecraft:chiseled_deepslate",
+    "O": "minecraft:obsidian"
+  },
+  "result": { "id": "rpgmod:dungeon_altar", "count": 1 }
+}

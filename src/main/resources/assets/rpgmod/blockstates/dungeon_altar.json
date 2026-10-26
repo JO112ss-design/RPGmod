@@ -1,0 +1,6 @@
+{
+  "variants": {
+    "lit=false": { "model": "rpgmod:block/dungeon_altar" },
+    "lit=true": { "model": "rpgmod:block/dungeon_altar_active" }
+  }
+}

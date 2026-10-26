@@ -223,7 +223,7 @@ public class KingSlime extends Slime implements BloodMoonBoss {
     @Override
     public void recomputeHealth(boolean fill) {
         if (!(this.level() instanceof ServerLevel sl)) return;
-        int online = Math.max(1, sl.getServer().getPlayerList().getPlayerCount());
+        int online = com.jo112ss.rpgmod.dungeon.Dungeons.bossPlayers(this, sl);
         onlineSeen = online;
         double hp = MobConfig.kingHealth() * MobLevelMath.healthMultiplier(MobConfig.rules(), bossLevel())
                 * (1 + MobConfig.bossPerPlayer() * (online - 1));
@@ -276,8 +276,8 @@ public class KingSlime extends Slime implements BloodMoonBoss {
         if (absorbCooldown > 0) absorbCooldown--;
         if (this.tickCount % 10 == 0) updateBossBar(sl);
         if (this.tickCount % 20 == 0) {
-            if (sl.getServer().getPlayerList().getPlayerCount() != onlineSeen && healthTarget > 0) recomputeHealth(false);
-            if (state != State.LEAVE && !BloodMoon.isBloodMoon(sl) && !BloodMoon.testKeep) startLeaving(sl);
+            if (com.jo112ss.rpgmod.dungeon.Dungeons.bossPlayers(this, sl) != onlineSeen && healthTarget > 0) recomputeHealth(false);
+            if (state != State.LEAVE && !BloodMoon.isBloodMoon(sl) && !BloodMoon.testKeep && !com.jo112ss.rpgmod.dungeon.Dungeons.isDungeon(sl)) startLeaving(sl);
         }
         tickWaves(sl);
         tickDrops(sl);
@@ -803,7 +803,7 @@ public class KingSlime extends Slime implements BloodMoonBoss {
             this.getAttribute(Attributes.MOVEMENT_SPEED).setBaseValue(chaseSpeed());
             if (bossBar != null) bossBar.setColor(BossEvent.BossBarColor.PURPLE);
         }
-        int online = Math.max(1, sl.getServer().getPlayerList().getPlayerCount());
+        int online = com.jo112ss.rpgmod.dungeon.Dungeons.bossPlayers(this, sl);
         int kids = Math.min(6, 2 + (online - 1));
         for (int i = 0; i < kids; i++) {
             Slime kid = EntityTypes.SLIME.create(sl, EntitySpawnReason.MOB_SUMMONED);
