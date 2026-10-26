@@ -85,7 +85,7 @@ public final class AdvSkills {
             case "dead_eye" -> deadEye(c);
             // spellmaster
             case "double_cast" -> selfMark(c, ModEffects.DOUBLE_CAST, c.def().amplifier(), 0x9A7BFF, 4, SoundEvents.ENCHANTMENT_TABLE_USE, 1.4F);
-            case "mana_overload" -> selfMark(c, ModEffects.OVERLOAD, 0, 0xFF4AD8, 1, SoundEvents.BEACON_POWER_SELECT, 0.6F);
+            case "mana_overload" -> selfMark(c, ModEffects.OVERLOAD, 0, 0xFF4AD8, 7, SoundEvents.BEACON_POWER_SELECT, 0.6F);
             case "mana_well" -> manaWell(c);
             case "phase_shift" -> phaseShift(c);
             case "arcane_seal" -> arcaneSeal(c);
@@ -115,7 +115,7 @@ public final class AdvSkills {
             // nightblade
             case "shadow_run" -> shadowRun(c);
             case "flurry" -> flurry(c);
-            case "twin_venom" -> selfMark(c, ModEffects.TWIN_VENOM, 0, 0x60E040, 1, SoundEvents.BREWING_STAND_BREW, 0.8F);
+            case "twin_venom" -> selfMark(c, ModEffects.TWIN_VENOM, 0, 0x60E040, 8, SoundEvents.BREWING_STAND_BREW, 0.8F);
             case "shadow_stitch" -> shadowStitch(c);
             case "moon_shadow" -> moonShadow(c);
             case "yaksha" -> yaksha(c);
@@ -212,7 +212,7 @@ public final class AdvSkills {
         float cost = Math.min((float) (p.getHealth() * c.def().power()), Math.max(0, p.getHealth() - 1));
         p.setHealth(p.getHealth() - cost);
         apply(p, c.def(), p);
-        ServerFx.of("x_aura", p.position()).follow(p).a(c.def().duration()).b(1).color(BLOOD).send(c.level());
+        ServerFx.of("x_aura", p.position()).follow(p).a(c.def().duration()).b(6).color(BLOOD).send(c.level());
         ServerFx.of("x_burst", mid(p)).a(1.4).b(3).color(BLOOD).send(c.level());
         sound(c, SoundEvents.RAVAGER_ROAR, 1.5F);
         sound(c, p.position(), SoundEvents.PLAYER_HURT_SWEET_BERRY_BUSH, 1.0F, 0.6F);
@@ -328,7 +328,7 @@ public final class AdvSkills {
     private static boolean cover(Ctx c) {
         effect(c.p(), ModEffects.COVER, ticks(c.def().duration()), 0, c.p());
         List<ServerPlayer> allies = others(c.p(), allies(c.p(), c.def().radius()));
-        ServerFx.of("x_aura", c.p().position()).follow(c.p()).a(c.def().duration()).b(2).color(0xF0D080).points(allies).send(c.level());
+        ServerFx.of("x_aura", c.p().position()).follow(c.p()).a(c.def().duration()).b(10).color(0xF0D080).points(allies).send(c.level());
         for (ServerPlayer a : allies) ServerFx.of("x_link", c.chest()).vec(mid(a)).color(0xF0D080).send(c.level());
         sound(c, SoundEvents.ARMOR_EQUIP_NETHERITE.value(), 0.8F);
         sound(c, c.p().position(), SoundEvents.BEACON_POWER_SELECT, 0.8F, 1.3F);

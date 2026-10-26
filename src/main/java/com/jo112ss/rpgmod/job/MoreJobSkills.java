@@ -73,7 +73,7 @@ public final class MoreJobSkills {
             case "ki_wave" -> kiWave(c);
             case "iron_mountain" -> ironMountain(c);
             case "foresight" -> mark(c, ModEffects.FORESIGHT, FORESIGHT_POWER, 0xFFB070, 3);
-            case "battle_aura" -> mark(c, ModEffects.BATTLE_AURA, null, 0xFF8030, 1);
+            case "battle_aura" -> mark(c, ModEffects.BATTLE_AURA, null, 0xFF8030, 6);
             case "peerless" -> peerless(c);
             // dragoon
             case "high_jump" -> highJump(c);
@@ -832,7 +832,7 @@ public final class MoreJobSkills {
         int el = element(p);
         p.sendSystemMessage(Component.translatable("rpgmod.spellblade.element", Component.translatable("rpgmod.spellblade.element." + el))
                 .withColor(ELEMENT_COLORS[el]), true);
-        ServerFx.of("x_aura", p.position()).follow(p).a(1.5).b(el == 0 ? 1 : el == 1 ? 3 : 0).color(ELEMENT_COLORS[el]).send(c.level());
+        ServerFx.of("x_aura", p.position()).follow(p).a(1.5).b(el == 0 ? 6 : el == 1 ? 3 : 7).color(ELEMENT_COLORS[el]).send(c.level());
         sound(c, el == 0 ? SoundEvents.FIRECHARGE_USE : el == 1 ? SoundEvents.GLASS_BREAK : SoundEvents.LIGHTNING_BOLT_IMPACT, 1.6F);
         return true;
     }

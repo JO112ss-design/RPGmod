@@ -72,13 +72,16 @@ final class FxAdvanced {
         float tilt = p.b();
         Fx.p(S.SLASH, at).size(size * 0.55F).color(0xFFFFFF, c).alpha(0.95F, 0).angle(-tilt - 0.6F).spin(0.45F).life(5).spawn();
         Fx.p(S.SLASH, at).size(size * 0.7F).color(c, dark(c)).alpha(0.5F, 0).angle(-tilt - 0.75F).spin(0.42F).life(7).spawn();
+        Fx.p(S.SLASH, at).size(size * 0.42F).color(0xFFFFFF).alpha(0.8F, 0).angle(-tilt - 0.45F).spin(0.5F).life(4).spawn();
+        Fx.p(S.FLARE, at).color(c).size(size * 0.5F, size * 0.2F).alpha(0.35F, 0).life(5).spawn();
+        if (size >= 3) FxAnims.shake(at, 0.25F + size * 0.05F, 4, 10);
         Vec3 side = Fx.right(dir);
         Vec3 axis = side.scale(Math.cos(tilt)).add(0, Math.sin(tilt), 0);
         for (int i = 0, n = Fx.n(10); i < n; i++) {
             double t = Fx.r(-1, 1);
             Vec3 v = at.add(axis.scale(t * size * 0.5)).add(dir.scale((1 - t * t) * 0.3));
-            Fx.p(S.GLOW, v).vel(axis.scale(-0.05 * Math.signum(t)).add(Fx.randomUnit().scale(0.03))).friction(0.88F)
-                    .color(0xFFFFFF, c).size(0.12F, 0).life(8 + Fx.RND.nextInt(5)).spawn();
+            Fx.p(i % 3 == 0 ? S.TWINKLE : S.GLOW, v).vel(axis.scale(-0.05 * Math.signum(t)).add(Fx.randomUnit().scale(0.03))).friction(0.88F)
+                    .color(0xFFFFFF, c).size(i % 3 == 0 ? 0.3F : 0.12F, 0).life(8 + Fx.RND.nextInt(5)).spawn();
         }
         hits(p.pts(), c, 1);
     }
@@ -90,6 +93,8 @@ final class FxAdvanced {
         float r = Math.max(1, p.a());
         int waves = Math.max(1, (int) p.b());
         flash(o.add(0, 1, 0), c, 1.4F, 6);
+        ground(S.CRACK, o, Math.min(3F, r * 0.6F), c, 26).color(light(c), dark(c)).alpha(0.8F, 0).randomAngle().spawn();
+        debris(o, (int) (4 + r * 2), r * 0.3, 0.4);
         for (int k = 0; k < waves; k++) {
             ground(S.WAVE, o, 0.5F, c, 14).size(0.5F, r * 1.05F).color(light(c), c).alpha(0.9F, 0).easeOut().delay(k * 3).spawn();
         }
@@ -113,6 +118,25 @@ final class FxAdvanced {
         Vec3 ch = chest(e, o);
         flash(ch, c, 1.3F, 6);
         ground(S.RING, o, 0.4F, c, 12).size(0.4F, 2.0F).easeOut().alpha(0.9F, 0).spawn();
+        S sigil = switch (style) {
+            case 1, 6 -> S.CIRCLE_HEX;
+            case 2, 10 -> S.CIRCLE_HOLY;
+            case 3, 9 -> S.CIRCLE_NATURE;
+            case 7, 8 -> S.CIRCLE_CLOCK;
+            default -> S.CIRCLE_ARCANE;
+        };
+        ground(sigil, o, 1.4F, c, 22).color(light(c), c).size(0.4F, 1.5F).easeOut().alpha(0.75F, 0).spin(0.12F).follow(e).spawn();
+        for (int i = 0; i < 5; i++) {
+            Fx.p(S.BEAM, o.add(0, 0.4 + i * 0.5, 0)).upright().color(light(c), c).size(0.9F, 0.4F).alpha(0.55F, 0).life(9).delay(i).follow(e).spawn();
+        }
+        switch (style) {
+            case 6 -> { for (int i = 0, n = Fx.n(14); i < n; i++) FxUlt.flameAt(o.add(Fx.r(-0.5, 0.5), Fx.r(0, 0.4), Fx.r(-0.5, 0.5)), light(c), c, Fx.rf(0.5F, 0.9F), 16, e); }
+            case 7 -> { for (int i = 0; i < 4; i++) Fx.p(S.LIGHTNING, ch.add(Fx.randomUnit().scale(0.6))).color(0xFFFFFF, c).size(0.6F).randomAngle().alpha(1, 0).life(4).delay(i * 2).spawn(); }
+            case 8 -> Fx.p(S.MOON, ch.add(0, 0.9, 0)).color(light(c), c).size(0.2F, 0.7F).easeOut().alpha(1, 0).life(20).follow(e).spawn();
+            case 9 -> SkillFx.burst(ch, 14, 0.25, S.SAKURA, 0xFFFFFF, c, 0.25F, 20, 0.02F);
+            case 10 -> Fx.p(S.CREST, ch.add(0, 1.0, 0)).color(light(c), c).size(0.2F, 0.7F).easeOut().alpha(1, 0).life(20).follow(e).spawn();
+            default -> { }
+        }
         for (int i = 0, n = Fx.n(16); i < n; i++) {
             double a = Fx.r(0, Math.PI * 2), r = Fx.r(0.3, 0.7);
             Fx.p(S.GLOW, o.x + Math.cos(a) * r, o.y + Fx.r(0, 0.4), o.z + Math.sin(a) * r).vel(0, Fx.r(0.08, 0.16), 0)
@@ -132,15 +156,24 @@ final class FxAdvanced {
             case 3 -> S.FEATHER;
             case 4 -> Fx.rune(Fx.RND.nextInt(4));
             case 5 -> S.COIN;
-            default -> S.SPARK;
+            case 6 -> S.FLAME;
+            case 7 -> S.LIGHTNING;
+            case 8 -> S.MOON;
+            case 9 -> S.PETAL;
+            case 10 -> S.CROSS;
+            default -> S.TWINKLE;
         };
-        int every = style == 1 ? 2 : 4;
+        int every = style == 1 || style == 6 ? 2 : 4;
         FxAnims.follow(e, ticks, age -> {
             if (age % every != 0) return false;
             double a = Fx.r(0, Math.PI * 2), r = e.getBbWidth() * 0.6 + 0.25;
             Vec3 v = new Vec3(e.getX() + Math.cos(a) * r, e.getY() + Fx.r(0.1, e.getBbHeight()), e.getZ() + Math.sin(a) * r);
             if (style == 1) {
                 Fx.p(S.GLOW, v).vel(0, 0.06, 0).color(light(c), dark(c)).size(0.18F, 0).alpha(0.9F, 0).life(14).spawn();
+            } else if (style == 6) {
+                FxUlt.flameAt(new Vec3(v.x, e.getY() + Fx.r(0, 0.5), v.z), light(c), c, Fx.rf(0.35F, 0.55F), 12, null);
+            } else if (style == 7) {
+                Fx.p(S.LIGHTNING, v).color(0xFFFFFF, c).size(0.35F).randomAngle().alpha(1, 0).life(3).spawn();
             } else if (style == 5) {
                 Fx.p(S.COIN, v).vel(0, 0.05, 0).size(0.12F).alpha(1, 0).coin().spin(0.4F).life(16).spawn();
             } else {
@@ -222,6 +255,7 @@ final class FxAdvanced {
             @Override
             public void step(Vec3 at, Vec3 dir, int n) {
                 Fx.p(S.GLOW, at).color(light(c), c).size(size * 0.7F, 0).alpha(0.9F, 0).life(7).spawn();
+                if (n % 3 == 0) Fx.p(S.TWINKLE, at.add(Fx.randomUnit().scale(size * 0.6))).color(0xFFFFFF, c).size(size * 0.9F, 0).life(6).spawn();
             }
 
             @Override
@@ -272,6 +306,8 @@ final class FxAdvanced {
         flash(at, c, s * 1.4F, 5);
         Fx.p(S.RING, at).fixed(Fx.across(dir)).size(0.2F, s * 1.6F).easeOut().color(0xFFFFFF, c).alpha(1, 0).life(7).spawn();
         Fx.p(S.SPARK, at).color(0xFFFFFF, light(c)).size(s, 0).randomAngle().life(5).spawn();
+        Fx.p(S.TWINKLE, at).color(0xFFFFFF, c).size(s * 1.4F, 0).randomAngle().life(6).spawn();
+        Fx.p(S.FANG, at).fixed(Fx.basis(Fx.right(flatDir(dir)), new Vec3(0, 1, 0))).color(light(c), c).size(s * 1.1F).alpha(0.9F, 0).angle(Fx.rf(-0.6F, 0.6F)).life(5).spawn();
         spray(at, dir, 0.8, (int) (10 * s), 0.4, S.GLOW, 0xFFFFFF, c, 0.12F, 10, 0.2F);
     }
 
@@ -287,9 +323,14 @@ final class FxAdvanced {
         flash(at.add(0, 0.5, 0), c, r * 1.1F, 6);
         ground(S.WAVE, at, 0.5F, c, 12).size(0.5F, r * 1.4F).easeOut().color(light(c), c).alpha(1, 0).spawn();
         SkillFx.burst(at.add(0, 0.5, 0), (int) (12 * r), 0.35 + r * 0.08, S.GLOW, light(c), c, 0.2F, 14, style == 0 ? 0.3F : 0.1F);
+        if (style == 0 || style == 3) ground(S.CRACK, at, Math.min(4F, r), c, 30).color(light(c), dark(c)).alpha(0.85F, 0).randomAngle().spawn();
         switch (style) {
             case 0 -> {
                 Fx.vanilla(ParticleTypes.EXPLOSION, at.x, at.y + 0.5, at.z, 0, 0, 0);
+                for (int i = 0, n = Fx.n((int) (r * 4)); i < n; i++) {
+                    double a = Fx.r(0, Math.PI * 2), d = Fx.r(0, r * 0.7);
+                    FxUlt.flameAt(at.add(Math.cos(a) * d, 0, Math.sin(a) * d), 0xFFE0A0, c, Fx.rf(0.6F, 1.1F), 14 + Fx.RND.nextInt(8), null);
+                }
                 for (int i = 0, n = Fx.n((int) (r * 4)); i < n; i++) {
                     smoke(at.add(Fx.randomUnit().scale(r * 0.4)).add(0, 0.5, 0), 0x3A2A20, 0.6F, 1.8F, 34).vel(Fx.randomUnit().scale(0.05).add(0, 0.06, 0)).alpha(0.7F, 0).spawn();
                 }
@@ -359,6 +400,11 @@ final class FxAdvanced {
             Vec3 v = a.add(dir.scale(len * i / 4));
             Fx.p(S.STREAK, v).fixed(Fx.axial(v, dir)).size(1.2F, 0.4F).color(0xFFFFFF, c).alpha(0.7F, 0).life(6).delay(i).spawn();
         }
+        for (int i = 0; i < 3; i++) {
+            Vec3 v = a.add(dir.scale(len * (0.25 + i * 0.25)));
+            Fx.p(S.FANG, v).fixed(Fx.basis(Fx.right(flatDir(dir)), dir)).color(0xFFFFFF, c).size(0.9F).alpha(0.8F, 0).life(6).delay(i).spawn();
+        }
+        debris(p.pos(), 6, 0.3, 0.3);
         flash(a, c, 1.0F, 4);
         flash(b, c, 1.2F, 5);
     }
@@ -371,6 +417,9 @@ final class FxAdvanced {
         int life = Math.max(10, (int) p.b());
         ground(S.CIRCLE_HOLY, o, r, c, life).color(0xFFFFFF, c).alpha(0.8F, 0.3F).spin(0.03F).spawn();
         flash(o.add(0, 1, 0), c, r * 1.5F, 6);
+        for (int i = 0; i < 8; i++) {
+            Fx.p(S.BEAM, o.add(0, 0.6 + i * 1.0, 0)).upright().color(light(c), c).size(r * 1.4F, r * 0.5F).alpha(0.75F, 0).life(Math.min(life, 24)).delay(i).spawn();
+        }
         FxAnims.run(life, age -> {
             for (int i = 0, n = Fx.n((int) (3 + r * 2)); i < n; i++) {
                 double a = Fx.r(0, Math.PI * 2), d = Math.sqrt(Fx.RND.nextDouble()) * r;
@@ -500,6 +549,8 @@ final class FxAdvanced {
         FxParticle ring = Fx.p(S.RING, head(e, p.pos()).add(0, 0.3, 0)).size(0.5F).color(light(c), c).alpha(0.9F, 0.9F).spin(0.08F).follow(e).life(life).spawn();
         FxParticle dot = Fx.p(S.GLOW, head(e, p.pos()).add(0, 0.3, 0)).size(0.25F).color(c).alpha(1, 1).follow(e).life(life).spawn();
         Fx.p(S.RING, chest(e, p.pos())).size(2.0F, 0.6F).easeOut().color(0xFFFFFF, c).alpha(1, 0).life(8).spawn();
+        Fx.p(S.CIRCLE_HEX, chest(e, p.pos())).size(2.4F, 1.0F).easeOut().color(light(c), c).alpha(0.2F, 0.9F).spin(0.2F).life(10).follow(e).spawn();
+        Fx.p(S.CROSS, chest(e, p.pos())).size(1.4F, 0.5F).easeOut().color(0xFFFFFF, c).alpha(0.3F, 1).angle(0.785F).life(10).follow(e).spawn();
         if (ring == null && dot == null) return;
     }
 

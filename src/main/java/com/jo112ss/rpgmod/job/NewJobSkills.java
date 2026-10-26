@@ -329,7 +329,7 @@ public final class NewJobSkills {
         ServerPlayer p = c.p();
         HealthScale.heal(p, p.getMaxHealth() * 0.15F);
         apply(p, c.def(), p);
-        ServerFx.of("x_aura", p.position()).follow(p).a(c.def().duration()).b(1).color(0xD08A40).send(c.level());
+        ServerFx.of("x_aura", p.position()).follow(p).a(c.def().duration()).b(6).color(0xD08A40).send(c.level());
         sound(c, SoundEvents.GENERIC_DRINK, 0.9F);
         sound(c, p.position(), SoundEvents.PLAYER_BURP, 0.8F, 1.0F);
         return true;

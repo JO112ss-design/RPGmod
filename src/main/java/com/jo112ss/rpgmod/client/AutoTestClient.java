@@ -371,8 +371,8 @@ public final class AutoTestClient {
             if (false) showSkills.addAll(java.util.List.of("nj:restore", "nj:ults", "nj:restore", "nj:fighter", "berserk", "nj:assassin", "shadow_dance", "nj:paladin", "divine_aegis",
                     "nj:healer", "guardian_light", "nj:sentinel", "fortress", "nj:qi_master", "blooming_fists", "nj:wizard", "time_warp", "nj:spellmaster", "armageddon",
                     "nj:lancer", "dragon_fang", "nj:spellsinger", "sealing_chord", "nj:restore"));
-            showSkills.clear(); // every ultimate with its own look
-            showSkills.addAll(java.util.List.of("nj:restore", "nj:fighter", "berserk", "earthshatter", "nj:ranger", "arrow_rain", "eagle_eye", "nj:paladin", "divine_aegis",
+            if (false) showSkills.clear(); // every ultimate with its own look
+            if (false) showSkills.addAll(java.util.List.of("nj:restore", "nj:fighter", "berserk", "earthshatter", "nj:ranger", "arrow_rain", "eagle_eye", "nj:paladin", "divine_aegis",
                     "judgement", "nj:wizard", "time_warp", "nj:healer", "guardian_light", "nj:assassin", "shadow_dance", "nj:pirate", "down:broadside", "jolly_roger",
                     "nj:lancer", "dragon_fang", "spear_rain", "nj:monk", "hundred_fists", "diamond_body", "nj:bard", "grand_concert", "finale", "nj:berserker", "asura",
                     "nj:guardian", "bastion", "nj:sharpshooter", "dead_eye", "nj:spellmaster", "armageddon", "nj:runemaster", "grand_rune", "nj:joker", "wildcard",
@@ -380,6 +380,12 @@ public final class AutoTestClient {
                     "nj:songs_maestro", "symphony", "nj:spellblade", "arcane_edge", "elemental_burst", "nj:qi_master", "heaven_earth", "blooming_fists", "nj:sentinel",
                     "fortress", "holy_lance", "nj:songs_singer", "grand_concerto", "sealing_chord", "nj:shadow_hunter", "night_hunt", "shadow_rain", "nj:treasure_hunter",
                     "treasure_rain", "golden_cannon", "nj:restore"));
+            showSkills.clear(); // actives on the shared effects (aura, burst, slash, ring, dash, pillar, mark, hit) after their rework
+            showSkills.addAll(java.util.List.of("nj:restore", "nj:fighter", "power_slash", "whirlwind", "war_cry", "nj:berserker", "blood_frenzy", "decapitate", "triple_whirl",
+                    "nj:guardian", "iron_wall", "cover", "reprisal", "nj:monk", "ki_blast", "parry", "nj:champion", "rising_dragon", "battle_aura", "nj:dragoon",
+                    "dragon_scale", "spiral_lance", "sky_step", "nj:pirate", "rum", "nj:spellmaster", "mana_overload", "nj:nightblade", "twin_venom", "moon_shadow",
+                    "nj:healer", "holy_barrier", "nj:qi_master", "hard_qi", "nj:sentinel", "provoke", "nj:shadow_hunter", "vital_shot", "nj:treasure_hunter",
+                    "coin_shot", "steal", "nj:restore"));
             if (false) showSkills.clear(); // spellsinger afterglow
             if (false) showSkills.addAll(java.util.List.of("nj:restore", "nj:wardlinger", "nj:ward", "nj:linger", "nj:restore"));
             if (false) showSkills.clear(); // songs: each with its own rhythm (bars from the song's style) and tune

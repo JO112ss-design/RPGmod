@@ -1417,7 +1417,7 @@ public final class SkillExecutor {
         int amp = Mth.clamp((int) (JobManager.magicAttack(c.p) / 8), 0, 4);
         List<ServerPlayer> allies = allies(c.p, c.def.radius());
         for (ServerPlayer a : allies) a.addEffect(new MobEffectInstance(MobEffects.ABSORPTION, ticks(c.def.duration()), amp), c.p);
-        ServerFx.of("x_aura", c.p.position()).follow(c.p).a(3).b(2).color(0xFFE070).points(others(c.p, allies)).send(c.level);
+        ServerFx.of("x_aura", c.p.position()).follow(c.p).a(3).b(10).color(0xFFE070).points(others(c.p, allies)).send(c.level);
         sound(c, SoundEvents.BEACON_POWER_SELECT, 1.5F);
         sound(c, c.p.position(), SoundEvents.AMETHYST_BLOCK_RESONATE, 1.0F, 1.3F);
         return true;
