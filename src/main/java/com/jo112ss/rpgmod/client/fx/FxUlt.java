@@ -95,19 +95,20 @@ public final class FxUlt {
         ground(S.CRACK, o, 2.6F, WAR, 60).color(WAR_L, WAR).alpha(1, 0).randomAngle().size(0.5F, 3.4F).easeOut().spawn();
         ground(S.CRACK, o, 2.0F, WAR, 60).color(0xFFFFFF, WAR).alpha(0.8F, 0).randomAngle().size(0.4F, 2.4F).easeOut().delay(2).spawn();
         // a column of fire
-        for (int i = 0, n = Fx.n(26); i < n; i++) {
-            double a = Fx.r(0, Math.PI * 2), r = Fx.r(0.2, 0.9);
-            flameAt(o.add(Math.cos(a) * r, Fx.r(0, 0.6), Math.sin(a) * r), WAR_L, WAR, Fx.rf(0.6F, 1.1F), 18 + Fx.RND.nextInt(10), null);
+        for (int i = 0, n = Fx.n(44); i < n; i++) {
+            double a = Fx.r(0, Math.PI * 2), r = Fx.r(0.2, 1.3);
+            flameAt(o.add(Math.cos(a) * r, Fx.r(0, 0.8), Math.sin(a) * r), WAR_L, WAR, Fx.rf(0.9F, 1.7F), 20 + Fx.RND.nextInt(12), null);
         }
+        Fx.p(S.FLARE, o.add(0, 1.0, 0)).color(WAR).size(4F, 2F).alpha(0.5F, 0).life(16).spawn();
         spray(o.add(0, 0.2, 0), new Vec3(0, 1, 0), 0.35, 30, 0.8, S.GLOW, WAR_L, WAR, 0.25F, 22, 0.25F);
         debris(o, 22, 0.8, 0.6);
         // embers rising off the body for the whole time
         FxAnims.follow(e, ticks, age -> {
-            if (age % 3 != 0) return false;
+            if (age % 2 != 0) return false;
             Entity f = e;
             double a = Fx.r(0, Math.PI * 2);
-            Vec3 at = f.position().add(Math.cos(a) * 0.4, Fx.r(0, 0.6), Math.sin(a) * 0.4);
-            flameAt(at, WAR_L, WAR, Fx.rf(0.35F, 0.55F), 12, null);
+            Vec3 at = f.position().add(Math.cos(a) * 0.45, Fx.r(0, 0.9), Math.sin(a) * 0.45);
+            flameAt(at, WAR_L, WAR, Fx.rf(0.5F, 0.8F), 14, null);
             if (age % 12 == 0) Fx.p(S.GLOW, f.position().add(0, 1, 0)).color(WAR).size(1.8F, 1.2F).alpha(0.25F, 0).life(10).follow(f).spawn();
             return false;
         });
@@ -319,11 +320,12 @@ public final class FxUlt {
         int life = Math.max(20, (int) p.b());
         FxAnims.shake(o, 0.6F, 6, 16);
         // the clock face: it turns fast, then stops dead
-        FxParticle face = ground(S.CIRCLE_CLOCK, o, r, TIME, life + 6).color(0xFFFFFF, TIME).size(r * 0.2F, r).easeOut().alpha(0.95F, 0.95F).spin(0.4F).spawn();
-        FxParticle ring = ground(S.RING, o, r * 1.03F, TIME, life + 6).alpha(0.8F, 0.8F).spawn();
+        FxParticle face = ground(S.CIRCLE_CLOCK, o, r, TIME, life + 6).color(0x80A0FF).size(r * 0.2F, r).easeOut().alpha(0.75F, 0.75F).spin(0.4F).spawn();
+        FxParticle ring = ground(S.RING, o, r * 1.03F, 0x6080FF, life + 6).alpha(0.6F, 0.6F).spawn();
+        Fx.p(S.SMOKE, o.add(0, 1, 0)).color(0x4060C0).size(r * 1.4F).alpha(0.12F, 0.12F).life(life).spawn();
         FxParticle[] hands = new FxParticle[2];
         for (int i = 0; i < 2; i++) {
-            hands[i] = Fx.p(S.BEAM, o.add(0, 0.1, 0)).flat().color(0xFFFFFF, TIME).size(i == 0 ? r * 0.75F : r * 0.5F).alpha(0.9F, 0.9F).life(life + 6).spawn();
+            hands[i] = Fx.p(S.BEAM, o.add(0, 0.1, 0)).flat().color(0x90B0FF).size(i == 0 ? r * 0.75F : r * 0.5F).alpha(0.9F, 0.9F).life(life + 6).spawn();
         }
         FxAnims.run(life + 6, age -> {
             float spinSpeed = age < 10 ? 0.4F * (1 - age / 10F) : 0;
@@ -371,8 +373,8 @@ public final class FxUlt {
         float r = Math.max(3, p.a());
         int ticks = Math.max(20, (int) (p.b() * 20));
         // a golden clock face turning backwards
-        ground(S.CIRCLE_CLOCK, o, r, DAWN, 50).color(0xFFFFFF, DAWN).size(r * 0.3F, r).easeOut().alpha(0.9F, 0).spin(-0.12F).spawn();
-        ground(S.CIRCLE_HOLY, o, r * 0.6F, DAWN, 50).color(0xFFFFFF, DAWN).alpha(0.7F, 0).spin(0.08F).delay(4).spawn();
+        ground(S.CIRCLE_CLOCK, o, r, 0xFFB030, 50).color(0xFFC850, 0xFF9020).size(r * 0.3F, r).easeOut().alpha(0.7F, 0).spin(-0.12F).spawn();
+        ground(S.CIRCLE_HOLY, o, r * 0.6F, 0xFFB030, 50).color(0xFFC850, 0xFF9020).alpha(0.6F, 0).spin(0.08F).delay(4).spawn();
         // light spirals up the wrong way round
         FxAnims.run(30, age -> {
             for (int k = 0; k < 3; k++) {
@@ -480,7 +482,7 @@ public final class FxUlt {
     private static void jollyRoger(P p) {
         Vec3 at = p.pos();
         float r = Math.max(3, p.a());
-        Fx.p(S.SKULL, at.add(0, 3.6, 0)).size(0.2F, 1.2F).easeOut().alpha(1, 0).life(40).spawn();
+        Fx.p(S.SKULL, at.add(0, 3.4, 0)).size(0.15F, 0.7F).easeOut().alpha(1, 0).life(40).spawn();
         Fx.p(S.FLARE, at.add(0, 3.6, 0)).color(0xFF3020).size(2.6F, 0.5F).alpha(0.5F, 0).life(14).spawn();
         ground(S.SMOKE, at, r * 0.8F, 0x101820, 60).alphaBlend().lit().alpha(0.6F, 0).randomAngle().spawn();
         for (int i = 0, n = Fx.n(30); i < n; i++) {
@@ -496,7 +498,7 @@ public final class FxUlt {
         Vec3 at = p.pos();
         float r = Math.max(3, p.a());
         ground(S.RING, at, 1, JOLLY, 12).size(1, r * 2).easeOut().color(0xFF5040, 0x301010).alpha(0.5F, 0).spawn();
-        for (Vec3 v : p.pts()) Fx.p(S.SKULL, v.add(0, 1.4, 0)).vel(0, 0.03, 0).size(0.22F).alpha(0.9F, 0).life(14).spawn();
+        for (Vec3 v : p.pts()) Fx.p(S.GLOW, v.add(0, 1.2, 0)).vel(0, 0.05, 0).color(0xFF5040).size(0.3F, 0).life(12).spawn();
     }
 
     // ================================================================== lancer: dragon fang, spear field

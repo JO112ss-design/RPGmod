@@ -93,9 +93,9 @@ public final class FxUlt2 {
                     double swing = Math.sin(age * 0.18 + i) * 0.35;
                     Vec3 dir = side.scale(s).add(0, 0.8 - k * 0.6 + swing, 0).normalize();
                     Vec3 tip = c.add(back).add(dir.scale(1.5));
-                    Fx.p(S.FANG, c.add(back).add(dir.scale(0.8))).fixed(Fx.basis(dir.cross(back.normalize()), dir)).color(0xFF8060, BLOOD).size(0.9F).alpha(0.8F, 0)
+                    Fx.p(S.FANG, c.add(back).add(dir.scale(0.9))).fixed(Fx.basis(dir.cross(back.normalize()), dir)).color(0xFF8060, BLOOD).size(1.3F).alpha(0.95F, 0)
                             .life(3).spawn();
-                    Fx.p(S.GLOW, tip).color(0xFF6040, BLOOD).size(0.35F, 0).life(5).spawn();
+                    Fx.p(S.GLOW, tip).color(0xFF6040, BLOOD).size(0.55F, 0).life(6).spawn();
                 }
             }
             if (age % 4 == 0) flameAt(e.position().add(Fx.r(-0.4, 0.4), 0, Fx.r(-0.4, 0.4)), 0xFF5030, 0x500000, 0.6F, 12, null);
@@ -119,12 +119,12 @@ public final class FxUlt2 {
             double a = Math.PI * 2 * i / n;
             Vec3 at = o.add(Math.cos(a) * r, 0, Math.sin(a) * r);
             for (int h = 0; h < 3; h++) {
-                Fx.p(S.HEX, at.add(0, 0.6 + h * 1.0, 0)).fixed(Fx.facing(at.subtract(o))).color(0xFFFFFF, GOLD).size(0.9F).alpha(0.8F, 0).fadeIn(0.1F)
+                Fx.p(S.HEX, at.add(0, 0.6 + h * 1.0, 0)).fixed(Fx.facing(at.subtract(o))).color(GOLD, 0xE09010).size(0.9F).alpha(0.7F, 0).fadeIn(0.1F)
                         .life(Math.min(ticks, 80)).delay(i + h * 2).spawn();
             }
             if (i % 2 == 0) Fx.p(S.CREST, at.add(0, 3.4, 0)).fixed(Fx.facing(at.subtract(o))).color(0xFFFFFF, GOLD).size(0.8F).alpha(1, 0).life(60).delay(i).spawn();
         }
-        ground(S.CIRCLE_HOLY, o, r, GOLD, 60).color(0xFFFFFF, GOLD).alpha(0.8F, 0).spin(0.02F).spawn();
+        ground(S.CIRCLE_HOLY, o, r, GOLD, 60).color(GOLD, 0xE09010).alpha(0.6F, 0).spin(0.02F).spawn();
         for (Vec3 v : p.pts()) Fx.p(S.CREST, v.add(0, 1.4, 0)).color(0xFFFFFF, GOLD).size(0.3F, 0.7F).easeOut().alpha(1, 0).life(30).spawn();
         // the guardian itself cannot fall: a golden heart of light beats
         FxAnims.follow(e, ticks, age -> {
@@ -166,9 +166,9 @@ public final class FxUlt2 {
             Vec3 look = e.getLookAngle();
             Vec3 hand = e.getEyePosition().add(0, -0.35, 0).add(look.scale(0.9));
             for (int k = 0; k < 3; k++) {
-                Vec3 at = hand.add(look.scale(0.4 + k * 0.9));
-                float s = 1.4F + k * 0.6F;
-                Fx.p(k == 1 ? S.CIRCLE_HEX : S.CIRCLE_ARCANE, at).fixed(Fx.across(look)).color(0xFFFFFF, ARC).size(s).alpha(0.9F, 0.6F).angle(age * (k % 2 == 0 ? 0.15F : -0.2F))
+                Vec3 at = hand.add(look.scale(0.8 + k * 0.8));
+                float s = 0.7F + k * 0.35F;
+                Fx.p(k == 1 ? S.CIRCLE_HEX : S.CIRCLE_ARCANE, at).fixed(Fx.across(look)).color(ARC, 0x8060E0).size(s).alpha(0.6F, 0.4F).angle(age * (k % 2 == 0 ? 0.15F : -0.2F))
                         .life(2).spawn();
             }
             return false;
@@ -207,8 +207,8 @@ public final class FxUlt2 {
         Vec3 o = p.pos();
         float r = Math.max(4, p.a());
         int life = Math.max(20, (int) p.b());
-        ground(S.CIRCLE_ARCANE, o, r, RUNE, life).color(0xFFFFFF, RUNE).size(r * 0.2F, r).easeOut().alpha(0.8F, 0.3F).spin(0.01F).spawn();
-        ground(S.CIRCLE_HEX, o, r * 0.6F, RUNE, life).color(0xFFFFFF, RUNE).alpha(0.7F, 0.2F).spin(-0.02F).delay(4).spawn();
+        ground(S.CIRCLE_ARCANE, o, r, RUNE, life).color(RUNE, 0x20A080).size(r * 0.2F, r).easeOut().alpha(0.6F, 0.25F).spin(0.01F).spawn();
+        ground(S.CIRCLE_HEX, o, r * 0.6F, RUNE, life).color(RUNE, 0x20A080).alpha(0.55F, 0.2F).spin(-0.02F).delay(4).spawn();
         // four runestones stand at the edge, their runes orbiting
         for (int k = 0; k < 4; k++) {
             double a = Math.PI / 2 * k + Math.PI / 4;
@@ -272,7 +272,7 @@ public final class FxUlt2 {
             for (int k = 0; k < 2; k++) {
                 double a = age * 0.3 + k * Math.PI;
                 Vec3 at = c.add(Math.cos(a) * 1.0, 1.1 + Math.sin(age * 0.2 + k) * 0.3, Math.sin(a) * 1.0);
-                Fx.p(S.MOON, at).fixed(Fx.facing(at.subtract(c.add(0, 1.1, 0)))).color(0xFFFFFF, ONI).size(0.5F).alpha(0.9F, 0).life(3).spawn();
+                Fx.p(S.MOON, at).fixed(Fx.facing(at.subtract(c.add(0, 1.1, 0)))).color(0x90A0FF, ONI).size(0.5F).alpha(0.9F, 0).life(3).spawn();
             }
             return false;
         });
@@ -287,8 +287,8 @@ public final class FxUlt2 {
         Vec3 o = feetOf(p);
         float r = Math.max(4, p.a());
         FxAnims.shake(o, 0.8F, 16, 30);
-        flash(o.add(0, 2, 0), HOLY, 5, 14);
-        ground(S.CIRCLE_HOLY, o, r * 0.5F, HOLY, 60).color(0xFFFFFF, HOLY).size(1, r).easeOut().alpha(1, 0).spin(0.03F).spawn();
+        flash(o.add(0, 2, 0), 0xFFD060, 3, 12);
+        ground(S.CIRCLE_HOLY, o, r * 0.5F, HOLY, 60).color(0xFFD860, 0xFFB020).size(1, r).easeOut().alpha(0.7F, 0).spin(0.03F).spawn();
         // great wings of light spread above the bishop
         Vec3 face = e == null ? new Vec3(0, 0, 1) : Vec3.directionFromRotation(0, e.getYRot());
         Vec3 side = Fx.right(face);
@@ -394,7 +394,7 @@ public final class FxUlt2 {
                 double a = age * 0.6 + k * Math.PI;
                 Fx.p(S.FLAME, c.add(Math.cos(a) * 0.8, -0.4, Math.sin(a) * 0.8)).upright().color(0xFFE0A0, DK).size(0.9F, 0.3F).alpha(0.9F, 0).life(10).spawn();
             }
-            Fx.p(S.GLOW, c.add(0, 0.5, 0)).color(DK).size(1.4F, 0.4F).alpha(0.5F, 0).life(6).spawn();
+            Fx.p(S.GLOW, c.add(0, 0.5, 0)).color(DK).size(0.9F, 0.3F).alpha(0.4F, 0).life(6).spawn();
             return false;
         });
     }
@@ -405,7 +405,7 @@ public final class FxUlt2 {
         int fire = Math.max(20, (int) p.b());
         float fireR = Math.max(2, (float) p.vec().x);
         FxAnims.shake(o, 2.8F, 22, 30);
-        flash(o.add(0, 1, 0), DK, r, 10);
+        flash(o.add(0, 1, 0), DK, Math.min(r, 3.5F), 10);
         Fx.vanilla(ParticleTypes.EXPLOSION_EMITTER, o.x, o.y + 0.5, o.z, 0, 0, 0);
         ground(S.CRACK, o, r * 1.2F, DK, 100).color(0xFFE0A0, 0x601000).size(1, r * 1.4F).easeOut().alpha(1, 0).randomAngle().spawn();
         ground(S.WAVE, o, 1, DK, 16).size(1, r * 2).easeOut().color(0xFFE0A0, DK).alpha(1, 0).spawn();
@@ -569,11 +569,11 @@ public final class FxUlt2 {
         Vec3 o = p.pos();
         float r = Math.max(3, p.a());
         int life = Math.max(20, (int) p.b());
-        ground(S.CIRCLE_NATURE, o, r, BLOSSOM, life).color(0xFFFFFF, BLOSSOM).size(r * 0.3F, r).easeOut().alpha(0.8F, 0.2F).spin(0.01F).spawn();
+        ground(S.CIRCLE_NATURE, o, r, BLOSSOM, life).color(BLOSSOM, 0xE05090).size(r * 0.3F, r).easeOut().alpha(0.6F, 0.2F).spin(0.01F).spawn();
         // flowers open across the field
         for (int i = 0, n = Fx.n(18); i < n; i++) {
             double a = Fx.r(0, Math.PI * 2), d = Math.sqrt(Fx.RND.nextDouble()) * r;
-            ground(S.SAKURA, o.add(Math.cos(a) * d, 0.02, Math.sin(a) * d), Fx.rf(0.4F, 0.8F), BLOSSOM, life).color(0xFFFFFF, BLOSSOM).size(0.05F, Fx.rf(0.4F, 0.8F)).easeOut()
+            ground(S.SAKURA, o.add(Math.cos(a) * d, 0.02, Math.sin(a) * d), Fx.rf(0.6F, 1.2F), BLOSSOM, life).color(0xFFC0DC, 0xFF70A8).size(0.05F, Fx.rf(0.6F, 1.2F)).easeOut()
                     .alpha(0.9F, 0.2F).randomAngle().delay(Fx.RND.nextInt(10)).spawn();
         }
         // petals on the wind the whole time
@@ -630,7 +630,7 @@ public final class FxUlt2 {
             Fx.p(S.BLADE, at).upright().vel(0, 0.0, 0).color(0xFFFFFF, FORT).size(0.2F, 1.0F).easeOut().alpha(0.95F, 0.6F).life(ticks).delay(i).spawn();
             debris(at.subtract(0, 0.9, 0), 2, 0.1, 0.3);
         }
-        ground(S.CIRCLE_HOLY, o, r, FORT, ticks).color(0xFFFFFF, FORT).alpha(0.5F, 0.1F).spin(0.01F).spawn();
+        ground(S.CIRCLE_HOLY, o, r, FORT, ticks).color(FORT, 0xC09040).alpha(0.4F, 0.1F).spin(0.01F).spawn();
         for (Vec3 v : p.pts()) Fx.p(S.CREST, v.add(0, 1.2, 0)).color(0xFFFFFF, FORT).size(0.3F, 0.6F).alpha(1, 0).life(24).spawn();
     }
 
@@ -740,12 +740,15 @@ public final class FxUlt2 {
         Entity e = p.e();
         Vec3 o = feetOf(p);
         // the moon comes up over the hunt, and the dark closes in
-        Fx.p(S.MOON, o.add(0, 7, 0)).color(0xFFFFFF, MOON).size(0.5F, 3.2F).easeOut().alpha(1, 0).fadeIn(0.1F).life(80).spawn();
-        Fx.p(S.FLARE, o.add(0, 7, 0)).color(MOON).size(5F).alpha(0.4F, 0).life(80).spawn();
-        for (int i = 0, n = Fx.n(30); i < n; i++) {
+        Vec3 face = e == null ? new Vec3(0, 0, 1) : Vec3.directionFromRotation(0, e.getYRot());
+        Vec3 sky = o.add(face.scale(6)).add(0, 5, 0);
+        Fx.p(S.MOON, sky).color(0xFFFFFF, MOON).size(0.5F, 2.4F).easeOut().alpha(1, 0).fadeIn(0.1F).life(80).spawn();
+        Fx.p(S.FLARE, sky).color(MOON).size(4F).alpha(0.4F, 0).life(80).spawn();
+        for (int i = 0, n = Fx.n(14); i < n; i++) {
             double a = Fx.r(0, Math.PI * 2);
-            smoke(o.add(Math.cos(a) * 3, 0.5, Math.sin(a) * 3), 0x10141E, 1.2F, 2.6F, 40).vel(-Math.cos(a) * 0.05, 0.01, -Math.sin(a) * 0.05).alpha(0.7F, 0).spawn();
+            smoke(o.add(Math.cos(a) * 3.5, 0.2, Math.sin(a) * 3.5), 0x10141E, 0.6F, 1.4F, 36).vel(-Math.cos(a) * 0.06, 0.0, -Math.sin(a) * 0.06).alpha(0.45F, 0).spawn();
         }
+        ground(S.MOON, o, 2.5F, MOON, 50).color(0x8090C0, 0x303860).alpha(0.7F, 0).spin(0.04F).spawn();
     }
 
     /** A hunted enemy: a red eye watching over it while the hunt lasts. */
