@@ -466,14 +466,14 @@ public final class AutoTestClient {
         }
         if (entry.equals("swordwalk")) { // walking: plain, then while charging sword magic
             if (k == 0) mc.player.getInventory().setSelectedSlot(6);
-            if (k == 2) mc.options.keyUp.setDown(true);
+            if (k == 2) mc.options.keyDown.setDown(true); // backwards: nothing in the way
             if (k == 6 || k == 22) walkFrom = mc.player.position();
             if (k == 16 || k == 32) RpgMod.LOGGER.info("[AUTOTEST] sword walk {} moved {} in 10 ticks (charge {})", k == 16 ? "plain" : "charging",
                     String.format("%.2f", mc.player.position().distanceTo(walkFrom)), com.jo112ss.rpgmod.client.job.JobClient.swordCharge);
             if (k == 18) mc.options.keyUse.setDown(true);
             if (k == 33) {
                 mc.options.keyUse.setDown(false);
-                mc.options.keyUp.setDown(false);
+                mc.options.keyDown.setDown(false);
             }
             return;
         }
