@@ -87,12 +87,12 @@ public final class JobDefs {
         job("fighter", 0xD9534F, "闘", List.of(JobStat.MAX_HEALTH, JobStat.ATTACK_DAMAGE, JobStat.ARMOR),
                 stats(JobStat.MAX_HEALTH, 4, JobStat.ATTACK_DAMAGE, 6), stats(JobStat.MAX_HEALTH, hpGrow(1.0, 4), JobStat.ATTACK_DAMAGE, 0.6),
                 List.of(
-                        skill("power_slash", SkillKind.ACTIVE, SkillEffect.SWEEP, 8, 15, 3.0, 4.5, 0, List.of(), 0, "斬"),
-                        skill("charge", SkillKind.ACTIVE, SkillEffect.DASH, 8, 8, 2.0, 0, 0, List.of(), 0, "突"),
-                        skill("war_cry", SkillKind.ACTIVE, SkillEffect.BUFF, 20, 20, 0, 8, 10, List.of("minecraft:strength"), 0, "鬨"),
-                        skill("whirlwind", SkillKind.ACTIVE, SkillEffect.WHIRL, 10, 15, 1.6, 4.5, 0, List.of(), 0, "旋"),
-                        skill("intimidate", SkillKind.ACTIVE, SkillEffect.SWEEP, 10, 15, 1.0, 4.5, 8, List.of("rpgmod:attack_down"), 1, "圧"),
-                        skill("taunt", SkillKind.ACTIVE, SkillEffect.BUFF, 16, 15, 0, 10, 6, List.of("minecraft:resistance"), 0, "挑")),
+                        skill("power_slash", SkillKind.ACTIVE, SkillEffect.SWEEP, 4, 15, 3.0, 4.5, 0, List.of(), 0, "斬"),
+                        skill("charge", SkillKind.ACTIVE, SkillEffect.DASH, 4, 8, 2.0, 0, 0, List.of(), 0, "突"),
+                        skill("war_cry", SkillKind.ACTIVE, SkillEffect.BUFF, 20, 20, 0, 8, 20, List.of("minecraft:strength"), 0, "鬨"),
+                        skill("whirlwind", SkillKind.ACTIVE, SkillEffect.WHIRL, 5, 15, 1.6, 4.5, 0, List.of(), 0, "旋"),
+                        skill("intimidate", SkillKind.ACTIVE, SkillEffect.SWEEP, 8, 15, 1.0, 4.5, 8, List.of("rpgmod:attack_down"), 1, "圧"),
+                        skill("taunt", SkillKind.ACTIVE, SkillEffect.BUFF, 8, 15, 0, 10, 6, List.of("minecraft:resistance"), 0, "挑")),
                 List.of(
                         skill("berserk", SkillKind.ULTIMATE, SkillEffect.BUFF, 60, 40, 0, 0, 15, List.of("minecraft:strength", "minecraft:speed"), 1, "狂"),
                         skill("earthshatter", SkillKind.ULTIMATE, SkillEffect.WHIRL, 60, 40, 8.0, 7, 4, List.of("minecraft:slowness"), 1, "砕")),
@@ -101,12 +101,12 @@ public final class JobDefs {
         job("ranger", 0x5CB85C, "弓", List.of(JobStat.ATTACK_DAMAGE, JobStat.MOVEMENT_SPEED, JobStat.CRIT_CHANCE),
                 stats(JobStat.MOVEMENT_SPEED, 5, JobStat.CRIT_CHANCE, 3, JobStat.ATTACK_DAMAGE, 3), stats(JobStat.CRIT_CHANCE, 0.05, JobStat.ATTACK_DAMAGE, 0.6, JobStat.MAX_HEALTH, hpGrow(1.0, 0)),
                 List.of(
-                        skill("multishot", SkillKind.ACTIVE, SkillEffect.SHOT, 6, 8, 1.6, 0, 0, List.of(), 0, "連"),
-                        skill("backstep", SkillKind.ACTIVE, SkillEffect.BACKSTEP, 7, 8, 1.4, 0, 0, List.of(), 0, "退"),
-                        skill("hunters_mark", SkillKind.ACTIVE, SkillEffect.DEBUFF, 18, 15, 0, 128, 12, List.of("minecraft:glowing"), 0, "探"),
-                        skill("snare", SkillKind.ACTIVE, SkillEffect.DEBUFF, 12, 15, 0.8, 3.5, 4, List.of("minecraft:slowness"), 2, "罠"),
-                        skill("piercing_shot", SkillKind.ACTIVE, SkillEffect.BOLT, 8, 15, 3.2, 30, 0, List.of(), 0, "貫"),
-                        skill("explosive_arrow", SkillKind.ACTIVE, SkillEffect.SHOT, 10, 15, 2.4, 3, 0, List.of(), 0, "爆")),
+                        skill("multishot", SkillKind.ACTIVE, SkillEffect.SHOT, 3, 8, 1.6, 0, 0, List.of(), 0, "連"),
+                        skill("backstep", SkillKind.ACTIVE, SkillEffect.BACKSTEP, 3.5, 8, 1.4, 0, 0, List.of(), 0, "退"),
+                        skill("hunters_mark", SkillKind.ACTIVE, SkillEffect.DEBUFF, 12, 15, 0, 128, 12, List.of("minecraft:glowing"), 0, "探"),
+                        skill("snare", SkillKind.ACTIVE, SkillEffect.DEBUFF, 8, 15, 0.8, 3.5, 4, List.of("minecraft:slowness"), 2, "罠"),
+                        skill("piercing_shot", SkillKind.ACTIVE, SkillEffect.BOLT, 4, 15, 3.2, 30, 0, List.of(), 0, "貫"),
+                        skill("explosive_arrow", SkillKind.ACTIVE, SkillEffect.SHOT, 5, 15, 2.4, 3, 0, List.of(), 0, "爆")),
                 List.of(
                         skill("arrow_rain", SkillKind.ULTIMATE, SkillEffect.SHOT, 60, 40, 1.2, 5, 0, List.of(), 0, "雨"),
                         skill("eagle_eye", SkillKind.ULTIMATE, SkillEffect.BUFF, 60, 40, 0, 0, 15, List.of("minecraft:strength", "minecraft:speed", "minecraft:night_vision"), 1, "鷹")),
@@ -115,12 +115,12 @@ public final class JobDefs {
         job("paladin", 0xF0C040, "聖", List.of(JobStat.MAX_HEALTH, JobStat.ARMOR, JobStat.ATTACK_DAMAGE, JobStat.COOLDOWN_REDUCTION),
                 stats(JobStat.MAX_HEALTH, 6, JobStat.ARMOR, 4), stats(JobStat.MAX_HEALTH, hpGrow(1.2, 6), JobStat.ATTACK_DAMAGE, 0.6),
                 List.of(
-                        skill("shield_bash", SkillKind.ACTIVE, SkillEffect.SWEEP, 7, 8, 1.6, 4, 3, List.of("minecraft:slowness"), 1, "打"),
-                        skill("holy_guard", SkillKind.ACTIVE, SkillEffect.BUFF, 18, 20, 0, 7, 8, List.of("minecraft:resistance"), 0, "護"),
-                        skill("smite", SkillKind.ACTIVE, SkillEffect.SWEEP, 8, 15, 3.2, 8, 0, List.of(), 0, "裁"),
-                        skill("lay_on_hands", SkillKind.ACTIVE, SkillEffect.HEAL, 15, 20, 0.9, 5, 0, List.of(), 0, "手"),
-                        skill("guardian_dome", SkillKind.ACTIVE, SkillEffect.BUFF, 30, 25, 0, 5, 12, List.of(), 0, "囲"),
-                        skill("holy_wave", SkillKind.ACTIVE, SkillEffect.SWEEP, 10, 15, 2.0, 10, 0, List.of(), 0, "波")),
+                        skill("shield_bash", SkillKind.ACTIVE, SkillEffect.SWEEP, 6, 8, 1.6, 4, 3, List.of("minecraft:slowness"), 1, "打"),
+                        skill("holy_guard", SkillKind.ACTIVE, SkillEffect.BUFF, 18, 20, 0, 7, 16, List.of("minecraft:resistance"), 0, "護"),
+                        skill("smite", SkillKind.ACTIVE, SkillEffect.SWEEP, 4, 15, 3.2, 8, 0, List.of(), 0, "裁"),
+                        skill("lay_on_hands", SkillKind.ACTIVE, SkillEffect.HEAL, 7.5, 20, 0.9, 5, 0, List.of(), 0, "手"),
+                        skill("guardian_dome", SkillKind.ACTIVE, SkillEffect.BUFF, 30, 25, 0, 5, 24, List.of(), 0, "囲"),
+                        skill("holy_wave", SkillKind.ACTIVE, SkillEffect.SWEEP, 5, 15, 2.0, 10, 0, List.of(), 0, "波")),
                 List.of(
                         skill("divine_aegis", SkillKind.ULTIMATE, SkillEffect.BUFF, 75, 40, 0, 8, 12, List.of("minecraft:resistance", "minecraft:absorption"), 1, "盾"),
                         skill("judgement", SkillKind.ULTIMATE, SkillEffect.WHIRL, 60, 40, 6.0, 6.5, 0, List.of(), 0, "審")),
@@ -168,12 +168,12 @@ public final class JobDefs {
         job("assassin", 0x8E44AD, "影", List.of(JobStat.CRIT_CHANCE, JobStat.ATTACK_DAMAGE, JobStat.ATTACK_SPEED, JobStat.MOVEMENT_SPEED),
                 stats(JobStat.CRIT_CHANCE, 5, JobStat.MOVEMENT_SPEED, 5, JobStat.ATTACK_DAMAGE, 3), stats(JobStat.CRIT_CHANCE, 0.075, JobStat.ATTACK_DAMAGE, 0.6, JobStat.MAX_HEALTH, hpGrow(1.0, 0)),
                 List.of(
-                        skill("shadow_step", SkillKind.ACTIVE, SkillEffect.BLINK, 7, 8, 0, 12, 0, List.of(), 0, "影"),
-                        skill("backstab", SkillKind.ACTIVE, SkillEffect.SWEEP, 7, 15, 3.0, 3.5, 0, List.of(), 0, "急"),
-                        skill("smoke_bomb", SkillKind.ACTIVE, SkillEffect.STEALTH, 15, 20, 0, 0, 5, List.of("minecraft:speed"), 1, "煙"),
-                        skill("poison_coat", SkillKind.ACTIVE, SkillEffect.BUFF, 30, 12, 0, 0, 30, List.of(), 0, "毒"),
-                        skill("throwing_knives", SkillKind.ACTIVE, SkillEffect.SHOT, 8, 15, 1.2, 16, 0, List.of(), 0, "投"),
-                        skill("shadow_bind", SkillKind.ACTIVE, SkillEffect.DEBUFF, 14, 15, 1.0, 12, 3, List.of(), 0, "縛")),
+                        skill("shadow_step", SkillKind.ACTIVE, SkillEffect.BLINK, 3.5, 8, 0, 12, 0, List.of(), 0, "影"),
+                        skill("backstab", SkillKind.ACTIVE, SkillEffect.SWEEP, 3.5, 15, 3.0, 3.5, 0, List.of(), 0, "急"),
+                        skill("smoke_bomb", SkillKind.ACTIVE, SkillEffect.STEALTH, 7.5, 20, 0, 0, 5, List.of("minecraft:speed"), 1, "煙"),
+                        skill("poison_coat", SkillKind.ACTIVE, SkillEffect.BUFF, 30, 12, 0, 0, 60, List.of(), 0, "毒"),
+                        skill("throwing_knives", SkillKind.ACTIVE, SkillEffect.SHOT, 4, 15, 1.2, 16, 0, List.of(), 0, "投"),
+                        skill("shadow_bind", SkillKind.ACTIVE, SkillEffect.DEBUFF, 7, 15, 1.0, 12, 3, List.of(), 0, "縛")),
                 List.of(
                         skill("assassinate", SkillKind.ULTIMATE, SkillEffect.SWEEP, 60, 40, 7.0, 12, 0, List.of(), 0, "殺"),
                         skill("shadow_dance", SkillKind.ULTIMATE, SkillEffect.STEALTH, 60, 40, 0, 0, 10, List.of("minecraft:strength", "minecraft:speed"), 1, "舞")),
@@ -196,12 +196,12 @@ public final class JobDefs {
         job("gambler", 0x1ABC9C, "賭", List.of(JobStat.CRIT_CHANCE, JobStat.ATTACK_DAMAGE, JobStat.LUCK, JobStat.COOLDOWN_REDUCTION),
                 stats(JobStat.LUCK, 2, JobStat.CRIT_CHANCE, 5), stats(JobStat.LUCK, 0.025, JobStat.CRIT_CHANCE, 0.05, JobStat.ATTACK_DAMAGE, 0.6, JobStat.MAX_HEALTH, hpGrow(1.0, 0)),
                 List.of(
-                        skill("coin_toss", SkillKind.ACTIVE, SkillEffect.GAMBLE, 8, 8, 2, 6, 6, List.of(), 0, "銭"),
-                        skill("lucky_shot", SkillKind.ACTIVE, SkillEffect.SHOT, 6, 8, 2.0, 0, 0, List.of(), 0, "幸"),
-                        skill("dice_roll", SkillKind.ACTIVE, SkillEffect.GAMBLE, 12, 15, 3.0, 6, 8, List.of(), 0, "骰"),
-                        skill("all_in", SkillKind.ACTIVE, SkillEffect.GAMBLE, 20, 20, 5.0, 8, 10, List.of(), 0, "賭"),
-                        skill("russian_roulette", SkillKind.ACTIVE, SkillEffect.SHOT, 4, 5, 6.0, 16, 0, List.of(), 0, "銃"),
-                        skill("card_throw", SkillKind.ACTIVE, SkillEffect.SHOT, 9, 15, 1.8, 16, 0, List.of(), 0, "札")),
+                        skill("coin_toss", SkillKind.ACTIVE, SkillEffect.GAMBLE, 6, 8, 2, 6, 6, List.of(), 0, "銭"),
+                        skill("lucky_shot", SkillKind.ACTIVE, SkillEffect.SHOT, 3, 8, 2.0, 0, 0, List.of(), 0, "幸"),
+                        skill("dice_roll", SkillKind.ACTIVE, SkillEffect.GAMBLE, 8, 15, 3.0, 6, 8, List.of(), 0, "骰"),
+                        skill("all_in", SkillKind.ACTIVE, SkillEffect.GAMBLE, 10, 20, 5.0, 8, 10, List.of(), 0, "賭"),
+                        skill("russian_roulette", SkillKind.ACTIVE, SkillEffect.SHOT, 2, 5, 6.0, 16, 0, List.of(), 0, "銃"),
+                        skill("card_throw", SkillKind.ACTIVE, SkillEffect.SHOT, 4.5, 15, 1.8, 16, 0, List.of(), 0, "札")),
                 List.of(
                         skill("jackpot", SkillKind.ULTIMATE, SkillEffect.GAMBLE, 60, 40, 8, 10, 15, List.of(), 0, "当"),
                         skill("roulette", SkillKind.ULTIMATE, SkillEffect.BUFF, 60, 40, 0, 0, 12, List.of(), 0, "輪")),
@@ -210,12 +210,12 @@ public final class JobDefs {
         job("pirate", 0x2E86C1, "海", List.of(JobStat.ATTACK_DAMAGE, JobStat.CRIT_CHANCE, JobStat.MAX_HEALTH, JobStat.ATTACK_SPEED),
                 stats(JobStat.MAX_HEALTH, 3, JobStat.ATTACK_DAMAGE, 4, JobStat.CRIT_CHANCE, 3), stats(JobStat.ATTACK_DAMAGE, 0.6, JobStat.MAX_HEALTH, hpGrow(0.9, 3)),
                 List.of(
-                        skill("boarding_shot", SkillKind.ACTIVE, SkillEffect.DASH, 7, 8, 2.4, 3.5, 0, List.of(), 0, "撃"),
-                        skill("quick_draw", SkillKind.ACTIVE, SkillEffect.SHOT, 10, 15, 1.2, 32, 0, List.of(), 0, "速"),
-                        skill("cannon", SkillKind.ACTIVE, SkillEffect.SHOT, 20, 22, 1.6, 16, 10, List.of(), 0, "砲"),
-                        skill("powder_keg", SkillKind.ACTIVE, SkillEffect.WHIRL, 12, 22, 3.0, 3.5, 0, List.of(), 0, "樽"),
-                        skill("grapple", SkillKind.ACTIVE, SkillEffect.DASH, 8, 8, 0.8, 20, 0, List.of(), 0, "鉤"),
-                        skill("rum", SkillKind.ACTIVE, SkillEffect.BUFF, 20, 15, 0, 0, 8, List.of("minecraft:haste"), 1, "酒")),
+                        skill("boarding_shot", SkillKind.ACTIVE, SkillEffect.DASH, 3.5, 8, 2.4, 3.5, 0, List.of(), 0, "撃"),
+                        skill("quick_draw", SkillKind.ACTIVE, SkillEffect.SHOT, 5, 15, 1.2, 32, 0, List.of(), 0, "速"),
+                        skill("cannon", SkillKind.ACTIVE, SkillEffect.SHOT, 10, 22, 1.6, 16, 10, List.of(), 0, "砲"),
+                        skill("powder_keg", SkillKind.ACTIVE, SkillEffect.WHIRL, 6, 22, 3.0, 3.5, 0, List.of(), 0, "樽"),
+                        skill("grapple", SkillKind.ACTIVE, SkillEffect.DASH, 4, 8, 0.8, 20, 0, List.of(), 0, "鉤"),
+                        skill("rum", SkillKind.ACTIVE, SkillEffect.BUFF, 20, 15, 0, 0, 16, List.of("minecraft:haste"), 1, "酒")),
                 List.of(
                         skill("broadside", SkillKind.ULTIMATE, SkillEffect.WHIRL, 60, 40, 1.2, 7, 4, List.of(), 0, "斉"),
                         skill("jolly_roger", SkillKind.ULTIMATE, SkillEffect.BUFF, 60, 40, 0, 10, 15, List.of(), 0, "旗")),
@@ -224,12 +224,12 @@ public final class JobDefs {
         job("lancer", 0xC0703A, "槍", List.of(JobStat.ATTACK_DAMAGE, JobStat.MAX_HEALTH, JobStat.ARMOR, JobStat.MOVEMENT_SPEED),
                 stats(JobStat.MAX_HEALTH, 4, JobStat.ATTACK_DAMAGE, 6), stats(JobStat.ATTACK_DAMAGE, 0.6, JobStat.MAX_HEALTH, hpGrow(1.0, 4)),
                 List.of(
-                        skill("lance_charge", SkillKind.ACTIVE, SkillEffect.DASH, 8, 8, 1.3, 8, 0, List.of(), 0, "突"),
-                        skill("spear_throw", SkillKind.ACTIVE, SkillEffect.BOLT, 9, 15, 2.6, 24, 0, List.of(), 0, "投"),
-                        skill("spear_sweep", SkillKind.ACTIVE, SkillEffect.SWEEP, 8, 15, 1.8, 5.5, 0, List.of(), 0, "薙"),
-                        skill("leap_thrust", SkillKind.ACTIVE, SkillEffect.WHIRL, 12, 22, 2.6, 2.5, 0, List.of(), 0, "跳"),
-                        skill("counter_stance", SkillKind.ACTIVE, SkillEffect.BUFF, 14, 8, 3.0, 5, 2, List.of(), 0, "構"),
-                        skill("rapid_thrust", SkillKind.ACTIVE, SkillEffect.SWEEP, 10, 15, 0.7, 6, 0, List.of(), 0, "連")),
+                        skill("lance_charge", SkillKind.ACTIVE, SkillEffect.DASH, 4, 8, 1.3, 8, 0, List.of(), 0, "突"),
+                        skill("spear_throw", SkillKind.ACTIVE, SkillEffect.BOLT, 4.5, 15, 2.6, 24, 0, List.of(), 0, "投"),
+                        skill("spear_sweep", SkillKind.ACTIVE, SkillEffect.SWEEP, 4, 15, 1.8, 5.5, 0, List.of(), 0, "薙"),
+                        skill("leap_thrust", SkillKind.ACTIVE, SkillEffect.WHIRL, 6, 22, 2.6, 2.5, 0, List.of(), 0, "跳"),
+                        skill("counter_stance", SkillKind.ACTIVE, SkillEffect.BUFF, 7, 8, 3.0, 5, 2, List.of(), 0, "構"),
+                        skill("rapid_thrust", SkillKind.ACTIVE, SkillEffect.SWEEP, 5, 15, 0.7, 6, 0, List.of(), 0, "連")),
                 List.of(
                         skill("dragon_fang", SkillKind.ULTIMATE, SkillEffect.WHIRL, 60, 40, 6.0, 6, 0, List.of(), 0, "竜"),
                         skill("spear_rain", SkillKind.ULTIMATE, SkillEffect.WHIRL, 60, 40, 0.9, 6, 3, List.of(), 0, "雨")),
@@ -239,12 +239,12 @@ public final class JobDefs {
                 stats(JobStat.MAX_HEALTH, 2, JobStat.ATTACK_DAMAGE, 4, JobStat.ATTACK_SPEED, 10, JobStat.MOVEMENT_SPEED, 5),
                 stats(JobStat.ATTACK_DAMAGE, 0.6, JobStat.MAX_HEALTH, hpGrow(1.0, 2)),
                 List.of(
-                        skill("combo", SkillKind.ACTIVE, SkillEffect.SWEEP, 5, 8, 0.9, 3.5, 0, List.of(), 0, "拳"),
-                        skill("ki_blast", SkillKind.ACTIVE, SkillEffect.SWEEP, 8, 15, 1.0, 4, 0, List.of(), 0, "勁"),
-                        skill("parry", SkillKind.ACTIVE, SkillEffect.BUFF, 10, 8, 1.5, 0, 1.2, List.of(), 0, "流"),
-                        skill("whirl_kick", SkillKind.ACTIVE, SkillEffect.WHIRL, 9, 15, 1.5, 3.5, 0, List.of(), 0, "脚"),
-                        skill("meditate", SkillKind.ACTIVE, SkillEffect.BUFF, 20, 8, 0, 0, 3, List.of(), 0, "瞑"),
-                        skill("shrink_step", SkillKind.ACTIVE, SkillEffect.DASH, 7, 8, 1.2, 7, 0, List.of(), 0, "縮")),
+                        skill("combo", SkillKind.ACTIVE, SkillEffect.SWEEP, 2.5, 8, 0.9, 3.5, 0, List.of(), 0, "拳"),
+                        skill("ki_blast", SkillKind.ACTIVE, SkillEffect.SWEEP, 4, 15, 1.0, 4, 0, List.of(), 0, "勁"),
+                        skill("parry", SkillKind.ACTIVE, SkillEffect.BUFF, 5, 8, 1.5, 0, 1.2, List.of(), 0, "流"),
+                        skill("whirl_kick", SkillKind.ACTIVE, SkillEffect.WHIRL, 4.5, 15, 1.5, 3.5, 0, List.of(), 0, "脚"),
+                        skill("meditate", SkillKind.ACTIVE, SkillEffect.BUFF, 10, 8, 0, 0, 3, List.of(), 0, "瞑"),
+                        skill("shrink_step", SkillKind.ACTIVE, SkillEffect.DASH, 3.5, 8, 1.2, 7, 0, List.of(), 0, "縮")),
                 List.of(
                         skill("hundred_fists", SkillKind.ULTIMATE, SkillEffect.SWEEP, 60, 40, 0.45, 4, 3, List.of(), 0, "百"),
                         skill("diamond_body", SkillKind.ULTIMATE, SkillEffect.BUFF, 75, 40, 0, 0, 6, List.of(), 0, "剛")),
@@ -291,11 +291,11 @@ public final class JobDefs {
         advanced("fighter", "berserker", 0xB0201C, "狂", List.of(JobStat.ATTACK_DAMAGE, JobStat.CRIT_CHANCE, JobStat.ATTACK_SPEED, JobStat.MAX_HEALTH),
                 stats(JobStat.CRIT_CHANCE, 0.05),
                 List.of(
-                        skill("blood_frenzy", A, SkillEffect.BUFF, 22, 20, 0.15, 0, 12, List.of("minecraft:strength", "minecraft:haste"), 1, "血"),
-                        skill("decapitate", A, SkillEffect.SWEEP, 8, 15, 4.0, 4, 0, List.of(), 0, "断"),
-                        skill("triple_whirl", A, SkillEffect.WHIRL, 12, 22, 1.8, 5, 0, List.of(), 0, "渦"),
-                        skill("reckless_charge", A, SkillEffect.DASH, 10, 15, 3.0, 0, 4, List.of(), 0, "捨"),
-                        skill("terror_roar", A, SkillEffect.DEBUFF, 18, 15, 0, 8, 10, List.of("rpgmod:attack_down", "minecraft:slowness"), 1, "咆")),
+                        skill("blood_frenzy", A, SkillEffect.BUFF, 22, 20, 0.15, 0, 24, List.of("minecraft:strength", "minecraft:haste"), 1, "血"),
+                        skill("decapitate", A, SkillEffect.SWEEP, 4, 15, 4.0, 4, 0, List.of(), 0, "断"),
+                        skill("triple_whirl", A, SkillEffect.WHIRL, 6, 22, 1.8, 5, 0, List.of(), 0, "渦"),
+                        skill("reckless_charge", A, SkillEffect.DASH, 5, 15, 3.0, 0, 4, List.of(), 0, "捨"),
+                        skill("terror_roar", A, SkillEffect.DEBUFF, 10, 15, 0, 8, 10, List.of("rpgmod:attack_down", "minecraft:slowness"), 1, "咆")),
                 List.of(
                         skill("asura", U, SkillEffect.BUFF, 60, 40, 0, 0, 15, List.of(), 0, "修")),
                 List.of());
@@ -303,11 +303,11 @@ public final class JobDefs {
         advanced("paladin", "guardian", 0xC8A030, "護", List.of(JobStat.ARMOR, JobStat.MAX_HEALTH, JobStat.ATTACK_DAMAGE),
                 stats(),
                 List.of(
-                        skill("iron_wall", A, SkillEffect.BUFF, 25, 20, 0, 0, 8, List.of(), 0, "壁"),
-                        skill("provoke_shield", A, SkillEffect.BUFF, 20, 20, 0, 12, 10, List.of(), 1, "挑"),
-                        skill("cover", A, SkillEffect.BUFF, 20, 18, 0, 10, 10, List.of(), 0, "庇"),
-                        skill("shield_wall", A, SkillEffect.BUFF, 18, 20, 0, 4, 8, List.of(), 0, "垣"),
-                        skill("reprisal", A, SkillEffect.BUFF, 18, 20, 0.15, 0, 8, List.of(), 0, "返")),
+                        skill("iron_wall", A, SkillEffect.BUFF, 25, 20, 0, 0, 16, List.of(), 0, "壁"),
+                        skill("provoke_shield", A, SkillEffect.BUFF, 20, 20, 0, 12, 20, List.of(), 1, "挑"),
+                        skill("cover", A, SkillEffect.BUFF, 20, 18, 0, 10, 20, List.of(), 0, "庇"),
+                        skill("shield_wall", A, SkillEffect.BUFF, 18, 20, 0, 4, 16, List.of(), 0, "垣"),
+                        skill("reprisal", A, SkillEffect.BUFF, 18, 20, 0.15, 0, 16, List.of(), 0, "返")),
                 List.of(
                         skill("bastion", U, SkillEffect.BUFF, 75, 40, 0, 10, 12, List.of("minecraft:resistance", "minecraft:absorption"), 2, "塞")),
                 List.of());
@@ -315,11 +315,11 @@ public final class JobDefs {
         advanced("ranger", "sharpshooter", 0x3E9E4A, "狙", List.of(JobStat.ATTACK_DAMAGE, JobStat.CRIT_CHANCE, JobStat.MOVEMENT_SPEED),
                 stats(JobStat.CRIT_CHANCE, 0.05),
                 List.of(
-                        skill("snipe", A, SkillEffect.SHOT, 10, 15, 6.0, 64, 0, List.of(), 0, "狙"),
-                        skill("rapid_fire", A, SkillEffect.SHOT, 9, 15, 0.7, 0, 0, List.of(), 0, "速"),
-                        skill("weak_point", A, SkillEffect.DEBUFF, 18, 15, 0, 32, 10, List.of("minecraft:glowing"), 0, "看"),
-                        skill("ricochet", A, SkillEffect.BOLT, 8, 15, 2.2, 28, 0, List.of(), 0, "跳"),
-                        skill("roll", A, SkillEffect.BACKSTEP, 8, 8, 1.6, 0, 6, List.of(), 0, "転")),
+                        skill("snipe", A, SkillEffect.SHOT, 5, 15, 6.0, 64, 0, List.of(), 0, "狙"),
+                        skill("rapid_fire", A, SkillEffect.SHOT, 4.5, 15, 0.7, 0, 0, List.of(), 0, "速"),
+                        skill("weak_point", A, SkillEffect.DEBUFF, 10, 15, 0, 32, 10, List.of("minecraft:glowing"), 0, "看"),
+                        skill("ricochet", A, SkillEffect.BOLT, 4, 15, 2.2, 28, 0, List.of(), 0, "跳"),
+                        skill("roll", A, SkillEffect.BACKSTEP, 6, 8, 1.6, 0, 6, List.of(), 0, "転")),
                 List.of(
                         skill("dead_eye", U, SkillEffect.SHOT, 60, 40, 2.5, 40, 0, List.of(), 0, "眼")),
                 List.of());
@@ -359,11 +359,11 @@ public final class JobDefs {
         advanced("gambler", "joker", 0x7A3FB0, "奇", List.of(JobStat.LUCK, JobStat.CRIT_CHANCE, JobStat.COOLDOWN_REDUCTION, JobStat.ATTACK_DAMAGE),
                 stats(JobStat.LUCK, 0.02, JobStat.CRIT_CHANCE, 0.05),
                 List.of(
-                        skill("switcheroo", A, SkillEffect.BLINK, 12, 15, 0, 24, 3, List.of(), 0, "換"),
-                        skill("decoy", A, SkillEffect.BUFF, 22, 22, 3.0, 4, 5, List.of(), 0, "分"),
+                        skill("switcheroo", A, SkillEffect.BLINK, 6, 15, 0, 24, 3, List.of(), 0, "換"),
+                        skill("decoy", A, SkillEffect.BUFF, 11, 22, 3.0, 4, 5, List.of(), 0, "分"),
                         skill("loaded_dice", A, SkillEffect.BUFF, 35, 20, 0, 0, 30, List.of(), 0, "詐"),
-                        skill("card_storm", A, SkillEffect.WHIRL, 14, 22, 0.5, 5, 3, List.of(), 0, "嵐"),
-                        skill("vanish", A, SkillEffect.STEALTH, 15, 20, 0, 16, 3, List.of(), 0, "消")),
+                        skill("card_storm", A, SkillEffect.WHIRL, 7, 22, 0.5, 5, 3, List.of(), 0, "嵐"),
+                        skill("vanish", A, SkillEffect.STEALTH, 7.5, 20, 0, 16, 3, List.of(), 0, "消")),
                 List.of(
                         skill("wildcard", U, SkillEffect.GAMBLE, 60, 40, 0, 0, 0, List.of(), 0, "J")),
                 List.of());
@@ -371,11 +371,11 @@ public final class JobDefs {
         advanced("assassin", "nightblade", 0x2E3A6E, "夜", List.of(JobStat.ATTACK_DAMAGE, JobStat.CRIT_CHANCE, JobStat.MOVEMENT_SPEED, JobStat.ATTACK_SPEED),
                 stats(JobStat.CRIT_CHANCE, 0.05),
                 List.of(
-                        skill("shadow_run", A, SkillEffect.DASH, 8, 15, 2.5, 9, 0, List.of(), 0, "走"),
-                        skill("flurry", A, SkillEffect.SWEEP, 10, 15, 0.6, 4, 0, List.of(), 0, "乱"),
-                        skill("twin_venom", A, SkillEffect.BUFF, 25, 18, 0, 0, 15, List.of(), 0, "双"),
-                        skill("shadow_stitch", A, SkillEffect.DEBUFF, 16, 15, 1.5, 20, 3, List.of(), 0, "縫"),
-                        skill("moon_shadow", A, SkillEffect.SWEEP, 12, 22, 3.5, 16, 0, List.of(), 0, "月")),
+                        skill("shadow_run", A, SkillEffect.DASH, 4, 15, 2.5, 9, 0, List.of(), 0, "走"),
+                        skill("flurry", A, SkillEffect.SWEEP, 5, 15, 0.6, 4, 0, List.of(), 0, "乱"),
+                        skill("twin_venom", A, SkillEffect.BUFF, 35, 18, 0, 0, 30, List.of(), 0, "双"),
+                        skill("shadow_stitch", A, SkillEffect.DEBUFF, 8, 15, 1.5, 20, 3, List.of(), 0, "縫"),
+                        skill("moon_shadow", A, SkillEffect.SWEEP, 6, 22, 3.5, 16, 0, List.of(), 0, "月")),
                 List.of(
                         skill("yaksha", U, SkillEffect.BUFF, 60, 40, 0, 0, 12, List.of("minecraft:speed"), 0, "叉")),
                 List.of());
@@ -395,11 +395,11 @@ public final class JobDefs {
         advanced("pirate", "captain", 0x1F5F99, "船", List.of(JobStat.ATTACK_DAMAGE, JobStat.CRIT_CHANCE, JobStat.ATTACK_SPEED, JobStat.MAX_HEALTH),
                 stats(JobStat.CRIT_CHANCE, 0.05),
                 List.of(
-                        skill("twin_cannon", A, SkillEffect.SHOT, 22, 25, 1.6, 16, 12, List.of(), 0, "双"),
-                        skill("scattershot", A, SkillEffect.SWEEP, 8, 15, 0.55, 8, 0, List.of(), 0, "散"),
-                        skill("anchor_throw", A, SkillEffect.WHIRL, 12, 22, 2.2, 4, 0, List.of(), 0, "錨"),
-                        skill("rally", A, SkillEffect.BUFF, 20, 20, 0, 10, 10, List.of("minecraft:haste", "minecraft:speed"), 1, "令"),
-                        skill("deadshot", A, SkillEffect.SHOT, 10, 15, 5.0, 48, 0, List.of(), 0, "狙")),
+                        skill("twin_cannon", A, SkillEffect.SHOT, 12, 25, 1.6, 16, 12, List.of(), 0, "双"),
+                        skill("scattershot", A, SkillEffect.SWEEP, 4, 15, 0.55, 8, 0, List.of(), 0, "散"),
+                        skill("anchor_throw", A, SkillEffect.WHIRL, 6, 22, 2.2, 4, 0, List.of(), 0, "錨"),
+                        skill("rally", A, SkillEffect.BUFF, 20, 20, 0, 10, 20, List.of("minecraft:haste", "minecraft:speed"), 1, "令"),
+                        skill("deadshot", A, SkillEffect.SHOT, 5, 15, 5.0, 48, 0, List.of(), 0, "狙")),
                 List.of(
                         skill("fleet_barrage", U, SkillEffect.WHIRL, 60, 40, 1.4, 9, 5, List.of(), 0, "艦")),
                 List.of());
@@ -407,11 +407,11 @@ public final class JobDefs {
         advanced("monk", "champion", 0xC0561A, "覇", List.of(JobStat.ATTACK_DAMAGE, JobStat.ATTACK_SPEED, JobStat.CRIT_CHANCE, JobStat.MAX_HEALTH),
                 stats(JobStat.CRIT_CHANCE, 0.05),
                 List.of(
-                        skill("rising_dragon", A, SkillEffect.SWEEP, 8, 15, 2.6, 3.5, 0, List.of(), 0, "昇"),
-                        skill("ki_wave", A, SkillEffect.BOLT, 12, 22, 1.2, 18, 0, List.of(), 0, "波"),
-                        skill("iron_mountain", A, SkillEffect.DASH, 9, 15, 2.4, 6, 0, List.of(), 0, "靠"),
-                        skill("foresight", A, SkillEffect.BUFF, 15, 8, 1.2, 0, 3, List.of(), 0, "見"),
-                        skill("battle_aura", A, SkillEffect.BUFF, 25, 20, 0, 0, 12, List.of(), 0, "闘")),
+                        skill("rising_dragon", A, SkillEffect.SWEEP, 4, 15, 2.6, 3.5, 0, List.of(), 0, "昇"),
+                        skill("ki_wave", A, SkillEffect.BOLT, 6, 22, 1.2, 18, 0, List.of(), 0, "波"),
+                        skill("iron_mountain", A, SkillEffect.DASH, 4.5, 15, 2.4, 6, 0, List.of(), 0, "靠"),
+                        skill("foresight", A, SkillEffect.BUFF, 7.5, 8, 1.2, 0, 3, List.of(), 0, "見"),
+                        skill("battle_aura", A, SkillEffect.BUFF, 25, 20, 0, 0, 24, List.of(), 0, "闘")),
                 List.of(
                         skill("peerless", U, SkillEffect.SWEEP, 60, 40, 1.2, 5, 0, List.of(), 0, "無")),
                 List.of());
@@ -419,11 +419,11 @@ public final class JobDefs {
         advanced("lancer", "dragoon", 0x8A3A2A, "竜", List.of(JobStat.ATTACK_DAMAGE, JobStat.MAX_HEALTH, JobStat.MOVEMENT_SPEED, JobStat.CRIT_CHANCE),
                 stats(),
                 List.of(
-                        skill("high_jump", A, SkillEffect.WHIRL, 10, 15, 4.0, 3.5, 0, List.of(), 0, "跳"),
-                        skill("dragon_spear", A, SkillEffect.BOLT, 9, 15, 2.8, 24, 0, List.of(), 0, "爆"),
-                        skill("dragon_scale", A, SkillEffect.BUFF, 20, 20, 0, 0, 10, List.of("minecraft:resistance"), 1, "鱗"),
-                        skill("spiral_lance", A, SkillEffect.SWEEP, 9, 15, 1.0, 6, 0, List.of(), 0, "螺"),
-                        skill("sky_step", A, SkillEffect.DASH, 5, 8, 0, 0, 0, List.of(), 0, "天")),
+                        skill("high_jump", A, SkillEffect.WHIRL, 5, 15, 4.0, 3.5, 0, List.of(), 0, "跳"),
+                        skill("dragon_spear", A, SkillEffect.BOLT, 4.5, 15, 2.8, 24, 0, List.of(), 0, "爆"),
+                        skill("dragon_scale", A, SkillEffect.BUFF, 20, 20, 0, 0, 20, List.of("minecraft:resistance"), 1, "鱗"),
+                        skill("spiral_lance", A, SkillEffect.SWEEP, 4.5, 15, 1.0, 6, 0, List.of(), 0, "螺"),
+                        skill("sky_step", A, SkillEffect.DASH, 2.5, 8, 0, 0, 0, List.of(), 0, "天")),
                 List.of(
                         skill("dragon_king", U, SkillEffect.WHIRL, 60, 40, 8.0, 8, 0, List.of(), 0, "王")),
                 List.of());
@@ -476,12 +476,12 @@ public final class JobDefs {
                 stats(JobStat.MAX_HEALTH, 4, JobStat.ATTACK_DAMAGE, 4, JobStat.ATTACK_SPEED, 5),
                 stats(JobStat.ATTACK_DAMAGE, 0.6, JobStat.MAX_HEALTH, hpGrow(1.0, 4)),
                 List.of(
-                        skill("qi_bullet", A, SkillEffect.BOLT, 3, 6, 1.2, 18, 0, List.of(), 0, "弾"),
-                        skill("refine_qi", A, SkillEffect.BUFF, 15, 8, 0, 0, 4, List.of("minecraft:regeneration"), 1, "練"),
-                        skill("healing_palm", A, SkillEffect.HEAL, 15, 20, 1.0, 4, 0, List.of(), 0, "掌"),
-                        skill("hard_qi", A, SkillEffect.BUFF, 18, 20, 0, 0, 8, List.of(), 0, "硬"),
-                        skill("qi_burst", A, SkillEffect.SWEEP, 9, 15, 1.8, 4, 0, List.of(), 0, "勁"),
-                        skill("flowing_step", A, SkillEffect.DASH, 7, 8, 1.0, 6, 0, List.of(), 0, "流")),
+                        skill("qi_bullet", A, SkillEffect.BOLT, 1.5, 6, 1.2, 18, 0, List.of(), 0, "弾"),
+                        skill("refine_qi", A, SkillEffect.BUFF, 7.5, 8, 0, 0, 4, List.of("minecraft:regeneration"), 1, "練"),
+                        skill("healing_palm", A, SkillEffect.HEAL, 7.5, 20, 1.0, 4, 0, List.of(), 0, "掌"),
+                        skill("hard_qi", A, SkillEffect.BUFF, 18, 20, 0, 0, 16, List.of(), 0, "硬"),
+                        skill("qi_burst", A, SkillEffect.SWEEP, 4.5, 15, 1.8, 4, 0, List.of(), 0, "勁"),
+                        skill("flowing_step", A, SkillEffect.DASH, 3.5, 8, 1.0, 6, 0, List.of(), 0, "流")),
                 List.of(
                         skill("heaven_earth", U, SkillEffect.HEAL, 75, 40, 2.0, 8, 0, List.of(), 0, "天"),
                         skill("blooming_fists", U, SkillEffect.SWEEP, 60, 40, 0.5, 4, 3, List.of(), 0, "花")));
@@ -490,12 +490,12 @@ public final class JobDefs {
                 stats(JobStat.MAX_HEALTH, 6, JobStat.ARMOR, 4, JobStat.ATTACK_DAMAGE, 4),
                 stats(JobStat.ATTACK_DAMAGE, 0.6, JobStat.MAX_HEALTH, hpGrow(1.2, 6)),
                 List.of(
-                        skill("guard_thrust", A, SkillEffect.SWEEP, 6, 8, 1.6, 5, 0, List.of(), 0, "突"),
-                        skill("shield_charge", A, SkillEffect.DASH, 8, 8, 1.8, 7, 2, List.of("minecraft:slowness"), 4, "盾"),
-                        skill("immovable", A, SkillEffect.BUFF, 16, 20, 0, 0, 6, List.of(), 0, "動"),
-                        skill("spear_wall", A, SkillEffect.WHIRL, 18, 20, 0.6, 3.5, 8, List.of(), 0, "衾"),
-                        skill("counter_lance", A, SkillEffect.BUFF, 12, 8, 2.6, 0, 3, List.of(), 0, "返"),
-                        skill("provoke", A, SkillEffect.DEBUFF, 15, 15, 0, 10, 6, List.of(), 0, "挑")),
+                        skill("guard_thrust", A, SkillEffect.SWEEP, 3, 8, 1.6, 5, 0, List.of(), 0, "突"),
+                        skill("shield_charge", A, SkillEffect.DASH, 4, 8, 1.8, 7, 2, List.of("minecraft:slowness"), 4, "盾"),
+                        skill("immovable", A, SkillEffect.BUFF, 16, 20, 0, 0, 12, List.of(), 0, "動"),
+                        skill("spear_wall", A, SkillEffect.WHIRL, 9, 20, 0.6, 3.5, 8, List.of(), 0, "衾"),
+                        skill("counter_lance", A, SkillEffect.BUFF, 6, 8, 2.6, 0, 3, List.of(), 0, "返"),
+                        skill("provoke", A, SkillEffect.DEBUFF, 7.5, 15, 0, 10, 6, List.of(), 0, "挑")),
                 List.of(
                         skill("fortress", U, SkillEffect.BUFF, 75, 40, 0, 8, 10, List.of(), 0, "砦"),
                         skill("holy_lance", U, SkillEffect.SWEEP, 60, 40, 6.0, 12, 0, List.of(), 0, "聖")));
@@ -523,12 +523,12 @@ public final class JobDefs {
                 stats(JobStat.ATTACK_DAMAGE, 4, JobStat.CRIT_CHANCE, 5, JobStat.MOVEMENT_SPEED, 5),
                 stats(JobStat.ATTACK_DAMAGE, 0.6, JobStat.CRIT_CHANCE, 0.05, JobStat.MAX_HEALTH, hpGrow(1.0, 0)),
                 List.of(
-                        skill("vital_shot", A, SkillEffect.SHOT, 8, 15, 3.0, 40, 0, List.of(), 0, "急"),
-                        skill("stealth", A, SkillEffect.STEALTH, 15, 20, 0, 0, 4, List.of(), 0, "隠"),
-                        skill("shadow_arrow", A, SkillEffect.DEBUFF, 12, 15, 1.4, 30, 3, List.of(), 0, "縫"),
+                        skill("vital_shot", A, SkillEffect.SHOT, 4, 15, 3.0, 40, 0, List.of(), 0, "急"),
+                        skill("stealth", A, SkillEffect.STEALTH, 7.5, 20, 0, 0, 4, List.of(), 0, "隠"),
+                        skill("shadow_arrow", A, SkillEffect.DEBUFF, 6, 15, 1.4, 30, 3, List.of(), 0, "縫"),
                         skill("hunter_trap", A, SkillEffect.DEBUFF, 14, 15, 2.0, 2.5, 20, List.of(), 0, "罠"),
-                        skill("shadow_leap", A, SkillEffect.BACKSTEP, 8, 8, 0, 0, 3, List.of(), 0, "跳"),
-                        skill("fan_knives", A, SkillEffect.SWEEP, 7, 8, 0.9, 8, 0, List.of(), 0, "扇")),
+                        skill("shadow_leap", A, SkillEffect.BACKSTEP, 4, 8, 0, 0, 3, List.of(), 0, "跳"),
+                        skill("fan_knives", A, SkillEffect.SWEEP, 3.5, 8, 0.9, 8, 0, List.of(), 0, "扇")),
                 List.of(
                         skill("night_hunt", U, SkillEffect.BUFF, 60, 40, 0, 30, 10, List.of(), 0, "夜"),
                         skill("shadow_rain", U, SkillEffect.SHOT, 60, 40, 0.6, 6, 3, List.of(), 0, "雨")));
@@ -537,12 +537,12 @@ public final class JobDefs {
                 stats(JobStat.ATTACK_DAMAGE, 4, JobStat.LUCK, 1, JobStat.CRIT_CHANCE, 3),
                 stats(JobStat.ATTACK_DAMAGE, 0.6, JobStat.LUCK, 0.02, JobStat.MAX_HEALTH, hpGrow(0.9, 0)),
                 List.of(
-                        skill("gamble_cannon", A, SkillEffect.SHOT, 9, 15, 2.0, 24, 0, List.of(), 0, "博"),
-                        skill("coin_shot", A, SkillEffect.SWEEP, 8, 15, 0.5, 8, 0, List.of(), 0, "銭"),
-                        skill("mimic", A, SkillEffect.BUFF, 18, 20, 2.0, 3, 8, List.of(), 0, "箱"),
-                        skill("steal", A, SkillEffect.SWEEP, 12, 10, 1.2, 4, 0, List.of(), 0, "盗"),
-                        skill("lucky_compass", A, SkillEffect.BUFF, 60, 12, 0, 0, 60, List.of("minecraft:luck"), 1, "羅"),
-                        skill("double_down", A, SkillEffect.BUFF, 16, 20, 0, 0, 6, List.of(), 0, "倍")),
+                        skill("gamble_cannon", A, SkillEffect.SHOT, 4.5, 15, 2.0, 24, 0, List.of(), 0, "博"),
+                        skill("coin_shot", A, SkillEffect.SWEEP, 4, 15, 0.5, 8, 0, List.of(), 0, "銭"),
+                        skill("mimic", A, SkillEffect.BUFF, 9, 20, 2.0, 3, 8, List.of(), 0, "箱"),
+                        skill("steal", A, SkillEffect.SWEEP, 6, 10, 1.2, 4, 0, List.of(), 0, "盗"),
+                        skill("lucky_compass", A, SkillEffect.BUFF, 60, 12, 0, 0, 120, List.of("minecraft:luck"), 1, "羅"),
+                        skill("double_down", A, SkillEffect.BUFF, 16, 20, 0, 0, 12, List.of(), 0, "倍")),
                 List.of(
                         skill("treasure_rain", U, SkillEffect.WHIRL, 60, 40, 1.2, 7, 3, List.of(), 0, "財"),
                         skill("golden_cannon", U, SkillEffect.SHOT, 60, 40, 9.0, 40, 0, List.of(), 0, "金")));
