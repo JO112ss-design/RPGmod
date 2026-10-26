@@ -87,8 +87,9 @@ public class SkillProp extends Entity {
         super.tick();
         if (kind() == KEG || kind() == ANCHOR) { // thrown: falls on both sides (like a dropped item), the server's updates correct it
             Vec3 v = this.getDeltaMovement();
-            if (!this.onGround()) v = v.add(0, -0.05, 0);
-            this.move(MoverType.SELF, v);
+            if (!this.onGround()) v = v.add(0, -0.05, 0); // gravity
+            this.setDeltaMovement(v);
+            this.move(MoverType.SELF, v); // (stops the motion against walls and the ground)
             v = this.getDeltaMovement().scale(0.98);
             if (this.onGround()) v = v.multiply(0.7, 0, 0.7);
             this.setDeltaMovement(v);
