@@ -17,6 +17,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.phys.Vec3;
 
 /**
  * Dev test for the pirate, lancer, monk and bard (client showcase entries "nj:*"): switches the test
@@ -92,6 +93,7 @@ final class NewJobTests {
             case "meditate" -> meditate(level, p);
             case "hitmana" -> hitMana(p, dummies);
             case "ults" -> ults(level, p, dummies);
+            case "elites" -> elites(level, p);
             case "counter_lance" -> counterLance(level, p, dummies);
             case "wall", "unwall" -> wall(level, p, name.equals("wall"));
             default -> {
@@ -270,6 +272,63 @@ final class NewJobTests {
             log("hitmana bard: with 1 MP the wave is refused: {} MP", String.format("%.0f", d.mana()));
             d.setMana(100);
             com.jo112ss.rpgmod.job.HitMana.testLog = false;
+        });
+    }
+
+    /** Elite monsters: their stats, a few traits at work, and their plates on camera. */
+    private static void elites(ServerLevel level, ServerPlayer p) {
+        Vec3 face = net.minecraft.world.phys.Vec3.directionFromRotation(0, p.getYRot());
+        Vec3 side = new Vec3(-face.z, 0, face.x);
+        java.util.function.BiFunction<Integer, Double, net.minecraft.world.entity.monster.zombie.Zombie> spawn = (mask, off) -> {
+            var z = net.minecraft.world.entity.EntityType.ZOMBIE.create(level, net.minecraft.world.entity.EntitySpawnReason.COMMAND);
+            Vec3 at = p.position().add(face.scale(6)).add(side.scale(off));
+            z.snapTo(at.x, at.y, at.z, p.getYRot() + 180, 0);
+            z.setNoAi(true);
+            com.jo112ss.rpgmod.mob.Elite.forceNext = mask;
+            level.addFreshEntity(z);
+            com.jo112ss.rpgmod.mob.Elite.forceNext = null;
+            return z;
+        };
+        var plain = spawn.apply(0, -6.0);
+        var iron = spawn.apply(com.jo112ss.rpgmod.mob.Elite.Trait.IRON.bit() | com.jo112ss.rpgmod.mob.Elite.Trait.COMMANDER.bit(), -3.0);
+        var ward = spawn.apply(com.jo112ss.rpgmod.mob.Elite.Trait.WARDED.bit() | com.jo112ss.rpgmod.mob.Elite.Trait.BLAZE.bit(), 0.0);
+        var regen = spawn.apply(com.jo112ss.rpgmod.mob.Elite.Trait.REGEN.bit() | com.jo112ss.rpgmod.mob.Elite.Trait.FROST.bit() | com.jo112ss.rpgmod.mob.Elite.Trait.SWIFT.bit(), 3.0);
+        var split = spawn.apply(com.jo112ss.rpgmod.mob.Elite.Trait.SPLIT.bit() | com.jo112ss.rpgmod.mob.Elite.Trait.GUARDIAN.bit(), 6.0);
+        log("elites: max health plain {} elite {} (x{}), traits iron {} ward {} regen {} split {}, scale {}", String.format("%.0f", plain.getMaxHealth()),
+                String.format("%.0f", iron.getMaxHealth()), String.format("%.2f", iron.getMaxHealth() / plain.getMaxHealth()),
+                com.jo112ss.rpgmod.mob.Elite.traits(iron), com.jo112ss.rpgmod.mob.Elite.traits(ward), com.jo112ss.rpgmod.mob.Elite.traits(regen),
+                com.jo112ss.rpgmod.mob.Elite.traits(split), String.format("%.2f", iron.getScale()));
+        SkillTasks.later(30, () -> {
+            float a = plain.getHealth(), b = iron.getHealth();
+            plain.hurtServer(level, p.damageSources().playerAttack(p), 100);
+            iron.hurtServer(level, p.damageSources().playerAttack(p), 100);
+            float c = ward.getHealth();
+            ward.hurtServer(level, p.damageSources().source(com.jo112ss.rpgmod.job.SkillExecutor.magicKey(), p, p), 100);
+            log("elites: a 100 hit takes plain {} iron {} (−35%); 100 magic on the ward takes {} (half)", String.format("%.1f", a - plain.getHealth()),
+                    String.format("%.1f", b - iron.getHealth()), String.format("%.1f", c - ward.getHealth()));
+            regen.hurtServer(level, p.damageSources().playerAttack(p), 300);
+        });
+        float[] afterHit = {0};
+        SkillTasks.later(32, () -> afterHit[0] = regen.getHealth());
+        SkillTasks.later(130, () -> log("elites: regen {} -> {} after 5s unhurt (max {})", String.format("%.1f", afterHit[0]), String.format("%.1f", regen.getHealth()),
+                String.format("%.0f", regen.getMaxHealth())));
+        // the guardian: a target, then (within 10s) the warning and the shields
+        split.setTarget(p);
+        SkillTasks.later(240, () -> log("elites: guardian shields - absorption on plain {} iron {}", String.format("%.1f", plain.getAbsorptionAmount()),
+                String.format("%.1f", iron.getAbsorptionAmount())));
+        SkillTasks.later(250, () -> {
+            int before = level.getEntitiesOfClass(net.minecraft.world.entity.monster.zombie.Zombie.class, p.getBoundingBox().inflate(20)).size();
+            split.hurtServer(level, p.damageSources().playerAttack(p), 1e6F);
+            SkillTasks.later(2, () -> {
+                var halves = level.getEntitiesOfClass(net.minecraft.world.entity.monster.zombie.Zombie.class, p.getBoundingBox().inflate(20),
+                        z -> z.entityTags().contains(com.jo112ss.rpgmod.mob.Elite.HALF));
+                log("elites: split -> zombies {} before, halves {} (health {} / {}, elite {})", before, halves.size(),
+                        halves.isEmpty() ? "-" : String.format("%.0f", halves.get(0).getHealth()), halves.isEmpty() ? "-" : String.format("%.0f", halves.get(0).getMaxHealth()),
+                        halves.isEmpty() ? "-" : com.jo112ss.rpgmod.mob.Elite.traits(halves.get(0)));
+            });
+        });
+        SkillTasks.later(300, () -> {
+            for (var z : level.getEntitiesOfClass(net.minecraft.world.entity.monster.zombie.Zombie.class, p.getBoundingBox().inflate(20))) z.discard();
         });
     }
 

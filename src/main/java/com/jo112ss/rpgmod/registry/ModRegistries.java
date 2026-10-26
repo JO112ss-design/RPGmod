@@ -124,6 +124,13 @@ public final class ModRegistries {
                     .sync(net.minecraft.network.codec.ByteBufCodecs.VAR_INT)
                     .build());
 
+    /** Elite monster traits (a bit mask of {@link com.jo112ss.rpgmod.mob.Elite.Trait}; 0 = an ordinary monster). */
+    public static final java.util.function.Supplier<net.neoforged.neoforge.attachment.AttachmentType<Integer>> MOB_ELITE =
+            ATTACHMENTS.register("mob_elite", () -> net.neoforged.neoforge.attachment.AttachmentType.builder(() -> 0)
+                    .serialize(com.mojang.serialization.Codec.INT.fieldOf("elite"), v -> v != 0)
+                    .sync(net.minecraft.network.codec.ByteBufCodecs.VAR_INT)
+                    .build());
+
     /** Overworld: the day whose blood moon already had its boss (so it is not summoned twice). */
     public static final java.util.function.Supplier<net.neoforged.neoforge.attachment.AttachmentType<Long>> BOSS_DAY =
             ATTACHMENTS.register("boss_day", () -> net.neoforged.neoforge.attachment.AttachmentType.builder(() -> -1L)

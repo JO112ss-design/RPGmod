@@ -32,6 +32,7 @@ public final class PotionDrops {
         boolean loaded = JobConfig.SPEC.isLoaded();
         double chance = (loaded ? JobConfig.POTION_DROP.get() : 0.03)
                 + Math.max(0, killer.getAttributeValue(Attributes.LUCK)) * (loaded ? JobConfig.POTION_DROP_LUCK.get() : 0.005);
+        if (com.jo112ss.rpgmod.mob.Elite.is(mob)) chance *= com.jo112ss.rpgmod.mob.Elite.POTION_MULT;
         drop(event, sl, mob, chance, ModRegistries.HP_POTION.get());
         drop(event, sl, mob, chance, ModRegistries.MP_POTION.get());
     }

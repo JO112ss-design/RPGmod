@@ -1184,5 +1184,17 @@
   "effect.rpgmod.silenced": "Silenced",
   "effect.rpgmod.time_stop": "Time Stopped",
   "effect.rpgmod.shadow_clone": "Shadow Copies",
-  "effect.rpgmod.war_god": "War God"
+  "effect.rpgmod.war_god": "War God",
+  "rpgmod.elite.iron": "Ironclad",
+  "rpgmod.elite.swift": "Swift",
+  "rpgmod.elite.mighty": "Mighty",
+  "rpgmod.elite.regen": "Regenerating",
+  "rpgmod.elite.vampire": "Vampiric",
+  "rpgmod.elite.split": "Splitting",
+  "rpgmod.elite.commander": "Commander",
+  "rpgmod.elite.warded": "Warded",
+  "rpgmod.elite.steadfast": "Steadfast",
+  "rpgmod.elite.blaze": "Blazing",
+  "rpgmod.elite.frost": "Frosty",
+  "rpgmod.elite.guardian": "Guardian"
 }

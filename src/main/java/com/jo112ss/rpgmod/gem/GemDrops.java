@@ -45,7 +45,8 @@ public final class GemDrops {
         if (!boss) {
             if (!(mob instanceof Enemy) || mob instanceof com.jo112ss.rpgmod.mob.boss.GolemPillar) return;
             if (mob.getPersistentData().getBooleanOr(com.jo112ss.rpgmod.mob.boss.BossEvents.CHILD, false)) return;
-            if (mob.getRandom().nextDouble() >= chance(MobLevels.level(mob))) return;
+            double c = chance(MobLevels.level(mob)) * (com.jo112ss.rpgmod.mob.Elite.is(mob) ? com.jo112ss.rpgmod.mob.Elite.GEM_MULT : 1);
+            if (mob.getRandom().nextDouble() >= c) return;
         }
         Gem gem = GemRoller.roll(mob.getRandom(), boss);
         Vec3 at = mob.position().add(0, 0.5, 0);

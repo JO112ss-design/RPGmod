@@ -56,6 +56,7 @@ public final class MobConfig {
     }
     public static final ModConfigSpec.BooleanValue SMART_AI = B.comment("Smarter monsters (building, digging, items, aimed shots...)").define("enabled", true);
     public static final ModConfigSpec.BooleanValue BREAK_BLOCKS = B.comment("Monsters may break blocks (digging zombies, wall-breaching creepers, TNT); also needs mobGriefing").define("breakBlocks", true);
+    public static final ModConfigSpec.DoubleValue ELITE_CHANCE = B.comment("Share of ordinary monsters that appear as elites with traits (0 = none)").defineInRange("eliteChance", 0.08, 0, 1);
     public static final ModConfigSpec.BooleanValue DRAGON = B.comment("Three-stage Ender Dragon").define("dragon", true);
     public static final ModConfigSpec.DoubleValue DRAGON_HEALTH = B.comment("Ender Dragon health multiplier (vanilla 200)").defineInRange("dragonHealthScale", 18.0, 0.1, 300);
     public static final ModConfigSpec.DoubleValue DRAGON_DAMAGE = B.comment("Ender Dragon damage multiplier (all its attacks, breath included)").defineInRange("dragonDamageMultiplier", 8.0, 0, 100);
@@ -87,6 +88,10 @@ public final class MobConfig {
 
     public static int bloodMoonDays() {
         return SPEC.isLoaded() ? BLOOD_MOON_DAYS.get() : 5;
+    }
+
+    public static double eliteChance() {
+        return SPEC.isLoaded() ? ELITE_CHANCE.get() : 0.08;
     }
 
     public static double bloodMoonSpawns() {

@@ -291,6 +291,11 @@ public final class SkillExecutor {
     static final net.minecraft.resources.ResourceKey<net.minecraft.world.damagesource.DamageType> SKILL_MAGIC_DAMAGE =
             net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.DAMAGE_TYPE, Identifier.fromNamespaceAndPath("rpgmod", "skill_magic"));
 
+    /** The skills' magic damage type (elites with a ward resist it). */
+    public static net.minecraft.resources.ResourceKey<net.minecraft.world.damagesource.DamageType> magicKey() {
+        return SKILL_MAGIC_DAMAGE;
+    }
+
     static DamageSource melee(Ctx c) {
         return c.p.damageSources().source(SKILL_DAMAGE, c.p, c.p);
     }

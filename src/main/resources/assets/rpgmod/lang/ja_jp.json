@@ -1184,5 +1184,17 @@
   "effect.rpgmod.silenced": "沈黙",
   "effect.rpgmod.time_stop": "時間停止",
   "effect.rpgmod.shadow_clone": "影分身",
-  "effect.rpgmod.war_god": "闘神"
+  "effect.rpgmod.war_god": "闘神",
+  "rpgmod.elite.iron": "鉄壁",
+  "rpgmod.elite.swift": "俊敏",
+  "rpgmod.elite.mighty": "剛力",
+  "rpgmod.elite.regen": "再生",
+  "rpgmod.elite.vampire": "吸血",
+  "rpgmod.elite.split": "分裂",
+  "rpgmod.elite.commander": "号令",
+  "rpgmod.elite.warded": "結界",
+  "rpgmod.elite.steadfast": "不屈",
+  "rpgmod.elite.blaze": "炎纏い",
+  "rpgmod.elite.frost": "冷気",
+  "rpgmod.elite.guardian": "守護"
 }

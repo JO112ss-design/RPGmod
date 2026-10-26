@@ -86,7 +86,8 @@ public final class MobOverlay {
             Vec3 pos = e.getPosition(partial);
             double dist = pos.distanceTo(eye);
             Long hit = lastHit.get(e.getId());
-            boolean focus = e == crosshair || (hit != null && now - hit < 5000);
+            // elites always show their name (with their traits), so they can be told apart at a glance
+            boolean focus = e == crosshair || (hit != null && now - hit < 5000) || com.jo112ss.rpgmod.mob.Elite.is(e);
             if (dist > (focus ? FOCUS_RANGE : PLATE_RANGE)) continue;
             Boolean vis = sight.get(e.getId());
             if (vis == null || recheck && (e.getId() + tick) % 4 == 0) {
@@ -189,6 +190,21 @@ public final class MobOverlay {
         return ((int) (base * Math.max(0, Math.min(1, alpha))) << 24) | (argb & 0xFFFFFF);
     }
 
+    /** The name, with an elite's traits in front: 【鉄壁・俊敏】ゾンビ. */
+    private static Component eliteName(LivingEntity e) {
+        int mask = com.jo112ss.rpgmod.mob.Elite.traits(e);
+        if (mask == 0) return e.getDisplayName();
+        net.minecraft.network.chat.MutableComponent tag = Component.literal("【").withStyle(net.minecraft.ChatFormatting.GOLD);
+        boolean first = true;
+        for (var t : com.jo112ss.rpgmod.mob.Elite.list(mask)) {
+            if (!first) tag.append(Component.literal("・").withStyle(net.minecraft.ChatFormatting.GOLD));
+            tag.append(Component.translatable("rpgmod.elite." + t.id).withColor(t.color));
+            first = false;
+        }
+        tag.append(Component.literal("】").withStyle(net.minecraft.ChatFormatting.GOLD));
+        return tag.append(e.getDisplayName());
+    }
+
     private static void plate(GuiGraphicsExtractor g, Font font, LivingEntity e, int lv, float x, float y, float scale, float fade, boolean full, float dt) {
         float hp = e.getHealth(), max = Math.max(1, e.getMaxHealth());
         float frac = Math.max(0, Math.min(1, hp / max));
@@ -201,7 +217,7 @@ public final class MobOverlay {
         float lagFrac = Math.max(frac, Math.min(1, lag / max));
 
         String lvText = "Lv" + lv;
-        Component name = e.getDisplayName();
+        Component name = eliteName(e);
         int badgeW = font.width(lvText) + 6;
         int nameW = full ? font.width(name) : 0;
         int barW = Math.max(48, full ? badgeW + 3 + nameW : 48);
