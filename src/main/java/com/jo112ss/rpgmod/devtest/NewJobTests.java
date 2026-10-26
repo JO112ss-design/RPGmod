@@ -51,6 +51,7 @@ final class NewJobTests {
             case "bard" -> become(p, "bard");
             case "hybrids" -> hybrids(level, p, dummies);
             case "coins" -> coins(level, p);
+            case "statsdump" -> statsDump();
             case "linger" -> linger(level, p);
             case "ward" -> ward(level, p, dummies);
             case "wardlinger" -> {
@@ -333,6 +334,55 @@ final class NewJobTests {
                 });
             });
         }
+    }
+
+    /** Every job's stats by level (job alone: no panel, no weapon), and what its whole panel holds. */
+    private static void statsDump() {
+        var S = com.jo112ss.rpgmod.job.core.JobStat.values();
+        StringBuilder head = new StringBuilder("stat|job|kind|level");
+        for (var s : S) head.append('|').append(s.id);
+        log(head.toString());
+        for (var job : JobDefs.JOBS.values()) {
+            String id = job.id();
+            boolean adv = JobDefs.isAdvanced(id), hyb = JobDefs.isHybrid(id);
+            var base = adv ? JobDefs.job(JobDefs.BASE_OF.get(id)) : job;
+            int[] levels = adv ? new int[] {100, 150, 199} : new int[] {1, 50, 100, 150, 199};
+            for (int lv : levels) {
+                java.util.Map<com.jo112ss.rpgmod.job.core.JobStat, Double> m = new java.util.EnumMap<>(com.jo112ss.rpgmod.job.core.JobStat.class);
+                for (var s : S) m.put(s, 0.0);
+                m.put(com.jo112ss.rpgmod.job.core.JobStat.MAX_MANA, JobDefs.BASE_MANA);
+                m.put(com.jo112ss.rpgmod.job.core.JobStat.MANA_REGEN, JobDefs.BASE_MANA_REGEN);
+                m.merge(com.jo112ss.rpgmod.job.core.JobStat.ATTACK_DAMAGE, JobStats.FIST, Double::sum);
+                m.merge(com.jo112ss.rpgmod.job.core.JobStat.MAX_HEALTH, 20.0, Double::sum); // vanilla's own
+                base.base().forEach((s, v) -> m.merge(s, v, Double::sum));
+                int L = lv;
+                base.perLevel().forEach((s, v) -> {
+                    double g = v * (L - 1);
+                    if (s == com.jo112ss.rpgmod.job.core.JobStat.ATTACK_DAMAGE || s == com.jo112ss.rpgmod.job.core.JobStat.MAGIC_ATTACK) g = Math.floor(g + 1e-9);
+                    m.merge(s, g, Double::sum);
+                });
+                if (adv) job.perLevel().forEach((s, v) -> m.merge(s, v * com.jo112ss.rpgmod.job.core.LevelCurve.advancedLevel(L), Double::sum));
+                StringBuilder b = new StringBuilder("stat|" + id + "|" + (adv ? "adv" : hyb ? "hybrid" : "base") + "|" + lv);
+                for (var s : S) b.append('|').append(String.format("%.2f", m.get(s)));
+                log(b.toString());
+            }
+            // the whole panel: every stat cell and every cell's cost
+            var panel = com.jo112ss.rpgmod.job.core.SkillPanel.forJob(id);
+            java.util.Map<com.jo112ss.rpgmod.job.core.JobStat, Double> sum = new java.util.EnumMap<>(com.jo112ss.rpgmod.job.core.JobStat.class);
+            int cost = 0, statCost = 0;
+            for (var n : panel.nodes()) {
+                cost += n.cost();
+                if (n.type() == com.jo112ss.rpgmod.job.core.SkillPanel.NodeType.STAT) {
+                    sum.merge(n.stat(), n.amount(), Double::sum);
+                    statCost += n.cost();
+                }
+            }
+            StringBuilder b = new StringBuilder("panel|" + id + "|cost " + cost + "|stat cells cost " + statCost);
+            sum.forEach((s, v) -> b.append('|').append(s.id).append('=').append(String.format("%.1f", v)));
+            log(b.toString());
+        }
+        for (var w : com.jo112ss.rpgmod.item.WeaponType.values()) log("weapon|" + w.name() + "|atk " + w.attackDamage + "|speed " + w.attackSpeed);
+        for (int lv : new int[] {1, 50, 100, 150, 199}) log("points|" + lv + "|" + com.jo112ss.rpgmod.job.core.LevelCurve.pointsForLevel(lv));
     }
 
     /** A stone wall across the arena behind the dummies (forward is +z), for charges to run into. */

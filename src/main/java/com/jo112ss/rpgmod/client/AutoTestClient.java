@@ -356,8 +356,10 @@ public final class AutoTestClient {
             showSkills.clear(); // group A, the rain skills made distinct: carpet bombing, ghost ships, stuck spears, focused arrows, coins to pick up
             showSkills.addAll(java.util.List.of("nj:pirate", "down:broadside", "nj:captain", "up:fleet_barrage", "nj:lancer", "spear_rain", "nj:shadow_hunter", "shadow_rain",
                     "nj:treasure_hunter", "treasure_rain", "nj:coins", "nj:restore"));
-            showSkills.clear(); // spellsinger afterglow
-            showSkills.addAll(java.util.List.of("nj:restore", "nj:wardlinger", "nj:ward", "nj:linger", "nj:restore"));
+            showSkills.clear(); // every job's stats
+            showSkills.addAll(java.util.List.of("nj:statsdump"));
+            if (false) showSkills.clear(); // spellsinger afterglow
+            if (false) showSkills.addAll(java.util.List.of("nj:restore", "nj:wardlinger", "nj:ward", "nj:linger", "nj:restore"));
             if (false) showSkills.clear(); // songs: each with its own rhythm (bars from the song's style) and tune
             if (false) showSkills.addAll(java.util.List.of("nj:restore", "nj:restore", "nj:restore", "nj:bard", "bard:play:war_song", "bard:play:lullaby", "bard:play:wind_song", "bard:play:discord", "nj:restore"));
             if (false) showSkills.clear(); // songs on the lute: bard, maestro (two at once), spellsinger; the new skills; the songs tab
