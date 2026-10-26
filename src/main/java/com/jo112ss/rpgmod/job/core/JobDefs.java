@@ -463,7 +463,7 @@ public final class JobDefs {
                 List.of(
                         skill("arcane_edge", U, SkillEffect.SWEEP, 90, 45, 7.0, 8, 0, List.of(), 0, "極"),
                         skill("elemental_burst", U, SkillEffect.WHIRL, 90, 45, 2.2, 7, 0, List.of(), 0, "解")));
-        // ---- Qi master: fists, and ki that heals
+        // ---- God hand (qi master): fists, and ki that heals
         hybrid("qi_master", "healer", "monk", 0xE0A040, "功", List.of(JobStat.ATTACK_DAMAGE, JobStat.MAX_HEALTH, JobStat.ATTACK_SPEED, JobStat.COOLDOWN_REDUCTION),
                 stats(JobStat.MAX_HEALTH, 4, JobStat.ATTACK_DAMAGE, 4, JobStat.ATTACK_SPEED, 5),
                 stats(JobStat.ATTACK_DAMAGE, 0.6, JobStat.MAX_HEALTH, hpGrow(1.0, 4)),

@@ -22,9 +22,9 @@ JOBS = {  # id: (ja name, ja role, ja desc, en name, en role, en desc)
  'maestro': ('マエストロ', '上級・演奏', 'バードの上級職。2曲を同時に奏で、転調で曲を切り替える指揮者。', 'Maestro', 'Advanced: performance', 'The bard\'s advanced job: plays two songs at once and modulates between them.'),
  # ---- hybrid jobs (two mastered base jobs)
  'spellblade': ('魔法戦士', '複合・魔法剣', '剣に火・氷・雷のどれかを宿して戦う。剣で右クリック長押しでその属性の魔法を溜めて撃つ（火＝火球、氷＝広範囲、雷＝単体）。スキルの威力は攻撃力＋魔法攻撃力。', 'Spellblade', 'Hybrid: magic sword', 'Fights with fire, ice or thunder on the sword. Hold right click with the sword to charge a spell of the element (fire: fireball, ice: wide area, thunder: one target). Skills scale with attack + magic attack.'),
- 'qi_master': ('気功師', '複合・格闘回復', '拳と気で戦い、気で自分や仲間を癒す。', 'Qi Master', 'Hybrid: fists and healing', 'Fights with fists and ki, and heals with it too.'),
+ 'qi_master': ('ゴッドハンド', '複合・格闘回復', '拳と気で戦い、気で自分や仲間を癒す。', 'God Hand', 'Hybrid: fists and healing', 'Fights with fists and ki, and heals with it too.'),
  'sentinel': ('センチネル', '複合・盾と槍', '槍と盾（オフハンド）で守りながら反撃する番人。', 'Sentinel', 'Hybrid: spear and shield', 'Holds the line with a spear and a shield in the off hand, striking back.'),
- 'spellsinger': ('魔奏師', '複合・演奏付与', '歌で味方の武器に魔法を宿す。演奏の仕組みはバードと同じ。', 'Spellsinger', 'Hybrid: enchanting songs', 'Songs that put magic on the party\'s weapons. Plays like the bard.'),
+ 'spellsinger': ('スペルシンガー', '複合・演奏付与', '歌で味方の武器に魔法を宿す。演奏の仕組みはバードと同じ。', 'Spellsinger', 'Hybrid: enchanting songs', 'Songs that put magic on the party\'s weapons. Plays like the bard.'),
  'shadow_hunter': ('シャドウハンター', '複合・隠密狙撃', '弓と短剣を使い分ける狩人。隠密からの一撃は必ず会心。', 'Shadow Hunter', 'Hybrid: stealth and sniping', 'Bow and dagger. A hit from hiding is always a critical hit.'),
  'treasure_hunter': ('トレジャーハンター', '複合・運と大砲', '運任せの大砲で戦い、戦利品を増やす。銃剣の銃も使える。', 'Treasure Hunter', 'Hybrid: luck and cannons', 'Lucky cannons and more loot. Can fire the gunblade like the pirate.'),
  'fighter': ('ファイター', '近接火力', '剣とハンマーで最前線を切り開く戦士。体力と攻撃力が高く、範囲攻撃と突進が得意。',

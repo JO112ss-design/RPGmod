@@ -927,7 +927,7 @@
   "rpgmod.job.spellblade": "Spellblade",
   "rpgmod.job.spellblade.role": "Hybrid: magic sword",
   "rpgmod.job.spellblade.desc": "Fights with fire, ice or thunder on the sword. Hold right click with the sword to charge a spell of the element (fire: fireball, ice: wide area, thunder: one target). Skills scale with attack + magic attack.",
-  "rpgmod.job.qi_master": "Qi Master",
+  "rpgmod.job.qi_master": "God Hand",
   "rpgmod.job.qi_master.role": "Hybrid: fists and healing",
   "rpgmod.job.qi_master.desc": "Fights with fists and ki, and heals with it too.",
   "rpgmod.job.sentinel": "Sentinel",
