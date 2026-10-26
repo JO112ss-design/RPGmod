@@ -1017,6 +1017,7 @@ public final class MoreJobSkills {
         for (int k = 0; k < 3; k++) {
             LivingEntity t = foes.get(k % n);
             int delay = k * 3;
+            float pitch = 1.2F + k * 0.2F;
             SkillTasks.later(delay, () -> {
                 if (!t.isAlive() || !p.isAlive()) return;
                 Vec3 start = c.hand();
@@ -1026,7 +1027,7 @@ public final class MoreJobSkills {
                     hurt(c, e, c.dmg(1), magic(c));
                     ServerFx.of("x_hit", at).vec(d).a(0.8).color(0x9A6AD8).send(c.level());
                 }, (at, d, wall) -> { });
-                sound(c, p.position(), SoundEvents.NOTE_BLOCK_CHIME, 0.9F, 1.2F + k * 0.2F);
+                sound(c, p.position(), SoundEvents.NOTE_BLOCK_CHIME, 0.9F, pitch);
             });
         }
         return true;

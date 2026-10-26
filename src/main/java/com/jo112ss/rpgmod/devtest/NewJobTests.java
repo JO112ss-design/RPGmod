@@ -51,6 +51,9 @@ final class NewJobTests {
             case "bard" -> become(p, "bard");
             case "hybrids" -> hybrids(level, p, dummies);
             case "coins" -> coins(level, p);
+            case "songs_bard" -> songs(level, p, "bard", false, List.of("war_song", "rhapsody", "fanfare", "dirge"), 2, -1);
+            case "songs_maestro" -> songs(level, p, "bard", true, List.of("war_song", "heal_song", "", "", "guard_song", "rhapsody"), 0, 5);
+            case "songs_singer" -> songs(level, p, "spellsinger", false, List.of("ward_melody", "drain_tune", "flame_melody"), 0, -1);
             case "sb0", "sb1", "sb2" -> spellblade(p, name.charAt(2) - '0');
             case "sblow" -> { // only the first stage paid for: the other two show red
                 spellblade(p, 0);
@@ -234,6 +237,39 @@ final class NewJobTests {
             p.getAbilities().invulnerable = inv;
             p.setHealth(p.getMaxHealth());
         });
+    }
+
+    /**
+     * Songs on the lute: the job with every cell learnt, songs set on the held lute, then "perform"
+     * equipped and used like a player would (mana paid), and what is playing logged.
+     */
+    private static void songs(ServerLevel level, ServerPlayer p, String job, boolean adv, List<String> set, int selected, int selectedLeft) {
+        become(p, job, adv);
+        JobData d = JobManager.data(p);
+        d.devUnlockAll();
+        var lute = p.getMainHandItem();
+        var l = com.jo112ss.rpgmod.job.SpellLoadout.EMPTY;
+        for (int i = 0; i < set.size(); i++) l = l.withSpell(i, set.get(i));
+        l = l.withSelected(selected);
+        if (selectedLeft >= 0) l = l.withSelectedLeft(selectedLeft);
+        lute.set(com.jo112ss.rpgmod.registry.ModRegistries.SPELL_LOADOUT.get(), l);
+        d.setMana(JobManager.maxMana(p));
+        String perform = "spellsinger".equals(job) ? "spell_perform" : "perform";
+        JobManager.equipSkill(p, 0, perform);
+        // the fanfare test: a skill cooling down
+        d.setCooldown("sonic_boom", level.getGameTime() + 200);
+        JobManager.sync(p);
+        double before = d.mana();
+        log("songs {}: slots {} lute {} cost {}", job + (adv ? " (maestro)" : ""), d.spellSlots(), lute.getItem(),
+                String.format("%.0f", com.jo112ss.rpgmod.job.Bard.performCost(p)));
+        SkillTasks.later(3, () -> {
+            JobManager.useSkill(p, 0);
+            log("songs {}: playing {} + {} (mana {} -> {}), performing {}", job, d.song(), com.jo112ss.rpgmod.job.Bard.secondSong(p),
+                    String.format("%.0f", before), String.format("%.0f", d.mana()), com.jo112ss.rpgmod.job.Bard.performing(p));
+        });
+        SkillTasks.later(63, () -> log("songs {}: after 3s effects {} ward {} sonic boom cooldown left {}t (200 - 60 plain)", job,
+                p.getActiveEffects().stream().map(e -> e.getEffect().getRegisteredName()).toList(),
+                p.hasEffect(ModEffects.WARD_MELODY), d.cooldownEnd("sonic_boom") - level.getGameTime()));
     }
 
     /** A stone wall across the arena behind the dummies (forward is +z), for charges to run into. */

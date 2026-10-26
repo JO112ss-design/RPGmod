@@ -449,6 +449,12 @@ public final class Bard {
         }
     }
 
+    /** The maestro's second song playing now (or null). */
+    public static String secondSong(Player p) {
+        Perf perf = PERF.get(p.getUUID());
+        return perf == null ? null : perf.second;
+    }
+
     static void forget(UUID id) {
         PERF.remove(id);
     }

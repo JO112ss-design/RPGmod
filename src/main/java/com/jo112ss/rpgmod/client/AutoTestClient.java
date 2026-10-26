@@ -219,6 +219,8 @@ public final class AutoTestClient {
             case "mob:dragonhp" -> new int[] {100, 140};
             case "nj:pirate", "nj:lancer", "nj:monk" -> new int[] {8};
             case "nj:counter_lance" -> new int[] {58, 101};
+            case "nj:songs_bard", "nj:songs_maestro", "nj:songs_singer" -> new int[] {30, 70};
+            case "sonic_boom", "arcane_note", "cheer", "crescendo" -> new int[] {3, 10};
             case "magic_slash" -> new int[] {3, 9, 16};
             case "boarding_shot" -> new int[] {4, 9};
             case "quick_draw", "spear_sweep", "ki_blast", "whirl_kick", "grapple", "finale" -> new int[] {3};
@@ -290,6 +292,7 @@ public final class AutoTestClient {
             case "job:screen" -> 70;
             case "nj:pirate", "nj:lancer", "nj:monk", "nj:hybrids" -> 70;
             case "nj:counter_lance" -> 120;
+            case "nj:songs_bard", "nj:songs_maestro", "nj:songs_singer" -> 90;
             case "nj:meditate" -> 140;
             case "dragon_king" -> 100;
             case "twin_cannon", "mimic" -> 70;
@@ -349,8 +352,11 @@ public final class AutoTestClient {
             showSkills.clear(); // group A, the rain skills made distinct: carpet bombing, ghost ships, stuck spears, focused arrows, coins to pick up
             showSkills.addAll(java.util.List.of("nj:pirate", "down:broadside", "nj:captain", "up:fleet_barrage", "nj:lancer", "spear_rain", "nj:shadow_hunter", "shadow_rain",
                     "nj:treasure_hunter", "treasure_rain", "nj:coins", "nj:restore"));
-            showSkills.clear(); // spellblade: sword magic by element and stage, the three magic slashes, meditation
-            showSkills.addAll(java.util.List.of("nj:restore", "nj:restore", "nj:restore", "nj:restore", "nj:sb0", "swordtwice", "nj:sb0", "swordsneak", "nj:sblow", "sword:60", "nj:sb0", "swordwalk", "nj:sb0", "sword:8", "sword:18", "sword:60", "nj:sb1", "sword:18", "sword:60", "nj:sb2", "sword:18", "sword:60", "nj:sbquick", "sword:36", "nj:sbcrit", "sword:18", "nj:nocrit", "nj:sb1", "sword:60",
+            showSkills.clear(); // songs on the lute: bard, maestro (two at once), spellsinger; the new skills; the songs tab
+            showSkills.addAll(java.util.List.of("nj:restore", "nj:restore", "nj:restore", "nj:songs_bard", "sonic_boom", "nj:songs_maestro", "maestro_tab", "crescendo",
+                    "nj:songs_singer", "arcane_note", "cheer", "nj:restore"));
+            if (false) showSkills.clear(); // spellblade: sword magic by element and stage, the three magic slashes, meditation
+            if (false) showSkills.addAll(java.util.List.of("nj:restore", "nj:restore", "nj:restore", "nj:restore", "nj:sb0", "swordtwice", "nj:sb0", "swordsneak", "nj:sblow", "sword:60", "nj:sb0", "swordwalk", "nj:sb0", "sword:8", "sword:18", "sword:60", "nj:sb1", "sword:18", "sword:60", "nj:sb2", "sword:18", "sword:60", "nj:sbquick", "sword:36", "nj:sbcrit", "sword:18", "nj:nocrit", "nj:sb1", "sword:60",
                     "nj:sb0", "magic_slash", "nj:sb1", "magic_slash", "nj:sb2", "magic_slash", "nj:meditate", "nj:restore"));
             if (false) showSkills.clear(); // counter lance: braced blows stored, the next hit carries them
             if (false) showSkills.addAll(java.util.List.of("nj:restore", "nj:restore", "nj:counter_lance", "nj:restore"));
@@ -462,6 +468,13 @@ public final class AutoTestClient {
                 case 86 -> shot(mc, String.format("c%02d_left_released", i));
                 default -> { }
             }
+            return;
+        }
+        if (entry.equals("maestro_tab")) { // the songs tab with the lute in hand (maestro: two rows)
+            if (k == 2) mc.player.getInventory().setSelectedSlot(6);
+            if (k == 6) mc.gui.setScreen(new com.jo112ss.rpgmod.client.job.JobScreen(com.jo112ss.rpgmod.client.job.JobScreen.Tab.SPELLS));
+            if (k == 16) shot(mc, String.format("t%02d_maestro_songs", i));
+            if (k == 20) mc.gui.setScreen(null);
             return;
         }
         if (entry.equals("swordtwice")) { // release and press again at once: both must cast
