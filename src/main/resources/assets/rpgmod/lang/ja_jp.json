@@ -1196,5 +1196,11 @@
   "rpgmod.elite.steadfast": "不屈",
   "rpgmod.elite.blaze": "炎纏い",
   "rpgmod.elite.frost": "冷気",
-  "rpgmod.elite.guardian": "守護"
+  "rpgmod.elite.guardian": "守護",
+  "entity.rpgmod.revenant": "亡者の冒険者",
+  "entity.rpgmod.revenant.warrior": "亡者の戦士",
+  "entity.rpgmod.revenant.mage": "亡者の魔導士",
+  "entity.rpgmod.revenant.archer": "亡者の弓兵",
+  "entity.rpgmod.revenant.priest": "亡者の神官",
+  "entity.rpgmod.revenant.thief": "亡者の盗賊"
 }

@@ -98,7 +98,7 @@ public final class MobAi {
     }
 
     public static boolean isBuilderZombie(Entity e) {
-        return e instanceof Zombie && !(e instanceof ZombifiedPiglin) && !(e instanceof Drowned);
+        return e instanceof Zombie && !(e instanceof ZombifiedPiglin) && !(e instanceof Drowned) && !(e instanceof com.jo112ss.rpgmod.mob.revenant.Revenant);
     }
 
     @SubscribeEvent(priority = EventPriority.LOWEST)

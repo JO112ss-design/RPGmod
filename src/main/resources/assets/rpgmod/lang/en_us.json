@@ -1196,5 +1196,11 @@
   "rpgmod.elite.steadfast": "Steadfast",
   "rpgmod.elite.blaze": "Blazing",
   "rpgmod.elite.frost": "Frosty",
-  "rpgmod.elite.guardian": "Guardian"
+  "rpgmod.elite.guardian": "Guardian",
+  "entity.rpgmod.revenant": "Fallen Adventurer",
+  "entity.rpgmod.revenant.warrior": "Fallen Warrior",
+  "entity.rpgmod.revenant.mage": "Fallen Mage",
+  "entity.rpgmod.revenant.archer": "Fallen Archer",
+  "entity.rpgmod.revenant.priest": "Fallen Priest",
+  "entity.rpgmod.revenant.thief": "Fallen Thief"
 }

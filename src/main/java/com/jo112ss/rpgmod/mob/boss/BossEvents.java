@@ -35,6 +35,7 @@ public final class BossEvents {
         event.put(ModRegistries.KING_SLIME.get(), KingSlime.createAttributes().build());
         event.put(ModRegistries.GOLEM.get(), Golem.createAttributes().build());
         event.put(ModRegistries.GOLEM_PILLAR.get(), GolemPillar.createAttributes().build());
+        event.put(ModRegistries.REVENANT.get(), com.jo112ss.rpgmod.mob.revenant.Revenant.createAttributes().build());
     }
 
     @SubscribeEvent

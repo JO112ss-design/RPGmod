@@ -103,6 +103,8 @@ public final class Elite {
         if (!(mob instanceof Enemy) || mob instanceof Creeper) return false;
         if (com.jo112ss.rpgmod.gem.GemDrops.isBoss(mob) || mob instanceof com.jo112ss.rpgmod.mob.boss.GolemPillar) return false;
         if (mob instanceof net.minecraft.world.entity.monster.Shulker) return false;
+        // big, rare monsters that are already their own fight
+        if (mob instanceof net.minecraft.world.entity.monster.warden.Warden || mob instanceof net.minecraft.world.entity.monster.ElderGuardian) return false;
         if (mob.getPersistentData().getBooleanOr(com.jo112ss.rpgmod.mob.boss.BossEvents.CHILD, false)) return false;
         return !mob.entityTags().contains(HALF);
     }

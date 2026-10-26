@@ -11,6 +11,8 @@ import com.jo112ss.rpgmod.job.Pirate;
 import com.jo112ss.rpgmod.job.SkillExecutor;
 import com.jo112ss.rpgmod.job.SkillTasks;
 import com.jo112ss.rpgmod.job.core.JobDefs;
+import com.jo112ss.rpgmod.mob.revenant.Revenant;
+import com.jo112ss.rpgmod.mob.revenant.RevenantSpawns;
 import com.jo112ss.rpgmod.registry.ModEffects;
 import java.util.List;
 import net.minecraft.server.level.ServerLevel;
@@ -94,6 +96,7 @@ final class NewJobTests {
             case "hitmana" -> hitMana(p, dummies);
             case "ults" -> ults(level, p, dummies);
             case "elites" -> elites(level, p);
+            case "revenants" -> revenants(level, p);
             case "counter_lance" -> counterLance(level, p, dummies);
             case "wall", "unwall" -> wall(level, p, name.equals("wall"));
             default -> {
@@ -334,6 +337,87 @@ final class NewJobTests {
         });
         SkillTasks.later(300, () -> {
             for (var z : level.getEntitiesOfClass(net.minecraft.world.entity.monster.zombie.Husk.class, p.getBoundingBox().inflate(20))) z.discard();
+        });
+    }
+
+    /** The fallen adventurers: who comes together, their health and attack, each job's move, a cave spawn. */
+    private static void revenants(ServerLevel level, ServerPlayer p) {
+        Revenant.testLog = true;
+        var rnd = net.minecraft.util.RandomSource.create(42);
+        int[] sizes = new int[5];
+        int lonePriest = 0, n = 20000;
+        java.util.Map<Revenant.Role, Integer> alone = new java.util.EnumMap<>(Revenant.Role.class);
+        for (int i = 0; i < n; i++) {
+            var roles = RevenantSpawns.roll(rnd);
+            sizes[roles.size()]++;
+            if (roles.size() == 1) alone.merge(roles.get(0), 1, Integer::sum);
+            if (roles.size() == 1 && roles.get(0) == Revenant.Role.PRIEST) lonePriest++;
+        }
+        log("revenants: groups of {} - alone {}% pair {}% party of four {}%, priests alone {}, alone by job {}", n, sizes[1] * 100 / n, sizes[2] * 100 / n, sizes[4] * 100 / n,
+                lonePriest, alone);
+        var mode = p.gameMode();
+        p.setGameMode(net.minecraft.world.level.GameType.SURVIVAL);
+        p.getAbilities().invulnerable = true; // hunted, but takes nothing
+        p.onUpdateAbilities();
+        Vec3 face = Vec3.directionFromRotation(0, p.getYRot());
+        Vec3 side = new Vec3(-face.z, 0, face.x);
+        Vec3 at = p.position().add(face.scale(12));
+        com.jo112ss.rpgmod.mob.Elite.forceNext = 0;
+        var party = RevenantSpawns.spawnGroup(level, at, List.of(Revenant.Role.WARRIOR, Revenant.Role.MAGE, Revenant.Role.ARCHER, Revenant.Role.PRIEST));
+        var thief = RevenantSpawns.spawnGroup(level, p.position().add(face.scale(7)).add(side.scale(5)), List.of(Revenant.Role.THIEF)).get(0);
+        var zombie = net.minecraft.world.entity.EntityTypes.ZOMBIE.create(level, net.minecraft.world.entity.EntitySpawnReason.COMMAND);
+        zombie.snapTo(at.x + side.x * 30, at.y, at.z + side.z * 30, 0, 0);
+        zombie.setNoAi(true);
+        level.addFreshEntity(zombie);
+        com.jo112ss.rpgmod.mob.Elite.forceNext = null;
+        var all = new java.util.ArrayList<Revenant>(party);
+        all.add(thief);
+        for (Revenant r : all) {
+            r.readyIn(r.role() == Revenant.Role.PRIEST ? 40 : 12);
+            r.setTarget(p);
+        }
+        SkillTasks.later(2, () -> {
+            com.jo112ss.rpgmod.mob.MobLevels.apply(zombie, com.jo112ss.rpgmod.mob.MobLevels.level(party.get(0)));
+            for (var slot : net.minecraft.world.entity.EquipmentSlot.values()) zombie.setItemSlot(slot, ItemStack.EMPTY);
+            com.jo112ss.rpgmod.mob.MobGear.refreshWeapon(zombie);
+            for (Revenant r : all) log("revenants: {} lv {} health {} attack {} weapon {} speed {}", r.role().id(), com.jo112ss.rpgmod.mob.MobLevels.level(r),
+                    String.format("%.0f", r.getMaxHealth()), String.format("%.1f", r.getAttributeValue(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE)),
+                    r.getMainHandItem().getItem(), String.format("%.3f", r.getAttributeValue(net.minecraft.world.entity.ai.attributes.Attributes.MOVEMENT_SPEED)));
+            log("revenants: a bare zombie at the same level - health {} attack {} speed {}", String.format("%.0f", zombie.getMaxHealth()),
+                    String.format("%.1f", zombie.getAttributeValue(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE)),
+                    String.format("%.3f", zombie.getAttributeValue(net.minecraft.world.entity.ai.attributes.Attributes.MOVEMENT_SPEED)));
+        });
+        // the priest heals the hurt warrior
+        SkillTasks.later(20, () -> {
+            var w = party.get(0);
+            w.hurtServer(level, p.damageSources().playerAttack(p), w.getMaxHealth() * 0.6F);
+            log("revenants: warrior hurt to {}", String.format("%.1f", w.getHealth()));
+        });
+        SkillTasks.later(150, () -> log("revenants: warrior health now {} / {}", String.format("%.1f", party.get(0).getHealth()), String.format("%.0f", party.get(0).getMaxHealth())));
+        // a cave spawn: a zombie about to appear under a roof below y 40 comes as revenants
+        SkillTasks.later(200, () -> {
+            net.minecraft.core.BlockPos base = net.minecraft.core.BlockPos.containing(p.position().subtract(face.scale(14)));
+            for (int dx = -1; dx <= 1; dx++) for (int dz = -1; dz <= 1; dz++)
+                level.setBlockAndUpdate(base.offset(dx, 4, dz), net.minecraft.world.level.block.Blocks.STONE.defaultBlockState());
+            var z = net.minecraft.world.entity.EntityTypes.ZOMBIE.create(level, net.minecraft.world.entity.EntitySpawnReason.NATURAL);
+            z.snapTo(base.getX() + 0.5, base.getY(), base.getZ() + 0.5, 0, 0);
+            RevenantSpawns.forceChance = 1.0;
+            var ev = new net.neoforged.neoforge.event.entity.living.FinalizeSpawnEvent(z, level, z.getX(), z.getY(), z.getZ(), level.getCurrentDifficultyAt(base),
+                    net.minecraft.world.entity.EntitySpawnReason.NATURAL, null, null);
+            net.neoforged.neoforge.common.NeoForge.EVENT_BUS.post(ev);
+            RevenantSpawns.forceChance = null;
+            int before = level.getEntitiesOfClass(Revenant.class, p.getBoundingBox().inflate(40)).size();
+            log("revenants: cave spawn at y {} (sky {}) - zombie cancelled {}", base.getY(), level.canSeeSky(base), ev.isSpawnCancelled());
+            SkillTasks.later(3, () -> log("revenants: cave spawn -> revenants {} before, {} after", before,
+                    level.getEntitiesOfClass(Revenant.class, p.getBoundingBox().inflate(40)).size()));
+        });
+        SkillTasks.later(300, () -> {
+            for (var r : level.getEntitiesOfClass(Revenant.class, p.getBoundingBox().inflate(60))) r.discard();
+            zombie.discard();
+            p.setGameMode(mode);
+            p.getAbilities().invulnerable = false;
+            p.onUpdateAbilities();
+            Revenant.testLog = false;
         });
     }
 

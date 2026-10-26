@@ -59,6 +59,11 @@ public final class ModRegistries {
                     b -> b.sized(1.4F * com.jo112ss.rpgmod.mob.boss.Golem.SCALE, 2.7F * com.jo112ss.rpgmod.mob.boss.Golem.SCALE).eyeHeight(2.3F * com.jo112ss.rpgmod.mob.boss.Golem.SCALE)
                             .clientTrackingRange(16).fireImmune());
 
+    /** Fallen adventurers: zombies that still fight in their old job's way, deep underground. */
+    public static final DeferredHolder<net.minecraft.world.entity.EntityType<?>, net.minecraft.world.entity.EntityType<com.jo112ss.rpgmod.mob.revenant.Revenant>> REVENANT =
+            ENTITIES.registerEntityType("revenant", com.jo112ss.rpgmod.mob.revenant.Revenant::new, net.minecraft.world.entity.MobCategory.MONSTER,
+                    b -> b.sized(0.6F, 1.95F).eyeHeight(1.74F).passengerAttachments(2.0125F).ridingOffset(-0.7F).clientTrackingRange(8).notInPeaceful());
+
     /** The Golem's armour pillars. */
     public static final DeferredHolder<net.minecraft.world.entity.EntityType<?>, net.minecraft.world.entity.EntityType<com.jo112ss.rpgmod.mob.boss.GolemPillar>> GOLEM_PILLAR =
             ENTITIES.registerEntityType("golem_pillar", com.jo112ss.rpgmod.mob.boss.GolemPillar::new, net.minecraft.world.entity.MobCategory.MONSTER,

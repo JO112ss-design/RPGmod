@@ -32,6 +32,7 @@ public final class MobGear {
      * still count, just out of sight.
      */
     public static boolean wearsGear(Mob m) {
+        if (m instanceof com.jo112ss.rpgmod.mob.revenant.Revenant) return false; // they carry their own job's weapon
         return m instanceof net.minecraft.world.entity.monster.Enemy && !(m instanceof net.minecraft.world.entity.monster.Enderman)
                 && !(m instanceof net.minecraft.world.entity.monster.Creeper)
                 && !(m instanceof net.minecraft.world.entity.boss.enderdragon.EnderDragon) && !m.is(net.neoforged.neoforge.common.Tags.EntityTypes.BOSSES);
@@ -118,6 +119,12 @@ public final class MobGear {
         double cut = -bonus * (1 - MobConfig.weaponShare() / 3);
         if (cut < 0) inst.addPermanentModifier(new net.minecraft.world.entity.ai.attributes.AttributeModifier(DAMPEN, cut,
                 net.minecraft.world.entity.ai.attributes.AttributeModifier.Operation.ADD_VALUE));
+    }
+
+    /** Gives a monster a weapon of its own choosing (counted at the same share as random gear). */
+    public static void arm(Mob mob, ItemStack weapon) {
+        put(mob, EquipmentSlot.MAINHAND, weapon);
+        dampenWeapon(mob, weapon);
     }
 
     private static void put(Mob mob, EquipmentSlot slot, ItemStack stack) {
