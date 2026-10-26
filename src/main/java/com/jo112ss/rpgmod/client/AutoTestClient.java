@@ -163,7 +163,11 @@ public final class AutoTestClient {
         return switch (id) {
             case "power_slash", "shield_bash" -> new int[] {2};
             case "multishot", "backstep", "magic_bolt", "backstab", "lucky_shot" -> new int[] {3};
-            case "earthshatter", "frost_nova", "flame_burst", "berserk", "holy_guard", "lay_on_hands", "heal", "arcane_shield", "shadow_dance" -> new int[] {6};
+            case "time_warp", "guardian_light", "divine_aegis", "eagle_eye", "blooming_fists", "heaven_earth", "diamond_body", "grand_rune" -> new int[] {10};
+            case "hundred_fists" -> new int[] {20, 61};
+            case "sealing_chord", "holy_lance" -> new int[] {3, 8};
+            case "earthshatter" -> new int[] {4, 10};
+            case "earthshatter_", "frost_nova", "flame_burst", "berserk", "holy_guard", "lay_on_hands", "heal", "arcane_shield", "shadow_dance" -> new int[] {6};
             case "snare", "time_warp", "weaken", "mana_link", "grand_enchant", "mana_surge", "blessing", "guardian_light" -> new int[] {10};
             case "arrow_rain" -> new int[] {16};
             case "hunters_mark" -> new int[] {4, 14};
@@ -241,7 +245,7 @@ public final class AutoTestClient {
             case "dragon_fang" -> new int[] {10, 30, 58};
             case "combo" -> new int[] {5};
             case "parry", "rum" -> new int[] {6};
-            case "meditate", "hundred_fists" -> new int[] {20};
+            case "meditate" -> new int[] {20};
             case "war_song", "heal_song", "guard_song", "wind_song", "discord", "lullaby" -> new int[] {30};
             case "grand_concert" -> new int[] {25};
             case "high_jump" -> new int[] {24, 40, 48, 54};
@@ -258,7 +262,7 @@ public final class AutoTestClient {
             case "spear_wall", "requiem", "fortress", "night_hunt" -> new int[] {12};
             case "elemental_burst" -> new int[] {2, 12, 22};
             case "symphony", "grand_concerto" -> new int[] {25};
-            case "ki_wave", "holy_lance", "vital_shot", "scattershot", "shock_chord" -> new int[] {3};
+            case "ki_wave", "vital_shot", "scattershot", "shock_chord" -> new int[] {3};
             case "mob:downed" -> new int[] {50, 120, 200};
             case "mob:stairs" -> new int[] {60, 300, 550, 700};
             case "mob:exit" -> new int[] {60, 200, 340, 480};
@@ -300,6 +304,7 @@ public final class AutoTestClient {
             case "nj:ward" -> 210;
             case "nj:wardlinger" -> 80;
             case "dragon_king" -> 100;
+            case "hundred_fists", "dragon_fang" -> 80;
             case "twin_cannon", "mimic" -> 70;
             case "high_jump" -> 75;
             case "fleet_barrage", "symphony", "grand_concerto" -> 110;
@@ -362,10 +367,19 @@ public final class AutoTestClient {
             showSkills.addAll(java.util.List.of("nj:statsdump"));
             showSkills.clear(); // physical MP: normal hits give MP back; the bard line keeps 100 and pays for the wave
             showSkills.addAll(java.util.List.of("nj:restore", "nj:hitmana", "nj:statsdump", "nj:restore"));
-            showSkills.clear(); // the reworked ultimates: server checks, then each one on camera
-            showSkills.addAll(java.util.List.of("nj:restore", "nj:ults", "nj:restore", "nj:fighter", "berserk", "nj:assassin", "shadow_dance", "nj:paladin", "divine_aegis",
+            if (false) showSkills.clear(); // the reworked ultimates: server checks, then each one on camera
+            if (false) showSkills.addAll(java.util.List.of("nj:restore", "nj:ults", "nj:restore", "nj:fighter", "berserk", "nj:assassin", "shadow_dance", "nj:paladin", "divine_aegis",
                     "nj:healer", "guardian_light", "nj:sentinel", "fortress", "nj:qi_master", "blooming_fists", "nj:wizard", "time_warp", "nj:spellmaster", "armageddon",
                     "nj:lancer", "dragon_fang", "nj:spellsinger", "sealing_chord", "nj:restore"));
+            showSkills.clear(); // every ultimate with its own look
+            showSkills.addAll(java.util.List.of("nj:restore", "nj:fighter", "berserk", "earthshatter", "nj:ranger", "arrow_rain", "eagle_eye", "nj:paladin", "divine_aegis",
+                    "judgement", "nj:wizard", "time_warp", "nj:healer", "guardian_light", "nj:assassin", "shadow_dance", "nj:pirate", "down:broadside", "jolly_roger",
+                    "nj:lancer", "dragon_fang", "spear_rain", "nj:monk", "hundred_fists", "diamond_body", "nj:bard", "grand_concert", "finale", "nj:berserker", "asura",
+                    "nj:guardian", "bastion", "nj:sharpshooter", "dead_eye", "nj:spellmaster", "armageddon", "nj:runemaster", "grand_rune", "nj:joker", "wildcard",
+                    "nj:nightblade", "yaksha", "nj:bishop", "great_miracle", "nj:captain", "up:fleet_barrage", "nj:champion", "peerless", "nj:dragoon", "dragon_king",
+                    "nj:songs_maestro", "symphony", "nj:spellblade", "arcane_edge", "elemental_burst", "nj:qi_master", "heaven_earth", "blooming_fists", "nj:sentinel",
+                    "fortress", "holy_lance", "nj:songs_singer", "grand_concerto", "sealing_chord", "nj:shadow_hunter", "night_hunt", "shadow_rain", "nj:treasure_hunter",
+                    "treasure_rain", "golden_cannon", "nj:restore"));
             if (false) showSkills.clear(); // spellsinger afterglow
             if (false) showSkills.addAll(java.util.List.of("nj:restore", "nj:wardlinger", "nj:ward", "nj:linger", "nj:restore"));
             if (false) showSkills.clear(); // songs: each with its own rhythm (bars from the song's style) and tune

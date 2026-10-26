@@ -304,8 +304,7 @@ public final class AdvSkills {
 
     private static boolean asura(Ctx c) {
         effect(c.p(), ModEffects.ASURA, ticks(c.def().duration()), 0, c.p());
-        ServerFx.of("berserk", c.p().position()).follow(c.p()).a(c.def().duration()).send(c.level());
-        ServerFx.of("x_aura", c.p().position()).follow(c.p()).a(c.def().duration()).b(1).color(0x900000).send(c.level());
+        ServerFx.of("u_asura", c.p().position()).follow(c.p()).a(c.def().duration()).send(c.level());
         sound(c, SoundEvents.WARDEN_ROAR, 0.8F);
         sound(c, c.p().position(), SoundEvents.FIRECHARGE_USE, 0.8F, 0.5F);
         return true;
@@ -384,9 +383,7 @@ public final class AdvSkills {
         List<ServerPlayer> allies = allies(c.p(), c.def().radius());
         for (ServerPlayer a : allies) apply(a, c.def(), c.p());
         effect(c.p(), ModEffects.UNDYING, ticks(c.def().duration()), 0, c.p());
-        ServerFx.of("divine_aegis", c.p().position()).follow(c.p()).a(c.def().radius()).b(c.def().duration()).points(others(c.p(), allies)).send(c.level());
-        ServerFx.of("x_aura", c.p().position()).follow(c.p()).a(c.def().duration()).b(2).color(0xFFE070).send(c.level());
-        ServerFx.of("x_ring", c.p().position()).a(c.def().radius()).b(2).color(GOLD).send(c.level());
+        ServerFx.of("u_bastion", c.p().position()).follow(c.p()).a(c.def().radius()).b(c.def().duration()).points(others(c.p(), allies)).send(c.level());
         sound(c, SoundEvents.BEACON_ACTIVATE, 0.9F);
         sound(c, c.p().position(), SoundEvents.ANVIL_USE, 0.8F, 0.6F);
         sound(c, c.p().position(), SoundEvents.TOTEM_USE, 0.5F, 1.2F);
@@ -537,8 +534,8 @@ public final class AdvSkills {
         }
         targets.sort(Comparator.comparingDouble(e -> e.distanceToSqr(c.p())));
         if (targets.size() > 24) targets = new ArrayList<>(targets.subList(0, 24));
-        for (LivingEntity e : targets) ServerFx.of("x_mark", e.position()).follow(e).a(1.2).color(0xFF3030).send(c.level());
-        ServerFx.of("eagle_eye", c.p().position()).follow(c.p()).a(1.5).send(c.level());
+        for (LivingEntity e : targets) ServerFx.of("u_dead_mark", e.position()).follow(e).send(c.level());
+        ServerFx.of("u_dead_eye", c.p().position()).follow(c.p()).send(c.level());
         sound(c, SoundEvents.SPYGLASS_USE, 0.6F);
         sound(c, c.p().position(), SoundEvents.BELL_RESONATE, 0.8F, 1.8F);
         // at least four shots: with few enemies in sight, they take several each
@@ -884,8 +881,7 @@ public final class AdvSkills {
         Vec3 o = c.p().position();
         double r = c.def().radius();
         int life = ticks(c.def().duration());
-        ServerFx.of("x_zone", o).vec(new Vec3(0, 3, 0)).a(r).b(life).color(RUNE).send(c.level());
-        ServerFx.of("x_ring", o).a(r).b(3).color(RUNE).send(c.level());
+        ServerFx.of("u_grand_rune", o).a(r).b(life).send(c.level());
         sound(c, SoundEvents.BEACON_ACTIVATE, 0.7F);
         sound(c, o, SoundEvents.ENCHANTMENT_TABLE_USE, 1.2F, 0.6F);
         SkillTasks.run(age -> {
@@ -1052,7 +1048,7 @@ public final class AdvSkills {
             if (u == null) continue;
             double pw = JobManager.powerMultiplier(c.p(), u);
             if (SkillExecutor.execute(c.p(), u, pw)) {
-                ServerFx.of("x_aura", c.p().position()).follow(c.p()).a(1.5).b(5).color(JOKER).send(c.level());
+                ServerFx.of("u_wildcard", c.p().position()).follow(c.p()).send(c.level());
                 sound(c, SoundEvents.PLAYER_LEVELUP, 1.6F);
                 c.p().sendSystemMessage(Component.translatable("rpgmod.joker.wildcard", Component.translatable("rpgmod.skill." + id))
                         .withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.BOLD), true);
@@ -1163,8 +1159,7 @@ public final class AdvSkills {
     private static boolean yaksha(Ctx c) {
         effect(c.p(), ModEffects.YAKSHA, ticks(c.def().duration()), 0, c.p());
         apply(c.p(), c.def(), c.p());
-        ServerFx.of("shadow_dance", c.p().position()).follow(c.p()).a(c.def().duration()).send(c.level());
-        ServerFx.of("x_aura", c.p().position()).follow(c.p()).a(c.def().duration()).b(1).color(NIGHT).send(c.level());
+        ServerFx.of("u_yaksha", c.p().position()).follow(c.p()).a(c.def().duration()).send(c.level());
         sound(c, SoundEvents.WARDEN_HEARTBEAT, 0.6F);
         sound(c, c.p().position(), SoundEvents.ILLUSIONER_CAST_SPELL, 1.0F, 0.6F);
         return true;
@@ -1354,9 +1349,9 @@ public final class AdvSkills {
             a.setHealth(a.getMaxHealth());
             cleanse(a);
             apply(a, c.def(), c.p());
-            ServerFx.of("x_pillar", a.position()).a(1.4).b(40).color(HOLY).send(c.level());
+            ServerFx.of("u_miracle_pillar", a.position()).send(c.level());
         }
-        ServerFx.of("guardian_light", c.p().position()).follow(c.p()).a(c.def().radius()).b(c.def().duration()).points(others(c.p(), allies)).send(c.level());
+        ServerFx.of("u_great_miracle", c.p().position()).follow(c.p()).a(c.def().radius()).send(c.level());
         sound(c, SoundEvents.BEACON_ACTIVATE, 1.0F);
         sound(c, c.p().position(), SoundEvents.TOTEM_USE, 0.8F, 1.0F);
         sound(c, c.p().position(), SoundEvents.BELL_RESONATE, 1.2F, 0.8F);

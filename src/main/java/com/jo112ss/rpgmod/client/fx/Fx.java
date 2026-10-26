@@ -30,14 +30,15 @@ public final class Fx {
     public enum S {
         GLOW, FLARE, ORB, SPARK, RING, WAVE, STREAK, BEAM, SLASH, SHARD, CROSS, PETAL, FEATHER, SMOKE, HEX,
         CIRCLE_ARCANE, CIRCLE_HOLY, CIRCLE_HEX, CIRCLE_CLOCK, CIRCLE_NATURE,
-        RUNE0, RUNE1, RUNE2, RUNE3, COIN, CARD, DICE, SKULL, NOTE;
+        RUNE0, RUNE1, RUNE2, RUNE3, COIN, CARD, DICE, SKULL, NOTE,
+        FLAME, CRACK, BLADE, TWINKLE, SAKURA, MOON, LIGHTNING, CREST, EYE, CHAIN, FANG;
 
         final Identifier id = Identifier.fromNamespaceAndPath(RpgMod.MODID, "fx_" + name().toLowerCase());
 
         /** Shapes that get a colour copy by default (big line art that would otherwise wash out). */
         boolean autoTint() {
             return switch (this) {
-                case SLASH, RING, WAVE, HEX, CIRCLE_ARCANE, CIRCLE_HOLY, CIRCLE_HEX, CIRCLE_CLOCK, CIRCLE_NATURE -> true;
+                case SLASH, RING, WAVE, HEX, CIRCLE_ARCANE, CIRCLE_HOLY, CIRCLE_HEX, CIRCLE_CLOCK, CIRCLE_NATURE, CRACK, CREST, BLADE, MOON, SAKURA, EYE -> true;
                 default -> false;
             };
         }

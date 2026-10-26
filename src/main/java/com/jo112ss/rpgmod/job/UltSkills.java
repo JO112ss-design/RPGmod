@@ -63,9 +63,9 @@ public final class UltSkills {
         int life = ticks(c.def().duration());
         t.addEffect(new MobEffectInstance(ModEffects.HOLY_AEGIS, life, 0), p);
         HealthScale.heal(t, t.getMaxHealth());
-        if (t != p) ServerFx.of("x_link", c.chest()).vec(t.position().add(0, 1.0, 0)).color(0xFFE070).send(c.level());
-        ServerFx.of("divine_aegis", t.position()).follow(t).a(1.5).b(c.def().duration()).send(c.level());
-        ServerFx.of("x_aura", t.position()).follow(t).a(c.def().duration()).b(2).color(0xFFE070).send(c.level());
+        ServerFx fx = ServerFx.of("u_divine_aegis", t.position()).follow(t).b(c.def().duration());
+        if (t != p) fx.vec(new Vec3(1, 0, 0)).point(c.chest());
+        fx.send(c.level());
         sound(c, SoundEvents.BEACON_ACTIVATE, 1.3F);
         sound(c, t.position(), SoundEvents.TOTEM_USE, 0.6F, 1.4F);
         log("divine_aegis on {} for {}t", t == p ? "self" : t.getName().getString(), life);
@@ -102,7 +102,7 @@ public final class UltSkills {
         int life = ticks(c.def().duration());
         List<ServerPlayer> allies = allies(p, c.def().radius());
         for (ServerPlayer a : allies) a.addEffect(new MobEffectInstance(ModEffects.REWIND, life, 0), p);
-        ServerFx.of("guardian_light", p.position()).follow(p).a(c.def().radius()).b(c.def().duration()).points(others(p, allies)).send(c.level());
+        ServerFx.of("u_guardian_light", p.position()).follow(p).a(c.def().radius()).b(c.def().duration()).points(others(p, allies)).send(c.level());
         sound(c, SoundEvents.BEACON_ACTIVATE, 1.5F);
         sound(c, p.position(), SoundEvents.TOTEM_USE, 0.5F, 1.6F);
         return true;
@@ -119,7 +119,7 @@ public final class UltSkills {
             if (!v.isAlive()) return true;
             if (age > 0 && age % (REWIND_TICKS / 6) == 0) {
                 HealthScale.heal(v, step);
-                ServerFx.of("x_burst", v.position().add(0, 1.0, 0)).a(0.4).b(2).color(0xFFF0A0).send(level);
+                ServerFx.of("u_rewind", v.position()).follow(v).send(level);
             }
             return age >= REWIND_TICKS;
         });
@@ -144,9 +144,7 @@ public final class UltSkills {
             FORT_OWNER.put(a.getUUID(), p.getUUID());
         }
         p.addEffect(new MobEffectInstance(ModEffects.IMMOVABLE, t, 0), p);
-        ServerFx.of("x_wall", p.position().add(c.flat().scale(1.5))).vec(c.flat()).a(3).b(t).color(0xF0D890).send(c.level());
-        ServerFx.of("x_aura", p.position()).follow(p).a(c.def().duration()).b(2).color(0xF0D890).points(others(p, allies)).send(c.level());
-        ServerFx.of("x_ring", p.position()).a(c.def().radius()).b(2).color(0xF0D890).send(c.level());
+        ServerFx.of("u_fortress", p.position()).follow(p).a(c.def().radius()).b(c.def().duration()).points(others(p, allies)).send(c.level());
         sound(c, SoundEvents.BEACON_ACTIVATE, 0.9F);
         sound(c, p.position(), SoundEvents.ANVIL_LAND, 0.6F, 0.8F);
         SkillTasks.later(t, () -> fortressBurst(c));
@@ -174,11 +172,7 @@ public final class UltSkills {
             hurt(c, e, dmg, melee(c));
             pushAway(e, p.position(), 0.9, 0.3);
         }
-        for (int k = 0; k < 8; k++) {
-            double a = k * Math.PI / 4;
-            ServerFx.of("x_spikes", p.position()).vec(new Vec3(Math.cos(a), 0, Math.sin(a))).a(r * 0.8).color(0xF0D890).send(c.level());
-        }
-        ServerFx.of("x_burst", p.position().add(0, 0.5, 0)).a(r * 0.5).b(2).color(0xF0D890).points(hit).send(c.level());
+        ServerFx.of("u_fortress_burst", p.position()).a(r).points(hit).send(c.level());
         sound(c, p.position(), SoundEvents.TRIDENT_THUNDER, 0.8F, 1.2F);
         sound(c, p.position(), SoundEvents.ANVIL_LAND, 0.8F, 0.6F);
         log("fortress burst stored {} -> {} each on {}", String.format("%.1f", store[0]), String.format("%.1f", dmg), hit.size());
@@ -192,8 +186,7 @@ public final class UltSkills {
         if (!Bard.performing(p) && !Bard.perform(c)) return false;
         int life = ticks(c.def().duration());
         p.addEffect(new MobEffectInstance(ModEffects.SYMPHONY, life, 0), p);
-        ServerFx.of("n_notes", p.position()).follow(p).a(c.def().duration()).b(1).color(0xFFE070).send(c.level());
-        ServerFx.of("x_ring", p.position()).a(c.def().radius()).b(3).color(0xFFE070).send(c.level());
+        ServerFx.of("u_symphony", p.position()).follow(p).a(c.def().radius()).b(c.def().duration()).send(c.level());
         sound(c, SoundEvents.PLAYER_LEVELUP, 1.0F);
         return true;
     }
@@ -209,8 +202,7 @@ public final class UltSkills {
             hurt(c, e, dmg, magic(c));
             pushAway(e, p.position(), 0.25, 0.08);
         }
-        ServerFx.of("x_ring", p.position()).a(r).b(1).color(grade == Bard.PERFECT ? 0xFFE070 : 0xFFF4C0).send(c.level());
-        if (!hit.isEmpty()) ServerFx.of("n_song", p.position()).follow(p).a(r).b(0.6).color(0xFFE070).points(hit).send(c.level());
+        ServerFx.of("u_symphony_note", p.position()).follow(p).a(r).b(grade).points(hit).send(c.level());
         log("symphony note grade {} hits {} for {}", grade, hit.size(), String.format("%.1f", dmg));
     }
 
@@ -230,8 +222,7 @@ public final class UltSkills {
             return false;
         }
         double r = Bard.radius(JobData.MAX_SONG_POINTS);
-        ServerFx.of("n_notes", p.position()).follow(p).a(3).b(1).color(0xC8A0FF).send(c.level());
-        ServerFx.of("x_ring", p.position()).a(r).b(3).color(0x9A6AD8).send(c.level());
+        ServerFx.of("u_grand_concerto", p.position()).follow(p).a(r).send(c.level());
         sound(c, SoundEvents.PLAYER_LEVELUP, 1.1F);
         for (float pitch : new float[] {0.84F, 1.0F, 1.26F, 1.5F}) sound(c, p.position(), SoundEvents.NOTE_BLOCK_CHIME, 0.5F, pitch);
         log("grand_concerto afterglow of {} songs", n);
@@ -268,12 +259,12 @@ public final class UltSkills {
                 projectile(c, start, dir, 1.1, c.def().radius() + 6, t, 0.35, (e, at, dd) -> {
                     hurt(c, e, c.dmg(1), magic(c));
                     e.addEffect(new MobEffectInstance(ModEffects.SILENCED, SILENCE_TICKS, 0), p);
-                    ServerFx.of("x_hit", at).vec(dd).a(0.8).color(0xB070E0).send(c.level());
+                    ServerFx.of("u_seal_hit", at).follow(e).b(SILENCE_TICKS).send(c.level());
                 }, (at, dd, wall) -> { });
                 sound(c, p.position(), SoundEvents.NOTE_BLOCK_BELL, 0.7F, pitch);
             });
         }
-        ServerFx.of("n_finale", p.position()).a(4).b(points).color(0x9A6AD8).send(c.level());
+        ServerFx.of("u_sealing", p.position()).send(c.level());
         sound(c, p.position(), SoundEvents.ENCHANTMENT_TABLE_USE, 1.0F, 0.5F);
         log("sealing_chord {} notes at {} enemies (points {})", n, foes.size(), points);
         return true;
@@ -296,12 +287,10 @@ public final class UltSkills {
         int life = ticks(c.def().duration());
         Bloom b = new Bloom(p, c, at, r, c.level().getGameTime() + life, new long[1]);
         BLOOMS.add(b);
-        ServerFx.of("x_zone", at).vec(new Vec3(4, 3, 0)).a(r).b(life).color(0xFF9CC8).send(c.level());
-        ServerFx.of("x_ring", at).a(r).b(2).color(0xFFB0D8).send(c.level());
+        ServerFx.of("u_bloom_field", at).a(r).b(life).send(c.level());
         sound(c, SoundEvents.CHERRY_LEAVES_PLACE, 0.8F);
         sound(c, at, SoundEvents.AMETHYST_BLOCK_CHIME, 1.0F, 1.3F);
         SkillTasks.run(age -> {
-            if (age > 0 && age % 20 == 0 && age < life) ServerFx.of("x_burst", at.add(0, 0.2, 0)).a(r * 0.4).b(2).color(0xFFC0DC).send(c.level());
             if (age < life) return false;
             BLOOMS.remove(b);
             List<LivingEntity> hit = enemies(p, at, r);
@@ -309,8 +298,7 @@ public final class UltSkills {
                 hurt(c, e, c.dmg(1), melee(c));
                 pushAway(e, at, 0.5, 0.35);
             }
-            ServerFx.of("x_burst", at.add(0, 0.6, 0)).a(r * 0.7).b(2).color(0xFF9CC8).points(hit).send(c.level());
-            ServerFx.of("x_ring", at).a(r).b(3).color(0xFF9CC8).send(c.level());
+            ServerFx.of("u_bloom_burst", at).a(r).points(hit).send(c.level());
             sound(c, at, SoundEvents.CHERRY_LEAVES_BREAK, 1.0F, 0.8F);
             sound(c, at, SoundEvents.GENERIC_EXPLODE, 0.5F, 1.5F);
             log("blooming_fists burst on {}", hit.size());
@@ -329,7 +317,7 @@ public final class UltSkills {
             List<ServerPlayer> in = attacker.level().getEntitiesOfClass(ServerPlayer.class, new AABB(b.at(), b.at()).inflate(b.r() + 1),
                     a -> a.isAlive() && a.position().distanceTo(b.at()) <= b.r() + 0.5);
             for (ServerPlayer a : in) HealthScale.heal(a, a.getMaxHealth() * BLOOM_HEAL);
-            ServerFx.of("x_burst", attacker.position().add(0, 1.0, 0)).a(0.5).b(2).color(0xFFB0D8).points(in).send((ServerLevel) attacker.level());
+            ServerFx.of("u_bloom_heal", attacker.position().add(0, 1.0, 0)).points(in).send((ServerLevel) attacker.level());
             log("bloom heal {} allies", in.size());
         }
     }
@@ -345,6 +333,7 @@ public final class UltSkills {
         Map<Integer, Long> last = new HashMap<>();
         int[] total = {0};
         p.addEffect(new MobEffectInstance(MobEffects.SLOWNESS, life, 3, false, false), p);
+        ServerFx.of("u_beam_start", p.position()).follow(p).b(life).send(c.level());
         sound(c, SoundEvents.BEACON_ACTIVATE, 1.6F);
         sound(c, p.position(), SoundEvents.WARDEN_SONIC_CHARGE, 0.8F, 1.4F);
         SkillTasks.run(age -> {
@@ -369,8 +358,7 @@ public final class UltSkills {
                     hit.add(e);
                     total[0]++;
                 }
-                ServerFx.of("x_beam", start).vec(end).a(1.4).color(age % 4 == 0 ? 0xC8A8FF : 0xFFFFFF).points(hit).send(c.level());
-                if (age % 8 == 0) ServerFx.of("x_burst", end).a(1.2).b(2).color(0xC8A8FF).send(c.level());
+                ServerFx.of("u_beam", start).vec(end).points(hit).send(c.level());
                 if (age % 10 == 0) sound(c, p.position(), SoundEvents.BEACON_AMBIENT, 1.2F, 2.0F);
             }
             if (age >= life) log("great beam {} hits of {} each", total[0], String.format("%.1f", c.dmg(1.0 / hits)));
@@ -394,7 +382,7 @@ public final class UltSkills {
         int life = ticks(c.def().duration());
         double r = c.def().radius();
         Set<LivingEntity> carried = new LinkedHashSet<>();
-        ServerFx.of("x_aura", p.position()).follow(p).a(c.def().duration()).b(3).color(0xFF9030).send(c.level());
+        ServerFx.of("u_dragon_fang", p.position()).follow(p).a(r).b(c.def().duration()).send(c.level());
         sound(c, SoundEvents.ENDER_DRAGON_FLAP, 1.0F);
         SkillTasks.run(age -> {
             if (!p.isAlive()) return true;
@@ -407,7 +395,6 @@ public final class UltSkills {
                         hurt(c, e, c.dmg(0.06), melee(c));
                         carried.add(e);
                     }
-                    ServerFx.of("n_spin", p.position()).follow(p).b(6).color(0xFF9030).send(c.level());
                     sound(c, p.position(), SoundEvents.TRIDENT_RIPTIDE_1, 0.6F, 1.2F + (age % 12) * 0.03F);
                 }
                 // the caught ones are swept along in front
@@ -427,8 +414,7 @@ public final class UltSkills {
                 NewJobSkills.airborne(c, e, 1.0);
                 thrown.add(e);
             }
-            ServerFx.of("x_burst", p.position().add(f.scale(1.5)).add(0, 0.5, 0)).a(2.5).b(0).color(0xFF9030).points(thrown).send(c.level());
-            ServerFx.of("x_spikes", p.position()).vec(f).a(4).color(0xC0703A).send(c.level());
+            ServerFx.of("u_dragon_fang_end", p.position()).vec(f).points(thrown).send(c.level());
             sound(c, p.position(), SoundEvents.MACE_SMASH_GROUND_HEAVY, 1.2F, 0.8F);
             log("dragon_fang carried {} thrown {}", carried.size(), thrown.size());
             return true;
@@ -468,8 +454,7 @@ public final class UltSkills {
             stopped++;
             SkillTasks.later(life, () -> unfreeze(m, true));
         }
-        ServerFx.of("time_warp", o).a(r).b(life).points(hit).send(c.level());
-        ServerFx.of("x_zone", o).vec(new Vec3(3, 3, 0)).a(r).b(life).color(0xB0C8FF).send(c.level());
+        ServerFx.of("u_time_stop", o).a(r).b(life).points(hit).send(c.level());
         sound(c, SoundEvents.BELL_RESONATE, 0.5F);
         sound(c, o, SoundEvents.ILLUSIONER_PREPARE_BLINDNESS, 1.0F, 0.5F);
         log("time_stop stopped {} of {}", stopped, hit.size());
@@ -490,7 +475,7 @@ public final class UltSkills {
         } finally {
             releasing = false;
         }
-        ServerFx.of("x_burst", m.position().add(0, m.getBbHeight() * 0.5, 0)).a(1.2).b(4).color(0xB0C8FF).send(f.c().level());
+        ServerFx.of("u_time_release", m.position().add(0, m.getBbHeight() * 0.5, 0)).send(f.c().level());
         f.c().level().playSound(null, m.blockPosition(), SoundEvents.GLASS_BREAK, net.minecraft.sounds.SoundSource.PLAYERS, 0.8F, 0.7F);
         log("time_stop release {} stored {} -> {}", m.getType().toShortString(), String.format("%.1f", f.stored()[0]), String.format("%.1f", dmg));
     }
@@ -513,11 +498,7 @@ public final class UltSkills {
     static boolean shadowDance(Ctx c) {
         ServerPlayer p = c.p();
         p.addEffect(new MobEffectInstance(ModEffects.SHADOW_CLONE, ticks(c.def().duration()), 0), p);
-        ServerFx.of("shadow_dance", p.position()).follow(p).a(c.def().duration()).send(c.level());
-        Vec3 side = SkillExecutor.Fx3.right(c.flat());
-        for (int s = -1; s <= 1; s += 2) {
-            ServerFx.of("x_decoy", p.position().add(side.scale(1.4 * s))).vec(new Vec3(p.getYRot(), 0, 0)).b(30).send(c.level());
-        }
+        ServerFx.of("u_shadow_dance", p.position()).follow(p).a(c.def().duration()).send(c.level());
         sound(c, SoundEvents.ILLUSIONER_MIRROR_MOVE, 0.8F);
         return true;
     }
@@ -531,8 +512,7 @@ public final class UltSkills {
             SkillTasks.later(k * 3, () -> {
                 if (!target.isAlive() || !p.isAlive()) return;
                 Vec3 at = target.position().add(side.scale(1.2 * s)).subtract(c.flat().scale(0.8));
-                ServerFx.of("x_decoy", at).vec(new Vec3(p.getYRot(), 0, 0)).b(8).send(c.level());
-                ServerFx.of("x_slash", target.position().add(0, target.getBbHeight() * 0.55, 0)).vec(target.position().subtract(at)).a(1.2).color(0x6A4A9A).send(c.level());
+                ServerFx.of("u_shadow_strike", target.position().add(0, target.getBbHeight() * 0.55, 0)).vec(at).send(c.level());
                 hurt(c, target, amount * CLONE_SHARE, melee(c));
                 sound(c, at, SoundEvents.PLAYER_ATTACK_SWEEP, 0.5F, 1.4F);
             });
@@ -546,7 +526,7 @@ public final class UltSkills {
     static boolean warGod(Ctx c) {
         ServerPlayer p = c.p();
         p.addEffect(new MobEffectInstance(ModEffects.WAR_GOD, ticks(c.def().duration()), 4), p);
-        ServerFx.of("berserk", p.position()).follow(p).a(c.def().duration()).send(c.level());
+        ServerFx.of("u_war_god", p.position()).follow(p).a(c.def().duration()).send(c.level());
         sound(c, SoundEvents.RAVAGER_ROAR, 0.8F);
         sound(c, p.position(), SoundEvents.FIRECHARGE_USE, 0.8F, 0.6F);
         return true;
@@ -566,8 +546,7 @@ public final class UltSkills {
                 hurt(c, e, c.dmg(1), melee(c));
                 push(e, c.flat(), 0.8, 0.25);
             }
-            ServerFx.of("x_wave", c.chest()).vec(c.flat().scale(1.4)).a(r).b(3.5).color(0xFF5030).send(c.level());
-            ServerFx.of("power_slash", c.chest()).vec(c.flat()).a(r).points(hit).send(c.level());
+            ServerFx.of("u_war_god_swing", c.chest()).vec(c.flat()).a(r).points(hit).send(c.level());
             sound(c, p.position(), SoundEvents.PLAYER_ATTACK_SWEEP, 1.0F, 0.6F);
             sound(c, p.position(), SoundEvents.GENERIC_EXPLODE, 0.5F, 1.3F);
             log("war god swing {} left, hits {} for {}", cur.getAmplifier(), hit.size(), String.format("%.1f", c.dmg(1)));

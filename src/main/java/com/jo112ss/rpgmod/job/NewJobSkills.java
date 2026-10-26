@@ -346,7 +346,7 @@ public final class NewJobSkills {
         double r = c.def().radius();
         Vec3 dir = c.flat(), side = Fx3.right(dir);
         int rows = 8;
-        ServerFx.of("x_zone", o).a(r).b(rows * 4 + 24).vec(new Vec3(2, 4, 0)).color(0xFF6030).send(c.level());
+        ServerFx.of("u_broadside", o).vec(dir).a(r).send(c.level());
         sound(c, SoundEvents.RAVAGER_ROAR, 1.6F);
         SkillTasks.run(age -> {
             if (age % 4 == 0 && age / 4 < rows) {
@@ -384,16 +384,17 @@ public final class NewJobSkills {
         SkillProp flag = SkillProp.create(c.level(), SkillProp.FLAG, at, p.getYRot() + 90, life);
         Pirate.FLAG_UNTIL.put(p.getUUID(), c.level().getGameTime() + life);
         double r = c.def().radius();
-        ServerFx.of("x_ring", at).a(r).b(2).color(PIRATE).send(c.level());
+        ServerFx.of("u_jolly_roger", at).a(r).send(c.level());
         sound(c, SoundEvents.RAVAGER_ROAR, 1.2F);
         sound(c, at, SoundEvents.WOOL_PLACE, 1.0F, 0.8F);
         SkillTasks.run(age -> {
             if (flag.isRemoved()) return true;
             if (age % 20 == 0) {
-                for (ServerPlayer a : Pirate.aroundFlag(c.level(), at, r)) {
+                List<ServerPlayer> crew = Pirate.aroundFlag(c.level(), at, r);
+                for (ServerPlayer a : crew) {
                     a.addEffect(new MobEffectInstance(ModEffects.JOLLY_ROGER, 30, 0, true, true), p);
                 }
-                ServerFx.of("x_ring", at).a(r).b(1).color(0x203040).send(c.level());
+                ServerFx.of("u_jolly_pulse", at).a(r).points(crew).send(c.level());
             }
             return age >= life;
         });
@@ -771,7 +772,7 @@ public final class NewJobSkills {
         int life = ticks(c.def().duration());
         WeaponMaterial mat = ModItems.materialOf(p.getMainHandItem().getItem());
         List<SkillProp> stuck = new ArrayList<>();
-        ServerFx.of("x_zone", o).a(r).b(life + 30).vec(new Vec3(0, 0, 0)).color(LANCE).send(c.level());
+        ServerFx.of("u_spear_field", o).a(r).b(life + 16).send(c.level());
         sound(c, SoundEvents.TRIDENT_THROW, 0.7F);
         SkillTasks.run(age -> {
             if (age % 2 == 0 && age < life) {
@@ -799,14 +800,15 @@ public final class NewJobSkills {
             }
             if (age == life + 16) { // all of them burst
                 java.util.Map<LivingEntity, Integer> count = new java.util.HashMap<>();
+                ServerFx burst = ServerFx.of("u_spear_burst", o);
                 for (SkillProp s : stuck) {
                     Vec3 at = s.position();
                     for (LivingEntity e : enemies(p, at, 1.6)) count.merge(e, 1, Integer::sum);
-                    ServerFx.of("x_burst", at.add(0, 0.4, 0)).a(1).b(0).color(0xFFB060).send(c.level());
+                    burst.point(at.add(0, 0.5, 0));
                     s.discard();
                 }
                 count.forEach((e, n) -> hurt(c, e, c.dmg(SPEAR_BURST) * Math.min(4, n), melee(c)));
-                ServerFx.of("x_ring", o).a(r).b(2).color(LANCE).points(new ArrayList<>(count.keySet())).send(c.level());
+                burst.send(c.level());
                 sound(c, o, SoundEvents.GENERIC_EXPLODE, 1.4F, 1.1F);
                 return true;
             }
@@ -990,7 +992,7 @@ public final class NewJobSkills {
                     hurt(c, e, c.dmg(3), melee(c));
                     push(e, c.flat(), 1.2, 0.4);
                 }
-                ServerFx.of("x_burst", c.chest().add(c.flat().scale(1.8))).a(1.6).b(3).color(KI).points(hit).send(c.level());
+                ServerFx.of("u_hundred_finish", c.chest().add(c.flat().scale(1.8))).vec(c.flat()).points(hit).send(c.level());
                 sound(c, p.position(), SoundEvents.PLAYER_ATTACK_KNOCKBACK, 1.2F, 0.6F);
             }
             return age >= life;
@@ -1001,8 +1003,7 @@ public final class NewJobSkills {
     private static boolean diamondBody(Ctx c) {
         ServerPlayer p = c.p();
         p.addEffect(new MobEffectInstance(ModEffects.DIAMOND_BODY, ticks(c.def().duration()), 0), p);
-        ServerFx.of("x_aura", p.position()).follow(p).a(c.def().duration()).b(2).color(0xFFD27A).send(c.level());
-        ServerFx.of("x_burst", p.position().add(0, 1, 0)).a(1.5).b(2).color(0xFFD27A).send(c.level());
+        ServerFx.of("u_diamond_body", p.position()).follow(p).a(c.def().duration()).send(c.level());
         sound(c, SoundEvents.ANVIL_LAND, 0.6F);
         sound(c, p.position(), SoundEvents.BEACON_ACTIVATE, 0.8F, 1.6F);
         return true;
@@ -1014,14 +1015,13 @@ public final class NewJobSkills {
         ServerPlayer p = c.p();
         int life = ticks(c.def().duration());
         double r = c.def().radius();
-        ServerFx.of("x_ring", p.position()).a(r).b(3).color(Bard.COLOR).send(c.level());
-        ServerFx.of("n_notes", p.position()).follow(p).a(c.def().duration()).b(1).color(0xFFE070).send(c.level());
+        ServerFx.of("u_grand_concert", p.position()).follow(p).a(r).b(c.def().duration()).send(c.level());
         sound(c, SoundEvents.PLAYER_LEVELUP, 1.2F);
         SkillTasks.run(age -> {
             if (!p.isAlive()) return true;
             if (age % 20 == 0) {
                 Bard.grand(p, r, 30);
-                ServerFx.of("n_song", p.position()).follow(p).a(r).b(1.2).color(0xFFE070).send(c.level());
+                ServerFx.of("u_concert_pulse", p.position()).follow(p).a(r).points(allies(p, r)).send(c.level());
                 float[] chord = {1.0F, 1.26F, 1.5F};
                 for (float pitch : chord) sound(c, p.position(), SoundEvents.NOTE_BLOCK_BELL, 0.5F, pitch * (age % 40 == 0 ? 1F : 0.84F));
             }
@@ -1046,8 +1046,7 @@ public final class NewJobSkills {
         Bard.stop(p);
         d.setSongPoints(0);
         JobManager.sync(p);
-        ServerFx.of("x_ring", o).a(r).b(3).color(0xFFE070).points(hit).send(c.level());
-        ServerFx.of("n_finale", o).a(r).b(points).color(Bard.COLOR).send(c.level());
+        ServerFx.of("u_finale", o).a(r).b(points).points(hit).send(c.level());
         sound(c, SoundEvents.NOTE_BLOCK_BELL, 0.5F);
         sound(c, o, SoundEvents.GENERIC_EXPLODE, 0.6F, 1.4F);
         sound(c, o, SoundEvents.PLAYER_LEVELUP, 0.8F, 0.8F);

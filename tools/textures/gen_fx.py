@@ -422,4 +422,181 @@ d.polygon([(n * 0.46, n * 0.12), (n * 0.84, n * 0.30), (n * 0.80, n * 0.44), (n 
 img = img.filter(ImageFilter.GaussianBlur(SS * 0.4))
 save(img, 'note', 32)
 
+# ---------------------------------------------------------------- ultimate sprites (tintable)
+
+
+def flame(x, y):
+    # a flame tongue: round glowing base, curling pointed tip, soft edges
+    yy = y + 0.35
+    if yy < -0.6:
+        return 0
+    if yy < 0:
+        w = 0.5 * math.sqrt(max(0.0, 1 - (yy / 0.6) ** 2))
+    else:
+        t = min(1.0, yy / 1.15)
+        w = 0.5 * (1 - t) ** 1.4
+    sway = 0.12 * max(0.0, yy) ** 1.5 * math.sin(yy * 3.2)
+    d = abs(x - sway)
+    if w <= 0.002:
+        return 0
+    body = smooth(w, w * 0.25, d)
+    core = math.exp(-((x - sway) ** 2 / 0.02 + (yy + 0.1) ** 2 / 0.08)) * 0.5
+    return min(1.0, body * (0.6 + 0.4 * (1 - max(0.0, yy))) + core)
+
+
+save(field(32, flame), 'flame', 32)
+
+
+def crack_img(size, seed):
+    import random
+    rnd = random.Random(seed)
+    n = size * SS
+    img = Image.new('RGBA', (n, n), (255, 255, 255, 0))
+    d = ImageDraw.Draw(img)
+    c = n / 2
+    for k in range(7):
+        ang = 2 * math.pi * k / 7 + rnd.uniform(-0.3, 0.3)
+        x, y, w = c, c, n * 0.028
+        for s in range(9):
+            ang += rnd.uniform(-0.45, 0.45)
+            step = n * rnd.uniform(0.04, 0.07)
+            nx, ny = x + math.cos(ang) * step, y + math.sin(ang) * step
+            d.line([(x, y), (nx, ny)], fill=(255, 255, 255, 255), width=max(1, int(w)))
+            if rnd.random() < 0.3:
+                ba = ang + rnd.choice([-1, 1]) * rnd.uniform(0.6, 1.1)
+                d.line([(nx, ny), (nx + math.cos(ba) * step * 0.8, ny + math.sin(ba) * step * 0.8)], fill=(255, 255, 255, 220), width=max(1, int(w * 0.6)))
+            x, y, w = nx, ny, w * 0.86
+    return glowify(img, n)
+
+
+save(crack_img(128, 7), 'crack', 128)
+
+
+def blade(x, y):
+    # a long straight blade pointing up (+y), bright edge line in the middle
+    t = (y + 0.95) / 1.9
+    if t < 0 or t > 1:
+        return 0
+    w = 0.16 * (1 - t ** 3) if t > 0.12 else 0.05
+    if t > 0.12 and t < 0.16:
+        w = 0.3  # guard
+    if w <= 0:
+        return 0
+    body = smooth(w, w * 0.7, abs(x))
+    core = math.exp(-(x / 0.03) ** 2) * 0.6
+    return min(1.0, body * 0.85 + core)
+
+
+save(field(32, blade), 'blade', 32)
+
+
+def twinkle(x, y):
+    # four-pointed star glint
+    r = math.hypot(x, y)
+    a = math.exp(-abs(x) * 18) * max(0, 1 - abs(y)) ** 2.5 + math.exp(-abs(y) * 18) * max(0, 1 - abs(x)) ** 2.5
+    d = (math.exp(-abs(x - y) * 22) + math.exp(-abs(x + y) * 22)) * max(0, 1 - r * 1.6) ** 2 * 0.5
+    return a + d + math.exp(-r * r * 60)
+
+
+save(field(32, twinkle), 'twinkle', 32)
+
+
+def sakura(x, y):
+    # five petals with notched tips
+    r = math.hypot(x, y)
+    th = math.atan2(y, x)
+    k = (th * 5 / (2 * math.pi)) % 1.0
+    notch = 0.12 * math.exp(-((k - 0.5) / 0.06) ** 2)
+    edge = 0.92 * (0.55 + 0.45 * abs(math.cos(th * 2.5))) - notch
+    v = smooth(edge, edge - 0.08, r)
+    centre = math.exp(-r * r * 40) * 0.6
+    return min(1.0, v * (0.75 + 0.25 * r) + centre)
+
+
+save(field(32, sakura), 'sakura', 32)
+
+
+def moon(x, y):
+    a = smooth(0.8, 0.74, math.hypot(x, y))
+    b = smooth(0.7, 0.64, math.hypot(x - 0.38, y + 0.12))
+    return max(0.0, a - b)
+
+
+save(field(64, moon), 'moon', 64)
+
+
+def lightning_img(size, seed):
+    import random
+    rnd = random.Random(seed)
+    n = size * SS
+    img = Image.new('RGBA', (n, n), (255, 255, 255, 0))
+    d = ImageDraw.Draw(img)
+    pts = [(n * 0.5, 0)]
+    for i in range(1, 9):
+        pts.append((n * 0.5 + rnd.uniform(-0.22, 0.22) * n, n * i / 8))
+    d.line(pts, fill=(255, 255, 255, 255), width=int(n * 0.05), joint='curve')
+    for i in (2, 5):
+        x, y = pts[i]
+        d.line([(x, y), (x + rnd.choice([-1, 1]) * n * 0.2, y + n * 0.14)], fill=(255, 255, 255, 220), width=int(n * 0.025))
+    return glowify(glowify(img, n), n)
+
+
+save(lightning_img(64, 3), 'lightning', 64)
+
+
+def crest_img(size):
+    # a heater shield with a cross
+    n = size * SS
+    img = Image.new('RGBA', (n, n), (255, 255, 255, 0))
+    d = ImageDraw.Draw(img)
+    W = (255, 255, 255, 255)
+    shape = [(n * 0.16, n * 0.12), (n * 0.84, n * 0.12), (n * 0.84, n * 0.48), (n * 0.5, n * 0.92), (n * 0.16, n * 0.48)]
+    d.line(shape + [shape[0]], fill=W, width=int(n * 0.05), joint='curve')
+    d.line([(n * 0.5, n * 0.24), (n * 0.5, n * 0.74)], fill=W, width=int(n * 0.05))
+    d.line([(n * 0.3, n * 0.4), (n * 0.7, n * 0.4)], fill=W, width=int(n * 0.05))
+    return glowify(img, n)
+
+
+save(crest_img(64), 'crest', 64)
+
+
+def eye(x, y):
+    lid = abs(y) < 0.45 * (1 - x * x) ** 1.2 if abs(x) < 1 else False
+    outline = math.exp(-((abs(y) - 0.45 * max(0, 1 - x * x) ** 1.2) / 0.04) ** 2) * (1 if abs(x) < 0.95 else 0)
+    iris = math.exp(-((math.hypot(x, y) - 0.24) / 0.05) ** 2)
+    pupil = smooth(0.13, 0.09, math.hypot(x, y))
+    return min(1.0, outline + iris + pupil + (0.12 if lid else 0))
+
+
+save(field(64, eye), 'eye', 64)
+
+
+def chain_img(size):
+    n = size * SS
+    img = Image.new('RGBA', (n, n), (255, 255, 255, 0))
+    d = ImageDraw.Draw(img)
+    for i in range(3):
+        cy = n * (0.18 + i * 0.32)
+        if i % 2 == 0:
+            d.ellipse([n * 0.34, cy - n * 0.17, n * 0.66, cy + n * 0.17], outline=(255, 255, 255, 255), width=int(n * 0.06))
+        else:
+            d.line([(n * 0.5, cy - n * 0.17), (n * 0.5, cy + n * 0.17)], fill=(255, 255, 255, 255), width=int(n * 0.07))
+    return glowify(img, n)
+
+
+save(chain_img(32), 'chain', 32)
+
+
+def fang(x, y):
+    # a curved claw / fang mark
+    t = (y + 0.9) / 1.8
+    if t < 0 or t > 1:
+        return 0
+    cx = 0.35 * (t - 0.5) ** 2 * 4 - 0.2
+    w = 0.14 * (1 - t) ** 0.8 + 0.01
+    return smooth(w, w * 0.5, abs(x - cx))
+
+
+save(field(32, fang), 'fang', 32)
+
 print('wrote sprites to', os.path.abspath(OUT))

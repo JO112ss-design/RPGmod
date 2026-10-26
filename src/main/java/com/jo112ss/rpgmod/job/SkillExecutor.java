@@ -81,7 +81,7 @@ public final class SkillExecutor {
             case "arrow_rain" -> arrowRain(c);
             case "eagle_eye" -> {
                 com.jo112ss.rpgmod.item.TempArrows.give(c.p);
-                yield selfBuff(c, "eagle_eye", SoundEvents.PHANTOM_FLAP, 1.3F);
+                yield selfBuff(c, "u_eagle_eye", SoundEvents.PHANTOM_FLAP, 1.3F);
             }
             // paladin
             case "shield_bash" -> shieldBash(c);
@@ -433,7 +433,7 @@ public final class SkillExecutor {
     static boolean earthshatter(Ctx c) {
         double r = c.def.radius();
         Vec3 o = c.p.position();
-        ServerFx.of("earthshatter", o).a(r).send(c.level);
+        ServerFx.of("u_earthshatter", o).a(r).send(c.level);
         sound(c, o, SoundEvents.MACE_SMASH_GROUND_HEAVY, 1.5F, 0.6F);
         sound(c, o, SoundEvents.GENERIC_EXPLODE, 0.8F, 0.6F);
         Set<Integer> done = new HashSet<>();
@@ -558,7 +558,7 @@ public final class SkillExecutor {
         Vec3 at = aimPoint(c, 32);
         double r = c.def.radius();
         int life = 40;
-        ServerFx.of("arrow_rain", at).a(r).b(life).send(c.level);
+        ServerFx.of("u_arrow_rain", at).a(r).b(life).send(c.level);
         sound(c, SoundEvents.ARROW_SHOOT, 0.6F);
         sound(c, c.p.position(), SoundEvents.CROSSBOW_SHOOT, 1.0F, 0.6F);
         SkillTasks.run(age -> {
@@ -626,7 +626,7 @@ public final class SkillExecutor {
     static boolean judgement(Ctx c) {
         double r = c.def.radius();
         Vec3 o = c.p.position();
-        ServerFx.of("judgement", o).a(r).send(c.level);
+        ServerFx.of("u_judgement", o).a(r).send(c.level);
         sound(c, SoundEvents.BEACON_ACTIVATE, 0.8F);
         sound(c, o, SoundEvents.BELL_RESONATE, 1.0F, 1.2F);
         SkillTasks.later(16, () -> {
@@ -635,7 +635,7 @@ public final class SkillExecutor {
                 hurt(c, e, c.dmg(1), magic(c));
                 pushAway(e, o, 0.3, 0.45);
             }
-            ServerFx.of("judgement_strike", o).a(r).points(hit).send(c.level);
+            ServerFx.of("u_judgement_strike", o).a(r).points(hit).send(c.level);
             sound(c, o, SoundEvents.LIGHTNING_BOLT_IMPACT, 1.2F, 1.2F);
             sound(c, o, SoundEvents.BELL_BLOCK, 1.5F, 0.8F);
         });

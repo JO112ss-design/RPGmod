@@ -352,7 +352,7 @@ public final class MoreJobSkills {
             ships[i] = o.add(out.scale(r + 1)).add(0, 8 + (i == 1 ? 1.5 : 0), 0);
             ServerFx.of("n_ghost_ship", ships[i]).vec(Fx3.right(out)).b(life + 20).send(c.level());
         }
-        ServerFx.of("x_zone", o).a(r).b(life + 10).vec(new Vec3(2, 4, 0)).color(0x7FE8D8).send(c.level());
+        ServerFx.of("u_fleet_mark", o).a(r).b(life + 10).send(c.level());
         sound(c, SoundEvents.BELL_BLOCK, 0.5F);
         sound(c, p.position(), SoundEvents.ELDER_GUARDIAN_CURSE, 0.6F, 1.4F);
         final int[] turn = {0};
@@ -487,7 +487,7 @@ public final class MoreJobSkills {
         ServerPlayer p = c.p();
         int ki = Monk.spend(p);
         int strikes = 3 + 2 * ki;
-        ServerFx.of("x_aura", p.position()).follow(p).a(strikes * 0.15 + 1).b(1).color(0xFF6020).send(c.level());
+        ServerFx.of("u_peerless", p.position()).follow(p).b(strikes).send(c.level());
         sound(c, SoundEvents.RAVAGER_ROAR, 1.5F);
         SkillTasks.run(age -> {
             if (!p.isAlive()) return true;
@@ -501,7 +501,7 @@ public final class MoreJobSkills {
             }
             ServerFx.of("n_fist", c.chest().add(c.flat().scale(1.6))).vec(c.flat()).color(last ? 0xFFF0C0 : KI).points(hit).send(c.level());
             sound(c, p.position(), last ? SoundEvents.PLAYER_ATTACK_KNOCKBACK : SoundEvents.PLAYER_ATTACK_STRONG, 0.8F, last ? 0.5F : 1.0F + n * 0.04F);
-            if (last) ServerFx.of("x_burst", c.chest().add(c.flat().scale(2))).a(2.2).b(3).color(0xFF8030).send(c.level());
+            if (last) ServerFx.of("u_peerless_finish", c.chest().add(c.flat().scale(2))).vec(c.flat()).points(hit).send(c.level());
             return last;
         });
         return true;
@@ -599,7 +599,7 @@ public final class MoreJobSkills {
         launch(p, new Vec3(0, 2.2, 0));
         p.addEffect(new MobEffectInstance(ModEffects.UNTOUCHABLE, apex + 14, 0, false, false, true), p);
         NewJobSkills.SOFT_LANDING.add(p.getUUID());
-        ServerFx.of("x_aura", p.position()).follow(p).a(2).b(3).color(color).send(c.level());
+        ServerFx.of("u_dk_rise", p.position()).follow(p).send(c.level());
         sound(c, SoundEvents.ENDER_DRAGON_GROWL, 1.2F);
         sound(c, p.position(), SoundEvents.BREEZE_JUMP, 1.0F, 0.6F);
         SkillTasks.run(age -> {
@@ -622,9 +622,7 @@ public final class MoreJobSkills {
                 pushAway(e, o, 0.7, 0.7);
                 e.igniteForSeconds(4);
             }
-            ServerFx.of("earthshatter", o).a(r).send(c.level());
-            ServerFx.of("x_burst", o.add(0, 0.3, 0)).a(r * 0.7).b(0).color(color).points(hit).send(c.level());
-            ServerFx.of("x_zone", o).a(KING_FIRE).b(KING_FIRE_TICKS).vec(new Vec3(2, 1, 0)).color(color).send(c.level());
+            ServerFx.of("u_dk_land", o).a(r).b(KING_FIRE_TICKS).vec(new Vec3(KING_FIRE, 0, 0)).points(hit).send(c.level());
             sound(c, o, SoundEvents.MACE_SMASH_GROUND_HEAVY, 1.4F, 0.5F);
             sound(c, o, SoundEvents.GENERIC_EXPLODE, 1.4F, 0.6F);
             // the burning ground
@@ -1078,8 +1076,7 @@ public final class MoreJobSkills {
             elementHit(p, c.level(), e, el, c.dmg(1));
             push(e, c.flat(), 0.9, 0.3);
         }
-        ServerFx.of("x_slash", c.chest().add(c.flat().scale(2.5))).vec(c.flat()).a(c.def().radius()).b(1.2).color(ELEMENT_COLORS[el]).points(hit).send(c.level());
-        ServerFx.of("x_wave", c.chest()).vec(c.look().scale(1.6)).a(c.def().radius()).b(4).color(ELEMENT_COLORS[el]).send(c.level());
+        ServerFx.of("u_arcane_edge", c.chest()).vec(c.flat()).a(c.def().radius()).b(el).points(hit).send(c.level());
         sound(c, SoundEvents.PLAYER_ATTACK_SWEEP, 0.5F);
         sound(c, p.position(), SoundEvents.ENCHANTMENT_TABLE_USE, 1.0F, 0.6F);
         return true;
@@ -1098,8 +1095,7 @@ public final class MoreJobSkills {
                     hurt(c, e, c.dmg(1), melee(c));
                     elementHit(p, c.level(), e, el, c.dmg(1));
                 }
-                if (el == 2) for (LivingEntity e : hit) ServerFx.of("x_strike", e.position()).a(1).color(0xFFF07A).point(mid(e)).send(c.level());
-                else ServerFx.of("x_burst", p.position().add(0, 0.5, 0)).a(r).b(el == 0 ? 0 : 1).color(ELEMENT_COLORS[el]).points(hit).send(c.level());
+                ServerFx.of("u_elemental", p.position()).a(r).b(el).points(hit).send(c.level());
                 sound(c, p.position(), el == 0 ? SoundEvents.FIRECHARGE_USE : el == 1 ? SoundEvents.GLASS_BREAK : SoundEvents.LIGHTNING_BOLT_THUNDER, 1.0F, 1.0F);
             }
             return age >= 20;
@@ -1241,8 +1237,7 @@ public final class MoreJobSkills {
             hurt(c, e, c.dmg(0.75), melee(c));
             pushAway(e, p.position(), 1.0, 0.5);
         }
-        ServerFx.of("x_pillar", p.position()).a(2).b(30).color(0xFFE6A0).send(c.level());
-        ServerFx.of("x_ring", p.position()).a(r).b(3).color(KI).points(hit).send(c.level());
+        ServerFx.of("u_heaven_earth", p.position()).a(r).points(hit).send(c.level());
         sound(c, SoundEvents.BEACON_ACTIVATE, 1.2F);
         return true;
     }
@@ -1346,8 +1341,7 @@ public final class MoreJobSkills {
             push(e, c.look(), 0.8, 0.3);
         }
         Vec3 end = lineEnd(c, c.look(), c.def().radius());
-        ServerFx.of("x_beam", c.hand()).vec(end).a(0.8).color(HOLY).points(hit).send(c.level());
-        ServerFx.of("x_pillar", end.subtract(0, 1, 0)).a(1.5).b(20).color(HOLY).send(c.level());
+        ServerFx.of("u_holy_lance", c.hand()).vec(end).points(hit).send(c.level());
         sound(c, SoundEvents.BEACON_ACTIVATE, 1.6F);
         sound(c, p.position(), SoundEvents.SPEAR_ATTACK, 1.2F, 0.6F);
         return true;
@@ -1492,9 +1486,9 @@ public final class MoreJobSkills {
             e.addEffect(new MobEffectInstance(ModEffects.HUNTED, t, 0), p);
             e.addEffect(new MobEffectInstance(MobEffects.GLOWING, t, 0), p);
             if (e instanceof Mob m && m.getTarget() == p) m.setTarget(null);
-            if (shown++ < 12) ServerFx.of("x_mark", e.position()).follow(e).a(c.def().duration()).color(0xC03040).send(c.level());
+            if (shown++ < 12) ServerFx.of("u_hunted", e.position()).follow(e).a(c.def().duration()).send(c.level());
         }
-        ServerFx.of("x_aura", p.position()).follow(p).a(c.def().duration()).b(1).color(0x2A3050).send(c.level());
+        ServerFx.of("u_night_hunt", p.position()).follow(p).send(c.level());
         sound(c, SoundEvents.WARDEN_HEARTBEAT, 0.8F);
         sound(c, p.position(), SoundEvents.ILLUSIONER_MIRROR_MOVE, 0.8F, 0.6F);
         return true;
@@ -1515,7 +1509,7 @@ public final class MoreJobSkills {
         }
         int life = ticks(c.def().duration());
         final LivingEntity[] target = {first};
-        ServerFx.of("x_mark", first.position()).follow(first).a(c.def().duration()).color(0x6070C0).send(c.level());
+        ServerFx.of("u_shadow_mark", first.position()).follow(first).a(c.def().duration()).send(c.level());
         ServerFx.of("n_dark_portal", first.position()).follow(first).b(life + 6).color(0x6070C0).send(c.level());
         sound(c, SoundEvents.ARROW_SHOOT, 0.6F);
         SkillTasks.run(age -> {
@@ -1712,7 +1706,7 @@ public final class MoreJobSkills {
         double r = c.def().radius();
         int life = ticks(c.def().duration());
         List<SkillProp> coins = new ArrayList<>();
-        ServerFx.of("x_zone", o).a(r).b(life + 10).vec(new Vec3(1, 3, 0)).color(GOLD).send(c.level());
+        ServerFx.of("u_treasure_zone", o).a(r).b(life + 10).send(c.level());
         sound(c, SoundEvents.PLAYER_LEVELUP, 1.6F);
         final int[] fallen = {0};
         SkillTasks.run(age -> {
@@ -1737,7 +1731,7 @@ public final class MoreJobSkills {
                         MobEffectInstance cur = a.getEffect(ModEffects.GOLD_RUSH);
                         int amp = cur == null ? 0 : Math.min(4, cur.getAmplifier() + 1);
                         a.addEffect(new MobEffectInstance(ModEffects.GOLD_RUSH, GOLD_RUSH_TICKS, amp), p);
-                        ServerFx.of("x_burst", coin.position().add(0, 0.4, 0)).a(0.8).b(4).color(GOLD).send(c.level());
+                        ServerFx.of("u_coin_pick", coin.position().add(0, 0.2, 0)).send(c.level());
                         c.level().playSound(null, coin.blockPosition(), SoundEvents.EXPERIENCE_ORB_PICKUP, net.minecraft.sounds.SoundSource.PLAYERS, 0.8F, 1.4F + amp * 0.1F);
                         coin.discard();
                         coins.remove(coin);
@@ -1757,13 +1751,13 @@ public final class MoreJobSkills {
         LivingEntity target = lookTarget(c, c.def().radius(), 10);
         Vec3 start = c.hand();
         Vec3 dir = target != null ? mid(target).subtract(start).normalize() : c.look();
-        ServerFx.of("n_cannon_fire", start).vec(dir).send(c.level());
+        ServerFx.of("u_golden_shot", start).vec(dir).send(c.level());
         ServerFx.of("x_bolt", start).vec(dir.scale(1.2)).a(c.def().radius()).b(0.7).color(0xFFD040).follow(target).send(c.level());
         sound(c, SoundEvents.GENERIC_EXPLODE, 0.8F);
         sound(c, p.position(), SoundEvents.BELL_BLOCK, 1.0F, 1.2F);
         ProjectileEnd boom = (at, dd, wall) -> {
             NewJobSkills.blast(c, at, lucky ? 4.5 : 3.5, c.dmg(lucky ? 1.5 : 1), 0, 0xFFD040);
-            ServerFx.of("x_burst", at).a(lucky ? 3 : 2).b(4).color(0xFFD040).send(c.level());
+            ServerFx.of("u_golden_boom", at).a(lucky ? 3 : 2).send(c.level());
             if (lucky) p.sendSystemMessage(Component.translatable("rpgmod.treasure.lucky").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD), true);
         };
         projectile(c, start, dir, 1.2, c.def().radius(), target, 0.2, (e, at, dd) -> boom.end(at, dd, false), boom);
