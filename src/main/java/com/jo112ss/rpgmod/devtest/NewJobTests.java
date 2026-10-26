@@ -52,6 +52,12 @@ final class NewJobTests {
             case "hybrids" -> hybrids(level, p, dummies);
             case "coins" -> coins(level, p);
             case "sb0", "sb1", "sb2" -> spellblade(p, name.charAt(2) - '0');
+            case "sblow" -> { // only the first stage paid for: the other two show red
+                spellblade(p, 0);
+                JobManager.data(p).setMana(20);
+                JobManager.sync(p);
+                log("spellblade: mana 20");
+            }
             case "sbcrit" -> { // every hit would crit: sword magic must not
                 spellblade(p, 2);
                 JobManager.testForceCrit = true;

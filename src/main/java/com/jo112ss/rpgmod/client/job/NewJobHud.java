@@ -29,13 +29,13 @@ public final class NewJobHud {
             Component t = Component.translatable("rpgmod.spellblade.element." + el);
             int col = 0xFF000000 | com.jo112ss.rpgmod.job.MoreJobSkills.ELEMENT_COLORS[el];
             g.centeredText(mc.font, t, sw / 2, sh / 2 + 10, col);
-            if (JobClient.swordCharge >= 0) swordCharge(g, el, sw, sh);
+            if (JobClient.swordCharge >= 0) swordCharge(g, d, el, sw, sh);
         }
         if (BardClient.performing()) lane(g, mc, d, sw, sh);
     }
 
     /** The sword magic charging: three segments, filling up to each stage, the reached ones lit. */
-    private static void swordCharge(GuiGraphicsExtractor g, int el, int sw, int sh) {
+    private static void swordCharge(GuiGraphicsExtractor g, JobData d, int el, int sw, int sh) {
         int held = JobClient.swordCharge;
         int[] at = com.jo112ss.rpgmod.job.SpellbladeMagic.stageTicks(net.minecraft.client.Minecraft.getInstance().player); // cast speed shortens them
         int seg = 18, gap = 3, w = seg * 3 + gap * 2;
@@ -43,12 +43,14 @@ public final class NewJobHud {
         int col = 0xFF000000 | com.jo112ss.rpgmod.job.MoreJobSkills.ELEMENT_COLORS[el];
         for (int i = 0; i < 3; i++) {
             int x = x0 + i * (seg + gap);
-            g.fill(x - 1, y - 1, x + seg + 1, y + 4, 0xA0000000);
+            // a stage the mana does not cover is red: holding on past it casts the last one paid for
+            boolean affordable = d.mana() >= com.jo112ss.rpgmod.job.SpellbladeMagic.COST[el][i];
+            g.fill(x - 1, y - 1, x + seg + 1, y + 4, affordable ? 0xA0000000 : 0xC0601010);
             float f;
             int from = i == 0 ? 0 : at[i - 1];
             f = Math.max(0, Math.min(1, (held - from) / (float) (at[i] - from)));
             boolean reached = held >= at[i];
-            g.fill(x, y, x + Math.round(seg * f), y + 3, reached ? col : 0xFF808080);
+            g.fill(x, y, x + Math.round(seg * f), y + 3, !affordable ? 0xFFE04040 : reached ? col : 0xFF808080);
         }
     }
 

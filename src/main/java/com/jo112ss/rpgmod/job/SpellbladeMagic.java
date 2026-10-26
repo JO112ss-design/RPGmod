@@ -102,7 +102,8 @@ public final class SpellbladeMagic {
                 if (ch != null && ch.start() == now) CHARGING.remove(p.getUUID()); // sword put away
                 return true;
             }
-            if (age == at[0] || age == at[1] || age == at[2]) {
+            int reachedStage = age == at[2] ? 3 : age == at[1] ? 2 : age == at[0] ? 1 : 0;
+            if (reachedStage > 0 && JobManager.data(p).mana() >= COST[el][reachedStage - 1]) { // no chime for a stage the mana does not cover
                 level.playSound(null, p.blockPosition(), SoundEvents.AMETHYST_BLOCK_RESONATE, SoundSource.PLAYERS, 1.0F, age == at[2] ? 1.8F : age == at[1] ? 1.5F : 1.2F);
                 ServerFx.of("x_burst", p.position().add(0, 1.0, 0)).a(age == at[2] ? 1.2 : 0.8).b(el == 0 ? 0 : el == 1 ? 1 : 2).color(color).send(level);
             }
