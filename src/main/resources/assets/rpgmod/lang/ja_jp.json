@@ -1175,5 +1175,6 @@
   "effect.rpgmod.rhapsody": "狂詩曲",
   "effect.rpgmod.fanfare": "凱歌",
   "effect.rpgmod.ward_melody": "守護の旋律",
-  "effect.rpgmod.drain_tune": "吸魔の調べ"
+  "effect.rpgmod.drain_tune": "吸魔の調べ",
+  "rpgmod.node.song": "曲"
 }

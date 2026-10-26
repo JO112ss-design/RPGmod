@@ -449,6 +449,7 @@ UI = {  # key: (ja, en)
  'rpgmod.node.active': ('スキル', 'Skill'),
  'rpgmod.node.ultimate': ('必殺技', 'Ultimate'),
  'rpgmod.node.spell': ('呪文', 'Spell'),
+ 'rpgmod.node.song': ('曲', 'Song'),
  'rpgmod.node.owned': ('解放済み', 'Unlocked'),
  'rpgmod.node.locked': ('隣のマスを先に解放してください', 'Unlock a neighbouring cell first'),
  'rpgmod.node.click': ('クリックで解放（%sポイント）', 'Click to unlock (%s pt)'),

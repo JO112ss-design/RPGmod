@@ -83,6 +83,8 @@ public final class JobData {
     private long reloadEnd;
     /** Bard: the song being played ("" = none), when it started and ends (game time), and how well it is played (0..20). */
     private String song = "";
+    /** The maestro's second song playing along ("" = none). */
+    private String song2 = "";
     private long songStart, songEnd;
     private int songPoints;
     public static final int MAX_SONG_POINTS = 20;
@@ -163,6 +165,7 @@ public final class JobData {
                 buf.writeVarInt(d.ammo);
                 buf.writeVarLong(d.reloadEnd);
                 buf.writeUtf(d.song);
+                buf.writeUtf(d.song2);
                 buf.writeVarLong(d.songStart);
                 buf.writeVarLong(d.songEnd);
                 buf.writeVarInt(d.songPoints);
@@ -190,6 +193,7 @@ public final class JobData {
                 d.ammo = buf.readVarInt();
                 d.reloadEnd = buf.readVarLong();
                 d.song = buf.readUtf();
+                d.song2 = buf.readUtf();
                 d.songStart = buf.readVarLong();
                 d.songEnd = buf.readVarLong();
                 d.songPoints = buf.readVarInt();
@@ -590,6 +594,14 @@ public final class JobData {
 
     public String song() {
         return song;
+    }
+
+    public String song2() {
+        return song2;
+    }
+
+    public void setSong2(String song) {
+        this.song2 = song == null ? "" : song;
     }
 
     public long songStart() {

@@ -614,7 +614,7 @@ public class JobScreen extends Screen {
                 sub = advView ? Component.translatable("rpgmod.node.adv_start") : Ui.skillName(job.def().actives().get(0));
             } else {
                 name = Ui.skillName(n.skill());
-                sub = Component.translatable("rpgmod.node." + n.type().name().toLowerCase(java.util.Locale.ROOT));
+                sub = Component.translatable(com.jo112ss.rpgmod.job.Bard.isSong(n.skill()) ? "rpgmod.node.song" : "rpgmod.node." + n.type().name().toLowerCase(java.util.Locale.ROOT));
             }
             g.textWithWordWrap(font, name, ix + 5, ty, iw - 10, Ui.TEXT, false);
             ty += font.split(name, iw - 10).size() * 9 + 3;
@@ -778,7 +778,7 @@ public class JobScreen extends Screen {
             g.text(font, font.substrByWidth(Ui.skillName(id), 70).getString(), x + 26, y + 4, known ? Ui.TEXT : 0xFF5A6070, false);
             Component tag = !known ? Component.translatable("rpgmod.jobscreen.locked")
                     : (showEquipped && slotOf >= 0) ? Component.translatable("rpgmod.jobscreen.slot." + slotOf)
-                    : Component.translatable("rpgmod.node." + def.kind().name().toLowerCase(java.util.Locale.ROOT));
+                    : Component.translatable(com.jo112ss.rpgmod.job.Bard.isSong(id) ? "rpgmod.node.song" : "rpgmod.node." + def.kind().name().toLowerCase(java.util.Locale.ROOT));
             g.text(font, tag, x + 26, y + 15, !known ? 0xFF5A6070 : slotOf >= 0 ? Ui.GOLD : Ui.DIM, false);
         }
     }

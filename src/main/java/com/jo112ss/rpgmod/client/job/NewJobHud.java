@@ -120,7 +120,8 @@ public final class NewJobHud {
             g.fill(x - 2, y0 + 5, x + 3, y0 + LANE_H - 5, color);
         }
         // song name, points, time left
-        Component name = Component.translatable("rpgmod.skill." + d.song());
+        Component name = d.song2().isEmpty() ? Component.translatable("rpgmod.skill." + d.song())
+                : Component.translatable("rpgmod.skill." + d.song()).append(" ＋ ").append(Component.translatable("rpgmod.skill." + d.song2()));
         g.text(font, name, x0, y0 - 11, color, true);
         long left = Math.max(0, d.songEnd() - mc.level.getGameTime());
         String info = d.songPoints() + "/" + JobData.MAX_SONG_POINTS + "  " + (left + 19) / 20 + "s";

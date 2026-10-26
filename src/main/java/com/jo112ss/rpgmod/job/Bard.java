@@ -170,6 +170,7 @@ public final class Bard {
             p.sendSystemMessage(Component.translatable("rpgmod.bard.duet", Component.translatable("rpgmod.skill." + c.def().id()),
                     Component.translatable("rpgmod.skill." + perf.second)).withStyle(ChatFormatting.AQUA), true);
         }
+        d.setSong2(perf.second);
         PERF.put(p.getUUID(), perf);
         JobManager.sync(p);
         ServerFx.of("x_ring", p.position()).a(radius(d.songPoints())).b(1).color(songColor(c.def().id())).send(c.level());
@@ -186,6 +187,7 @@ public final class Bard {
         PERF.remove(p.getUUID());
         if (d.song().isEmpty()) return;
         d.setSong("", 0, 0);
+        d.setSong2("");
         p.removeEffect(ModEffects.PERFORMING);
         JobManager.sync(p);
     }

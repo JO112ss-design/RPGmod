@@ -1175,5 +1175,6 @@
   "effect.rpgmod.rhapsody": "Rhapsody",
   "effect.rpgmod.fanfare": "Fanfare",
   "effect.rpgmod.ward_melody": "Ward Melody",
-  "effect.rpgmod.drain_tune": "Drain Tune"
+  "effect.rpgmod.drain_tune": "Drain Tune",
+  "rpgmod.node.song": "Song"
 }
