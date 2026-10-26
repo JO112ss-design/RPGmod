@@ -450,8 +450,9 @@ public final class JobDefs {
         SkillKind A = SkillKind.ACTIVE, U = SkillKind.ULTIMATE;
         // ---- Spellblade: an element on the sword; skills scale with attack + magic attack
         hybrid("spellblade", "fighter", "wizard", 0x6C5CE7, "閃", List.of(JobStat.ATTACK_DAMAGE, JobStat.MAGIC_ATTACK, JobStat.MAX_HEALTH, JobStat.CRIT_CHANCE),
-                stats(JobStat.MAX_HEALTH, 4, JobStat.ATTACK_DAMAGE, 4, JobStat.MAGIC_ATTACK, 4),
-                stats(JobStat.ATTACK_DAMAGE, 0.45, JobStat.MAGIC_ATTACK, 0.45, JobStat.MAX_HEALTH, hpGrow(0.9, 4)),
+                // mana like the healer's (sword magic is dear)
+                stats(JobStat.MAX_HEALTH, 4, JobStat.ATTACK_DAMAGE, 4, JobStat.MAGIC_ATTACK, 4, JobStat.MAX_MANA, 40),
+                stats(JobStat.ATTACK_DAMAGE, 0.45, JobStat.MAGIC_ATTACK, 0.45, JobStat.MAX_HEALTH, hpGrow(0.9, 4), JobStat.MAX_MANA, 0.75),
                 List.of(
                         skill("element_shift", A, SkillEffect.BUFF, 2, 0, 0, 0, 0, List.of(), 0, "属"),
                         skill("magic_slash", A, SkillEffect.BOLT, 6, 14, 2.4, 16, 0, List.of(), 0, "斬"),

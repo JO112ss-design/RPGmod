@@ -45,7 +45,7 @@ public final class SpellbladeMagic {
     /** Damage ratio (x attack + magic attack) per element and stage. */
     static final double[][] POWER = {{1.05, 1.68, 2.94}, {0.62, 0.98, 1.68}, {1.75, 2.8, 4.9}};
     /** Fireball burst radius and frost field radius per stage. */
-    static final double[] FIRE_R = {1.6, 2.2, 3.0}, ICE_R = {3.5, 5.0, 6.5};
+    static final double[] FIRE_R = {1.6, 2.2, 3.0}, ICE_R = {3.5, 9.0, 11.7};
     static final double FIRE_RANGE = 28, ICE_RANGE = 16, THUNDER_RANGE = 24, FIREBALL_SPEED = 1.2;
     /** A pause after each cast before the next charge can start. */
     static final int RECAST = 8;
@@ -170,6 +170,16 @@ public final class SpellbladeMagic {
         NEXT.remove(id);
     }
 
+    /** Sword magic never crits (its charge is what makes it strong). */
+    private static void noCrit(Ctx c, LivingEntity e, float damage) {
+        JobEvents.noCrit = true;
+        try {
+            hurt(c, e, damage, magic(c));
+        } finally {
+            JobEvents.noCrit = false;
+        }
+    }
+
     // ------------------------------------------------------------------ the three spells
 
     /** A fireball flies to the first enemy or wall in the line of sight and bursts there. */
@@ -191,7 +201,7 @@ public final class SpellbladeMagic {
             List<LivingEntity> hit = enemies(p, at, r);
             for (LivingEntity e : hit) {
                 double near = 1 - 0.4 * Math.min(1, horizontal(e.position(), at) / r);
-                hurt(c, e, c.dmg(near), magic(c));
+                noCrit(c, e, c.dmg(near));
                 e.igniteForSeconds(2 + st);
                 pushAway(e, at, 0.3 + 0.15 * st, 0.25);
             }
@@ -215,7 +225,7 @@ public final class SpellbladeMagic {
             int delay = 1 + (int) (horizontal(e.position(), o) / 1.2);
             SkillTasks.later(delay, () -> {
                 if (!e.isAlive()) return;
-                hurt(c, e, c.dmg(1), magic(c));
+                noCrit(c, e, c.dmg(1));
                 e.addEffect(new MobEffectInstance(MobEffects.SLOWNESS, 40 + 30 * st, st), p);
                 e.setTicksFrozen(Math.max(e.getTicksFrozen(), e.getTicksRequiredToFreeze() + 40 * st));
             });
@@ -241,7 +251,7 @@ public final class SpellbladeMagic {
         if (st == 3) sound(c, target.position(), SoundEvents.LIGHTNING_BOLT_THUNDER, 0.8F, 1.0F);
         SkillTasks.later(2, () -> {
             if (!target.isAlive()) return;
-            hurt(c, target, c.dmg(1), magic(c));
+            noCrit(c, target, c.dmg(1));
             if (st == 3) NewJobSkills.stun(c, target, 20);
         });
         return true;

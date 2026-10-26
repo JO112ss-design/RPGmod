@@ -654,7 +654,7 @@ public class JobScreen extends Screen {
         SkillDef def = JobDefs.skill(id);
         if (def == null) return y;
         g.text(font, Component.translatable("rpgmod.jobscreen.cd", fmt(def.cooldown())), x, y, Ui.DIM, false);
-        g.text(font, Component.translatable("rpgmod.jobscreen.mp", fmt(def.mana())), x + w / 2, y, Ui.MANA, false);
+        g.text(font, Component.translatable("rpgmod.jobscreen.mp", fmt(com.jo112ss.rpgmod.job.JobManager.manaCost(net.minecraft.client.Minecraft.getInstance().player, def))), x + w / 2, y, Ui.MANA, false);
         y += 12;
         if (def.castTime() > 0 && JobClient.data().castable(def)) {
             g.text(font, Component.translatable("rpgmod.jobscreen.cast", fmt(def.castTime())), x, y, 0xFFB09CFF, false);
@@ -875,7 +875,7 @@ public class JobScreen extends Screen {
         List<Component> lines = new ArrayList<>();
         lines.add(Ui.skillName(hoveredSkill));
         SkillDef def = JobDefs.skill(hoveredSkill);
-        lines.add(Component.translatable("rpgmod.jobscreen.cd", fmt(def.cooldown())).append("  ").append(Component.translatable("rpgmod.jobscreen.mp", fmt(def.mana()))));
+        lines.add(Component.translatable("rpgmod.jobscreen.cd", fmt(def.cooldown())).append("  ").append(Component.translatable("rpgmod.jobscreen.mp", fmt(com.jo112ss.rpgmod.job.JobManager.manaCost(net.minecraft.client.Minecraft.getInstance().player, def)))));
         Component power = powerLine(def);
         if (power != null) lines.add(power.copy().withColor(0xFFFFC870));
         Component dur = durationLine(def);

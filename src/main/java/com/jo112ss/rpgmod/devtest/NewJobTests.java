@@ -52,6 +52,15 @@ final class NewJobTests {
             case "hybrids" -> hybrids(level, p, dummies);
             case "coins" -> coins(level, p);
             case "sb0", "sb1", "sb2" -> spellblade(p, name.charAt(2) - '0');
+            case "sbcrit" -> { // every hit would crit: sword magic must not
+                spellblade(p, 2);
+                JobManager.testForceCrit = true;
+                log("spellblade: crits forced on");
+            }
+            case "nocrit" -> {
+                JobManager.testForceCrit = null;
+                log("crits back to normal");
+            }
             case "sbquick" -> {
                 spellblade(p, 2);
                 p.addEffect(new net.minecraft.world.effect.MobEffectInstance(ModEffects.QUICK_CAST, 200, 0));

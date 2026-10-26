@@ -1129,7 +1129,7 @@
   "rpgmod.job.lance_store": "盾に蓄積：%s / %s",
   "rpgmod.job.lance_release": "反撃の槍！ +%s",
   "rpgmod.skill.mana_share": "魔力譲渡",
-  "rpgmod.skill.mana_share.desc": "周り（24ブロック）の味方全員にMPを100ずつ分け与える。自分は含まない。",
+  "rpgmod.skill.mana_share.desc": "最大MPの20%を消費し、その2倍のMPを周り（24ブロック）の味方全員に分け与える。自分は含まない。",
   "rpgmod.skill.mana_meditate": "魔力瞑想",
   "rpgmod.skill.mana_meditate.desc": "座って瞑想し、MPの回復が大きく速まる（最大15秒）。もう一度使う・動く・攻撃する・他のスキルを使うと解除。",
   "effect.rpgmod.mana_meditate": "魔力瞑想",

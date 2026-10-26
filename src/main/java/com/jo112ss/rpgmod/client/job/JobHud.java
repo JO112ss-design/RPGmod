@@ -80,7 +80,7 @@ public final class JobHud {
                     g.fill(x + 1, y + SLOT - 1 - h, x + SLOT - 1, y + SLOT - 1, 0xB0000000);
                     String secs = remain >= 200 ? String.valueOf(remain / 20) : String.format("%.1f", remain / 20.0);
                     g.centeredText(font, Component.literal(secs), x + SLOT / 2, y + 6, 0xFFFFFFFF);
-                } else if (d.mana() < def.mana()) {
+                } else if (d.mana() < com.jo112ss.rpgmod.job.JobManager.manaCost(mc.player, def)) {
                     g.fill(x + 1, y + 1, x + SLOT - 1, y + SLOT - 1, 0x803050C0);
                 }
             }

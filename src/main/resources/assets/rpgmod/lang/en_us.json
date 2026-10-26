@@ -1129,7 +1129,7 @@
   "rpgmod.job.lance_store": "Stored on the shield: %s / %s",
   "rpgmod.job.lance_release": "Counter lance! +%s",
   "rpgmod.skill.mana_share": "Mana Share",
-  "rpgmod.skill.mana_share.desc": "Every ally within 24 blocks gets 100 mana (not yourself).",
+  "rpgmod.skill.mana_share.desc": "Spend 20% of your maximum mana; every ally within 24 blocks gets twice that (not yourself).",
   "rpgmod.skill.mana_meditate": "Mana Meditation",
   "rpgmod.skill.mana_meditate.desc": "Sit and meditate: mana comes back much faster (up to 15s). Ends when used again, or when you move, attack or use another skill.",
   "effect.rpgmod.mana_meditate": "Mana Meditation",

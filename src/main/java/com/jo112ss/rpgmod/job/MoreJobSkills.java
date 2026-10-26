@@ -999,20 +999,21 @@ public final class MoreJobSkills {
         return true;
     }
 
-    /** Mana share: what each ally gets, and how far away they may be. */
-    public static final double SHARE_MANA = 100, SHARE_RANGE = 24;
+    /** Mana share: it costs this share of your maximum mana, each ally gets this many times what you paid; how far away they may be. */
+    public static final double SHARE_COST = 0.2, SHARE_GIVE = 2, SHARE_RANGE = 24;
 
     /** Gives every other player nearby (with a job) a share of mana. */
     private static boolean manaShare(Ctx c) {
         ServerPlayer p = c.p();
         List<ServerPlayer> got = new ArrayList<>();
+        double give = SHARE_GIVE * JobManager.manaCost(p, c.def());
         for (ServerPlayer a : others(p, allies(p, SHARE_RANGE))) {
             if (!JobManager.data(a).hasJob()) continue;
-            JobManager.restoreMana(a, SHARE_MANA);
+            JobManager.restoreMana(a, give);
             got.add(a);
             ServerFx.of("x_link", p.position().add(0, 1.2, 0)).vec(a.position().add(0, 1.2, 0)).color(0x6FA8FF).send(c.level());
             ServerFx.of("x_burst", a.position().add(0, 1.0, 0)).a(0.9).b(2).color(0x6FA8FF).send(c.level());
-            a.sendSystemMessage(Component.translatable("rpgmod.job.mana_given", p.getDisplayName(), (int) SHARE_MANA).withStyle(ChatFormatting.AQUA), true);
+            a.sendSystemMessage(Component.translatable("rpgmod.job.mana_given", p.getDisplayName(), (int) give).withStyle(ChatFormatting.AQUA), true);
             c.level().playSound(null, a.blockPosition(), SoundEvents.AMETHYST_BLOCK_CHIME, net.minecraft.sounds.SoundSource.PLAYERS, 1.0F, 1.4F);
         }
         if (got.isEmpty()) {
@@ -1021,7 +1022,7 @@ public final class MoreJobSkills {
         }
         ServerFx.of("x_aura", p.position()).follow(p).a(1.2).b(2).color(0x6FA8FF).send(c.level());
         sound(c, SoundEvents.BEACON_POWER_SELECT, 1.6F);
-        p.sendSystemMessage(Component.translatable("rpgmod.job.mana_shared", got.size(), (int) SHARE_MANA).withStyle(ChatFormatting.AQUA), true);
+        p.sendSystemMessage(Component.translatable("rpgmod.job.mana_shared", got.size(), (int) give).withStyle(ChatFormatting.AQUA), true);
         return true;
     }
 

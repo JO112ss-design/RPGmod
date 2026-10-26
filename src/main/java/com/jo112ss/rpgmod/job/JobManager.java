@@ -794,6 +794,7 @@ public final class JobManager {
 
     /** Mana a skill costs right now (the spellmaster's overload makes spells 50% dearer). */
     public static double manaCost(Player player, SkillDef def) {
+        if ("mana_share".equals(def.id())) return Math.ceil(maxMana(player) * MoreJobSkills.SHARE_COST); // a share of your own maximum
         boolean overload = def.kind() == SkillKind.SPELL && player.hasEffect(com.jo112ss.rpgmod.registry.ModEffects.OVERLOAD);
         return overload ? Math.ceil(def.mana() * 1.5) : def.mana();
     }
