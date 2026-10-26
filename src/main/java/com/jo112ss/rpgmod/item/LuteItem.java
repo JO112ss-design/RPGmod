@@ -10,7 +10,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.level.Level;
 
 /**
- * Lute: the bard's instrument. Songs are started with the song skills; right-click (when not
+ * Lute: the bard's instrument. Songs are started with the song skills; right-click (also while
  * playing) sends out a sound wave that hits the first enemy in its way (magic attack).
  */
 public class LuteItem extends Item {
@@ -20,7 +20,8 @@ public class LuteItem extends Item {
 
     @Override
     public InteractionResult use(Level level, Player player, InteractionHand hand) {
-        if (hand != InteractionHand.MAIN_HAND || !com.jo112ss.rpgmod.job.JobManager.data(player).songJob() || Bard.performing(player)) {
+        // works while playing too: the notes are on the left button
+        if (hand != InteractionHand.MAIN_HAND || !com.jo112ss.rpgmod.job.JobManager.data(player).songJob()) {
             return InteractionResult.PASS;
         }
         if (!level.isClientSide() && player instanceof ServerPlayer sp) BardAttack.wave(sp);

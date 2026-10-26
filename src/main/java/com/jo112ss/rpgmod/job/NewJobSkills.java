@@ -37,7 +37,9 @@ public final class NewJobSkills {
             "boarding_shot", "quick_draw", "cannon", "powder_keg", "grapple", "rum", "broadside", "jolly_roger",
             "lance_charge", "spear_throw", "spear_sweep", "leap_thrust", "counter_stance", "rapid_thrust", "dragon_fang", "spear_rain",
             "combo", "ki_blast", "parry", "whirl_kick", "meditate", "shrink_step", "hundred_fists", "diamond_body",
-            "war_song", "heal_song", "guard_song", "wind_song", "discord", "lullaby", "grand_concert", "finale");
+            "war_song", "heal_song", "guard_song", "wind_song", "discord", "lullaby", "grand_concert", "finale",
+            // the spellsinger's songs start the same performance (they were missing here, so they did nothing)
+            "flame_melody", "haste_tune", "mana_chord", "seal_melody", "thunder_tune");
 
     static boolean has(String id) {
         return IDS.contains(id);
