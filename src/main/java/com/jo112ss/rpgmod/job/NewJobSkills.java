@@ -297,7 +297,7 @@ public final class NewJobSkills {
                 t.addEffect(new MobEffectInstance(MobEffects.SLOWNESS, 30, 2), p);
             }
             hurt(c, t, c.dmg(1), melee(c));
-            ServerFx.of("x_link", c.hand()).vec(mid(t)).color(0xB0B0B8).send(c.level());
+            ServerFx.of("n_chain", c.hand()).follow(p).a(t.getId()).b(8).send(c.level());
             ServerFx.of("x_hit", mid(t)).vec(to).a(0.8).color(0xD0D0D8).send(c.level());
             sound(c, SoundEvents.FISHING_BOBBER_RETRIEVE, 0.7F);
             sound(c, t.position(), SoundEvents.CHAIN_PLACE, 1.0F, 1.2F);

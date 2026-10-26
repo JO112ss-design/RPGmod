@@ -246,12 +246,12 @@ public final class MoreJobSkills {
         Vec3 d = target.subtract(start);
         SkillProp anchor = SkillProp.create(c.level(), SkillProp.ANCHOR, start, p.getYRot(), 80);
         anchor.setDeltaMovement(new Vec3(d.x / 12, d.y / 12 + 0.32, d.z / 12));
+        ServerFx.of("n_chain", start).follow(p).a(anchor.getId()).b(55).send(c.level());
         sound(c, SoundEvents.CHAIN_PLACE, 0.7F);
         sound(c, p.position(), SoundEvents.PLAYER_ATTACK_SWEEP, 0.8F, 0.6F);
         double r = c.def().radius();
         SkillTasks.run(age -> {
             if (anchor.isRemoved()) return true;
-            if (age % 3 == 0) ServerFx.of("x_link", c.hand()).vec(anchor.position().add(0, 0.4, 0)).color(0x9098A0).send(c.level());
             if (!((age > 3 && anchor.onGround()) || age >= 30)) return false;
             Vec3 o = anchor.position();
             List<LivingEntity> hit = enemies(p, o, r);

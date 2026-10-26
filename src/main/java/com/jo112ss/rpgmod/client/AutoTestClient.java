@@ -221,7 +221,7 @@ public final class AutoTestClient {
             case "boarding_shot" -> new int[] {4, 9};
             case "quick_draw", "spear_sweep", "ki_blast", "whirl_kick", "shrink_step", "grapple", "finale" -> new int[] {3};
             case "cannon" -> new int[] {12, 44};
-            case "powder_keg" -> new int[] {20, 42};
+            case "powder_keg" -> new int[] {4, 8, 12, 20, 42};
             case "broadside", "spear_rain" -> new int[] {12, 30};
             case "lance_charge" -> new int[] {4};
             case "spear_throw" -> new int[] {6, 16};
@@ -237,7 +237,7 @@ public final class AutoTestClient {
             case "high_jump" -> new int[] {10, 30};
             case "dragon_king" -> new int[] {16, 40};
             case "fleet_barrage" -> new int[] {14, 50};
-            case "anchor_throw" -> new int[] {8, 20};
+            case "anchor_throw" -> new int[] {4, 8, 12, 20};
             case "twin_cannon" -> new int[] {14, 50};
             case "peerless" -> new int[] {6, 18};
             case "deadshot" -> new int[] {12};
@@ -328,15 +328,8 @@ public final class AutoTestClient {
             if ("all".equals(System.getProperty("rpgmod.showcase"))) showSkills.addAll(com.jo112ss.rpgmod.job.core.JobDefs.SKILLS.keySet());
             showSkills.clear(); // the four advanced jobs and the six hybrid jobs: every skill, the hybrid unlock and points
             if ("all".equals(System.getProperty("rpgmod.showcase"))) showSkills.addAll(com.jo112ss.rpgmod.job.core.JobDefs.SKILLS.keySet());
-            showSkills.add("nj:hybrids");
-            for (String job : new String[] {"captain", "champion", "dragoon", "maestro", "spellblade", "qi_master", "sentinel", "spellsinger", "shadow_hunter", "treasure_hunter"}) {
-                showSkills.add("nj:" + job);
-                var j = com.jo112ss.rpgmod.job.core.JobDefs.job(job);
-                showSkills.addAll(j.actives());
-                showSkills.addAll(j.ultimates());
-            }
-            showSkills.add("nj:restore");
-            showSkills.add("job:screen");
+            showSkills.clear(); // thrown props (keg, anchor) fly on the client too: their path tick by tick
+            showSkills.addAll(java.util.List.of("nj:pirate", "powder_keg", "grapple", "nj:captain", "anchor_throw", "nj:restore"));
             mc.options.gamma().set(1.0); // the night fight, brightly lit for the screenshots
             mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK);
             com.jo112ss.rpgmod.client.mob.MobOverlay.testSelf = true;
@@ -448,6 +441,14 @@ public final class AutoTestClient {
         if (k == 0) {
             mc.options.setCameraType(fp ? net.minecraft.client.CameraType.FIRST_PERSON : net.minecraft.client.CameraType.THIRD_PERSON_BACK);
             AutoTestServer.requestCast(id);
+        }
+        if ((id.equals("powder_keg") || id.equals("anchor_throw")) && k >= 3 && k <= 24) {
+            // where the thrown prop is on this client each tick (it should glide, not jump)
+            for (var e : mc.level.getEntitiesOfClass(com.jo112ss.rpgmod.job.SkillProp.class, mc.player.getBoundingBox().inflate(30),
+                    e -> e.kind() == com.jo112ss.rpgmod.job.SkillProp.KEG || e.kind() == com.jo112ss.rpgmod.job.SkillProp.ANCHOR)) {
+                RpgMod.LOGGER.info("[AUTOTEST] prop path {} k={} pos=({}, {}, {}) ground={}", id, k, String.format("%.2f", e.getX() - mc.player.getX()),
+                        String.format("%.2f", e.getY() - mc.player.getY()), String.format("%.2f", e.getZ() - mc.player.getZ()), e.onGround());
+            }
         }
         int[] times = shotTimes(id);
         for (int j = 0; j < times.length; j++) {

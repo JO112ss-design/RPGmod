@@ -17,7 +17,7 @@ import net.minecraft.world.phys.Vec3;
  * Something a skill puts into the world for a while, only to be seen: the pirate's cannon, powder
  * keg and flag, the lancer's thrown spear. What it does is run by the skill on the server; this
  * entity only carries the look (kind, facing, the cannon barrel's pitch) to the clients. A keg falls
- * and rolls on its own (on the server; clients follow every tick). Never saved; gone after its life.
+ * and rolls on its own, on the server and the clients alike. Never saved; gone after its life.
  */
 public class SkillProp extends Entity {
     public static final int CANNON = 0, KEG = 1, FLAG = 2, SPEAR = 3, CHEST = 4, ANCHOR = 5;
@@ -85,7 +85,7 @@ public class SkillProp extends Entity {
     @Override
     public void tick() {
         super.tick();
-        if ((kind() == KEG || kind() == ANCHOR) && !this.level().isClientSide()) { // clients may not move it: they follow the server's updates
+        if (kind() == KEG || kind() == ANCHOR) { // thrown: falls on both sides (like a dropped item), the server's updates correct it
             Vec3 v = this.getDeltaMovement();
             if (!this.onGround()) v = v.add(0, -0.05, 0);
             this.move(MoverType.SELF, v);
@@ -94,6 +94,18 @@ public class SkillProp extends Entity {
             this.setDeltaMovement(v);
         }
         if (!this.level().isClientSide() && --life <= 0) this.discard();
+    }
+
+    /** Thrown kegs and anchors fly on the clients too, so they move smoothly instead of jumping between updates. */
+    @Override
+    public net.minecraft.world.entity.MoveSimulationType getMoveSimulationType() {
+        return net.minecraft.world.entity.MoveSimulationType.SERVER_AND_CLIENT;
+    }
+
+    /** Positions from the server (a thrown spear, corrections) are eased in over a few ticks. */
+    @Override
+    protected net.minecraft.world.entity.InterpolationHandler createInterpolationHandler() {
+        return net.minecraft.world.entity.LinearInterpolationHandler.create(this);
     }
 
     @Override

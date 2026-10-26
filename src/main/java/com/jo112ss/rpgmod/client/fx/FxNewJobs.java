@@ -16,6 +16,7 @@ final class FxNewJobs {
         switch (p.fx()) {
             case "n_shot" -> shot(p);
             case "n_cannon_fire" -> cannonFire(p);
+            case "n_chain" -> chain(p);
             case "n_fuse" -> fuse(p);
             case "n_ki" -> ki(p);
             case "n_fist" -> fist(p);
@@ -60,6 +61,36 @@ final class FxNewJobs {
         } else {
             Fx.vanilla(ParticleTypes.SMOKE, to.x, to.y, to.z, 0, 0.02, 0);
         }
+    }
+
+    /**
+     * A chain from the player's hand (entity) to another entity (id in a) for b ticks, drawn every
+     * tick from where both are on this client, so it stays attached while they move.
+     */
+    private static void chain(P p) {
+        Entity owner = p.e();
+        var level = net.minecraft.client.Minecraft.getInstance().level;
+        if (owner == null || level == null) return;
+        int otherId = Math.round(p.a());
+        int life = Math.max(2, (int) p.b());
+        FxAnims.follow(owner, life, age -> {
+            Entity other = level.getEntity(otherId);
+            if (other == null || other.isRemoved()) return true;
+            Vec3 from = hand(owner, owner.position());
+            Vec3 to = other.position().add(0, other.getBbHeight() * 0.5, 0);
+            Vec3 d = to.subtract(from);
+            double len = d.length();
+            if (len < 0.3) return false;
+            Vec3 dir = d.scale(1 / len);
+            int links = Math.min(80, (int) (len / 0.32));
+            for (int i = 0; i <= links; i++) {
+                double t = i / (double) Math.max(1, links);
+                // a little slack: the chain sags in the middle
+                Vec3 v = from.add(d.scale(t)).add(0, -Math.sin(t * Math.PI) * Math.min(0.6, len * 0.04), 0);
+                Fx.p(S.RING, v).fixed(i % 2 == 0 ? Fx.across(dir) : Fx.axial(v, dir)).size(0.13F).color(0x8A929C).alphaBlend().lit().life(2).spawn();
+            }
+            return false;
+        });
     }
 
     /** Cannon shot: a big muzzle flash and smoke. pos = muzzle, vec = direction. */
