@@ -268,7 +268,7 @@ public final class AutoTestClient {
 
     private static int length(String entry) {
         if (entry.contains("@")) entry = entry.substring(0, entry.indexOf('@'));
-        String id = entry.startsWith("fp:") || entry.startsWith("up:") || entry.startsWith("down:") || entry.startsWith("front:") || entry.startsWith("steep:") ? entry.substring(entry.indexOf(':') + 1) : entry;
+        String id = entry.startsWith("fp:") || entry.startsWith("up:") || entry.startsWith("down:") || entry.startsWith("front:") || entry.startsWith("steep:") || entry.startsWith("sf:") ? entry.substring(entry.indexOf(':') + 1) : entry;
         return switch (id) {
             case "mob:pillar", "mob:dig", "mob:archer", "mob:items" -> 220;
             case "mob:creeper", "mob:spider" -> 120;
@@ -344,7 +344,7 @@ public final class AutoTestClient {
                     "nj:treasure_hunter", "treasure_rain", "nj:coins", "nj:restore"));
             showSkills.clear(); // group C (after a pause), the jumps made distinct: pole vault and ground wave, straight up and spin down, hover and aim, the dragon
             showSkills.addAll(java.util.List.of("nj:restore", "nj:restore", "nj:restore", "nj:lancer", "leap_thrust@26", "dragon_fang", "nj:dragoon", "steep:high_jump",
-                    "steep:dragon_king", "nj:restore"));
+                    "steep:dragon_king", "sf:dragon_king", "nj:restore"));
             if (false) showSkills.clear(); // group B (after a pause, so what the earlier tests left running has died down), the dashes made distinct: accelerating skewer, blink behind, gather and slam, lightning, flowing zigzag, shield push (twice against a wall)
             if (false) showSkills.addAll(java.util.List.of("nj:restore", "nj:restore", "nj:restore", "nj:lancer", "lance_charge", "nj:monk", "shrink_step", "nj:champion", "iron_mountain", "nj:spellblade", "front:thunder_thrust",
                     "nj:qi_master", "flowing_step", "nj:sentinel", "shield_charge", "nj:wall", "nj:lancer", "lance_charge", "nj:sentinel", "shield_charge", "nj:unwall", "nj:restore"));
@@ -454,8 +454,8 @@ public final class AutoTestClient {
         }
         boolean fp = entry.startsWith("fp:");
         // "up:" / "down:" turn the camera after the cast (the skill is already aimed) to see the sky or the ground
-        float tilt = entry.startsWith("up:") ? -28 : entry.startsWith("down:") ? 38 : entry.startsWith("steep:") ? 62 : Float.NaN;
-        boolean front = entry.startsWith("front:"); // the camera in front, looking back along the way you came
+        float tilt = entry.startsWith("up:") ? -28 : entry.startsWith("down:") ? 38 : entry.startsWith("steep:") || entry.startsWith("sf:") ? 62 : Float.NaN;
+        boolean front = entry.startsWith("front:") || entry.startsWith("sf:"); // the camera in front, looking back along the way you came
         String id = fp ? entry.substring(3) : Float.isNaN(tilt) && !front ? entry : entry.substring(entry.indexOf(':') + 1);
         if (front && k == 2) mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_FRONT);
         if (!Float.isNaN(tilt) && k == 3) mc.player.setXRot(tilt);
