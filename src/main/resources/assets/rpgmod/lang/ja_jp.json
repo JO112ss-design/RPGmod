@@ -935,7 +935,7 @@
   "rpgmod.job.sentinel.desc": "槍と盾（オフハンド）で守りながら反撃する番人。",
   "rpgmod.job.spellsinger": "スペルシンガー",
   "rpgmod.job.spellsinger.role": "複合・演奏付与",
-  "rpgmod.job.spellsinger.desc": "歌で味方の武器に魔法を宿す。演奏の仕組みはバードと同じ。",
+  "rpgmod.job.spellsinger.desc": "歌で味方の武器に魔法を宿す。演奏の仕組みはバードと同じだが、曲が終わった後も点数に応じて効果が残る（余韻、最大10秒）。",
   "rpgmod.job.shadow_hunter": "シャドウハンター",
   "rpgmod.job.shadow_hunter.role": "複合・隠密狙撃",
   "rpgmod.job.shadow_hunter.desc": "弓と短剣を使い分ける狩人。隠密からの一撃は必ず会心。",
@@ -1176,5 +1176,6 @@
   "effect.rpgmod.fanfare": "凱歌",
   "effect.rpgmod.ward_melody": "守護の旋律",
   "effect.rpgmod.drain_tune": "吸魔の調べ",
-  "rpgmod.node.song": "曲"
+  "rpgmod.node.song": "曲",
+  "rpgmod.bard.linger": "%sの余韻：%s秒"
 }

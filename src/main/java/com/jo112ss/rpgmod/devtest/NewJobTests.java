@@ -51,6 +51,7 @@ final class NewJobTests {
             case "bard" -> become(p, "bard");
             case "hybrids" -> hybrids(level, p, dummies);
             case "coins" -> coins(level, p);
+            case "linger" -> linger(level, p);
             case "songs_bard" -> songs(level, p, "bard", false, List.of("war_song", "rhapsody", "fanfare", "dirge"), 2, -1);
             case "songs_maestro" -> songs(level, p, "bard", true, List.of("war_song", "heal_song", "", "", "guard_song", "rhapsody"), 0, 5);
             case "songs_singer" -> songs(level, p, "spellsinger", false, List.of("ward_melody", "drain_tune", "flame_melody"), 0, -1);
@@ -270,6 +271,27 @@ final class NewJobTests {
         SkillTasks.later(63, () -> log("songs {}: after 3s effects {} ward {} sonic boom cooldown left {}t (200 - 60 plain)", job,
                 p.getActiveEffects().stream().map(e -> e.getEffect().getRegisteredName()).toList(),
                 p.hasEffect(ModEffects.WARD_MELODY), d.cooldownEnd("sonic_boom") - level.getGameTime()));
+    }
+
+    /** Spellsinger's afterglow: a song ending at 15 points leaves its effect on for 7.5s; a bard's does not. */
+    private static void linger(ServerLevel level, ServerPlayer p) {
+        for (String job : new String[] {"spellsinger", "bard"}) {
+            int delay = job.equals("bard") ? 60 : 0;
+            SkillTasks.later(delay, () -> {
+                become(p, job);
+                JobData d = JobManager.data(p);
+                String song = job.equals("bard") ? "war_song" : "flame_melody";
+                SkillExecutor.execute(p, JobDefs.skill(song), JobManager.powerMultiplier(p, JobDefs.skill(song)));
+                d.setSongPoints(15); // under the encore
+                long now = level.getGameTime();
+                d.setSong(d.song(), d.songStart(), now + 25); // ends shortly
+                SkillTasks.later(45, () -> {
+                    var eff = p.getEffect(job.equals("bard") ? ModEffects.WAR_SONG : ModEffects.FLAME_SONG);
+                    log("linger {}: song over, performing {}, {} left {} ticks", job, com.jo112ss.rpgmod.job.Bard.performing(p), song,
+                            eff == null ? 0 : eff.getDuration());
+                });
+            });
+        }
     }
 
     /** A stone wall across the arena behind the dummies (forward is +z), for charges to run into. */

@@ -1176,5 +1176,6 @@
   "effect.rpgmod.fanfare": "Fanfare",
   "effect.rpgmod.ward_melody": "Ward Melody",
   "effect.rpgmod.drain_tune": "Drain Tune",
-  "rpgmod.node.song": "Song"
+  "rpgmod.node.song": "Song",
+  "rpgmod.bard.linger": "%s lingers: %ss"
 }

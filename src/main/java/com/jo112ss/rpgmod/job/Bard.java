@@ -103,6 +103,11 @@ public final class Bard {
         return !d.song().isEmpty() && d.songEnd() > p.level().getGameTime();
     }
 
+    /** Every song plays this long (not longer at higher levels), plus the encore. */
+    public static final int SONG_SECONDS = 12;
+    /** The spellsinger's afterglow: seconds of lingering effect per point at the end of the song (0 to 10s). */
+    public static final double LINGER_PER_POINT = 0.5;
+
     /** The maestro's second song costs this share of its mana. */
     public static final double SECOND_SONG_COST = 0.5;
 
@@ -151,7 +156,7 @@ public final class Bard {
         ServerLevel level = c.level();
         Ctx first = new Ctx(p, level, songs[0], JobManager.powerMultiplier(p, songs[0]), 1.0);
         Ctx second = songs[1] == null ? null : new Ctx(p, level, songs[1], JobManager.powerMultiplier(p, songs[1]), 1.0);
-        return start(first, second, (int) Math.round(c.def().duration()));
+        return start(first, second, SONG_SECONDS);
     }
 
     /** Starts (or restarts) a song for {@code seconds}. */
@@ -164,6 +169,8 @@ public final class Bard {
         ServerPlayer p = c.p();
         JobData d = JobManager.data(p);
         long now = p.level().getGameTime();
+        Perf old = PERF.get(p.getUUID());
+        if (old != null && performing(p)) linger(old, p, d.songPoints()); // a song cut short by the next one
         d.setSong(c.def().id(), now, now + LEAD + seconds * 20L);
         Perf perf = new Perf(c);
         if (secondCtx != null) {
@@ -233,6 +240,7 @@ public final class Bard {
                 ServerFx.of("x_burst", p.position().add(0, 1, 0)).a(2).b(2).color(songColor(d.song())).send((ServerLevel) p.level());
                 p.level().playSound(null, p.blockPosition(), SoundEvents.PLAYER_LEVELUP, SoundSource.PLAYERS, 0.8F, 1.5F);
             } else {
+                linger(perf, p, d.songPoints());
                 stop(p);
                 return;
             }
@@ -241,51 +249,74 @@ public final class Bard {
         if (t % 20 == 0) {
             p.addEffect(new MobEffectInstance(ModEffects.PERFORMING, 30, 0, false, false, true));
             if (t >= LEAD) {
-                pulse(perf.c, p, d.song(), d.songPoints());
-                if (perf.second != null) pulse(perf.secondCtx, p, perf.second, d.songPoints());
+                pulse(perf.c, p, d.song(), d.songPoints(), 30);
+                if (perf.second != null) pulse(perf.secondCtx, p, perf.second, d.songPoints(), 30);
             }
         }
     }
 
-    /** One second of a song on everyone around. */
-    private static void pulse(Ctx c, ServerPlayer p, String song, int points) {
+    /**
+     * The spellsinger's afterglow: when a song ends, its effects stay on for a while, longer the
+     * better it was played (half a second per point: up to 10s). Lasting effects are put on once
+     * for that long; the songs that work every second (mana, thunder) go on working.
+     */
+    private static void linger(Perf perf, ServerPlayer p, int points) {
+        if (!"spellsinger".equals(JobManager.data(p).jobId())) return;
+        int ticks = (int) Math.round(points * LINGER_PER_POINT * 20);
+        if (ticks < 20) return;
+        String song = perf.c.def().id();
+        pulse(perf.c, p, song, points, ticks);
+        if (song.equals("mana_chord") || song.equals("thunder_tune")) {
+            SkillTasks.run(age -> {
+                if (!p.isAlive()) return true;
+                if (age > 0 && age % 20 == 0) pulse(perf.c, p, song, points, 30);
+                return age >= ticks;
+            });
+        }
+        p.sendSystemMessage(Component.translatable("rpgmod.bard.linger", Component.translatable("rpgmod.skill." + song), ticks / 20)
+                .withStyle(ChatFormatting.LIGHT_PURPLE), true);
+        ServerFx.of("x_ring", p.position()).a(radius(points)).b(2).color(songColor(song)).send((ServerLevel) p.level());
+    }
+
+    /** One second of a song on everyone around (its effects lasting {@code dur} ticks). */
+    private static void pulse(Ctx c, ServerPlayer p, String song, int points, int dur) {
         ServerLevel level = (ServerLevel) p.level();
         double f = factor(points), r = radius(points);
         int amp = Math.max(0, (int) Math.round(5 * f) - 1);
         int color = songColor(song);
         switch (song) {
-            case "war_song" -> allies(p, r, a -> a.addEffect(new MobEffectInstance(ModEffects.WAR_SONG, 30, amp, true, true), p));
-            case "guard_song" -> allies(p, r, a -> a.addEffect(new MobEffectInstance(ModEffects.GUARD_SONG, 30, amp, true, true), p));
-            case "wind_song" -> allies(p, r, a -> a.addEffect(new MobEffectInstance(ModEffects.WIND_SONG, 30, amp, true, true), p));
+            case "war_song" -> allies(p, r, a -> a.addEffect(new MobEffectInstance(ModEffects.WAR_SONG, dur, amp, true, true), p));
+            case "guard_song" -> allies(p, r, a -> a.addEffect(new MobEffectInstance(ModEffects.GUARD_SONG, dur, amp, true, true), p));
+            case "wind_song" -> allies(p, r, a -> a.addEffect(new MobEffectInstance(ModEffects.WIND_SONG, dur, amp, true, true), p));
             case "heal_song" -> allies(p, r, a -> {
-                a.addEffect(new MobEffectInstance(ModEffects.HEAL_SONG, 30, 0, true, true), p);
+                a.addEffect(new MobEffectInstance(ModEffects.HEAL_SONG, dur, 0, true, true), p);
                 HealthScale.heal(a, (float) (a.getMaxHealth() * 0.02 * f));
             });
             case "discord" -> {
                 List<LivingEntity> foes = SkillExecutor.enemies(p, p.position(), r);
                 for (LivingEntity e : foes) {
                     SkillExecutor.hurt(c, e, (float) (songPower(c, song) * f), SkillExecutor.magic(c));
-                    e.addEffect(new MobEffectInstance(ModEffects.ARMOR_BREAK, 30, 0), p);
+                    e.addEffect(new MobEffectInstance(ModEffects.ARMOR_BREAK, dur, 0), p);
                 }
                 if (!foes.isEmpty()) ServerFx.of("hit", p.position()).color(color).a(0.8).points(foes).send(level);
             }
             case "lullaby" -> {
                 for (LivingEntity e : SkillExecutor.enemies(p, p.position(), r)) {
-                    e.addEffect(new MobEffectInstance(MobEffects.SLOWNESS, 30, f >= 0.9 ? 2 : 1), p);
-                    e.addEffect(new MobEffectInstance(ModEffects.ATTACK_DOWN, 30, f >= 0.9 ? 1 : 0), p);
+                    e.addEffect(new MobEffectInstance(MobEffects.SLOWNESS, dur, f >= 0.9 ? 2 : 1), p);
+                    e.addEffect(new MobEffectInstance(ModEffects.ATTACK_DOWN, dur, f >= 0.9 ? 1 : 0), p);
                 }
             }
             // spellsinger: magic on the party's weapons
-            case "flame_melody" -> allies(p, r, a -> a.addEffect(new MobEffectInstance(ModEffects.FLAME_SONG, 30, amp, true, true), p));
+            case "flame_melody" -> allies(p, r, a -> a.addEffect(new MobEffectInstance(ModEffects.FLAME_SONG, dur, amp, true, true), p));
             case "haste_tune" -> allies(p, r, a -> {
-                a.addEffect(new MobEffectInstance(MobEffects.HASTE, 30, f >= 0.9 ? 1 : 0, true, true), p);
-                a.addEffect(new MobEffectInstance(MobEffects.SPEED, 30, f >= 0.9 ? 1 : 0, true, true), p);
+                a.addEffect(new MobEffectInstance(MobEffects.HASTE, dur, f >= 0.9 ? 1 : 0, true, true), p);
+                a.addEffect(new MobEffectInstance(MobEffects.SPEED, dur, f >= 0.9 ? 1 : 0, true, true), p);
             });
             case "mana_chord" -> allies(p, r, a -> JobManager.restoreMana(a, JobManager.maxMana(a) * 0.02 * f));
             case "seal_melody" -> {
                 for (LivingEntity e : SkillExecutor.enemies(p, p.position(), r)) {
-                    e.addEffect(new MobEffectInstance(ModEffects.EXPOSED, 30, f >= 0.9 ? 1 : 0), p);
-                    e.addEffect(new MobEffectInstance(MobEffects.SLOWNESS, 30, 0), p);
+                    e.addEffect(new MobEffectInstance(ModEffects.EXPOSED, dur, f >= 0.9 ? 1 : 0), p);
+                    e.addEffect(new MobEffectInstance(MobEffects.SLOWNESS, dur, 0), p);
                 }
             }
             case "thunder_tune" -> {
@@ -297,9 +328,9 @@ public final class Bard {
                     level.playSound(null, e.blockPosition(), SoundEvents.LIGHTNING_BOLT_IMPACT, SoundSource.PLAYERS, 0.5F, 1.6F);
                 }
             }
-            case "rhapsody" -> allies(p, r, a -> a.addEffect(new MobEffectInstance(ModEffects.RHAPSODY, 30, amp, true, true), p));
+            case "rhapsody" -> allies(p, r, a -> a.addEffect(new MobEffectInstance(ModEffects.RHAPSODY, dur, amp, true, true), p));
             case "fanfare" -> allies(p, r, a -> {
-                a.addEffect(new MobEffectInstance(ModEffects.FANFARE, 30, 0, true, true), p);
+                a.addEffect(new MobEffectInstance(ModEffects.FANFARE, dur, 0, true, true), p);
                 JobData ad = JobManager.data(a);
                 if (ad.hasJob()) { // the skills come back sooner: a share of a second off every second
                     ad.shiftCooldowns(a.level().getGameTime(), Math.round(20 * FANFARE_SPEED * f));
@@ -318,10 +349,10 @@ public final class Bard {
                 }
             }
             case "ward_melody" -> allies(p, r, a -> {
-                a.addEffect(new MobEffectInstance(ModEffects.WARD_MELODY, 30, 0, true, true), p);
+                a.addEffect(new MobEffectInstance(ModEffects.WARD_MELODY, dur, 0, true, true), p);
                 MoreJobHooks.ward(a, a.getMaxHealth() * WARD_SHARE * f);
             });
-            case "drain_tune" -> allies(p, r, a -> a.addEffect(new MobEffectInstance(ModEffects.DRAIN_TUNE, 30, amp, true, true), p));
+            case "drain_tune" -> allies(p, r, a -> a.addEffect(new MobEffectInstance(ModEffects.DRAIN_TUNE, dur, amp, true, true), p));
             default -> { }
         }
         ServerFx.of("n_song", p.position()).follow(p).a(r).b(f).color(color).send(level);
