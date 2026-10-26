@@ -239,8 +239,8 @@ public final class Bard {
             if (id == null || !SINGER_SONGS.contains(id) || !d.knows(id) || !done.add(id)) continue;
             var def = com.jo112ss.rpgmod.job.core.JobDefs.skill(id);
             Ctx c = new Ctx(p, (ServerLevel) p.level(), def, JobManager.powerMultiplier(p, def), 1.0);
-            if (id.equals("ward_melody")) pulse(c, p, id, max, 40);
-            linger(new Perf(c), p, max);
+            if (id.equals("ward_melody")) pulse(c, p, id, max, 40, CONCERTO_REACH);
+            linger(new Perf(c), p, max, CONCERTO_REACH);
         }
         return done.size();
     }
@@ -284,14 +284,21 @@ public final class Bard {
      * better it was played (half a second per point: up to 10s). Lasting effects are put on once
      * for that long; the songs that work every second (mana, thunder) go on working.
      */
+    /** The grand concerto's afterglow reaches this many times as far as a song. */
+    public static final double CONCERTO_REACH = 2;
+
     private static void linger(Perf perf, ServerPlayer p, int points) {
+        linger(perf, p, points, 1);
+    }
+
+    private static void linger(Perf perf, ServerPlayer p, int points, double reach) {
         if (!"spellsinger".equals(JobManager.data(p).jobId())) return;
         String song = perf.c.def().id();
         if (song.equals("ward_melody")) {
             // the absorption the party still has stays on (as it is: not topped up)
             int keep = WARD_LINGER_SECONDS * 20;
             int n = 0;
-            for (ServerPlayer a : SkillExecutor.allies(p, radius(points))) {
+            for (ServerPlayer a : SkillExecutor.allies(p, radius(points) * reach)) {
                 if (!a.hasEffect(MobEffects.ABSORPTION) || a.getAbsorptionAmount() <= 0) continue;
                 keepWard(p, a, keep);
                 n++;
@@ -302,23 +309,27 @@ public final class Bard {
         }
         int ticks = (int) Math.round(points * LINGER_PER_POINT * 20);
         if (ticks < 20) return;
-        pulse(perf.c, p, song, points, ticks);
+        pulse(perf.c, p, song, points, ticks, reach);
         if (song.equals("mana_chord") || song.equals("thunder_tune")) {
             SkillTasks.run(age -> {
                 if (!p.isAlive()) return true;
-                if (age > 0 && age % 20 == 0) pulse(perf.c, p, song, points, 30);
+                if (age > 0 && age % 20 == 0) pulse(perf.c, p, song, points, 30, reach);
                 return age >= ticks;
             });
         }
         p.sendSystemMessage(Component.translatable("rpgmod.bard.linger", Component.translatable("rpgmod.skill." + song), ticks / 20)
                 .withStyle(ChatFormatting.LIGHT_PURPLE), true);
-        ServerFx.of("x_ring", p.position()).a(radius(points)).b(2).color(songColor(song)).send((ServerLevel) p.level());
+        ServerFx.of("x_ring", p.position()).a(radius(points) * reach).b(2).color(songColor(song)).send((ServerLevel) p.level());
     }
 
     /** One second of a song on everyone around (its effects lasting {@code dur} ticks). */
     private static void pulse(Ctx c, ServerPlayer p, String song, int points, int dur) {
+        pulse(c, p, song, points, dur, 1);
+    }
+
+    private static void pulse(Ctx c, ServerPlayer p, String song, int points, int dur, double reach) {
         ServerLevel level = (ServerLevel) p.level();
-        double f = factor(points), r = radius(points);
+        double f = factor(points), r = radius(points) * reach;
         int amp = Math.max(0, (int) Math.round(5 * f) - 1);
         int singerAmp = Math.max(0, (int) Math.round(3 * f) - 1); // the spellsinger's songs: lower
         int color = songColor(song);

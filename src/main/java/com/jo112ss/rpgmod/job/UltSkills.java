@@ -221,7 +221,7 @@ public final class UltSkills {
             fail(p, "rpgmod.bard.no_song");
             return false;
         }
-        double r = Bard.radius(JobData.MAX_SONG_POINTS);
+        double r = Bard.radius(JobData.MAX_SONG_POINTS) * Bard.CONCERTO_REACH;
         ServerFx.of("u_grand_concerto", p.position()).follow(p).a(r).send(c.level());
         sound(c, SoundEvents.PLAYER_LEVELUP, 1.1F);
         for (float pitch : new float[] {0.84F, 1.0F, 1.26F, 1.5F}) sound(c, p.position(), SoundEvents.NOTE_BLOCK_CHIME, 0.5F, pitch);

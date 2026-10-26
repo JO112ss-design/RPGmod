@@ -557,7 +557,7 @@ public final class SkillExecutor {
     static boolean arrowRain(Ctx c) {
         Vec3 at = aimPoint(c, 32);
         double r = c.def.radius();
-        int life = 40;
+        int life = 60;
         ServerFx.of("u_arrow_rain", at).a(r).b(life).send(c.level);
         sound(c, SoundEvents.ARROW_SHOOT, 0.6F);
         sound(c, c.p.position(), SoundEvents.CROSSBOW_SHOOT, 1.0F, 0.6F);
@@ -672,7 +672,7 @@ public final class SkillExecutor {
     static boolean sanctuary(Ctx c) {
         double r = c.def.radius();
         Vec3 o = c.p.position();
-        int pulses = 8;
+        int pulses = 12;
         ServerFx.of("sanctuary", o).a(r).b(pulses * 20).send(c.level);
         sound(c, SoundEvents.BEACON_ACTIVATE, 1.4F);
         SkillTasks.run(age -> {

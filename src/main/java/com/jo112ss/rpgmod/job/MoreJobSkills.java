@@ -586,7 +586,7 @@ public final class MoreJobSkills {
 
     /** Dragon king: the fire left where you land, and how long it burns. */
     static final double KING_FIRE = 10;
-    static final int KING_FIRE_TICKS = 80;
+    static final int KING_FIRE_TICKS = 120;
 
     /**
      * Up into the sky, then down on the aimed spot inside a phantom dragon that dives with you. The

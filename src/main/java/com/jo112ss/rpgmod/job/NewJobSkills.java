@@ -345,7 +345,7 @@ public final class NewJobSkills {
         Vec3 o = aimPoint(c, 28);
         double r = c.def().radius();
         Vec3 dir = c.flat(), side = Fx3.right(dir);
-        int rows = 8;
+        int rows = 12;
         ServerFx.of("u_broadside", o).vec(dir).a(r).send(c.level());
         sound(c, SoundEvents.RAVAGER_ROAR, 1.6F);
         SkillTasks.run(age -> {
@@ -775,8 +775,9 @@ public final class NewJobSkills {
         ServerFx.of("u_spear_field", o).a(r).b(life + 16).send(c.level());
         sound(c, SoundEvents.TRIDENT_THROW, 0.7F);
         SkillTasks.run(age -> {
-            if (age % 2 == 0 && age < life) {
-                Vec3 at = ground(c, spotIn(c, o, r, enemies(p, o, r)));
+            // three spears a volley over the wide area: the first aimed like before, the other two anywhere in it
+            for (int k = 0; k < (age % 2 == 0 && age < life ? 3 : 0); k++) {
+                Vec3 at = ground(c, spotIn(c, o, r, k == 0 ? enemies(p, o, r) : List.of()));
                 Vec3 tilt = new Vec3(p.getRandom().nextGaussian() * 0.25, 0, p.getRandom().nextGaussian() * 0.25);
                 Vec3 top = at.add(tilt.scale(-12)).add(0, 9, 0);
                 SkillProp spear = SkillProp.create(c.level(), SkillProp.SPEAR, top, p.getYRot(), life + 60);
@@ -796,7 +797,7 @@ public final class NewJobSkills {
                         sound(c, at, SoundEvents.SPEAR_HIT, 0.5F, 0.9F + p.getRandom().nextFloat() * 0.4F);
                     });
                 }
-                if (age % 6 == 0) sound(c, o, SoundEvents.ARROW_SHOOT, 0.8F, 0.6F);
+                if (k == 0 && age % 6 == 0) sound(c, o, SoundEvents.ARROW_SHOOT, 0.8F, 0.6F);
             }
             if (age == life + 16) { // all of them burst
                 java.util.Map<LivingEntity, Integer> count = new java.util.HashMap<>();

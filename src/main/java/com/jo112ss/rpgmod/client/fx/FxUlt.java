@@ -183,8 +183,10 @@ public final class FxUlt {
         Fx.p(S.CIRCLE_NATURE, sky).flat().color(light(HUNT), HUNT).size(r * 0.4F, r * 1.1F).easeOut().alpha(0.9F, 0).spin(0.05F).life(life + 10).spawn();
         Fx.p(S.RING, sky).flat().color(HUNT).size(r * 1.2F).alpha(0.7F, 0).life(life + 10).spawn();
         ground(S.CIRCLE_NATURE, at, r, HUNT, life + 10).color(light(HUNT), HUNT).alpha(0.6F, 0).fadeIn(0.2F).spin(-0.03F).spawn();
+        // as many arrows per area as at the old size (5 a tick over radius 5)
+        int perTick = Math.max(5, Math.min(24, Math.round(5 * r * r / 25)));
         FxAnims.run(life, age -> {
-            for (int i = 0, n = Fx.n(5); i < n; i++) {
+            for (int i = 0, n = Fx.n(perTick); i < n; i++) {
                 double a = Fx.r(0, Math.PI * 2), d = Math.sqrt(Fx.RND.nextDouble()) * r;
                 Vec3 top = sky.add(Math.cos(a) * d * 0.4, 0, Math.sin(a) * d * 0.4);
                 Vec3 g = at.add(Math.cos(a) * d, 0, Math.sin(a) * d);
