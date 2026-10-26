@@ -530,6 +530,18 @@ public final class DungeonManager {
         if (event.getItemStack().getItem() instanceof net.minecraft.world.item.BucketItem) event.setCanceled(true);
     }
 
+    @SubscribeEvent
+    public static void onDeathLog(net.neoforged.neoforge.event.entity.living.LivingDeathEvent event) {
+        if (!testLog || !Dungeons.isDungeon(event.getEntity().level())) return;
+        var src = event.getSource();
+        log("death of {} by {} (attacker {}, direct {}) health {}", event.getEntity().getType().getDescriptionId(), src.getMsgId(),
+                src.getEntity() != null ? src.getEntity().getType().getDescriptionId() : "-", src.getDirectEntity() != null ? src.getDirectEntity().getType().getDescriptionId() : "-",
+                event.getEntity().getHealth());
+        if (event.getEntity() instanceof com.jo112ss.rpgmod.mob.boss.BloodMoonBoss) {
+            for (var st : Thread.currentThread().getStackTrace()) if (st.getClassName().startsWith("com.jo112ss")) log("  at {}.{}:{}", st.getClassName(), st.getMethodName(), st.getLineNumber());
+        }
+    }
+
     /** Chances of a key from an elite and from a fallen adventurer (killed by a player). */
     public static final double KEY_ELITE = 0.12, KEY_REVENANT = 0.04;
 
