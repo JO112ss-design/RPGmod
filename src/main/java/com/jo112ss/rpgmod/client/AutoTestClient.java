@@ -218,6 +218,7 @@ public final class AutoTestClient {
             case "radiant_lance", "switcheroo", "vanish", "shadow_run", "decapitate", "phase_shift", "holy_nova" -> new int[] {3};
             case "mob:dragonhp" -> new int[] {100, 140};
             case "nj:pirate", "nj:lancer", "nj:monk" -> new int[] {8};
+            case "nj:counter_lance" -> new int[] {58, 101};
             case "boarding_shot" -> new int[] {4, 9};
             case "quick_draw", "spear_sweep", "ki_blast", "whirl_kick", "grapple", "finale" -> new int[] {3};
             case "cannon" -> new int[] {12, 44};
@@ -284,6 +285,7 @@ public final class AutoTestClient {
             case "bal:checks" -> 40;
             case "job:screen" -> 70;
             case "nj:pirate", "nj:lancer", "nj:monk", "nj:hybrids" -> 70;
+            case "nj:counter_lance" -> 120;
             case "dragon_king" -> 100;
             case "twin_cannon", "mimic" -> 70;
             case "high_jump" -> 75;
@@ -342,8 +344,10 @@ public final class AutoTestClient {
             showSkills.clear(); // group A, the rain skills made distinct: carpet bombing, ghost ships, stuck spears, focused arrows, coins to pick up
             showSkills.addAll(java.util.List.of("nj:pirate", "down:broadside", "nj:captain", "up:fleet_barrage", "nj:lancer", "spear_rain", "nj:shadow_hunter", "shadow_rain",
                     "nj:treasure_hunter", "treasure_rain", "nj:coins", "nj:restore"));
-            showSkills.clear(); // group C (after a pause), the jumps made distinct: pole vault and ground wave, straight up and spin down, hover and aim, the dragon
-            showSkills.addAll(java.util.List.of("nj:restore", "nj:restore", "nj:restore", "nj:lancer", "leap_thrust@26", "dragon_fang", "nj:dragoon", "steep:high_jump",
+            showSkills.clear(); // counter lance: braced blows stored, the next hit carries them
+            showSkills.addAll(java.util.List.of("nj:restore", "nj:restore", "nj:counter_lance", "nj:restore"));
+            if (false) showSkills.clear(); // group C (after a pause), the jumps made distinct: pole vault and ground wave, straight up and spin down, hover and aim, the dragon
+            if (false) showSkills.addAll(java.util.List.of("nj:restore", "nj:restore", "nj:restore", "nj:lancer", "leap_thrust@26", "dragon_fang", "nj:dragoon", "steep:high_jump",
                     "steep:dragon_king", "sf:dragon_king", "nj:restore"));
             if (false) showSkills.clear(); // group B (after a pause, so what the earlier tests left running has died down), the dashes made distinct: accelerating skewer, blink behind, gather and slam, lightning, flowing zigzag, shield push (twice against a wall)
             if (false) showSkills.addAll(java.util.List.of("nj:restore", "nj:restore", "nj:restore", "nj:lancer", "lance_charge", "nj:monk", "shrink_step", "nj:champion", "iron_mountain", "nj:spellblade", "front:thunder_thrust",

@@ -55,6 +55,18 @@ public final class MoreJobHooks {
             JobData d = JobManager.data(sp);
             if (sp.hasEffect(ModEffects.BATTLE_AURA)) amount *= (float) (1 + BATTLE_AURA_PER_KI * d.ki());
             if (sp.hasEffect(ModEffects.HEROIC)) amount *= (float) (1 + HEROIC);
+            // counter lance: the stored blows ride on the next hit
+            double stored = victim instanceof Player ? 0 : MoreJobSkills.lanceStore(sp);
+            if (stored > 0) {
+                amount += (float) stored;
+                MoreJobSkills.LANCE_STORE.remove(sp.getUUID());
+                sp.removeEffect(ModEffects.COUNTER_LANCE);
+                ServerFx.of("x_burst", victim.position().add(0, victim.getBbHeight() * 0.5, 0)).a(1.6).b(2).color(0xFFD27A).send(level);
+                ServerFx.of("x_beam", sp.position().add(0, 1.2, 0)).vec(victim.position().add(0, victim.getBbHeight() * 0.5, 0)).a(0.3).color(0xFFD27A).send(level);
+                level.playSound(null, victim.blockPosition(), SoundEvents.ANVIL_LAND, SoundSource.PLAYERS, 0.8F, 1.4F);
+                level.playSound(null, victim.blockPosition(), SoundEvents.TOTEM_USE, SoundSource.PLAYERS, 0.5F, 1.6F);
+                sp.displayClientMessage(net.minecraft.network.chat.Component.translatable("rpgmod.job.lance_release", Math.round(stored)), true);
+            }
             MobEffectInstance rush = sp.getEffect(ModEffects.GOLD_RUSH);
             if (rush != null) amount *= (float) (1 + GOLD_RUSH * (rush.getAmplifier() + 1));
             MobEffectInstance flame = sp.getEffect(ModEffects.FLAME_SONG);
@@ -86,20 +98,30 @@ public final class MoreJobHooks {
         if (victim instanceof ServerPlayer vp) {
             LivingEntity att = src.getEntity() instanceof LivingEntity l && !(l instanceof Player) ? l : null;
             boolean meleeHit = att != null && src.getDirectEntity() == att && att.distanceTo(vp) < 6;
-            if (meleeHit && (vp.hasEffect(ModEffects.FORESIGHT) || vp.hasEffect(ModEffects.COUNTER_LANCE))) {
-                boolean lance = vp.hasEffect(ModEffects.COUNTER_LANCE);
-                Map<UUID, Float> power = lance ? MoreJobSkills.LANCE_POWER : MoreJobSkills.FORESIGHT_POWER;
-                if (lance) vp.removeEffect(ModEffects.COUNTER_LANCE);
-                else Monk.add(vp, 1); // foresight dodges every blow while it lasts
-                float back = power.getOrDefault(vp.getUUID(), 0F);
+            if (meleeHit && vp.hasEffect(ModEffects.FORESIGHT)) {
+                Monk.add(vp, 1); // foresight dodges every blow while it lasts
+                float back = MoreJobSkills.FORESIGHT_POWER.getOrDefault(vp.getUUID(), 0F);
                 SkillTasks.later(1, () -> {
                     if (att.isAlive()) att.hurtServer(level, vp.damageSources().source(SkillExecutor.SKILL_DAMAGE, vp, vp), back);
                     SkillExecutor.pushAway(att, vp.position(), 0.9, 0.3);
                 });
-                Vec3Fx.counter(level, vp, att, lance ? 0xE0C080 : 0xFFB070);
-                level.playSound(null, vp.blockPosition(), lance ? SoundEvents.SHIELD_BLOCK.value() : SoundEvents.BREEZE_JUMP, SoundSource.PLAYERS, 1.0F, 1.4F);
+                Vec3Fx.counter(level, vp, att, 0xFFB070);
+                level.playSound(null, vp.blockPosition(), SoundEvents.BREEZE_JUMP, SoundSource.PLAYERS, 1.0F, 1.4F);
                 event.setCanceled(true);
                 return;
+            }
+            // counter lance: the shield takes most of every blow (from a creature, near or far), and stores it
+            double[] store = MoreJobSkills.LANCE_STORE.get(vp.getUUID());
+            if (store != null && vp.hasEffect(ModEffects.COUNTER_LANCE) && src.getEntity() instanceof LivingEntity from && from != vp) {
+                float blocked = amount * MoreJobSkills.LANCE_BLOCK;
+                amount -= blocked;
+                store[0] = Math.min(store[1], store[0] + blocked * MoreJobSkills.LANCE_STORE_RATE);
+                net.minecraft.world.phys.Vec3 at = vp.position().add(0, 1.1, 0).add(from.position().subtract(vp.position()).multiply(1, 0, 1).normalize().scale(0.7));
+                ServerFx.of("x_hit", at).vec(vp.position().subtract(from.position())).a(1.1).color(0xE0C080).send(level);
+                ServerFx.of("x_burst", vp.position().add(0, 1.0, 0)).a(0.6).b(2).color(0xFFD27A).send(level);
+                level.playSound(null, vp.blockPosition(), SoundEvents.SHIELD_BLOCK.value(), SoundSource.PLAYERS, 1.0F, 1.2F);
+                vp.displayClientMessage(net.minecraft.network.chat.Component.translatable("rpgmod.job.lance_store", Math.round(store[0]),
+                        Math.round(store[1])), true);
             }
             if (vp.hasEffect(ModEffects.SPELL_GUARD)) {
                 amount *= 0.7F;
@@ -149,7 +171,7 @@ public final class MoreJobHooks {
     public static void onLogout(PlayerEvent.PlayerLoggedOutEvent event) {
         UUID id = event.getEntity().getUUID();
         MoreJobSkills.FORESIGHT_POWER.remove(id);
-        MoreJobSkills.LANCE_POWER.remove(id);
+        MoreJobSkills.LANCE_STORE.remove(id);
         MoreJobSkills.GUARD_POWER.remove(id);
     }
 

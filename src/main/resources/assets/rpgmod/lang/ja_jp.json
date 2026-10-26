@@ -1031,7 +1031,7 @@
   "rpgmod.skill.spear_wall": "槍衾",
   "rpgmod.skill.spear_wall.desc": "その場に槍の陣を張る（8秒）。中の敵は毎秒2回傷つき押し出される。",
   "rpgmod.skill.counter_lance": "反撃の槍",
-  "rpgmod.skill.counter_lance.desc": "3秒間、次に受ける近接攻撃を完全に防いで反撃する。",
+  "rpgmod.skill.counter_lance.desc": "3秒間盾で構える。受けるダメージが60%減り、防いだ分を4倍にして溜める（上限あり）。構えの後6秒以内の次の攻撃に、溜めた分がすべて上乗せされる。",
   "rpgmod.skill.provoke": "挑発",
   "rpgmod.skill.provoke.desc": "周りの敵を全部自分に向かせ、守りを固める。",
   "rpgmod.skill.fortress": "不落の砦",
@@ -1125,5 +1125,7 @@
   "effect.rpgmod.double_down": "ダブルダウン",
   "effect.rpgmod.gold_rush": "ゴールドラッシュ",
   "rpgmod.job.no_room_behind": "回り込む場所がない",
-  "rpgmod.job.no_room_ahead": "前に進む場所がない"
+  "rpgmod.job.no_room_ahead": "前に進む場所がない",
+  "rpgmod.job.lance_store": "盾に蓄積：%s / %s",
+  "rpgmod.job.lance_release": "反撃の槍！ +%s"
 }

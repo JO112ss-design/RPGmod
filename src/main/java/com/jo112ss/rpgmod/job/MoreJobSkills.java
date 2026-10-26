@@ -119,7 +119,7 @@ public final class MoreJobSkills {
                 yield mark(c, ModEffects.IMMOVABLE, null, 0xC0B080, 2);
             }
             case "spear_wall" -> spearWall(c);
-            case "counter_lance" -> mark(c, ModEffects.COUNTER_LANCE, LANCE_POWER, 0xE0C080, 2);
+            case "counter_lance" -> counterLance(c);
             case "provoke" -> provoke(c);
             case "fortress" -> fortress(c);
             case "holy_lance" -> holyLance(c);
@@ -156,7 +156,44 @@ public final class MoreJobSkills {
 
     private static final int KI = 0xFFC860, GOLD = 0xD4AF37, SHADOW = 0x4A5A80, HOLY = 0xFFE89A;
     /** Counter damage set when the skill was used (foresight, counter lance, spell guard). */
-    static final Map<UUID, Float> FORESIGHT_POWER = new HashMap<>(), LANCE_POWER = new HashMap<>(), GUARD_POWER = new HashMap<>();
+    static final Map<UUID, Float> FORESIGHT_POWER = new HashMap<>(), GUARD_POWER = new HashMap<>();
+
+    /** Counter lance: share of each blow the shield takes, how much of that is stored, and how long the store keeps after the stance. */
+    public static final float LANCE_BLOCK = 0.6F, LANCE_STORE_RATE = 4.0F;
+    public static final int LANCE_KEEP = 120;
+
+    /** What the counter lance has stored: {amount, cap, game time it is lost at}. */
+    static final Map<UUID, double[]> LANCE_STORE = new HashMap<>();
+
+    /**
+     * Counter lance: for 3s you brace behind the shield. Each blow takes 60% less, and what the
+     * shield took is stored (x4, up to a cap); your next hit within 6s after the stance carries it all.
+     */
+    private static boolean counterLance(Ctx c) {
+        ServerPlayer p = c.p();
+        int t = ticks(c.def().duration());
+        p.addEffect(new MobEffectInstance(ModEffects.COUNTER_LANCE, t, 0), p);
+        LANCE_STORE.put(p.getUUID(), new double[] {0, c.dmg(2.5), c.level().getGameTime() + t + LANCE_KEEP});
+        ServerFx.of("x_aura", p.position()).follow(p).a(c.def().duration()).b(2).color(0xE0C080).send(c.level());
+        sound(c, SoundEvents.SHIELD_BLOCK, 0.6F);
+        sound(c, p.position(), SoundEvents.ARMOR_EQUIP_IRON.value(), 1.0F, 0.8F);
+        return true;
+    }
+
+    public static double lanceStoreForTest(ServerPlayer p) {
+        return lanceStore(p);
+    }
+
+    /** The counter lance's store, if there is one still good (else 0). */
+    static double lanceStore(ServerPlayer p) {
+        double[] s = LANCE_STORE.get(p.getUUID());
+        if (s == null) return 0;
+        if (p.level().getGameTime() > s[2]) {
+            LANCE_STORE.remove(p.getUUID());
+            return 0;
+        }
+        return s[0];
+    }
 
     private static Vec3 mid(LivingEntity e) {
         return NewJobSkills.mid(e);

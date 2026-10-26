@@ -51,6 +51,7 @@ final class NewJobTests {
             case "bard" -> become(p, "bard");
             case "hybrids" -> hybrids(level, p, dummies);
             case "coins" -> coins(level, p);
+            case "counter_lance" -> counterLance(level, p, dummies);
             case "wall", "unwall" -> wall(level, p, name.equals("wall"));
             default -> {
                 if (JobDefs.isAdvanced(name)) become(p, JobDefs.BASE_OF.get(name), true);
@@ -138,6 +139,46 @@ final class NewJobTests {
                 d.setMastery("wizard", wz);
             });
         }
+    }
+
+    /** Counter lance: blows taken while braced are cut and stored, and the next hit carries the store. */
+    private static void counterLance(ServerLevel level, ServerPlayer p, List<? extends LivingEntity> dummies) {
+        become(p, "sentinel", true);
+        if (dummies.size() < 5) return;
+        LivingEntity near = dummies.get(4);
+        var mode = p.gameMode();
+        boolean inv = p.getAbilities().invulnerable;
+        p.setGameMode(net.minecraft.world.level.GameType.SURVIVAL);
+        p.getAbilities().invulnerable = false;
+        float[] plain = {0};
+        SkillTasks.later(25, () -> {
+            float a = near.getHealth();
+            p.attack(near);
+            plain[0] = a - near.getHealth();
+            float hp = p.getHealth();
+            p.hurtServer(level, level.damageSources().mobAttack(near), 20);
+            log("counter lance: plain sword-and-board hit {}, a 20 blow plain took {}", String.format("%.1f", plain[0]), String.format("%.1f", hp - p.getHealth()));
+            p.setHealth(p.getMaxHealth());
+        });
+        SkillTasks.later(50, () -> SkillExecutor.execute(p, JobDefs.skill("counter_lance"), JobManager.powerMultiplier(p, JobDefs.skill("counter_lance"))));
+        for (int k = 0; k < 2; k++) {
+            int kk = k;
+            SkillTasks.later(52 + k * 24, () -> {
+                float hp = p.getHealth();
+                p.hurtServer(level, level.damageSources().mobAttack(near), 20);
+                log("counter lance: braced blow {} took {}, stored {}", kk + 1, String.format("%.1f", hp - p.getHealth()),
+                        String.format("%.1f", com.jo112ss.rpgmod.job.MoreJobSkills.lanceStoreForTest(p)));
+            });
+        }
+        SkillTasks.later(100, () -> {
+            float a = near.getHealth();
+            p.attack(near);
+            log("counter lance: the next hit {} (plain {}), store left {}", String.format("%.1f", a - near.getHealth()), String.format("%.1f", plain[0]),
+                    String.format("%.1f", com.jo112ss.rpgmod.job.MoreJobSkills.lanceStoreForTest(p)));
+            p.setGameMode(mode);
+            p.getAbilities().invulnerable = inv;
+            p.setHealth(p.getMaxHealth());
+        });
     }
 
     /** A stone wall across the arena behind the dummies (forward is +z), for charges to run into. */
