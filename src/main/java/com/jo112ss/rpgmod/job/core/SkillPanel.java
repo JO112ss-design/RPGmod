@@ -117,13 +117,13 @@ public final class SkillPanel {
      */
     /** Layout version of the advanced panel of a base job ({@link #ADV_VERSION}, or higher where it changed alone). */
     public static int advVersion(String baseJob) {
-        if ("bard".equals(baseJob)) return ADV_VERSION + 1; // maestro: crescendo instead of the duet (songs from the lute)
+        if ("bard".equals(baseJob)) return ADV_VERSION + 2; // maestro: crescendo instead of the duet; 2: no MP cells (MP fixed at 100)
         return "healer".equals(baseJob) ? ADV_VERSION + 1 : ADV_VERSION; // bishop: health cells became mana regeneration
     }
 
     public static int version(String job) {
-        // bard and spellsinger: songs moved to the lute (spell cells), new skills
-        if ("bard".equals(job) || "spellsinger".equals(job)) return VERSION + 1;
+        // bard and spellsinger: songs moved to the lute (spell cells), new skills; +2: no MP cells (MP fixed at 100)
+        if ("bard".equals(job) || "spellsinger".equals(job)) return VERSION + 2;
         return "healer".equals(job) ? VERSION + 1 : VERSION; // healer: heals moved to the staff, three new skills
     }
     public static final int RADIUS = 7;

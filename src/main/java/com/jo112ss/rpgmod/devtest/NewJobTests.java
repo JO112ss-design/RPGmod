@@ -90,6 +90,7 @@ final class NewJobTests {
                 log("spellblade with quick cast: stages at {} ticks", java.util.Arrays.toString(com.jo112ss.rpgmod.job.SpellbladeMagic.stageTicks(p)));
             }
             case "meditate" -> meditate(level, p);
+            case "hitmana" -> hitMana(p, dummies);
             case "counter_lance" -> counterLance(level, p, dummies);
             case "wall", "unwall" -> wall(level, p, name.equals("wall"));
             default -> {
@@ -210,6 +211,50 @@ final class NewJobTests {
                 log("mana share alone: {}", shared);
                 d.setMana(JobManager.maxMana(p));
             });
+        });
+    }
+
+    /**
+     * Physical MP: max 100 whatever the level, normal hits give MP back (by the weapon's attack time,
+     * scaled by the charge), a skill does not; the bard line keeps 100 too and pays for the sound wave.
+     */
+    private static void hitMana(ServerPlayer p, List<? extends LivingEntity> dummies) {
+        LivingEntity t = front(dummies);
+        if (t == null) return;
+        JobData d = JobManager.data(p);
+        com.jo112ss.rpgmod.job.HitMana.testLog = true;
+        String[] jobs = {"fighter", "lancer", "monk"};
+        for (int i = 0; i < jobs.length; i++) {
+            String job = jobs[i];
+            SkillTasks.later(i * 40, () -> become(p, job));
+            SkillTasks.later(i * 40 + 30, () -> {
+                d.setMana(0);
+                p.attack(t); // charged
+                double one = d.mana();
+                p.attack(t); // straight after: hardly charged
+                log("hitmana {}: physical {} max {} after a charged hit {} after an uncharged one {}", job,
+                        com.jo112ss.rpgmod.job.HitMana.physical(d), String.format("%.0f", JobManager.maxMana(p)),
+                        String.format("%.2f", one), String.format("%.2f", d.mana()));
+                double before = d.mana();
+                SkillExecutor.execute(p, JobDefs.skill(d.knownSkills(com.jo112ss.rpgmod.job.core.SkillKind.ACTIVE).isEmpty() ? "power_slash"
+                        : d.knownSkills(com.jo112ss.rpgmod.job.core.SkillKind.ACTIVE).get(0)), 1);
+                log("hitmana {}: a skill hit leaves mana {} -> {} (no gain)", job, String.format("%.2f", before), String.format("%.2f", d.mana()));
+            });
+        }
+        SkillTasks.later(130, () -> {
+            for (String job : new String[] {"bard", "spellsinger", "wizard"}) {
+                become(p, job);
+                log("hitmana {}: physical {} max mana {}", job, com.jo112ss.rpgmod.job.HitMana.physical(d), String.format("%.0f", JobManager.maxMana(p)));
+            }
+            become(p, "bard");
+            d.setMana(100);
+            com.jo112ss.rpgmod.job.BardAttack.wave(p);
+            log("hitmana bard: a sound wave leaves {} MP", String.format("%.0f", d.mana()));
+            d.setMana(1);
+            com.jo112ss.rpgmod.job.BardAttack.wave(p);
+            log("hitmana bard: with 1 MP the wave is refused: {} MP", String.format("%.0f", d.mana()));
+            d.setMana(100);
+            com.jo112ss.rpgmod.job.HitMana.testLog = false;
         });
     }
 

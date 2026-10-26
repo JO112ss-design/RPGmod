@@ -294,6 +294,7 @@ public final class AutoTestClient {
             case "nj:counter_lance" -> 120;
             case "nj:songs_bard", "nj:songs_maestro", "nj:songs_singer" -> 90;
             case "nj:meditate" -> 140;
+            case "nj:hitmana" -> 200;
             case "nj:linger" -> 140;
             case "nj:ward" -> 210;
             case "nj:wardlinger" -> 80;
@@ -358,6 +359,8 @@ public final class AutoTestClient {
                     "nj:treasure_hunter", "treasure_rain", "nj:coins", "nj:restore"));
             showSkills.clear(); // every job's stats
             showSkills.addAll(java.util.List.of("nj:statsdump"));
+            showSkills.clear(); // physical MP: normal hits give MP back; the bard line keeps 100 and pays for the wave
+            showSkills.addAll(java.util.List.of("nj:restore", "nj:hitmana", "nj:statsdump", "nj:restore"));
             if (false) showSkills.clear(); // spellsinger afterglow
             if (false) showSkills.addAll(java.util.List.of("nj:restore", "nj:wardlinger", "nj:ward", "nj:linger", "nj:restore"));
             if (false) showSkills.clear(); // songs: each with its own rhythm (bars from the song's style) and tune

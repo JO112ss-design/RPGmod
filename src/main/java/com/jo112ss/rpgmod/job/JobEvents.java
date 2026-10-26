@@ -25,6 +25,7 @@ public final class JobEvents {
     public static void onLogout(PlayerEvent.PlayerLoggedOutEvent event) {
         JobActionHandler.forget(event.getEntity().getUUID());
         JobManager.forgetCombat(event.getEntity());
+        HitMana.forget(event.getEntity().getUUID());
     }
 
     /** Attacking or being hurt puts a player "in combat" (pauses the faster out-of-combat mana regeneration). */

@@ -9,15 +9,25 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.phys.Vec3;
 
-/** The bard's own attack: a sound wave from the lute (right-click, no mana). */
+/** The bard's own attack: a sound wave from the lute (right-click, {@link #COST} MP a wave). */
 public final class BardAttack {
     private BardAttack() {}
 
     public static final double RATIO = 0.8, RANGE = 20, SPEED = 1.6;
     public static final int GAP = 12;
+    /** MP a wave costs (the song jobs keep 100 MP, so the wave cannot be played without end). */
+    public static final double COST = 2;
 
     public static void wave(ServerPlayer p) {
         ServerLevel level = (ServerLevel) p.level();
+        JobData d = JobManager.data(p);
+        if (d.mana() < COST) {
+            p.sendSystemMessage(net.minecraft.network.chat.Component.translatable("rpgmod.job.no_mana").withStyle(net.minecraft.ChatFormatting.RED), true);
+            p.getCooldowns().addCooldown(p.getMainHandItem(), GAP);
+            return;
+        }
+        d.setMana(d.mana() - COST);
+        JobManager.sync(p);
         // the context only carries the player and the damage type here: the ratio is set below
         Ctx c = new Ctx(p, level, JobDefs.skill("finale"), JobManager.magicAttack(p), 1.0);
         float damage = (float) (RATIO * JobManager.magicAttack(p));

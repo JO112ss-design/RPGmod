@@ -84,7 +84,7 @@ public final class Pirate {
             return;
         }
         if (!endless) d.setAmmo(d.ammo() - 1);
-        shot(p, (float) (SHOT_RATIO * JobManager.physicalAttack(p)), p.getLookAngle(), SHOT_RANGE, 0.0);
+        if (shot(p, (float) (SHOT_RATIO * JobManager.physicalAttack(p)), p.getLookAngle(), SHOT_RANGE, 0.0) != null) HitMana.gunHit(p);
         p.getCooldowns().addCooldown(p.getMainHandItem(), SHOT_GAP);
         JobManager.markCombat(p);
         if (d.ammo() <= 0 && !endless) reload(p, d);
