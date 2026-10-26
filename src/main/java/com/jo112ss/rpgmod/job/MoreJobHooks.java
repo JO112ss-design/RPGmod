@@ -65,7 +65,7 @@ public final class MoreJobHooks {
                 ServerFx.of("x_beam", sp.position().add(0, 1.2, 0)).vec(victim.position().add(0, victim.getBbHeight() * 0.5, 0)).a(0.3).color(0xFFD27A).send(level);
                 level.playSound(null, victim.blockPosition(), SoundEvents.ANVIL_LAND, SoundSource.PLAYERS, 0.8F, 1.4F);
                 level.playSound(null, victim.blockPosition(), SoundEvents.TOTEM_USE, SoundSource.PLAYERS, 0.5F, 1.6F);
-                sp.displayClientMessage(net.minecraft.network.chat.Component.translatable("rpgmod.job.lance_release", Math.round(stored)), true);
+                sp.sendSystemMessage(net.minecraft.network.chat.Component.translatable("rpgmod.job.lance_release", Math.round(stored)).withStyle(net.minecraft.ChatFormatting.GOLD), true);
             }
             MobEffectInstance rush = sp.getEffect(ModEffects.GOLD_RUSH);
             if (rush != null) amount *= (float) (1 + GOLD_RUSH * (rush.getAmplifier() + 1));
@@ -120,7 +120,7 @@ public final class MoreJobHooks {
                 ServerFx.of("x_hit", at).vec(vp.position().subtract(from.position())).a(1.1).color(0xE0C080).send(level);
                 ServerFx.of("x_burst", vp.position().add(0, 1.0, 0)).a(0.6).b(2).color(0xFFD27A).send(level);
                 level.playSound(null, vp.blockPosition(), SoundEvents.SHIELD_BLOCK.value(), SoundSource.PLAYERS, 1.0F, 1.2F);
-                vp.displayClientMessage(net.minecraft.network.chat.Component.translatable("rpgmod.job.lance_store", Math.round(store[0]),
+                vp.sendSystemMessage(net.minecraft.network.chat.Component.translatable("rpgmod.job.lance_store", Math.round(store[0]),
                         Math.round(store[1])), true);
             }
             if (vp.hasEffect(ModEffects.SPELL_GUARD)) {
