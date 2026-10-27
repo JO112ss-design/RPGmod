@@ -105,7 +105,7 @@ final class FxBoss2 {
         int life = Math.max(1, (int) p.a());
         FxAnims.run(life, age -> {
             Vec3 from = pos[0], to = from.add(vel);
-            var block = level.clip(new ClipContext(from, to, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, (Entity) null));
+            var block = level.clip(new ClipContext(from, to, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, net.minecraft.world.phys.shapes.CollisionContext.empty()));
             boolean wall = block.getType() != HitResult.Type.MISS;
             Vec3 end = wall ? block.getLocation() : to;
             for (Player pl : level.getEntitiesOfClass(Player.class, new AABB(from, end).inflate(0.8), pl -> pl.isAlive() && !pl.isSpectator())) {
