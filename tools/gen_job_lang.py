@@ -70,11 +70,11 @@ SKILLS = {  # id: (ja, ja desc, en, en desc)
  'spear_rain': ('千本槍', '狙った範囲に4.5秒間槍を降らせる。槍は地面に刺さって残り、最後に一斉に炸裂する（近くに刺さった本数ぶん追加ダメージ、最大4本）。', 'Thousand Spears', 'Spears rain on the aimed area for 4.5s and stay stuck in the ground, then all burst at once (more damage per spear nearby, up to four).'),
  # ---- monk
  'combo': ('連撃', '目の前の敵に素早い3連打。当たるたびに気が溜まる。', 'Combo', 'Three quick punches in front of you. Each hit builds ki.'),
- 'ki_blast': ('発勁', '気をすべて使い、溜めた量に応じた一撃を叩き込む（気1つにつき威力+80%）。', 'Ki Blast', 'Spend all your ki on one strike: +80% power per point.'),
- 'parry': ('受け流し', '1.2秒間構え、次に受ける近接攻撃を無効にして反撃する。成功すると気が2溜まる。', 'Parry', 'For 1.2s the next melee hit is turned aside and answered. Success gives 2 ki.'),
- 'whirl_kick': ('旋風脚', '回し蹴りで周りの敵を蹴り飛ばす。当たった数だけ気が溜まる（最大2）。', 'Whirlwind Kick', 'A spinning kick that knocks enemies around you away. Ki for each hit (up to 2).'),
+ 'ki_blast': ('発勁', '気をすべて使い、溜めた量に応じた一撃を叩き込む（気1つにつき威力+120%）。', 'Ki Blast', 'Spend all your ki on one strike: +120% power per point.'),
+ 'parry': ('受け流し', '1.2秒間構え、次に受ける近接攻撃を無効にして反撃する。成功すると気が4/3溜まる。', 'Parry', 'For 1.2s the next melee hit is turned aside and answered. Success gives 2 ki.'),
+ 'whirl_kick': ('旋風脚', '回し蹴りで周りの敵を蹴り飛ばす。当たった数だけ気が溜まる（最大4/3）。', 'Whirlwind Kick', 'A spinning kick that knocks enemies around you away. Ki for each hit (up to 2).'),
  'meditate': ('瞑想', '3秒間動けない代わりに、毎秒最大HPの8%回復し、気が最大まで溜まる。', 'Meditate', 'Stand still for 3s: heal 8% of max health a second and fill your ki.'),
- 'shrink_step': ('縮地', '狙った敵の背後へ瞬間移動し、背中を打つ（1.3倍）。元の場所に残像が残る。気+1。', 'Shrinking Step', 'Blink behind the enemy you aim at and strike its back (x1.3), leaving an afterimage. +1 ki.'),
+ 'shrink_step': ('縮地', '狙った敵の背後へ瞬間移動し、背中を打つ（1.3倍）。元の場所に残像が残る。気+2/3。', 'Shrinking Step', 'Blink behind the enemy you aim at and strike its back (x1.3), leaving an afterimage. +2/3 ki.'),
  'hundred_fists': ('百裂拳', '3秒間、目の前に拳の嵐を浴びせる。', 'Hundred Fists', 'A storm of punches in front of you for 3s.'),
  'diamond_body': ('金剛', '6秒間、受けるダメージが80%減り、吹き飛ばされず、攻撃するたびに気が溜まる。', 'Diamond Body', 'For 6s: 80% less damage, no knockback, and every hit builds ki.'),
  # ---- bard
@@ -93,10 +93,10 @@ SKILLS = {  # id: (ja, ja desc, en, en desc)
  'deadshot': ('狙撃', '0.5秒狙って重い一発を撃つ。弾を3発使う。', 'Deadshot', 'Aim for half a second, then one heavy shot. Uses three rounds.'),
  'fleet_barrage': ('艦隊砲撃', '背後の空に幽霊船3隻を呼ぶ。7.5秒間、船が順番に範囲内の敵を狙い撃つ。その間、自分の大砲も全力で撃つ。', 'Fleet Barrage', 'Three ghost ships appear in the sky behind you and take turns shooting the enemies in the area for 7.5s; your cannons fire flat out meanwhile.'),
  # ---- champion
- 'rising_dragon': ('昇龍拳', '前の敵を打ち上げる。当たると気+1。', 'Rising Dragon', 'Uppercut that launches enemies. +1 ki on a hit.'),
- 'ki_wave': ('気功波', '気をすべて使う一直線のビーム（気1つにつき威力+80%）。', 'Ki Wave', 'A beam through a line of enemies, spending all ki (+80% per point).'),
- 'iron_mountain': ('鉄山靠', '0.4秒溜めてから体当たりし、敵を吹き飛ばす。飛んだ敵がぶつかった敵にもダメージ。壁に当たると気絶。気+1。', 'Iron Mountain', 'Gather for a moment, then a shoulder slam that sends the enemy flying into the others behind it; into a wall it is stunned. +1 ki.'),
- 'foresight': ('見切り', '3秒間、近接攻撃をすべてかわして反撃する（かわすたび気+1）。', 'Foresight', 'For 3s every melee hit is dodged and answered (+1 ki each).'),
+ 'rising_dragon': ('昇龍拳', '前の敵を打ち上げる。当たると気+2/3。', 'Rising Dragon', 'Uppercut that launches enemies. +2/3 ki on a hit.'),
+ 'ki_wave': ('気功波', '気をすべて使う一直線のビーム（気1つにつき威力+120%）。', 'Ki Wave', 'A beam through a line of enemies, spending all ki (+120% per point).'),
+ 'iron_mountain': ('鉄山靠', '0.4秒溜めてから体当たりし、敵を吹き飛ばす。飛んだ敵がぶつかった敵にもダメージ。壁に当たると気絶。気+2/3。', 'Iron Mountain', 'Gather for a moment, then a shoulder slam that sends the enemy flying into the others behind it; into a wall it is stunned. +2/3 ki.'),
+ 'foresight': ('見切り', '3秒間、近接攻撃をすべてかわして反撃する（かわすたび気+2/3）。', 'Foresight', 'For 3s every melee hit is dodged and answered (+2/3 ki each).'),
  'battle_aura': ('闘気', '24秒間、気1つにつき与ダメージ+4%。', 'Battle Aura', 'For 24s, +4% damage per point of ki.'),
  'peerless': ('天地無双', '気をすべて使い、3＋気×2回の連続攻撃。最後の一撃は特大。', 'Peerless', 'Spend all ki: 3 + 2 per ki strikes, the last one huge.'),
  # ---- dragoon
@@ -135,10 +135,10 @@ SKILLS = {  # id: (ja, ja desc, en, en desc)
  'elemental_burst': ('属性解放', '火・氷・雷の3連続の爆発を周りに起こす。', 'Elemental Burst', 'Fire, ice and thunder burst out around you in turn.'),
  # ---- qi master
  'refine_qi': ('練気', '4秒間、毎秒気が溜まり、体力も回復する。', 'Refine Qi', 'For 4s, ki builds each second and health regenerates.'),
- 'healing_palm': ('治癒の掌', '自分と周りの味方を回復する。気+1。', 'Healing Palm', 'Heal yourself and allies around. +1 ki.'),
+ 'healing_palm': ('治癒の掌', '自分と周りの味方を回復する。気+2/3。', 'Healing Palm', 'Heal yourself and allies around. +2/3 ki.'),
  'hard_qi': ('硬気功', '気をすべて使って体を固める（気が多いほど被ダメージ減、少し回復）。', 'Hard Qi', 'Spend all ki on a hard shell (more ki, less damage taken) and a little health.'),
  'qi_burst': ('発勁・癒', '前方に気を叩き込み、与えたダメージの3割回復する。', 'Healing Burst', 'Drive ki into the enemies in front; a third of the damage heals you.'),
- 'flowing_step': ('流水歩', '近くの敵3体の間をジグザグに縫って打つ。触れるたびにHP4%回復。気+1。', 'Flowing Step', 'Weave between up to three nearby enemies, striking each; every touch heals 4%. +1 ki.'),
+ 'flowing_step': ('流水歩', '近くの敵3体の間をジグザグに縫って打つ。触れるたびにHP4%回復。気+2/3。', 'Flowing Step', 'Weave between up to three nearby enemies, striking each; every touch heals 4%. +2/3 ki.'),
  'heaven_earth': ('天地の気', '周りの味方を大きく回復し、敵を吹き飛ばす。', 'Heaven and Earth', 'A big heal for everyone around, and enemies blown away.'),
  'blooming_fists': ('百花繚乱', '足元に8秒間の花の陣を張る。陣の中から味方が攻撃を当てるたびに、陣の中の味方全員が少し回復。終わると花が散って中の敵にダメージ。', 'Blooming Fists', 'A field of flowers for 8s: every hit an ally lands from inside heals everyone in it a little; at the end the petals burst on the enemies inside.'),
  # ---- sentinel

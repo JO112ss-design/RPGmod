@@ -69,7 +69,7 @@ public final class NewJobHooks {
                 } else if (held == WeaponType.GUNBLADE && d.gunJob()) {
                     Pirate.load(sp, 1);
                 } else if (held == WeaponType.KNUCKLE && d.kiJob()) {
-                    Monk.add(sp, 1);
+                    Monk.hit(sp);
                 }
             }
         }

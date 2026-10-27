@@ -395,7 +395,7 @@ public final class MoreJobSkills {
     private static boolean kiWave(Ctx c) {
         ServerPlayer p = c.p();
         int ki = Monk.spend(p);
-        double mult = 1 + 0.8 * ki;
+        double mult = 1 + KI_PER_POINT * ki;
         List<LivingEntity> hit = line(c, c.look(), c.def().radius(), 0.6 + 0.08 * ki);
         for (LivingEntity e : hit) {
             hurt(c, e, c.dmg(mult), melee(c));
@@ -1109,10 +1109,11 @@ public final class MoreJobSkills {
     /**
      * The ki shot: power per charge (x attack; {@code KI_SHOT_BONUS} more for each charge after the
      * first - none now), its reach, and the god hand's heal per charge on a hit (share of max health).
-     * Per point of ki about what the ki blast gives (0.75 a point), which has a cooldown and costs mana
-     * but goes off at once and splashes.
+     * Per point of ki the same as the ki blast's +120% (on its 1.0 ratio); the blast has a cooldown and
+     * costs mana but goes off at once and splashes, the shot takes its time to charge.
      */
-    public static final double KI_SHOT_POWER = 0.8, KI_SHOT_BONUS = 0, KI_SHOT_RANGE = 20, KI_SHOT_HEAL = 0.02;
+    public static final double KI_SHOT_POWER = 1.2, KI_SHOT_BONUS = 0, KI_SHOT_RANGE = 20, KI_SHOT_HEAL = 0.02;
+    private static final double KI_PER_POINT = Monk.KI_PER_POINT;
     private static final com.jo112ss.rpgmod.job.core.SkillDef KI_SHOT = new com.jo112ss.rpgmod.job.core.SkillDef("ki_shot", "monk",
             com.jo112ss.rpgmod.job.core.SkillKind.ACTIVE, com.jo112ss.rpgmod.job.core.SkillEffect.BOLT, 0, 0, KI_SHOT_POWER, KI_SHOT_RANGE, 0, List.of(), 0, "気", 0, 0);
     /** Dev test: ki shots that hit. */

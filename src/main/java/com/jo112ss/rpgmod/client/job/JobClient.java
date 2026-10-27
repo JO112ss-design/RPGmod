@@ -76,11 +76,20 @@ public final class JobClient {
             int before = kiCharges();
             kiCharge++;
             int now = kiCharges();
-            if (now > before) mc.player.playSound(net.minecraft.sounds.SoundEvents.AMETHYST_BLOCK_CHIME, 0.6F, 0.9F + 0.15F * now);
+            if (now > before) chargeSound(mc, now, now >= data().ki());
         } else if (kiCharge >= 0) {
             kiCharge = -1;
             send(JobActionPayload.KI_SHOT, 0, "");
         }
+    }
+
+    /** A charge of the ki shot is in: a rising chime each charge, and a ring when it can take no more. */
+    private static void chargeSound(Minecraft mc, int n, boolean full) {
+        var p = mc.player;
+        float pitch = (float) Math.pow(2, (n - 1) * 2 / 12.0) * 0.8F; // a whole tone higher each charge
+        p.playSound(net.minecraft.sounds.SoundEvents.NOTE_BLOCK_CHIME.value(), 1.0F, Math.min(2.0F, pitch));
+        p.playSound(net.minecraft.sounds.SoundEvents.AMETHYST_BLOCK_RESONATE, 0.7F, Math.min(2.0F, 0.7F + 0.12F * n));
+        if (full) p.playSound(net.minecraft.sounds.SoundEvents.BEACON_POWER_SELECT, 0.8F, 1.6F);
     }
 
     /** Aiming at a villager, an animal, a player...: right click keeps its usual meaning (trading, leads...). */

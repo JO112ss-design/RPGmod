@@ -855,7 +855,7 @@ public final class NewJobSkills {
             return false;
         }
         int ki = Monk.spend(p);
-        double mult = 1 + 0.8 * ki;
+        double mult = 1 + Monk.KI_PER_POINT * ki;
         hurt(c, t, c.dmg(mult), melee(c));
         push(t, c.flat(), 0.8 + 0.25 * ki, 0.3);
         for (LivingEntity e : enemies(p, t.position(), 1.8)) {

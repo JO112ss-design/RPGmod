@@ -95,8 +95,9 @@ public final class NewJobHud {
             }
         }
         if (JobClient.kiCharge >= 0 && charging < d.ki()) { // progress to the next charge
-            int k = JobClient.kiCharge % com.jo112ss.rpgmod.job.Monk.CHARGE_EVERY;
-            g.fill(x0, y + 6, x0 + w * k / com.jo112ss.rpgmod.job.Monk.CHARGE_EVERY, y + 7, 0xC0FFFFFF);
+            int from = com.jo112ss.rpgmod.job.Monk.chargeTicks(charging), to = com.jo112ss.rpgmod.job.Monk.chargeTicks(charging + 1);
+            int k = Math.max(0, Math.min(to - from, JobClient.kiCharge - from));
+            g.fill(x0, y + 6, x0 + w * k / (to - from), y + 7, 0xC0FFFFFF);
         }
     }
 

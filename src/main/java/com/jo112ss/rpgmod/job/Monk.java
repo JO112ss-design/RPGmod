@@ -25,10 +25,15 @@ public final class Monk {
     public static final int FADE_AFTER = 160;
     /** Game time ki was last built, per player. */
     private static final Map<UUID, Long> LAST = new HashMap<>();
-    /** Gains that make one point of ki (a knuckle hit is one gain). */
-    public static final int PARTS = 3;
-    /** Ticks of holding the right button per charge of a ki shot (each charge is one point of ki). */
-    public static final int CHARGE_EVERY = 8;
+    /** Gains that make one point of ki: a knuckle hit is one gain, a skill's point of ki two. */
+    public static final int PARTS = 3, SKILL_PARTS = 2;
+    /** What each point of ki spent adds to the ki blast and the ki wave (x their ratio). */
+    public static final double KI_PER_POINT = 1.2;
+    /**
+     * Ticks of holding the right button per charge of a ki shot (each charge is one point of ki): the
+     * first {@link #EARLY_CHARGES} come quicker, the rest take longer.
+     */
+    public static final int CHARGE_EARLY = 12, CHARGE_LATE = 20, EARLY_CHARGES = 3;
     /** Game time a ki shot started charging, per player. */
     private static final Map<UUID, Long> CHARGING = new HashMap<>();
     /** Diamond body: game time ki was last built by a hit (at most twice a second). */
@@ -46,8 +51,18 @@ public final class Monk {
         return JobManager.data(p).ki();
     }
 
-    /** {@code n} gains of ki: every {@link #PARTS} gains make a point. */
+    /** A skill's {@code n} points of ki ({@link #SKILL_PARTS} gains each). */
     public static void add(ServerPlayer p, int n) {
+        addParts(p, n * SKILL_PARTS);
+    }
+
+    /** A knuckle hit: one gain. */
+    public static void hit(ServerPlayer p) {
+        addParts(p, 1);
+    }
+
+    /** {@code n} gains of ki: every {@link #PARTS} gains make a point. */
+    public static void addParts(ServerPlayer p, int n) {
         JobData d = JobManager.data(p);
         LAST.put(p.getUUID(), p.level().getGameTime());
         if (n <= 0 || d.ki() >= d.maxKi()) return;
@@ -84,9 +99,16 @@ public final class Monk {
         return k;
     }
 
-    /** Charges a ki shot holding for {@code held} ticks with {@code ki} points: one per {@link #CHARGE_EVERY} ticks, up to the ki there is. */
+    /** Ticks of holding for {@code n} charges. */
+    public static int chargeTicks(int n) {
+        return n <= EARLY_CHARGES ? n * CHARGE_EARLY : EARLY_CHARGES * CHARGE_EARLY + (n - EARLY_CHARGES) * CHARGE_LATE;
+    }
+
+    /** Charges of a ki shot held for {@code held} ticks with {@code ki} points (up to the ki there is). */
     public static int charges(long held, int ki) {
-        return (int) Math.max(0, Math.min(ki, held / CHARGE_EVERY));
+        int n = 0;
+        while (n < ki && held >= chargeTicks(n + 1)) n++;
+        return n;
     }
 
     /** Right button down with knuckles: a ki shot starts charging (a dull click with no ki). */
