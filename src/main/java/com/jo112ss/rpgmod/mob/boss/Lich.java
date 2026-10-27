@@ -231,6 +231,9 @@ public class Lich extends Monster implements BloodMoonBoss {
         tickOrbs(sl);
         tickSigils(sl);
         homing.tick(sl, this);
+        water.tick(this.getTarget());
+        // in the water mid-spell: drop it and get out first
+        if (state != State.CHASE && state != State.BLINK && state != State.RISE && state != State.LEAVE && stateTicks > 10 && BossWater.inWater(this)) setState(State.CHASE, 0);
         if (state != State.LEAVE && phase() < 2 && this.getHealth() <= this.getMaxHealth() * 0.5F) startRise(sl);
 
         switch (state) {

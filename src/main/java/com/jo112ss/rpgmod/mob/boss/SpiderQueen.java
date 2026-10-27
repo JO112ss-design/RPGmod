@@ -232,6 +232,14 @@ public class SpiderQueen extends Monster implements BloodMoonBoss {
         tickZones(sl);
         tickEggs(sl);
         homing.tick(sl, this);
+        water.tick(this.getTarget());
+        // in the water mid-move: drop it and get out first
+        if (state != State.CHASE && state != State.CROUCH && state != State.POUNCE && state != State.SKITTER && state != State.SHRIEK && state != State.LEAVE
+                && stateTicks > 10 && BossWater.inWater(this)) {
+            relocating = false;
+            pouncesLeft = 0;
+            setState(State.CHASE, 0);
+        }
         if (state != State.LEAVE && phase() < 2 && this.getHealth() <= this.getMaxHealth() * 0.5F) startShriek(sl);
 
         switch (state) {

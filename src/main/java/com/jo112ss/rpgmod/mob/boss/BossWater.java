@@ -171,13 +171,18 @@ public final class BossWater {
             return dest;
         }
 
-        /** Whether it is time for a volley of homing shots at a target out on the water. */
-        public boolean homingDue(LivingEntity t, int phase) {
-            if (t == null || !waterBound(t)) {
+        /** Every tick (whatever the boss is doing): the homing shots come due while the target stays out on the water. */
+        public void tick(LivingEntity t) {
+            if (t != null && waterBound(t)) {
+                if (homingCd > 0) homingCd--;
+            } else {
                 homingCd = Math.max(homingCd, 30);
-                return false;
             }
-            if (--homingCd > 0) return false;
+        }
+
+        /** Whether it is time for a volley of homing shots at a target out on the water (asked between moves). */
+        public boolean homingDue(LivingEntity t, int phase) {
+            if (t == null || homingCd > 0 || !waterBound(t)) return false;
             homingCd = phase >= 2 ? 70 : 90;
             volleys++;
             return true;

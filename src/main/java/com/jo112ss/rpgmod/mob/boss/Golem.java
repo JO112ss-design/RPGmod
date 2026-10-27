@@ -276,6 +276,9 @@ public class Golem extends Monster implements BloodMoonBoss {
         tickRocks(sl);
         tickFissures(sl);
         homing.tick(sl, this);
+        water.tick(this.getTarget());
+        // in the water mid-move: drop it and get out first
+        if (state != State.CHASE && state != State.LEAP && state != State.CHARGE && state != State.LEAVE && stateTicks > 10 && BossWater.inWater(this)) setState(State.CHASE, 0);
         if (state != State.LEAVE) checkArmour(sl);
 
         switch (state) {
