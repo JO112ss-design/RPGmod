@@ -357,7 +357,7 @@ final class NewJobTests {
         p.setXRot(10);
         boolean keep = com.jo112ss.rpgmod.mob.boss.BloodMoon.testKeep;
         com.jo112ss.rpgmod.mob.boss.BloodMoon.testKeep = false;
-        level.setDayTime(1000); // morning, no blood moon
+        log("eggs: blood moon now {}", com.jo112ss.rpgmod.mob.boss.BloodMoon.isBloodMoon(level));
         var eggs = new java.util.ArrayList<>(com.jo112ss.rpgmod.registry.ModRegistries.SPAWN_EGGS.values());
         ItemStack[] saved = new ItemStack[9];
         for (int i = 0; i < 9; i++) {
