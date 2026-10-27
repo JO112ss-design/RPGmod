@@ -406,7 +406,7 @@ UI = {  # key: (ja, en)
  'item.rpgmod.revenant_thief_spawn_egg': ('亡者の盗賊のスポーンエッグ', 'Fallen Thief Spawn Egg'),
  'item.rpgmod.revenant_party_spawn_egg': ('亡者の冒険者パーティのスポーンエッグ', 'Fallen Party Spawn Egg'),
  'item.rpgmod.spawn_egg.boss_tip': ('卵から出たボスは朝になっても去りません', 'A boss from an egg does not leave at dawn'),
- 'item.rpgmod.spawn_egg.elite_tip': ('しゃがんで使うと強個体（3特性のエリート）で出現', 'Use while sneaking for an elite with three traits'),
+ 'item.rpgmod.spawn_egg.elite_tip': ('普通に使うと通常の個体、しゃがんで使うと強個体（3特性のエリート）', 'A plain one; use while sneaking for an elite with three traits'),
  'rpgmod.dungeon.kind.lich': ('亡者の王の玉座', 'the Lich King\'s throne room'),
  'rpgmod.dungeon.kind.spider_queen': ('蜘蛛の女王の巣', 'the Spider Queen\'s nest'),
  'rpgmod.dungeon.kind.run': ('迷宮', 'a dungeon'),

@@ -111,6 +111,8 @@ public final class Elite {
 
     /** Dev test: forces the next roll (null = by chance). */
     public static Integer forceNext;
+    /** While set, monsters joining the world never become elites by chance (spawn eggs); {@link #forceNext} still works. */
+    public static boolean noChance;
 
     /** Rolls a new monster (first time it enters the world): elite or not, and its traits. */
     public static void roll(Mob mob, int lv) {
@@ -121,6 +123,7 @@ public final class Elite {
             forceNext = null;
             mask = forced;
         } else {
+            if (noChance) return;
             if (mob.getRandom().nextDouble() >= MobConfig.eliteChance()) return;
             int n = lv >= 130 ? 3 : lv >= 60 ? 2 : 1;
             List<Trait> pool = new ArrayList<>(List.of(Trait.values()));

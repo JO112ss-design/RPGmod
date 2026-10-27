@@ -36,7 +36,8 @@ import net.minecraft.world.phys.Vec3;
  * each job, and a whole party of them. Use one on a block like a vanilla egg.
  * <ul>
  * <li>a boss from an egg stays when the day comes (it does not go away like a blood-moon boss)</li>
- * <li>a fallen adventurer used while sneaking comes as an elite with three traits</li>
+ * <li>a fallen adventurer is never an elite by chance; used while sneaking it comes as an elite with three
+ * traits (in a party, the first of them)</li>
  * </ul>
  * Levels follow the players nearby like any monster's.
  */
@@ -146,6 +147,7 @@ public class RpgSpawnEggItem extends Item {
         }
         // sneaking: an elite (in a party, only the first of them, as in a dungeon)
         if (elite) Elite.forceNext = eliteMask(sl.getRandom(), 3);
+        Elite.noChance = true; // otherwise never an elite: what the egg says is what comes
         try {
             List<Revenant> out = RevenantSpawns.spawnGroup(sl, v, roles, EntitySpawnReason.SPAWN_ITEM_USE);
             for (Revenant r : out) {
@@ -157,6 +159,7 @@ public class RpgSpawnEggItem extends Item {
             return out;
         } finally {
             Elite.forceNext = null;
+            Elite.noChance = false;
         }
     }
 

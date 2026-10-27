@@ -1254,5 +1254,5 @@
   "item.rpgmod.revenant_thief_spawn_egg": "亡者の盗賊のスポーンエッグ",
   "item.rpgmod.revenant_party_spawn_egg": "亡者の冒険者パーティのスポーンエッグ",
   "item.rpgmod.spawn_egg.boss_tip": "卵から出たボスは朝になっても去りません",
-  "item.rpgmod.spawn_egg.elite_tip": "しゃがんで使うと強個体（3特性のエリート）で出現"
+  "item.rpgmod.spawn_egg.elite_tip": "普通に使うと通常の個体、しゃがんで使うと強個体（3特性のエリート）"
 }

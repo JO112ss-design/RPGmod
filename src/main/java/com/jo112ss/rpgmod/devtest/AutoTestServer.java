@@ -193,7 +193,10 @@ public final class AutoTestServer {
         sceneStep(level);
         MobScenes.tick(level, player);
         if (arena != null && player.tickCount % 10 == 0 && !MobScenes.active() && !com.jo112ss.rpgmod.dungeon.Dungeons.isDungeon(level)) {
-            for (var m : level.getEntitiesOfClass(net.minecraft.world.entity.monster.cubemob.Slime.class, player.getBoundingBox().inflate(48))) m.discard();
+            for (var m : level.getEntitiesOfClass(net.minecraft.world.entity.monster.cubemob.Slime.class, player.getBoundingBox().inflate(48))) {
+                if (m instanceof com.jo112ss.rpgmod.mob.boss.KingSlime || m.getPersistentData().getBooleanOr(com.jo112ss.rpgmod.mob.boss.BossEvents.CHILD, false)) continue;
+                m.discard();
+            }
         }
     }
 
