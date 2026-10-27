@@ -647,10 +647,10 @@ public class JobScreen extends Screen {
             if (n.type() == SkillPanel.NodeType.BOOST) {
                 // what all of this skill's boost cells owned give now, then the skill itself
                 SkillDef bd = JobDefs.skill(n.boostSkill());
-                double now = d.skillBoost(n.boostSkill(), n.boost());
+                double have = d.skillBoost(n.boostSkill(), n.boost());
                 if (bd != null) {
-                    Component tot = Component.translatable("rpgmod.node.boost_total", Component.translatable(n.boost().langKey(bd), fmt(now * 100)));
-                    g.textWithWordWrap(font, tot, ix + 5, ty, iw - 10, now > 0 ? Ui.EXP : Ui.DIM, false);
+                    Component tot = Component.translatable("rpgmod.node.boost_total", Component.translatable(n.boost().langKey(bd), fmt(have * 100)));
+                    g.textWithWordWrap(font, tot, ix + 5, ty, iw - 10, have > 0 ? Ui.EXP : Ui.DIM, false);
                     ty += font.split(tot, iw - 10).size() * 9 + 3;
                 }
                 ty = drawSkillFacts(g, n.boostSkill(), ix + 5, ty, iw - 10);
