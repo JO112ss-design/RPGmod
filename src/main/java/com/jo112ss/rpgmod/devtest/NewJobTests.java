@@ -52,6 +52,7 @@ final class NewJobTests {
             case "lancer" -> lancer(level, p, dummies);
             case "monk" -> monk(level, p, dummies);
             case "kishot" -> kiShot(level, p);
+            case "boosts" -> skillBoosts(level, p);
             case "bard" -> become(p, "bard");
             case "hybrids" -> hybrids(level, p, dummies);
             case "coins" -> coins(level, p);
@@ -1332,6 +1333,80 @@ final class NewJobTests {
             log("spear tip: near dummy (edge {}) took {}", String.format("%.1f", p.getEyePosition().distanceTo(near.getBoundingBox().getCenter()) - near.getBbWidth() / 2),
                     String.format("%.1f", a - near.getHealth()));
         });
+    }
+
+    /**
+     * Skill boost cells: every job's panel has them next to its skills; learning one needs the skill;
+     * owned, they raise the skill's power, cut its cooldown or mana.
+     */
+    private static void skillBoosts(ServerLevel level, ServerPlayer p) {
+        int jobs = 0, skills = 0, cells = 0, short_ = 0, apart = 0;
+        StringBuilder per = new StringBuilder();
+        for (var job : JobDefs.JOBS.values()) {
+            var panel = com.jo112ss.rpgmod.job.core.SkillPanel.forJob(job.id());
+            jobs++;
+            int js = 0, jc = 0;
+            for (var n : panel.nodes()) {
+                if (n.skill() != null) {
+                    js++;
+                    var def = JobDefs.skill(n.skill());
+                    int want = com.jo112ss.rpgmod.job.core.SkillBoost.cellsFor(def).size();
+                    int got = 0;
+                    for (var o : panel.nodes()) if (o.type() == com.jo112ss.rpgmod.job.core.SkillPanel.NodeType.BOOST && n.skill().equals(o.boostSkill())) got++;
+                    if (got < want) {
+                        short_++;
+                        log("boosts: {} {} has {} of {} boost cells", job.id(), n.skill(), got, want);
+                    }
+                }
+                if (n.type() == com.jo112ss.rpgmod.job.core.SkillPanel.NodeType.BOOST) {
+                    jc++;
+                    boolean next = false;
+                    for (var o : panel.neighbours(n)) if (n.boostSkill().equals(o.skill())) next = true;
+                    if (!next) apart++;
+                }
+            }
+            skills += js;
+            cells += jc;
+            per.append(job.id()).append(" ").append(js).append("/").append(jc).append("  ");
+        }
+        log("boosts: {} panels, {} skill cells, {} boost cells, {} skills short of cells, {} cells not next to their skill", jobs, skills, cells, short_, apart);
+        log("boosts: per panel (skills/boosts) {}", per);
+        // in play: the fighter's power slash, the monk's combo (a rapid one)
+        become(p, "fighter");
+        JobData d = JobManager.data(p);
+        d.resetPanel();
+        d.addBonusPoints(60);
+        var panel = d.panel();
+        var slash = JobDefs.skill("power_slash");
+        com.jo112ss.rpgmod.job.core.SkillPanel.Node skillNode = null;
+        List<com.jo112ss.rpgmod.job.core.SkillPanel.Node> boosts = new java.util.ArrayList<>();
+        for (var n : panel.nodes()) {
+            if ("power_slash".equals(n.skill())) skillNode = n;
+            if ("power_slash".equals(n.boostSkill())) boosts.add(n);
+        }
+        log("boosts: power slash cell ring {} with boosts {}", skillNode == null ? -1 : skillNode.ring(),
+                boosts.stream().map(b -> b.boost() + "+" + Math.round(b.amount() * 100) + "% ring " + b.ring() + " cost " + b.cost()).toList());
+        double pow0 = JobManager.powerMultiplier(p, slash), cd0 = JobManager.cooldownSeconds(p, slash);
+        // a boost next to something owned but without its skill: refused
+        var b0 = boosts.get(0);
+        for (var o : panel.neighbours(b0)) if (o != skillNode) d.unlock(o.id());
+        JobManager.unlockNode(p, b0.id(), false);
+        log("boosts: without the skill, buying {} -> owned {}", b0.boost(), d.unlocked(false).contains(b0.id()));
+        d.unlock(skillNode.id());
+        for (var b : boosts) JobManager.unlockNode(p, b.id(), false);
+        log("boosts: with the skill - owned {}; power x{} -> x{} ({}), cooldown {}s -> {}s", boosts.stream().map(b -> d.unlocked(false).contains(b.id())).toList(),
+                String.format("%.1f", pow0), String.format("%.1f", JobManager.powerMultiplier(p, slash)),
+                String.format("%+.0f%%", (JobManager.powerMultiplier(p, slash) / pow0 - 1) * 100), String.format("%.2f", cd0), String.format("%.2f", JobManager.cooldownSeconds(p, slash)));
+        become(p, "monk");
+        d.resetPanel();
+        d.addBonusPoints(60);
+        var combo = JobDefs.skill("combo");
+        double cp0 = JobManager.powerMultiplier(p, combo), cm0 = JobManager.manaCost(p, combo);
+        for (var n : d.panel().nodes()) if ("combo".equals(n.skill()) || "combo".equals(n.boostSkill())) d.unlock(n.id());
+        log("boosts: monk combo (rapid) power {}, mana {} -> {}", String.format("%+.0f%%", (JobManager.powerMultiplier(p, combo) / cp0 - 1) * 100),
+                String.format("%.0f", cm0), String.format("%.0f", JobManager.manaCost(p, combo)));
+        d.resetPanel();
+        JobManager.sync(p);
     }
 
     /**

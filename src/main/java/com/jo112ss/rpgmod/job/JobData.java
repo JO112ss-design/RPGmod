@@ -389,6 +389,16 @@ public final class JobData {
         return isAdvanced() ? advLevel() : level;
     }
 
+    /** What this player's boost cells (both panels) add to a skill: a share, 0.15 = 15%. */
+    public double skillBoost(String skill, com.jo112ss.rpgmod.job.core.SkillBoost kind) {
+        double sum = 0;
+        SkillPanel p = panel();
+        if (p != null) sum += p.boost(unlocked(), skill, kind);
+        SkillPanel ap = panel(true);
+        if (ap != null) sum += ap.boost(advUnlocked, skill, kind);
+        return sum;
+    }
+
     public SkillPanel panel(boolean adv) {
         if (!adv) return panel();
         return isAdvanced() ? SkillPanel.forJob(advancedDef().id()) : null;

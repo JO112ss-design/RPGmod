@@ -260,6 +260,18 @@ public class JobScreen extends Screen {
         return advView || d.masteryPercent(d.jobId()) >= SkillPanel.masteryNeeded(n);
     }
 
+    /** A boost cell needs its skill learnt first. */
+    private static boolean skillOk(JobData d, SkillPanel.Node n) {
+        return n.type() != SkillPanel.NodeType.BOOST || d.knows(n.boostSkill());
+    }
+
+    /** "Power +10%"-style line of a boost cell (heals say healing). */
+    private static Component boostLine(SkillPanel.Node n) {
+        SkillDef def = JobDefs.skill(n.boostSkill());
+        String key = def == null ? "rpgmod.boost." + n.boost().name().toLowerCase(java.util.Locale.ROOT) : n.boost().langKey(def);
+        return Component.translatable(key, fmt(n.amount() * 100));
+    }
+
     private static boolean in(double mx, double my, int x, int y, int w, int h) {
         return mx >= x && mx < x + w && my >= y && my < y + h;
     }
@@ -466,7 +478,7 @@ public class JobScreen extends Screen {
             int py = oy + (int) Math.round(hexR * 1.5 * n.r());
             if (px < ax - hexR - 4 || px > ax + aw + hexR + 4 || py < ay - hexR - 4 || py > ay + ah + hexR + 4) continue; // off-screen
             boolean owned = d.unlocked(advView).contains(n.id());
-            boolean reachable = panel.isReachable(n, d.unlocked(advView));
+            boolean reachable = panel.isReachable(n, d.unlocked(advView)) && skillOk(d, n);
             boolean mOk = masteryOk(d, n);
             boolean affordable = reachable && mOk && d.freePoints(advView) >= n.cost();
             int typeTint = switch (n.type()) {
@@ -523,9 +535,15 @@ public class JobScreen extends Screen {
             String glyph = switch (n.type()) {
                 case START -> view.glyph();
                 case STAT -> n.stat().glyph;
+                case BOOST -> JobDefs.skill(n.boostSkill()).glyph() + "+";
                 default -> JobDefs.skill(n.skill()).glyph();
             };
-            float gs = hexR / 11f * (n.type() == SkillPanel.NodeType.STAT ? 1f : 1.15f);
+            if (n.type() == SkillPanel.NodeType.BOOST) { // a boost cell: a thin frame in its skill's colour
+                int sc = JobDefs.skill(n.boostSkill()).kind() == com.jo112ss.rpgmod.job.core.SkillKind.ULTIMATE ? Ui.GOLD
+                        : JobDefs.skill(n.boostSkill()).kind() == com.jo112ss.rpgmod.job.core.SkillKind.SPELL ? 0xFFB09CFF : Ui.mix(Ui.argb(c), 0xFFFFFFFF, 0.4f);
+                Ui.circle(g, px, py, Math.max(3, hexR - 3), Ui.alpha(sc, owned ? 0xFF : reachable ? 0xC0 : 0x60), 1);
+            }
+            float gs = hexR / 11f * (n.type() == SkillPanel.NodeType.STAT ? 1f : n.type() == SkillPanel.NodeType.BOOST ? 0.85f : 1.15f);
             if (font.width(glyph) > 8) gs *= 0.8f;
             Ui.glyph(g, font, glyph, px + 1, py + 1, gs, tc);
             if (!owned && !mOk) {
@@ -537,7 +555,7 @@ public class JobScreen extends Screen {
         // pass 3: a pulsing gold ring around skill cells that can be learned now (drawn last so the
         // neighbouring cells do not cover it); a dimmer one when they are next in line but need points
         for (SkillPanel.Node n : panel.nodes()) {
-            if (n.type() == SkillPanel.NodeType.STAT || n.type() == SkillPanel.NodeType.START) continue;
+            if (n.type() == SkillPanel.NodeType.STAT || n.type() == SkillPanel.NodeType.START || n.type() == SkillPanel.NodeType.BOOST) continue;
             if (!panel.isReachable(n, d.unlocked(advView)) || !masteryOk(d, n)) continue;
             int px = ox + (int) Math.round(hexR * Math.sqrt(3) * (n.q() + n.r() / 2.0));
             int py = oy + (int) Math.round(hexR * 1.5 * n.r());
@@ -609,6 +627,9 @@ public class JobScreen extends Screen {
                 String v = "+" + fmt(n.amount()) + (n.stat().percent ? "%" : "");
                 name = Component.translatable("rpgmod.stat." + n.stat().id).append(" " + v);
                 sub = Component.translatable("rpgmod.node.stat");
+            } else if (n.type() == SkillPanel.NodeType.BOOST) {
+                name = Ui.skillName(n.boostSkill()).copy().append(" ").append(boostLine(n));
+                sub = Component.translatable("rpgmod.node.boost");
             } else if (n.type() == SkillPanel.NodeType.START) {
                 name = Component.translatable("rpgmod.node.start");
                 sub = advView ? Component.translatable("rpgmod.node.adv_start") : Ui.skillName(job.def().actives().get(0));
@@ -623,15 +644,27 @@ public class JobScreen extends Screen {
             if (n.skill() != null) {
                 ty = drawSkillFacts(g, n.skill(), ix + 5, ty, iw - 10);
             }
+            if (n.type() == SkillPanel.NodeType.BOOST) {
+                // what all of this skill's boost cells owned give now, then the skill itself
+                SkillDef bd = JobDefs.skill(n.boostSkill());
+                double now = d.skillBoost(n.boostSkill(), n.boost());
+                if (bd != null) {
+                    Component tot = Component.translatable("rpgmod.node.boost_total", Component.translatable(n.boost().langKey(bd), fmt(now * 100)));
+                    g.textWithWordWrap(font, tot, ix + 5, ty, iw - 10, now > 0 ? Ui.EXP : Ui.DIM, false);
+                    ty += font.split(tot, iw - 10).size() * 9 + 3;
+                }
+                ty = drawSkillFacts(g, n.boostSkill(), ix + 5, ty, iw - 10);
+            }
             boolean owned = d.unlocked(advView).contains(n.id());
             boolean reachable = d.panel(advView).isReachable(n, d.unlocked(advView));
             boolean mOk = masteryOk(d, n);
             Component state = owned ? Component.translatable("rpgmod.node.owned")
+                    : !skillOk(d, n) ? Component.translatable("rpgmod.node.need_skill", Ui.skillName(n.boostSkill()))
                     : !mOk ? Component.translatable("rpgmod.node.need_mastery", SkillPanel.masteryNeeded(n), d.masteryPercent(d.jobId()))
                     : !reachable ? Component.translatable("rpgmod.node.locked")
                     : d.freePoints(advView) >= n.cost() ? Component.translatable("rpgmod.node.click", n.cost())
                     : Component.translatable("rpgmod.node.need", n.cost());
-            int sc = owned ? Ui.EXP : mOk && reachable && d.freePoints(advView) >= n.cost() ? Ui.GOLD : Ui.BAD;
+            int sc = owned ? Ui.EXP : mOk && reachable && skillOk(d, n) && d.freePoints(advView) >= n.cost() ? Ui.GOLD : Ui.BAD;
             g.textWithWordWrap(font, state, ix + 5, iy + ah - 50, iw - 10, sc, false);
         } else {
             g.textWithWordWrap(font, Component.translatable(advView ? "rpgmod.jobscreen.adv_panel_hint" : "rpgmod.jobscreen.panel_hint"), ix + 5, infoTop + 8, iw - 10, Ui.DIM, false);
@@ -653,7 +686,7 @@ public class JobScreen extends Screen {
     private int drawSkillFacts(GuiGraphicsExtractor g, String id, int x, int y, int w) {
         SkillDef def = JobDefs.skill(id);
         if (def == null) return y;
-        g.text(font, Component.translatable("rpgmod.jobscreen.cd", fmt(def.cooldown())), x, y, Ui.DIM, false);
+        g.text(font, Component.translatable("rpgmod.jobscreen.cd", fmt(com.jo112ss.rpgmod.job.JobManager.cooldownSeconds(net.minecraft.client.Minecraft.getInstance().player, def))), x, y, Ui.DIM, false);
         g.text(font, Component.translatable("rpgmod.jobscreen.mp", fmt(com.jo112ss.rpgmod.job.JobManager.manaCost(net.minecraft.client.Minecraft.getInstance().player, def))), x + w / 2, y, Ui.MANA, false);
         y += 12;
         if (def.castTime() > 0 && JobClient.data().castable(def)) {

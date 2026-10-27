@@ -59,6 +59,7 @@ public final class SkillExecutor {
         ServerLevel level = (ServerLevel) p.level();
         // longer effects at higher levels (not ultimates, not the enchanter's magic-scaled buffs)
         double longer = JobManager.levelDurationScale(p, def);
+        longer *= 1 + JobManager.data(p).skillBoost(def.id(), com.jo112ss.rpgmod.job.core.SkillBoost.DURATION); // its boost cells
         if (longer != 1) def = def.withDuration(def.duration() * longer);
         Ctx c = new Ctx(p, level, def, power, 1.0);
         return switch (def.id()) {

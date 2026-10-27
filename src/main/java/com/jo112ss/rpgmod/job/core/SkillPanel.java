@@ -18,12 +18,18 @@ import java.util.Set;
  *   <li>rings 1-3: stat cells (1 point), rings 4-5: x1.5 (2 points), rings 6-7: x2 (3 points)</li>
  *   <li>skills spread over rings 2-6 at different angles (2-4 points by ring), spells between them</li>
  *   <li>ultimates on opposite sides of the outer ring (5 points)</li>
+ *   <li>next to every skill, spell and ultimate, its boost cells ({@link SkillBoost}): power, cooldown,
+ *   mana or duration of that skill, priced like the stat cells of their ring, learnable once the skill is</li>
  * </ul>
  */
 public final class SkillPanel {
-    public enum NodeType { START, STAT, SKILL, ULTIMATE, SPELL }
+    public enum NodeType { START, STAT, SKILL, ULTIMATE, SPELL, BOOST }
 
-    public record Node(int id, int q, int r, NodeType type, JobStat stat, double amount, String skill, int cost) {
+    /**
+     * A cell. {@code skill} is the skill a skill / spell / ultimate cell teaches; a boost cell has
+     * {@code boostSkill} (the skill it improves), {@code boost} (what) and {@code amount} (a share).
+     */
+    public record Node(int id, int q, int r, NodeType type, JobStat stat, double amount, String skill, int cost, String boostSkill, SkillBoost boost) {
         public int ring() {
             return (Math.abs(q) + Math.abs(r) + Math.abs(-q - r)) / 2;
         }
@@ -58,6 +64,16 @@ public final class SkillPanel {
             if (o != null) out.add(o);
         }
         return out;
+    }
+
+    /** Total boost of {@code kind} the given cells give a skill (a share: 0.15 = 15%). */
+    public double boost(java.util.Collection<Integer> unlocked, String skill, SkillBoost kind) {
+        double sum = 0;
+        for (int id : unlocked) {
+            Node n = node(id);
+            if (n != null && n.type == NodeType.BOOST && n.boost == kind && skill.equals(n.boostSkill)) sum += n.amount;
+        }
+        return sum;
     }
 
     /** True if the node can be bought: not owned yet and touching an owned node. */
@@ -107,9 +123,9 @@ public final class SkillPanel {
     }
 
     /** Panel layout version; bump when node ids change so saved progress is refunded. */
-    public static final int VERSION = 6; // 6: skill power cells became other stats (points refunded)
+    public static final int VERSION = 7; // 6: skill power cells became other stats; 7: skill boost cells (points refunded)
     /** Layout version of the advanced panels (bump when their cells change). */
-    public static final int ADV_VERSION = 3;
+    public static final int ADV_VERSION = 4; // 4: skill boost cells
 
     /**
      * Layout version of one job's base panel: {@link #VERSION}, or higher for a job whose cells changed
@@ -141,7 +157,7 @@ public final class SkillPanel {
      */
     public static int masteryNeeded(Node n) {
         return switch (n.type()) {
-            case STAT, START -> 0;
+            case STAT, START, BOOST -> 0; // a boost cell needs its skill learnt instead
             case ULTIMATE -> 100;
             default -> n.ring() <= 3 ? 0 : n.ring() == 4 ? 25 : n.ring() == 5 ? 50 : 75;
         };
@@ -213,11 +229,56 @@ public final class SkillPanel {
         return out;
     }
 
+    private static int ringOf(int q, int r) {
+        return (Math.abs(q) + Math.abs(r) + Math.abs(-q - r)) / 2;
+    }
+
+    /**
+     * Boost cells: for each skill cell, its boosts go on free neighbouring cells - outwards first (so
+     * the way on runs through the skill), then beside it, then inwards.
+     */
+    private static Map<Long, Object[]> boostCells(Map<Long, String[]> skills) {
+        Map<Long, Object[]> out = new java.util.LinkedHashMap<>();
+        java.util.Set<Long> taken = new java.util.HashSet<>(skills.keySet());
+        taken.add(key(0, 0));
+        // a fixed order, so the layout never changes between runs
+        List<long[]> cells = new ArrayList<>();
+        for (int k = 1; k <= RADIUS; k++) for (int[] c : ring(k)) if (skills.containsKey(key(c[0], c[1]))) cells.add(new long[] {c[0], c[1]});
+        for (long[] c : cells) {
+            int q = (int) c[0], r = (int) c[1];
+            SkillDef def = JobDefs.skill(skills.get(key(q, r))[1]);
+            if (def == null) continue;
+            List<SkillBoost.Cell> want = SkillBoost.cellsFor(def);
+            int k = ringOf(q, r);
+            double angle = angleOf(q, r);
+            List<int[]> free = new ArrayList<>();
+            for (int[] d : DIRS) {
+                int nq = q + d[0], nr = r + d[1];
+                if (ringOf(nq, nr) > RADIUS || taken.contains(key(nq, nr))) continue;
+                free.add(new int[] {nq, nr});
+            }
+            free.sort((a, b) -> {
+                int ra = ringOf(a[0], a[1]) - k, rb = ringOf(b[0], b[1]) - k;
+                if (ra != rb) return Integer.compare(rb, ra); // outward first
+                double da = Math.abs(((angleOf(a[0], a[1]) - angle) % 360 + 540) % 360 - 180);
+                double db = Math.abs(((angleOf(b[0], b[1]) - angle) % 360 + 540) % 360 - 180);
+                return Double.compare(da, db);
+            });
+            for (int i = 0; i < want.size() && i < free.size(); i++) {
+                int[] f = free.get(i);
+                taken.add(key(f[0], f[1]));
+                out.put(key(f[0], f[1]), new Object[] {def.id(), want.get(i)});
+            }
+        }
+        return out;
+    }
+
     private static SkillPanel build(JobDefs.Job job) {
         List<Node> nodes = new ArrayList<>();
         List<JobStat> stats = job.panelStats();
         Map<Long, String[]> skills = skillCells(job);
-        nodes.add(new Node(0, 0, 0, NodeType.START, null, 0, null, 0));
+        Map<Long, Object[]> boosts = boostCells(skills);
+        nodes.add(new Node(0, 0, 0, NodeType.START, null, 0, null, 0, null, null));
         for (int k = 1; k <= RADIUS; k++) {
             List<int[]> cells = ring(k);
             for (int i = 0; i < cells.size(); i++) {
@@ -231,10 +292,14 @@ public final class SkillPanel {
                         default -> NodeType.SKILL;
                     };
                     int cost = type == NodeType.ULTIMATE ? 5 : skillCost(k);
-                    node = new Node(nodes.size(), p[0], p[1], type, null, 0, sk[1], cost);
+                    node = new Node(nodes.size(), p[0], p[1], type, null, 0, sk[1], cost, null, null);
+                } else if (boosts.containsKey(key(p[0], p[1]))) {
+                    Object[] b = boosts.get(key(p[0], p[1]));
+                    SkillBoost.Cell cell = (SkillBoost.Cell) b[1];
+                    node = new Node(nodes.size(), p[0], p[1], NodeType.BOOST, null, cell.amount(), null, statCost(k), (String) b[0], cell.kind());
                 } else {
                     JobStat st = stats.get((i + k) % stats.size());
-                    node = new Node(nodes.size(), p[0], p[1], NodeType.STAT, st, st.nodeAmount() * ringMultiplier(k), null, statCost(k));
+                    node = new Node(nodes.size(), p[0], p[1], NodeType.STAT, st, st.nodeAmount() * ringMultiplier(k), null, statCost(k), null, null);
                 }
                 nodes.add(node);
             }

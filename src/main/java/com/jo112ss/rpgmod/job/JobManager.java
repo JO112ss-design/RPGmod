@@ -295,6 +295,10 @@ public final class JobManager {
         if (panel == null) return;
         SkillPanel.Node node = panel.node(nodeId);
         if (node == null || !panel.isReachable(node, d.unlocked(adv))) return;
+        if (node.type() == SkillPanel.NodeType.BOOST && !d.knows(node.boostSkill())) { // a boost needs its skill first
+            tell(player, "rpgmod.node.need_skill", Component.translatable("rpgmod.skill." + node.boostSkill()));
+            return;
+        }
         int need = adv || d.isHybrid() ? 0 : SkillPanel.masteryNeeded(node);
         if (d.masteryPercent(d.jobId()) < need) {
             tell(player, "rpgmod.job.need_mastery", need);
@@ -718,7 +722,13 @@ public final class JobManager {
      * Damage = ratio x this; crits, armour etc. apply after.
      */
     public static double powerMultiplier(Player player, SkillDef def) {
-        return skillAttack(player, def);
+        return skillAttack(player, def) * (1 + data(player).skillBoost(def.id(), com.jo112ss.rpgmod.job.core.SkillBoost.POWER));
+    }
+
+    /** A skill's cooldown in seconds for this player: its own, less cooldown reduction and its boost cells. */
+    public static double cooldownSeconds(Player player, SkillDef def) {
+        double cdr = JobStats.compute(data(player)).get(JobStat.COOLDOWN_REDUCTION) / 100.0;
+        return def.cooldown() * (1 - cdr) * (1 - data(player).skillBoost(def.id(), com.jo112ss.rpgmod.job.core.SkillBoost.COOLDOWN));
     }
 
 
@@ -791,7 +801,7 @@ public final class JobManager {
         double cdr = st.get(JobStat.COOLDOWN_REDUCTION) / 100.0;
         d.setMana(d.mana() - cost);
         d.pruneCooldowns(now);
-        d.setCooldown(def.id(), now + Math.round(def.cooldown() * 20 * (1 - cdr)));
+        d.setCooldown(def.id(), now + Math.round(def.cooldown() * 20 * (1 - cdr) * (1 - d.skillBoost(def.id(), com.jo112ss.rpgmod.job.core.SkillBoost.COOLDOWN))));
         sync(player);
         return true;
     }
@@ -801,7 +811,9 @@ public final class JobManager {
         if ("perform".equals(def.id()) || "spell_perform".equals(def.id())) return Bard.performCost(player); // the songs set on the lute
         if ("mana_share".equals(def.id())) return Math.ceil(maxMana(player) * MoreJobSkills.SHARE_COST); // a share of your own maximum
         boolean overload = def.kind() == SkillKind.SPELL && player.hasEffect(com.jo112ss.rpgmod.registry.ModEffects.OVERLOAD);
-        return overload ? Math.ceil(def.mana() * 1.5) : def.mana();
+        double cost = overload ? Math.ceil(def.mana() * 1.5) : def.mana();
+        double cut = data(player).skillBoost(def.id(), com.jo112ss.rpgmod.job.core.SkillBoost.MANA);
+        return cut > 0 ? Math.ceil(cost * (1 - cut) - 1e-9) : cost;
     }
 
     /** Spellmaster's double cast: the spell goes off a second time (free), using up one charge. */

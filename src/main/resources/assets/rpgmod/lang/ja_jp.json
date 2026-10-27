@@ -1235,5 +1235,13 @@
   "item.rpgmod.revenant_priest_spawn_egg": "亡者の神官のスポーンエッグ",
   "item.rpgmod.revenant_thief_spawn_egg": "亡者の盗賊のスポーンエッグ",
   "item.rpgmod.revenant_party_spawn_egg": "亡者の冒険者パーティのスポーンエッグ",
-  "item.rpgmod.spawn_egg.elite_tip": "普通に使うと通常の個体、しゃがんで使うと強個体（3特性のエリート）"
+  "item.rpgmod.spawn_egg.elite_tip": "普通に使うと通常の個体、しゃがんで使うと強個体（3特性のエリート）",
+  "rpgmod.node.boost": "スキル強化",
+  "rpgmod.node.boost_total": "今の合計：%s",
+  "rpgmod.node.need_skill": "先に「%s」を覚えてください",
+  "rpgmod.boost.power": "威力+%s%%",
+  "rpgmod.boost.heal": "回復量+%s%%",
+  "rpgmod.boost.cooldown": "クールタイム−%s%%",
+  "rpgmod.boost.mana": "消費MP−%s%%",
+  "rpgmod.boost.duration": "効果時間+%s%%"
 }

@@ -1235,5 +1235,13 @@
   "item.rpgmod.revenant_priest_spawn_egg": "Fallen Priest Spawn Egg",
   "item.rpgmod.revenant_thief_spawn_egg": "Fallen Thief Spawn Egg",
   "item.rpgmod.revenant_party_spawn_egg": "Fallen Party Spawn Egg",
-  "item.rpgmod.spawn_egg.elite_tip": "A plain one; use while sneaking for an elite with three traits"
+  "item.rpgmod.spawn_egg.elite_tip": "A plain one; use while sneaking for an elite with three traits",
+  "rpgmod.node.boost": "Skill boost",
+  "rpgmod.node.boost_total": "Now in all: %s",
+  "rpgmod.node.need_skill": "Learn %s first",
+  "rpgmod.boost.power": "Power +%s%%",
+  "rpgmod.boost.heal": "Healing +%s%%",
+  "rpgmod.boost.cooldown": "Cooldown -%s%%",
+  "rpgmod.boost.mana": "Mana cost -%s%%",
+  "rpgmod.boost.duration": "Duration +%s%%"
 }
