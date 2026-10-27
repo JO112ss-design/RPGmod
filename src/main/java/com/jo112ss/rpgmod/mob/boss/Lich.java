@@ -220,7 +220,7 @@ public class Lich extends Monster implements BloodMoonBoss {
         if (this.tickCount % 10 == 0) updateBossBar(sl);
         if (this.tickCount % 20 == 0) {
             if (com.jo112ss.rpgmod.dungeon.Dungeons.bossPlayers(this, sl) != onlineSeen && healthTarget > 0) recomputeHealth(false);
-            if (state != State.LEAVE && !BloodMoon.isBloodMoon(sl) && !BloodMoon.testKeep && !com.jo112ss.rpgmod.dungeon.Dungeons.isDungeon(sl)) startLeaving(sl);
+            if (state != State.LEAVE && !BloodMoon.isBloodMoon(sl) && !BloodMoon.staysByDay(this, sl)) startLeaving(sl);
         }
         if (this.tickCount % 8 == 0 && state != State.LEAVE) ServerFx.of("lich_aura", this.position()).follow(this).a(this.getBbWidth()).b(phase()).send(sl, 48);
         tickOrbs(sl);

@@ -127,6 +127,19 @@ public final class ModRegistries {
     public static final DeferredItem<net.minecraft.world.item.Item> QUEEN_COCOON = ITEMS.registerSimpleItem("queen_cocoon",
             p -> p.stacksTo(16).rarity(net.minecraft.world.item.Rarity.RARE));
 
+    /** Spawn eggs for the mod's monsters: the four bosses, a fallen adventurer of each job, a party. */
+    public static final java.util.Map<com.jo112ss.rpgmod.item.RpgSpawnEggItem.Kind, DeferredItem<com.jo112ss.rpgmod.item.RpgSpawnEggItem>> SPAWN_EGGS = registerEggs();
+
+    private static java.util.Map<com.jo112ss.rpgmod.item.RpgSpawnEggItem.Kind, DeferredItem<com.jo112ss.rpgmod.item.RpgSpawnEggItem>> registerEggs() {
+        var out = new java.util.EnumMap<com.jo112ss.rpgmod.item.RpgSpawnEggItem.Kind, DeferredItem<com.jo112ss.rpgmod.item.RpgSpawnEggItem>>(
+                com.jo112ss.rpgmod.item.RpgSpawnEggItem.Kind.class);
+        for (var k : com.jo112ss.rpgmod.item.RpgSpawnEggItem.Kind.values()) {
+            out.put(k, ITEMS.registerItem(k.itemId(), p -> new com.jo112ss.rpgmod.item.RpgSpawnEggItem(p, k),
+                    p -> k.boss() ? p.rarity(net.minecraft.world.item.Rarity.EPIC) : p));
+        }
+        return out;
+    }
+
     public static final DeferredHolder<MenuType<?>, MenuType<com.jo112ss.rpgmod.gem.SocketMenu>> SOCKET_MENU = MENUS.register("socket",
             () -> IMenuTypeExtension.create((windowId, inv, buf) -> new com.jo112ss.rpgmod.gem.SocketMenu(windowId, inv)));
 
@@ -185,6 +198,7 @@ public final class ModRegistries {
                 output.accept(GOLEM_CORE.get());
                 output.accept(SOUL_PHYLACTERY.get());
                 output.accept(QUEEN_COCOON.get());
+                for (var egg : SPAWN_EGGS.values()) output.accept(egg.get());
                 // one gem of every special effect, and one of every stat (rare, at its top value)
                 for (com.jo112ss.rpgmod.gem.GemSpecial s : com.jo112ss.rpgmod.gem.GemSpecial.values()) {
                     output.accept(com.jo112ss.rpgmod.gem.GemItems.stack(com.jo112ss.rpgmod.gem.Gem.of(s)));

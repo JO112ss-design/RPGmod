@@ -277,7 +277,7 @@ public class KingSlime extends Slime implements BloodMoonBoss {
         if (this.tickCount % 10 == 0) updateBossBar(sl);
         if (this.tickCount % 20 == 0) {
             if (com.jo112ss.rpgmod.dungeon.Dungeons.bossPlayers(this, sl) != onlineSeen && healthTarget > 0) recomputeHealth(false);
-            if (state != State.LEAVE && !BloodMoon.isBloodMoon(sl) && !BloodMoon.testKeep && !com.jo112ss.rpgmod.dungeon.Dungeons.isDungeon(sl)) startLeaving(sl);
+            if (state != State.LEAVE && !BloodMoon.isBloodMoon(sl) && !BloodMoon.staysByDay(this, sl)) startLeaving(sl);
         }
         tickWaves(sl);
         tickDrops(sl);

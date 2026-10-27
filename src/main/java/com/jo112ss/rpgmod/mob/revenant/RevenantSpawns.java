@@ -74,15 +74,19 @@ public final class RevenantSpawns {
 
     /** Spawns the group around {@code at} (the spot a monster was allowed to spawn on); returns them. */
     public static List<Revenant> spawnGroup(ServerLevel level, Vec3 at, List<Role> roles) {
+        return spawnGroup(level, at, roles, EntitySpawnReason.NATURAL);
+    }
+
+    public static List<Revenant> spawnGroup(ServerLevel level, Vec3 at, List<Role> roles, EntitySpawnReason reason) {
         List<Revenant> out = new ArrayList<>();
         var type = ModRegistries.REVENANT.get();
         for (int i = 0; i < roles.size(); i++) {
-            Revenant r = type.create(level, EntitySpawnReason.NATURAL);
+            Revenant r = type.create(level, reason);
             if (r == null) continue;
             Vec3 p = i == 0 ? at : spot(level, at, type, level.getRandom());
             r.snapTo(p.x, p.y, p.z, level.getRandom().nextFloat() * 360, 0);
             r.setRole(roles.get(i));
-            r.finalizeSpawn(level, level.getCurrentDifficultyAt(r.blockPosition()), EntitySpawnReason.NATURAL, null);
+            r.finalizeSpawn(level, level.getCurrentDifficultyAt(r.blockPosition()), reason, null);
             level.addFreshEntity(r);
             out.add(r);
         }

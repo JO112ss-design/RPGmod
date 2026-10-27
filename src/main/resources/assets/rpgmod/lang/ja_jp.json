@@ -1242,5 +1242,17 @@
   "rpgmod.boss.spider_queen.near": "蜘蛛の女王が %s の近くに現れた",
   "rpgmod.boss.spider_queen.enraged": "蜘蛛の女王が金切り声をあげた！子グモが孵る！",
   "rpgmod.boss.spider_queen.left": "夜が明け、蜘蛛の女王は地中へ潜っていった…",
-  "rpgmod.boss.spider_queen.defeated": "蜘蛛の女王を倒した！（%s）"
+  "rpgmod.boss.spider_queen.defeated": "蜘蛛の女王を倒した！（%s）",
+  "item.rpgmod.king_slime_spawn_egg": "キングスライムのスポーンエッグ",
+  "item.rpgmod.golem_spawn_egg": "ゴーレムのスポーンエッグ",
+  "item.rpgmod.lich_spawn_egg": "亡者の王のスポーンエッグ",
+  "item.rpgmod.spider_queen_spawn_egg": "蜘蛛の女王のスポーンエッグ",
+  "item.rpgmod.revenant_warrior_spawn_egg": "亡者の戦士のスポーンエッグ",
+  "item.rpgmod.revenant_mage_spawn_egg": "亡者の魔導士のスポーンエッグ",
+  "item.rpgmod.revenant_archer_spawn_egg": "亡者の弓兵のスポーンエッグ",
+  "item.rpgmod.revenant_priest_spawn_egg": "亡者の神官のスポーンエッグ",
+  "item.rpgmod.revenant_thief_spawn_egg": "亡者の盗賊のスポーンエッグ",
+  "item.rpgmod.revenant_party_spawn_egg": "亡者の冒険者パーティのスポーンエッグ",
+  "item.rpgmod.spawn_egg.boss_tip": "卵から出たボスは朝になっても去りません",
+  "item.rpgmod.spawn_egg.elite_tip": "しゃがんで使うと強個体（3特性のエリート）で出現"
 }

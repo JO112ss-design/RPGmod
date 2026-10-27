@@ -1242,5 +1242,17 @@
   "rpgmod.boss.spider_queen.near": "The Spider Queen appeared near %s",
   "rpgmod.boss.spider_queen.enraged": "The Spider Queen shrieks! Her brood is hatching!",
   "rpgmod.boss.spider_queen.left": "Dawn breaks and the Spider Queen burrows away...",
-  "rpgmod.boss.spider_queen.defeated": "The Spider Queen was defeated! (%s)"
+  "rpgmod.boss.spider_queen.defeated": "The Spider Queen was defeated! (%s)",
+  "item.rpgmod.king_slime_spawn_egg": "King Slime Spawn Egg",
+  "item.rpgmod.golem_spawn_egg": "Golem Spawn Egg",
+  "item.rpgmod.lich_spawn_egg": "Lich King Spawn Egg",
+  "item.rpgmod.spider_queen_spawn_egg": "Spider Queen Spawn Egg",
+  "item.rpgmod.revenant_warrior_spawn_egg": "Fallen Warrior Spawn Egg",
+  "item.rpgmod.revenant_mage_spawn_egg": "Fallen Mage Spawn Egg",
+  "item.rpgmod.revenant_archer_spawn_egg": "Fallen Archer Spawn Egg",
+  "item.rpgmod.revenant_priest_spawn_egg": "Fallen Priest Spawn Egg",
+  "item.rpgmod.revenant_thief_spawn_egg": "Fallen Thief Spawn Egg",
+  "item.rpgmod.revenant_party_spawn_egg": "Fallen Party Spawn Egg",
+  "item.rpgmod.spawn_egg.boss_tip": "A boss from an egg does not leave at dawn",
+  "item.rpgmod.spawn_egg.elite_tip": "Use while sneaking for an elite with three traits"
 }

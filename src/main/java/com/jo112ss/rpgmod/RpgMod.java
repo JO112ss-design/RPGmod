@@ -46,5 +46,8 @@ public class RpgMod {
         if (event.getTabKey() == CreativeModeTabs.FUNCTIONAL_BLOCKS) {
             event.accept(ModRegistries.FORGING_ANVIL_ITEM);
         }
+        if (event.getTabKey() == CreativeModeTabs.SPAWN_EGGS) {
+            for (var egg : ModRegistries.SPAWN_EGGS.values()) event.accept(egg);
+        }
     }
 }

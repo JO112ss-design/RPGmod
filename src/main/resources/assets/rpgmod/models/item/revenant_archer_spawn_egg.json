@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "rpgmod:item/revenant_archer_spawn_egg"
+  }
+}

@@ -101,6 +101,7 @@ final class NewJobTests {
             case "dungeon" -> dungeon(level, p);
             case "dgallery" -> dungeonGallery(level, p);
             case "bosses" -> newBosses(level, p);
+            case "eggs" -> spawnEggs(level, p);
             case "counter_lance" -> counterLance(level, p, dummies);
             case "wall", "unwall" -> wall(level, p, name.equals("wall"));
             default -> {
@@ -341,6 +342,93 @@ final class NewJobTests {
         });
         SkillTasks.later(300, () -> {
             for (var z : level.getEntitiesOfClass(net.minecraft.world.entity.monster.zombie.Husk.class, p.getBoundingBox().inflate(20))) z.discard();
+        });
+    }
+
+    /**
+     * The spawn eggs, used like a player would on the ground: every boss and every adventurer, an elite
+     * when sneaking, a party of four; by day the egg bosses stay while a blood-moon boss starts to leave.
+     */
+    private static void spawnEggs(ServerLevel level, ServerPlayer p) {
+        Vec3 home = p.position();
+        Vec3 field = home.add(-160, 0, 0);
+        p.teleportTo(field.x, field.y, field.z);
+        p.setYRot(0);
+        p.setXRot(10);
+        boolean keep = com.jo112ss.rpgmod.mob.boss.BloodMoon.testKeep;
+        com.jo112ss.rpgmod.mob.boss.BloodMoon.testKeep = false;
+        level.setDayTime(1000); // morning, no blood moon
+        var eggs = new java.util.ArrayList<>(com.jo112ss.rpgmod.registry.ModRegistries.SPAWN_EGGS.values());
+        ItemStack[] saved = new ItemStack[9];
+        for (int i = 0; i < 9; i++) {
+            saved[i] = p.getInventory().getItem(i).copy();
+            p.getInventory().setItem(i, new ItemStack(eggs.get(i).get(), 4));
+        }
+        java.util.List<net.minecraft.world.entity.Mob> bosses = new java.util.ArrayList<>();
+        SkillTasks.later(40, () -> {
+            for (var m : level.getEntitiesOfClass(net.minecraft.world.entity.Mob.class, p.getBoundingBox().inflate(60))) m.discard();
+            int i = 0;
+            for (var holder : eggs) {
+                var egg = holder.get();
+                var k = egg.kind();
+                boolean sneak = k == com.jo112ss.rpgmod.item.RpgSpawnEggItem.Kind.WARRIOR || k == com.jo112ss.rpgmod.item.RpgSpawnEggItem.Kind.PARTY;
+                // bosses in a row behind, the adventurers in front
+                int x, z;
+                if (k.boss()) {
+                    x = (int) Math.floor(field.x) - 18 + i * 12;
+                    z = (int) Math.floor(field.z) + 26;
+                } else {
+                    int j = i - 4;
+                    x = (int) Math.floor(field.x) - 10 + j * 4;
+                    z = (int) Math.floor(field.z) + 10;
+                }
+                i++;
+                net.minecraft.core.BlockPos ground = new net.minecraft.core.BlockPos(x, level.getHeight(net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, x, z) - 1, z);
+                ItemStack stack = new ItemStack(egg, 2);
+                p.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, stack);
+                p.setShiftKeyDown(sneak);
+                var before = new java.util.HashSet<>(level.getEntitiesOfClass(net.minecraft.world.entity.Mob.class, new net.minecraft.world.phys.AABB(ground).inflate(8)));
+                var hit = new net.minecraft.world.phys.BlockHitResult(Vec3.atCenterOf(ground).add(0, 0.5, 0), net.minecraft.core.Direction.UP, ground, false);
+                var result = stack.useOn(new net.minecraft.world.item.context.UseOnContext(p, net.minecraft.world.InteractionHand.MAIN_HAND, hit));
+                p.setShiftKeyDown(false);
+                var came = new java.util.ArrayList<net.minecraft.world.entity.Mob>();
+                for (var m : level.getEntitiesOfClass(net.minecraft.world.entity.Mob.class, new net.minecraft.world.phys.AABB(ground).inflate(8))) {
+                    if (!before.contains(m)) came.add(m);
+                }
+                StringBuilder sb = new StringBuilder();
+                for (var m : came) {
+                    if (m.getPersistentData().getBooleanOr(com.jo112ss.rpgmod.mob.boss.BossEvents.CHILD, false)) continue;
+                    sb.append(m.getType().getDescriptionId());
+                    if (m instanceof Revenant r) sb.append("/").append(r.role().id());
+                    sb.append(" Lv").append(com.jo112ss.rpgmod.mob.MobLevels.level(m));
+                    sb.append(" elite ").append(com.jo112ss.rpgmod.mob.Elite.list(com.jo112ss.rpgmod.mob.Elite.traits(m)));
+                    sb.append(m.isPersistenceRequired() ? " persistent" : " may despawn");
+                    sb.append("; ");
+                    if (k.boss()) bosses.add(m);
+                }
+                log("eggs: {}{} -> {} (eggs left {}) : {}", k.itemId(), sneak ? " (sneaking)" : "", result, stack.getCount(), sb);
+            }
+            // a blood-moon boss for comparison: no egg tag, so it should start to leave by day
+            var plain = com.jo112ss.rpgmod.registry.ModRegistries.KING_SLIME.get().create(level, net.minecraft.world.entity.EntitySpawnReason.EVENT);
+            plain.snapTo(field.x + 40, level.getHeight(net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, (int) field.x + 40, (int) field.z + 26),
+                    field.z + 26, 0, 0);
+            level.addFreshEntity(plain);
+            bosses.add(plain);
+            p.getInventory().setItem(p.getInventory().getSelectedSlot(), new ItemStack(eggs.get(p.getInventory().getSelectedSlot()).get(), 4));
+        });
+        SkillTasks.later(200, () -> {
+            for (var b : bosses) {
+                Object st = b instanceof com.jo112ss.rpgmod.mob.boss.KingSlime k ? k.state() : b instanceof com.jo112ss.rpgmod.mob.boss.Golem g ? g.state()
+                        : b instanceof com.jo112ss.rpgmod.mob.boss.Lich l ? l.state() : b instanceof com.jo112ss.rpgmod.mob.boss.SpiderQueen q ? q.state() : "?";
+                log("eggs: by day {} {} alive {} state {}", b.getType().getDescriptionId(),
+                        b.entityTags().contains(com.jo112ss.rpgmod.item.RpgSpawnEggItem.SUMMONED) ? "(egg)" : "(blood moon)", b.isAlive(), st);
+            }
+        });
+        SkillTasks.later(260, () -> {
+            for (var m : level.getEntitiesOfClass(net.minecraft.world.entity.Mob.class, p.getBoundingBox().inflate(80))) m.discard();
+            com.jo112ss.rpgmod.mob.boss.BloodMoon.testKeep = keep;
+            for (int i = 0; i < 9; i++) p.getInventory().setItem(i, saved[i]);
+            p.teleportTo(home.x, home.y, home.z);
         });
     }
 

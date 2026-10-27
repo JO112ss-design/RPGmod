@@ -200,8 +200,6 @@ public final class BloodMoon {
     public static <T extends net.minecraft.world.entity.Mob> T spawnNear(ServerLevel level, ServerPlayer p, net.minecraft.world.entity.EntityType<T> type) {
         T king = type.create(level, EntitySpawnReason.EVENT);
         if (king == null) return null;
-        boolean golem = king instanceof Golem;
-        String spawnFx = king instanceof Golem ? "golem_spawn" : king instanceof Lich ? "lich_spawn" : king instanceof SpiderQueen ? "queen_spawn" : "king_spawn";
         var rnd = level.getRandom();
         for (int pass = 0; pass < 3; pass++) {
             for (int i = 0; i < 24; i++) {
@@ -221,14 +219,26 @@ public final class BloodMoon {
                 if (!level.noCollision(king) || level.containsAnyLiquid(king.getBoundingBox())) continue;
                 king.setPersistenceRequired();
                 level.addFreshEntity(king);
-                com.jo112ss.rpgmod.job.fx.ServerFx.of(spawnFx, king.position()).a(king.getBbWidth()).send(level, 128);
-                level.playSound(null, king.blockPosition(), golem ? SoundEvents.STONE_BREAK : SoundEvents.SLIME_SQUISH, SoundSource.HOSTILE, 4.0F, 0.3F);
-                level.playSound(null, king.blockPosition(), SoundEvents.RAVAGER_ROAR, SoundSource.HOSTILE, 3.0F, golem ? 0.4F : 0.6F);
+                arrivalFx(level, king);
                 RpgMod.LOGGER.info("[blood moon] {} Lv{} near {} at {}", key(type), MobLevels.level(king), p.getGameProfile().name(), king.blockPosition());
                 return king;
             }
         }
         return null;
+    }
+
+    /** A boss's entrance: its arrival effect, a crash and a roar. */
+    public static void arrivalFx(ServerLevel level, net.minecraft.world.entity.Mob king) {
+        boolean golem = king instanceof Golem;
+        String spawnFx = king instanceof Golem ? "golem_spawn" : king instanceof Lich ? "lich_spawn" : king instanceof SpiderQueen ? "queen_spawn" : "king_spawn";
+        com.jo112ss.rpgmod.job.fx.ServerFx.of(spawnFx, king.position()).a(king.getBbWidth()).send(level, 128);
+        level.playSound(null, king.blockPosition(), golem ? SoundEvents.STONE_BREAK : SoundEvents.SLIME_SQUISH, SoundSource.HOSTILE, 4.0F, 0.3F);
+        level.playSound(null, king.blockPosition(), SoundEvents.RAVAGER_ROAR, SoundSource.HOSTILE, 3.0F, golem ? 0.4F : 0.6F);
+    }
+
+    /** Whether a boss may stay past the blood moon: in a dungeon, from a spawn egg, or in a test. */
+    public static boolean staysByDay(net.minecraft.world.entity.Entity boss, ServerLevel sl) {
+        return testKeep || com.jo112ss.rpgmod.dungeon.Dungeons.isDungeon(sl) || boss.entityTags().contains(com.jo112ss.rpgmod.item.RpgSpawnEggItem.SUMMONED);
     }
 
     /** Floor of an open space within 6 blocks above/below {@code y} at x/z, or MIN_VALUE. */
