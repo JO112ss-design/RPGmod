@@ -68,11 +68,11 @@ public final class MobConfig {
     static {
         B.pop().push("bosses");
     }
-    public static final ModConfigSpec.DoubleValue KING_HEALTH = B.comment("King Slime health at level 1 for one player (grows with level like other monsters)").defineInRange("kingSlimeBaseHealth", 800.0, 1, 100000);
-    public static final ModConfigSpec.DoubleValue GOLEM_HEALTH = B.comment("Golem health at level 1 for one player (grows with level like other monsters)").defineInRange("golemBaseHealth", 800.0, 1, 100000);
-    public static final ModConfigSpec.DoubleValue LICH_HEALTH = B.comment("Lich King health at level 1 for one player (grows with level like other monsters)").defineInRange("lichBaseHealth", 800.0, 1, 100000);
-    public static final ModConfigSpec.DoubleValue QUEEN_HEALTH = B.comment("Spider Queen health at level 1 for one player (grows with level like other monsters)").defineInRange("spiderQueenBaseHealth", 800.0, 1, 100000);
-    public static final ModConfigSpec.DoubleValue BOSS_PER_PLAYER = B.comment("Extra boss health per additional player online (0.6 = +60%)").defineInRange("healthPerPlayer", 0.6, 0, 10);
+    public static final ModConfigSpec.DoubleValue KING_HEALTH = B.comment("King Slime health at level 1 for one player (grows with level like other monsters)").defineInRange("kingSlimeBaseHealth", 1400.0, 1, 100000);
+    public static final ModConfigSpec.DoubleValue GOLEM_HEALTH = B.comment("Golem health at level 1 for one player (grows with level like other monsters)").defineInRange("golemBaseHealth", 1400.0, 1, 100000);
+    public static final ModConfigSpec.DoubleValue LICH_HEALTH = B.comment("Lich King health at level 1 for one player (grows with level like other monsters)").defineInRange("lichBaseHealth", 1400.0, 1, 100000);
+    public static final ModConfigSpec.DoubleValue QUEEN_HEALTH = B.comment("Spider Queen health at level 1 for one player (grows with level like other monsters)").defineInRange("spiderQueenBaseHealth", 1400.0, 1, 100000);
+    public static final ModConfigSpec.DoubleValue BOSS_PER_PLAYER = B.comment("Extra boss health per additional player fighting (0.8 = +80%)").defineInRange("healthPerPlayer", 0.8, 0, 10);
     public static final ModConfigSpec.IntValue BOSS_LEVEL_BONUS = B.comment("Boss level = highest player job level + this").defineInRange("levelBonus", 0, -100, 100);
     public static final ModConfigSpec.DoubleValue BOSS_MAX_HIT = B.comment("Largest share of a player's max health one boss hit can take (before armour)").defineInRange("maxHitShare", 0.2, 0.01, 10);
     public static final ModConfigSpec.IntValue BOSS_BOOKS = B.comment("Skill books every participant gets for defeating the boss").defineInRange("rewardBooks", 5, 0, 64);
@@ -91,23 +91,23 @@ public final class MobConfig {
     }
 
     public static double golemHealth() {
-        return SPEC.isLoaded() ? GOLEM_HEALTH.get() : 800;
+        return SPEC.isLoaded() ? GOLEM_HEALTH.get() : 1400;
     }
 
     public static double lichHealth() {
-        return SPEC.isLoaded() ? LICH_HEALTH.get() : 800;
+        return SPEC.isLoaded() ? LICH_HEALTH.get() : 1400;
     }
 
     public static double queenHealth() {
-        return SPEC.isLoaded() ? QUEEN_HEALTH.get() : 800;
+        return SPEC.isLoaded() ? QUEEN_HEALTH.get() : 1400;
     }
 
     public static double kingHealth() {
-        return SPEC.isLoaded() ? KING_HEALTH.get() : 800;
+        return SPEC.isLoaded() ? KING_HEALTH.get() : 1400;
     }
 
     public static double bossPerPlayer() {
-        return SPEC.isLoaded() ? BOSS_PER_PLAYER.get() : 0.6;
+        return SPEC.isLoaded() ? BOSS_PER_PLAYER.get() : 0.8;
     }
 
     public static int bossLevelBonus() {

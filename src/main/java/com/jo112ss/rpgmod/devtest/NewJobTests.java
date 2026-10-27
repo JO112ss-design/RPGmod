@@ -577,8 +577,16 @@ final class NewJobTests {
         SkillTasks.later(300, () -> lm.accept("blink"));
         SkillTasks.later(312, () -> p.teleportTo(field.x, field.y, field.z));
         SkillTasks.later(320, () -> {
-            lich[0].setHealth(lich[0].getMaxHealth() * 0.49F);
-            log("bosses: lich at 49% health");
+            // one huge hit in the first half: the halfway gate stops it at 50%, the rise begins
+            var l = lich[0];
+            float before = l.getHealth() / l.getMaxHealth();
+            l.hurtServer(level, p.damageSources().playerAttack(p), 1e7F);
+            log("bosses: lich gate - a huge hit at {}% leaves {}% (phase {})", Math.round(before * 100), String.format("%.1f", l.getHealth() / l.getMaxHealth() * 100), l.phase());
+        });
+        SkillTasks.later(335, () -> { // and during the rise it still holds
+            var l = lich[0];
+            l.hurtServer(level, p.damageSources().playerAttack(p), 1e7F);
+            log("bosses: lich gate during the rise - {}% (phase {}, state {})", String.format("%.1f", l.getHealth() / l.getMaxHealth() * 100), l.phase(), l.state());
         });
         SkillTasks.later(330, () -> log("bosses: lich phase {} state {} opening x{}", lich[0].phase(), lich[0].state(), lich[0].openingMultiplier()));
         SkillTasks.later(380, () -> lm.accept("storm"));
@@ -614,7 +622,9 @@ final class NewJobTests {
         });
         SkillTasks.later(870, () -> {
             p.teleportTo(field.x, field.y, field.z);
-            queen[0].setHealth(queen[0].getMaxHealth() * 0.49F);
+            var q = queen[0];
+            q.hurtServer(level, p.damageSources().playerAttack(p), 1e7F);
+            log("bosses: queen gate - a huge hit leaves {}% (phase {})", String.format("%.1f", q.getHealth() / q.getMaxHealth() * 100), q.phase());
         });
         SkillTasks.later(880, () -> log("bosses: queen phase {} state {} opening x{}", queen[0].phase(), queen[0].state(), queen[0].openingMultiplier()));
         SkillTasks.later(925, () -> qm.accept("triple"));

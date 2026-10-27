@@ -17,6 +17,7 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.entity.EntityAttributeCreationEvent;
 import net.neoforged.neoforge.event.entity.ProjectileImpactEvent;
+import net.neoforged.neoforge.event.entity.living.LivingDamageEvent;
 import net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent;
 import net.neoforged.neoforge.event.entity.living.MobSplitEvent;
 
@@ -75,6 +76,15 @@ public final class BossEvents {
         if (event.getEntity() instanceof ModBoss king && king.toughness() > 1) {
             event.setAmount(event.getAmount() / king.toughness());
         }
+    }
+
+    /** The halfway gate ({@link BossCore#halfGate}): the last of the damage, what reaches its health. */
+    @SubscribeEvent(priority = EventPriority.LOWEST)
+    public static void onHalfGate(LivingDamageEvent.Pre event) {
+        if (!(event.getEntity() instanceof ModBoss b) || !b.core().halfGate(b.phase())) return;
+        LivingEntity e = event.getEntity();
+        float room = e.getHealth() - e.getMaxHealth() * 0.5F;
+        if (event.getNewDamage() > room) event.setNewDamage(Math.max(0, room));
     }
 
     /** The king shrinks on its own terms; it never splits like a vanilla slime when it dies. */

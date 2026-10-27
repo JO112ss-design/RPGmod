@@ -10,6 +10,9 @@ import net.minecraft.world.entity.Entity;
 public interface ModBoss {
     BossCore core();
 
+    /** 1, or 2 below half health (enraged). */
+    int phase();
+
     /** Damage taken is divided by this past the vanilla max health cap (1 below it). */
     default float toughness() {
         return core().toughness();

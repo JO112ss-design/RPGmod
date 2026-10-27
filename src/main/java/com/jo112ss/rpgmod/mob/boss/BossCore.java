@@ -51,6 +51,10 @@ public final class BossCore {
     private int onlineSeen = -1;
     private double healthTarget;
     private float toughness = 1;
+    /** Tick until which the halfway gate still holds after the second phase began. */
+    private int gateUntil = -1;
+    /** How long the gate holds once the second phase has begun (its entrance plays out). */
+    public static final int GATE_HOLD = 40;
 
     /**
      * @param key         lang key part ({@code king_slime}...): {@code entity.rpgmod.<key>}, {@code rpgmod.boss.<key>.defeated}
@@ -143,6 +147,15 @@ public final class BossCore {
     /** Enraged (below half health): the bar turns purple. */
     public void enraged() {
         if (bar != null) bar.setColor(BossEvent.BossBarColor.PURPLE);
+        gateUntil = mob.tickCount + GATE_HOLD;
+    }
+
+    /**
+     * The halfway gate: health cannot be taken below half before the second phase has begun and its
+     * entrance played out, so a burst in an opening never skips the second half's opening act.
+     */
+    public boolean halfGate(int phase) {
+        return phase < 2 || mob.tickCount < gateUntil;
     }
 
     /** Players who see its bar (to tell them things). */
