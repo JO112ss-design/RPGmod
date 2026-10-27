@@ -1107,10 +1107,12 @@ public final class MoreJobSkills {
     // ================================================================== ki shot (right click with knuckles, every ki job)
 
     /**
-     * The ki shot: power per charge (x attack; each charge after the first adds 10% to the lot), its
-     * reach, and the god hand's heal per charge on a hit (share of max health).
+     * The ki shot: power per charge (x attack; {@code KI_SHOT_BONUS} more for each charge after the
+     * first - none now), its reach, and the god hand's heal per charge on a hit (share of max health).
+     * Per point of ki about what the ki blast gives (0.75 a point), which has a cooldown and costs mana
+     * but goes off at once and splashes.
      */
-    public static final double KI_SHOT_POWER = 1.5, KI_SHOT_BONUS = 0.1, KI_SHOT_RANGE = 20, KI_SHOT_HEAL = 0.02;
+    public static final double KI_SHOT_POWER = 0.8, KI_SHOT_BONUS = 0, KI_SHOT_RANGE = 20, KI_SHOT_HEAL = 0.02;
     private static final com.jo112ss.rpgmod.job.core.SkillDef KI_SHOT = new com.jo112ss.rpgmod.job.core.SkillDef("ki_shot", "monk",
             com.jo112ss.rpgmod.job.core.SkillKind.ACTIVE, com.jo112ss.rpgmod.job.core.SkillEffect.BOLT, 0, 0, KI_SHOT_POWER, KI_SHOT_RANGE, 0, List.of(), 0, "気", 0, 0);
     /** Dev test: ki shots that hit. */
