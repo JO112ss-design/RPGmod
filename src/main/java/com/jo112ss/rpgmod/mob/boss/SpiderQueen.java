@@ -634,6 +634,7 @@ public class SpiderQueen extends Monster implements BloodMoonBoss {
     }
 
     private void tickEggs(ServerLevel sl) {
+        if (!this.isAlive()) return;
         for (var it = eggs.iterator(); it.hasNext(); ) {
             Egg e = it.next();
             if (this.tickCount < e.hatch()) continue;
@@ -927,6 +928,9 @@ public class SpiderQueen extends Monster implements BloodMoonBoss {
         if (!(this.level() instanceof ServerLevel sl) || state == State.LEAVE) return;
         if (bossBar != null) bossBar.removeAllPlayers();
         dismissBrood(sl);
+        // and once more a moment later, for any that were still joining the world
+        com.jo112ss.rpgmod.job.SkillTasks.later(10, () -> dismissBrood(sl));
+        com.jo112ss.rpgmod.job.SkillTasks.later(40, () -> dismissBrood(sl));
         BossEvents.reward(sl, this, participants, "spider_queen");
         ServerFx.of("queen_death", this.position()).a(this.getBbWidth()).b(this.getBbHeight()).send(sl, 96);
     }

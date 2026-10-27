@@ -835,6 +835,8 @@ public class Lich extends Monster implements BloodMoonBoss {
         if (!(this.level() instanceof ServerLevel sl) || state == State.LEAVE) return;
         if (bossBar != null) bossBar.removeAllPlayers();
         dismissMinions(sl);
+        com.jo112ss.rpgmod.job.SkillTasks.later(10, () -> dismissMinions(sl));
+        com.jo112ss.rpgmod.job.SkillTasks.later(40, () -> dismissMinions(sl));
         BossEvents.reward(sl, this, participants, "lich");
         ServerFx.of("lich_death", this.position()).a(this.getBbWidth()).b(this.getBbHeight()).send(sl, 96);
     }

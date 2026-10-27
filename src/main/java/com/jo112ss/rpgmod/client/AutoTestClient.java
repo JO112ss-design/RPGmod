@@ -410,7 +410,7 @@ public final class AutoTestClient {
             if (false) showSkills.clear(); // a dungeon run: the altar, the rooms, the boss, the way home
             if (false) showSkills.addAll(java.util.List.of("nj:restore", "nj:dgallery", "nj:dungeon", "nj:restore"));
             showSkills.clear(); // the two new bosses, every move
-            showSkills.addAll(java.util.List.of("nj:restore", "nj:bosses", "nj:restore"));
+            showSkills.addAll(java.util.List.of("nj:restore", "nj:bosses", "nj:dungeon", "nj:restore"));
             if (false) showSkills.clear(); // spellsinger afterglow
             if (false) showSkills.addAll(java.util.List.of("nj:restore", "nj:wardlinger", "nj:ward", "nj:linger", "nj:restore"));
             if (false) showSkills.clear(); // songs: each with its own rhythm (bars from the song's style) and tune
