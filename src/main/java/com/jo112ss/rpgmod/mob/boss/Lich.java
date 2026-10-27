@@ -172,6 +172,7 @@ public class Lich extends Monster implements ModBoss {
     }
 
     private void setState(State s, int length) {
+        this.noPhysics = false; // a leap cut short must not leave it falling through the ground
         state = s;
         stateTicks = 0;
         stateLength = length;

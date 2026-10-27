@@ -419,7 +419,7 @@ public final class AutoTestClient {
             if (false) showSkills.clear(); // bosses against a player out on the water
             if (false) showSkills.addAll(java.util.List.of("nj:restore", "nj:bosswater", "nj:restore"));
             showSkills.clear(); // every boss after the shared code moved to BossCore and the blood moon went: all moves, water, a dungeon
-            showSkills.addAll(java.util.List.of("nj:restore", "mob:king", "nj:restore", "mob:golem", "nj:restore", "nj:bosses", "nj:bosswater", "nj:dungeon", "nj:restore"));
+            showSkills.addAll(java.util.List.of("nj:restore", "nj:bosses", "nj:dungeon", "nj:restore"));
             if (false) showSkills.clear(); // spellsinger afterglow
             if (false) showSkills.addAll(java.util.List.of("nj:restore", "nj:wardlinger", "nj:ward", "nj:linger", "nj:restore"));
             if (false) showSkills.clear(); // songs: each with its own rhythm (bars from the song's style) and tune
