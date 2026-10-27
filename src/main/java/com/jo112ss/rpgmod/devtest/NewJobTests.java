@@ -455,14 +455,22 @@ final class NewJobTests {
         SkillTasks.later(1100, () -> {
             var q = queen[0];
             int brood = level.getEntitiesOfClass(net.minecraft.world.entity.monster.spider.CaveSpider.class, q.getBoundingBox().inflate(40)).size();
+            for (var s : level.getEntitiesOfClass(net.minecraft.world.entity.monster.spider.CaveSpider.class, p.getBoundingBox().inflate(80)))
+                log("bosses:   before death: spider {} at {} age {} (queen at {})", s.getId(), s.blockPosition(), s.tickCount, q.blockPosition());
             log("bosses: queen counters - pounce hits {} web hits {} spray hits {} hatched {} (alive {}) skitter hits {} swipe hits {} field slows {}; player lost {}",
                     q.pounceHits, q.webHits, q.sprayHits, q.hatched, brood, q.skitterHits, q.swipeHits, q.fieldHits, String.format("%.0f", lost[0]));
             q.hurtServer(level, p.damageSources().playerAttack(p), 1e7F);
             if (q.isAlive()) q.setHealth(0);
         });
-        SkillTasks.later(1115, () -> log("bosses: queen dead {}, brood left {}, skill books {}", !queen[0].isAlive(),
-                level.getEntitiesOfClass(net.minecraft.world.entity.monster.spider.CaveSpider.class, p.getBoundingBox().inflate(60)).size(),
-                p.getInventory().countItem(com.jo112ss.rpgmod.registry.ModRegistries.SKILL_BOOK.get())));
+        SkillTasks.later(1115, () -> {
+            log("bosses: queen dead {}, brood left {}, skill books {}", !queen[0].isAlive(),
+                    level.getEntitiesOfClass(net.minecraft.world.entity.monster.spider.CaveSpider.class, p.getBoundingBox().inflate(60)).size(),
+                    p.getInventory().countItem(com.jo112ss.rpgmod.registry.ModRegistries.SKILL_BOOK.get()));
+            for (var s : level.getEntitiesOfClass(net.minecraft.world.entity.monster.spider.CaveSpider.class, p.getBoundingBox().inflate(60)))
+                log("bosses:   spider {} at {} brood of {} (queen {}) child {} age {}", s.getId(), s.blockPosition(),
+                        s.getPersistentData().getIntOr(com.jo112ss.rpgmod.mob.boss.SpiderQueen.BROOD_OF, -1), queen[0].getId(),
+                        s.getPersistentData().getBooleanOr(com.jo112ss.rpgmod.mob.boss.BossEvents.CHILD, false), s.tickCount);
+        });
         SkillTasks.later(1140, () -> {
             for (var m : level.getEntitiesOfClass(net.minecraft.world.entity.Mob.class, p.getBoundingBox().inflate(60))) m.discard();
             com.jo112ss.rpgmod.mob.boss.BloodMoon.testKeep = false;
