@@ -56,6 +56,8 @@ public final class JobData {
     private final Map<String, Saved> saved = new HashMap<>();
     /** Monk's ki (0..{@link #MAX_KI}); not saved, synced for the HUD. */
     private int ki;
+    /** Gains towards the next point of ki (0..{@link com.jo112ss.rpgmod.job.Monk#PARTS}-1); not saved, synced for the HUD. */
+    private int kiParts;
     public static final int MAX_KI = 5;
     /** The champion holds more ki. */
     public static final int CHAMPION_KI = 7;
@@ -162,6 +164,7 @@ public final class JobData {
                     buf.writeVarLong(v);
                 });
                 buf.writeVarInt(d.ki);
+                buf.writeVarInt(d.kiParts);
                 buf.writeVarInt(d.ammo);
                 buf.writeVarLong(d.reloadEnd);
                 buf.writeUtf(d.song);
@@ -190,6 +193,7 @@ public final class JobData {
                 int m = Math.min(buf.readVarInt(), 64);
                 for (int k = 0; k < m; k++) d.mastery.put(buf.readUtf(), buf.readVarLong());
                 d.ki = buf.readVarInt();
+                d.kiParts = buf.readVarInt();
                 d.ammo = buf.readVarInt();
                 d.reloadEnd = buf.readVarLong();
                 d.song = buf.readUtf();
@@ -570,6 +574,14 @@ public final class JobData {
 
     public void setKi(int ki) {
         this.ki = Math.max(0, Math.min(maxKi(), ki));
+    }
+
+    public int kiParts() {
+        return kiParts;
+    }
+
+    public void setKiParts(int parts) {
+        this.kiParts = Math.max(0, parts);
     }
 
     public int maxKi() {

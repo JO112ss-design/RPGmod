@@ -1362,16 +1362,32 @@ final class NewJobTests {
             JobManager.sync(p);
             com.jo112ss.rpgmod.job.MoreJobSkills.kiShotHits = 0;
         });
-        int[] shots = {40, 44, 55, 70, 85};
-        for (int t : shots) {
-            SkillTasks.later(t, () -> {
-                p.setYRot(180);
-                int k = d.ki();
-                com.jo112ss.rpgmod.job.Monk.shoot(p);
-                log("kishot: t{} ki {} -> {}", t, k, d.ki());
-            });
-        }
-        SkillTasks.later(110, () -> log("kishot: hits {} dummy lost {} (attack {})", com.jo112ss.rpgmod.job.MoreJobSkills.kiShotHits,
+        // charging: 20 ticks held = 2 charges (2 points); let go too soon = nothing; 1 point left = 1 charge at most
+        SkillTasks.later(40, () -> com.jo112ss.rpgmod.job.Monk.press(p));
+        SkillTasks.later(60, () -> {
+            int k = d.ki();
+            com.jo112ss.rpgmod.job.Monk.release(p);
+            log("kishot: held 20 ticks - ki {} -> {} (shot of {} charges, x{} attack)", k, d.ki(), k - d.ki(),
+                    String.format("%.2f", com.jo112ss.rpgmod.job.MoreJobSkills.kiShotPower(k - d.ki())));
+        });
+        SkillTasks.later(66, () -> com.jo112ss.rpgmod.job.Monk.press(p));
+        SkillTasks.later(70, () -> {
+            int k = d.ki();
+            com.jo112ss.rpgmod.job.Monk.release(p);
+            log("kishot: let go after 4 ticks - ki {} -> {}", k, d.ki());
+        });
+        SkillTasks.later(74, () -> com.jo112ss.rpgmod.job.Monk.press(p));
+        SkillTasks.later(104, () -> {
+            int k = d.ki();
+            com.jo112ss.rpgmod.job.Monk.release(p);
+            log("kishot: held 30 ticks with {} ki - ki -> {}", k, d.ki());
+        });
+        SkillTasks.later(110, () -> {
+            int k0 = d.ki(), p0 = d.kiParts();
+            for (int i = 0; i < 4; i++) com.jo112ss.rpgmod.job.Monk.add(p, 1);
+            log("kishot: four gains - ki {} (+{} parts) -> {} (+{} parts)", k0, p0, d.ki(), d.kiParts());
+        });
+        SkillTasks.later(112, () -> log("kishot: hits {} dummy lost {} (attack {})", com.jo112ss.rpgmod.job.MoreJobSkills.kiShotHits,
                 String.format("%.1f", 5000 - dummy[0].getHealth()), String.format("%.1f", JobManager.physicalAttack(p))));
         SkillTasks.later(115, () -> {
             become(p, "qi_master");
@@ -1383,14 +1399,10 @@ final class NewJobTests {
             p.setHealth(p.getMaxHealth() * 0.5F);
             com.jo112ss.rpgmod.job.MoreJobSkills.kiShotHits = 0;
         });
-        float[] hp = {0};
-        SkillTasks.later(125, () -> {
-            hp[0] = p.getHealth();
-            com.jo112ss.rpgmod.job.Monk.shoot(p);
-        });
-        SkillTasks.later(150, () -> log("kishot: god hand hits {} healed {} health {} -> {} (max {}), ki {}", com.jo112ss.rpgmod.job.MoreJobSkills.kiShotHits,
-                String.format("%.1f", com.jo112ss.rpgmod.job.MoreJobSkills.kiShotHealed),
-                String.format("%.1f", hp[0]), String.format("%.1f", p.getHealth()), String.format("%.0f", p.getMaxHealth()), d.ki()));
+        SkillTasks.later(120, () -> com.jo112ss.rpgmod.job.Monk.press(p));
+        SkillTasks.later(138, () -> com.jo112ss.rpgmod.job.Monk.release(p));
+        SkillTasks.later(150, () -> log("kishot: god hand hits {} healed {} (max {}), ki {}", com.jo112ss.rpgmod.job.MoreJobSkills.kiShotHits,
+                String.format("%.1f", com.jo112ss.rpgmod.job.MoreJobSkills.kiShotHealed), String.format("%.0f", p.getMaxHealth()), d.ki()));
         SkillTasks.later(160, () -> {
             if (dummy[0] != null) dummy[0].discard();
             p.setHealth(p.getMaxHealth());

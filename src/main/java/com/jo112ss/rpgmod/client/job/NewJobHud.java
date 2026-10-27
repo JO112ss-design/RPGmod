@@ -81,14 +81,22 @@ public final class NewJobHud {
         int max = d.maxKi();
         int w = max * 6 - 2;
         int x0 = cx - w / 2;
+        int charging = JobClient.kiCharges(); // the points a held ki shot will spend: the last ones, in white
         for (int i = 0; i < max; i++) {
             int x = x0 + i * 6;
             g.fill(x, y, x + 4, y + 4, 0x90000000);
             if (i < d.ki()) {
-                int col = d.ki() >= max ? 0xFFFFF0A0 : 0xFFFFB040;
+                int col = i >= d.ki() - charging ? 0xFFFFFFFF : d.ki() >= max ? 0xFFFFF0A0 : 0xFFFFB040;
                 g.fill(x + 1, y, x + 3, y + 4, col);
                 g.fill(x, y + 1, x + 4, y + 3, col);
+            } else if (i == d.ki() && d.kiParts() > 0) { // the point being built, filling from the bottom
+                int h = Math.max(1, 4 * d.kiParts() / com.jo112ss.rpgmod.job.Monk.PARTS);
+                g.fill(x + 1, y + 4 - h, x + 3, y + 4, 0xA0FFB040);
             }
+        }
+        if (JobClient.kiCharge >= 0 && charging < d.ki()) { // progress to the next charge
+            int k = JobClient.kiCharge % com.jo112ss.rpgmod.job.Monk.CHARGE_EVERY;
+            g.fill(x0, y + 6, x0 + w * k / com.jo112ss.rpgmod.job.Monk.CHARGE_EVERY, y + 7, 0xC0FFFFFF);
         }
     }
 

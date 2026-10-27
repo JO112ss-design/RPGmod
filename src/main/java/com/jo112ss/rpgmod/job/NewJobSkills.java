@@ -913,7 +913,7 @@ public final class NewJobSkills {
                 sound(c, p.position(), SoundEvents.AMETHYST_BLOCK_CHIME, 0.6F, 1.0F + age * 0.01F);
             }
             if (age >= t - 1) {
-                Monk.add(p, JobManager.data(p).maxKi());
+                Monk.fill(p);
                 return true;
             }
             return false;

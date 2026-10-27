@@ -172,7 +172,7 @@ public final class AutoTestClient {
             case "nj:dgallery" -> new int[] {70, 130, 190, 250, 310, 370, 430, 490, 550, 610, 670, 730, 790};
             case "nj:dungeon" -> new int[] {45, 70, 90, 300, 500, 700, 900};
             case "nj:eggs" -> new int[] {30, 70, 110, 190};
-            case "nj:kishot" -> new int[] {41, 46, 57, 128};
+            case "nj:kishot" -> new int[] {52, 62, 100, 140};
             case "nj:bosswater" -> new int[] {95, 160, 218, 265, 395, 460, 518, 565, 695, 760, 818, 865, 995, 1060, 1118, 1165};
             case "sealing_chord", "holy_lance" -> new int[] {3, 8};
             case "earthshatter" -> new int[] {4, 10};

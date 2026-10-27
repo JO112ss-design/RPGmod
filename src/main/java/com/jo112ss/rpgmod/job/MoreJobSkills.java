@@ -1106,16 +1106,24 @@ public final class MoreJobSkills {
 
     // ================================================================== ki shot (right click with knuckles, every ki job)
 
-    /** The ki shot's power (x attack, like a punch at range), its reach, and the god hand's heal per hit (share of max health). */
-    public static final double KI_SHOT_POWER = 1.0, KI_SHOT_RANGE = 20, KI_SHOT_HEAL = 0.02;
+    /**
+     * The ki shot: power per charge (x attack; each charge after the first adds 10% to the lot), its
+     * reach, and the god hand's heal per charge on a hit (share of max health).
+     */
+    public static final double KI_SHOT_POWER = 1.5, KI_SHOT_BONUS = 0.1, KI_SHOT_RANGE = 20, KI_SHOT_HEAL = 0.02;
     private static final com.jo112ss.rpgmod.job.core.SkillDef KI_SHOT = new com.jo112ss.rpgmod.job.core.SkillDef("ki_shot", "monk",
             com.jo112ss.rpgmod.job.core.SkillKind.ACTIVE, com.jo112ss.rpgmod.job.core.SkillEffect.BOLT, 0, 0, KI_SHOT_POWER, KI_SHOT_RANGE, 0, List.of(), 0, "気", 0, 0);
     /** Dev test: ki shots that hit. */
     public static int kiShotHits;
     public static float kiShotHealed;
 
-    /** A ball of ki (the point is paid by {@link Monk#shoot}): flies at what you aim at, a little homing. */
-    public static void kiShot(ServerPlayer p) {
+    /** Damage of a shot of {@code n} charges, x attack. */
+    public static double kiShotPower(int n) {
+        return KI_SHOT_POWER * n * (1 + KI_SHOT_BONUS * (n - 1));
+    }
+
+    /** A ball of ki of {@code n} charges (paid by {@link Monk#release}): flies at what you aim at, a little homing; bigger, harder, further thrown with each charge. */
+    public static void kiShot(ServerPlayer p, int n) {
         ServerLevel level = (ServerLevel) p.level();
         Ctx c = new Ctx(p, level, KI_SHOT, JobManager.powerMultiplier(p, KI_SHOT), 1.0);
         boolean godHand = "qi_master".equals(JobManager.data(p).jobId());
@@ -1123,18 +1131,21 @@ public final class MoreJobSkills {
         Vec3 start = c.hand();
         Vec3 dir = target != null ? mid(target).subtract(start).normalize() : c.look();
         int color = godHand ? 0xA0FFB0 : KI;
-        ServerFx.of("x_bolt", start).vec(dir.scale(1.6)).a(KI_SHOT_RANGE).b(0.38).color(color).follow(target).send(level);
-        sound(c, SoundEvents.BLAZE_SHOOT, 1.8F);
+        double power = kiShotPower(n);
+        float size = (float) (0.3 + 0.1 * n);
+        ServerFx.of("x_bolt", start).vec(dir.scale(1.6)).a(KI_SHOT_RANGE).b(size).color(color).follow(target).send(level);
+        sound(c, SoundEvents.BLAZE_SHOOT, (float) (1.9 - 0.12 * n));
+        if (n >= 3) sound(c, SoundEvents.FIREWORK_ROCKET_LARGE_BLAST, 0.7F);
         projectile(c, start, dir, 1.6, KI_SHOT_RANGE, target, 0.25, (e, at, dd) -> {
-            hurt(c, e, c.dmg(1), melee(c));
-            push(e, dd, 0.3, 0.1);
+            hurt(c, e, (float) (power * c.power()), melee(c));
+            push(e, dd, 0.2 + 0.12 * n, 0.08 + 0.03 * n);
             if (godHand) { // the god hand's ki mends as it strikes
-                float h = (float) (p.getMaxHealth() * KI_SHOT_HEAL);
+                float h = (float) (p.getMaxHealth() * KI_SHOT_HEAL * n);
                 p.heal(h);
                 kiShotHealed += h;
             }
             kiShotHits++;
-            ServerFx.of("x_hit", at).vec(dd).a(0.9).color(color).send(level);
+            ServerFx.of("x_hit", at).vec(dd).a(0.6 + 0.25 * n).color(color).send(level);
         }, (at, dd, wall) -> { });
     }
 

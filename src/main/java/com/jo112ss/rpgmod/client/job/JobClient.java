@@ -52,6 +52,37 @@ public final class JobClient {
         return mc.player != null && data().kiJob() && ModItems.typeOf(mc.player.getMainHandItem().getItem()) == WeaponType.KNUCKLE;
     }
 
+    /** Ticks right click has been held charging a ki shot (-1 = not charging). */
+    public static int kiCharge = -1;
+    /** The current right-button press started on a door, a villager...: no ki shot until it is let go. */
+    private static boolean kiPressUsed;
+
+    /** Charges of the ki shot being held (one point of ki each, up to the ki there is). */
+    public static int kiCharges() {
+        return kiCharge < 0 ? 0 : com.jo112ss.rpgmod.job.Monk.charges(kiCharge, data().ki());
+    }
+
+    private static void tickKiCharge(Minecraft mc) {
+        boolean down = mc.player != null && mc.gui.screen() == null && mc.options.keyUse.isDown();
+        if (!down) kiPressUsed = false;
+        boolean want = down && (kiCharge >= 0 || !kiPressUsed) && kiShooting();
+        if (want && kiCharge < 0) {
+            kiPressUsed = true; // decided once per press
+            if (aimingAtUsable(mc) || mc.player.isShiftKeyDown() || aimingAtFriend(mc)) return; // the right button as usual
+            send(JobActionPayload.KI_SHOT, 1, "");
+            if (data().ki() <= 0) return; // the server clicks dully
+            kiCharge = 0;
+        } else if (want) {
+            int before = kiCharges();
+            kiCharge++;
+            int now = kiCharges();
+            if (now > before) mc.player.playSound(net.minecraft.sounds.SoundEvents.AMETHYST_BLOCK_CHIME, 0.6F, 0.9F + 0.15F * now);
+        } else if (kiCharge >= 0) {
+            kiCharge = -1;
+            send(JobActionPayload.KI_SHOT, 0, "");
+        }
+    }
+
     /** Aiming at a villager, an animal, a player...: right click keeps its usual meaning (trading, leads...). */
     private static boolean aimingAtFriend(Minecraft mc) {
         return mc.hitResult instanceof net.minecraft.world.phys.EntityHitResult eh && !(eh.getEntity() instanceof net.minecraft.world.entity.monster.Enemy);
@@ -115,14 +146,16 @@ public final class JobClient {
     /** Charging sword magic slows you down like drawing a bow or charging a staff (and stops the sprint). */
     @SubscribeEvent
     public static void onMovementInput(net.neoforged.neoforge.client.event.MovementInputUpdateEvent event) {
-        if (swordCharge < 0 || event.getEntity().isPassenger()) return;
+        if ((swordCharge < 0 && kiCharge < 0) || event.getEntity().isPassenger()) return;
         var input = event.getInput();
-        input.moveVector = input.moveVector.scale(SWORD_CHARGE_SPEED);
+        input.moveVector = input.moveVector.scale(swordCharge >= 0 ? SWORD_CHARGE_SPEED : KI_CHARGE_SPEED);
         event.getEntity().setSprinting(false);
     }
 
     /** Walking speed while charging sword magic (vanilla item use: 0.2). */
     public static final float SWORD_CHARGE_SPEED = 0.2F;
+    /** Walking speed while charging a ki shot: a monk stays light on its feet. */
+    public static final float KI_CHARGE_SPEED = 0.45F;
 
     private static void tickLeftCast(Minecraft mc) {
         boolean want = mc.player != null && mc.gui.screen() == null && leftCasting() && JobKeys.LEFT_SPELL.isDown();
@@ -165,9 +198,8 @@ public final class JobClient {
         }
         if (event.isUseItem() && event.getHand() == net.minecraft.world.InteractionHand.MAIN_HAND && kiShooting() && !aimingAtUsable(mc)
                 && !mc.player.isShiftKeyDown() && !aimingAtFriend(mc)) {
-            event.setCanceled(true); // the right button fires a ki shot (held: one every half second)
+            event.setCanceled(true); // the right button charges a ki shot (see tickKiCharge)
             event.setSwingHand(false); // the server swings when the shot goes
-            send(JobActionPayload.KI_SHOT, 0, "");
             return;
         }
         if (event.isUseItem() && event.getHand() == net.minecraft.world.InteractionHand.MAIN_HAND && com.jo112ss.rpgmod.job.DualWield.canDualWield(mc.player)) {
@@ -186,6 +218,7 @@ public final class JobClient {
         Minecraft mc = Minecraft.getInstance();
         tickLeftCast(mc);
         tickSwordCast(mc);
+        tickKiCharge(mc);
         BardClient.tick();
         if (pendingSelect && mc.player != null && mc.gui.screen() == null && mc.player.tickCount > 20) {
             pendingSelect = false;
