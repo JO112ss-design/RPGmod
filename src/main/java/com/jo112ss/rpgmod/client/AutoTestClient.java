@@ -172,6 +172,7 @@ public final class AutoTestClient {
             case "nj:dgallery" -> new int[] {70, 130, 190, 250, 310, 370, 430, 490, 550, 610, 670, 730, 790};
             case "nj:dungeon" -> new int[] {45, 70, 90, 300, 500, 700, 900};
             case "nj:eggs" -> new int[] {30, 70, 110, 190};
+            case "nj:kishot" -> new int[] {41, 46, 57, 128};
             case "nj:bosswater" -> new int[] {95, 160, 218, 265, 395, 460, 518, 565, 695, 760, 818, 865, 995, 1060, 1118, 1165};
             case "sealing_chord", "holy_lance" -> new int[] {3, 8};
             case "earthshatter" -> new int[] {4, 10};
@@ -315,6 +316,7 @@ public final class AutoTestClient {
             case "nj:dgallery" -> 840;
             case "nj:bosses" -> 1180;
             case "nj:eggs" -> 280;
+            case "nj:kishot" -> 170;
             case "nj:bosswater" -> 1480;
             case "nj:linger" -> 140;
             case "nj:ward" -> 210;
@@ -418,8 +420,10 @@ public final class AutoTestClient {
             if (false) showSkills.addAll(java.util.List.of("nj:restore", "nj:eggs", "nj:restore"));
             if (false) showSkills.clear(); // bosses against a player out on the water
             if (false) showSkills.addAll(java.util.List.of("nj:restore", "nj:bosswater", "nj:restore"));
-            showSkills.clear(); // every boss after the shared code moved to BossCore and the blood moon went: all moves, water, a dungeon
-            showSkills.addAll(java.util.List.of("nj:restore", "nj:bosses", "nj:dungeon", "nj:restore"));
+            if (false) showSkills.clear(); // every boss after the shared code moved to BossCore and the blood moon went: all moves, water, a dungeon
+            if (false) showSkills.addAll(java.util.List.of("nj:restore", "nj:bosses", "nj:dungeon", "nj:restore"));
+            showSkills.clear(); // ki shots on the right button (monk, god hand)
+            showSkills.addAll(java.util.List.of("nj:restore", "nj:kishot", "nj:restore"));
             if (false) showSkills.clear(); // spellsinger afterglow
             if (false) showSkills.addAll(java.util.List.of("nj:restore", "nj:wardlinger", "nj:ward", "nj:linger", "nj:restore"));
             if (false) showSkills.clear(); // songs: each with its own rhythm (bars from the song's style) and tune

@@ -51,6 +51,7 @@ final class NewJobTests {
             case "pirate" -> pirate(level, p, dummies);
             case "lancer" -> lancer(level, p, dummies);
             case "monk" -> monk(level, p, dummies);
+            case "kishot" -> kiShot(level, p);
             case "bard" -> become(p, "bard");
             case "hybrids" -> hybrids(level, p, dummies);
             case "coins" -> coins(level, p);
@@ -1330,6 +1331,66 @@ final class NewJobTests {
             p.attack(near);
             log("spear tip: near dummy (edge {}) took {}", String.format("%.1f", p.getEyePosition().distanceTo(near.getBoundingBox().getCenter()) - near.getBbWidth() / 2),
                     String.format("%.1f", a - near.getHealth()));
+        });
+    }
+
+    /**
+     * Ki shots on the right button: one point each, at most every half second, a dull click with none;
+     * the god hand's shot heals a little.
+     */
+    private static void kiShot(ServerLevel level, ServerPlayer p) {
+        become(p, "monk");
+        JobData d = JobManager.data(p);
+        Vec3 home = p.position();
+        Vec3 field = home.add(0, 0, -120);
+        p.teleportTo(field.x, field.y, field.z);
+        p.setYRot(180);
+        p.setXRot(0);
+        net.minecraft.world.entity.monster.zombie.Husk[] dummy = {null};
+        SkillTasks.later(30, () -> {
+            for (var m : level.getEntitiesOfClass(net.minecraft.world.entity.Mob.class, p.getBoundingBox().inflate(40))) m.discard();
+            var h = net.minecraft.world.entity.EntityTypes.HUSK.create(level, net.minecraft.world.entity.EntitySpawnReason.COMMAND);
+            h.snapTo(field.x, field.y, field.z - 9, 0, 0);
+            h.setNoAi(true);
+            level.addFreshEntity(h);
+            h.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.MAX_HEALTH).setBaseValue(5000);
+            h.setHealth(5000);
+            dummy[0] = h;
+            p.setYRot(180);
+            d.setKi(3);
+            JobManager.sync(p);
+            com.jo112ss.rpgmod.job.MoreJobSkills.kiShotHits = 0;
+        });
+        int[] shots = {40, 44, 55, 70, 85};
+        for (int t : shots) {
+            SkillTasks.later(t, () -> {
+                p.setYRot(180);
+                int k = d.ki();
+                com.jo112ss.rpgmod.job.Monk.shoot(p);
+                log("kishot: t{} ki {} -> {}", t, k, d.ki());
+            });
+        }
+        SkillTasks.later(110, () -> log("kishot: hits {} dummy lost {} (attack {})", com.jo112ss.rpgmod.job.MoreJobSkills.kiShotHits,
+                String.format("%.1f", 5000 - dummy[0].getHealth()), String.format("%.1f", JobManager.physicalAttack(p))));
+        SkillTasks.later(115, () -> {
+            become(p, "qi_master");
+            p.setYRot(180);
+            d.setKi(2);
+            JobManager.sync(p);
+            p.setHealth(p.getMaxHealth() * 0.5F);
+            com.jo112ss.rpgmod.job.MoreJobSkills.kiShotHits = 0;
+        });
+        float[] hp = {0};
+        SkillTasks.later(125, () -> {
+            hp[0] = p.getHealth();
+            com.jo112ss.rpgmod.job.Monk.shoot(p);
+        });
+        SkillTasks.later(150, () -> log("kishot: god hand hits {} health {} -> {} (max {}), ki {}", com.jo112ss.rpgmod.job.MoreJobSkills.kiShotHits,
+                String.format("%.1f", hp[0]), String.format("%.1f", p.getHealth()), String.format("%.0f", p.getMaxHealth()), d.ki()));
+        SkillTasks.later(160, () -> {
+            if (dummy[0] != null) dummy[0].discard();
+            p.setHealth(p.getMaxHealth());
+            p.teleportTo(home.x, home.y, home.z);
         });
     }
 

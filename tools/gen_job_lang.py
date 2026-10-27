@@ -134,7 +134,6 @@ SKILLS = {  # id: (ja, ja desc, en, en desc)
  'arcane_edge': ('魔法剣・極', '属性をまとった巨大な一閃。', 'Arcane Edge', 'One huge slash wrapped in the element.'),
  'elemental_burst': ('属性解放', '火・氷・雷の3連続の爆発を周りに起こす。', 'Elemental Burst', 'Fire, ice and thunder burst out around you in turn.'),
  # ---- qi master
- 'qi_bullet': ('気功弾', '気の弾を撃つ。気を1つ使えば威力+80%。', 'Qi Bullet', 'A ball of ki; +80% when one ki is spent.'),
  'refine_qi': ('練気', '4秒間、毎秒気が溜まり、体力も回復する。', 'Refine Qi', 'For 4s, ki builds each second and health regenerates.'),
  'healing_palm': ('治癒の掌', '自分と周りの味方を回復する。気+1。', 'Healing Palm', 'Heal yourself and allies around. +1 ki.'),
  'hard_qi': ('硬気功', '気をすべて使って体を固める（気が多いほど被ダメージ減、少し回復）。', 'Hard Qi', 'Spend all ki on a hard shell (more ki, less damage taken) and a little health.'),

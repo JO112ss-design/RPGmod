@@ -13,8 +13,9 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.player.Player;
 
 /**
- * The monk's ki (0 to 5): knuckle hits and some skills build it, the ki blast spends it. It fades one
- * point a second after 8 seconds without building any.
+ * The monk's ki (0 to 5): knuckle hits and some skills build it; the ki blast spends it all, and
+ * <b>right click with knuckles fires a ki shot</b> for one point (every ki job: monk, champion, god
+ * hand). It fades one point a second after 8 seconds without building any.
  */
 public final class Monk {
     private Monk() {}
@@ -23,6 +24,10 @@ public final class Monk {
     public static final int FADE_AFTER = 160;
     /** Game time ki was last built, per player. */
     private static final Map<UUID, Long> LAST = new HashMap<>();
+    /** Game time of the last ki shot, per player. */
+    private static final Map<UUID, Long> SHOT = new HashMap<>();
+    /** Ticks between ki shots (holding the button fires at this pace). */
+    public static final int SHOT_EVERY = 10;
     /** Diamond body: game time ki was last built by a hit (at most twice a second). */
     private static final Map<UUID, Long> DIAMOND_LAST = new HashMap<>();
 
@@ -59,6 +64,24 @@ public final class Monk {
         return k;
     }
 
+    /** Right click with knuckles: a ki shot for one point of ki (a dull click with none). */
+    public static void shoot(ServerPlayer p) {
+        JobData d = JobManager.data(p);
+        if (!d.kiJob() || !holdsKnuckles(p) || !p.isAlive() || p.isSpectator()) return;
+        long now = p.level().getGameTime();
+        Long last = SHOT.get(p.getUUID());
+        if (last != null && now - last < SHOT_EVERY) return;
+        SHOT.put(p.getUUID(), now);
+        if (d.ki() <= 0) {
+            p.level().playSound(null, p.blockPosition(), SoundEvents.DISPENSER_FAIL, SoundSource.PLAYERS, 0.4F, 1.8F);
+            return;
+        }
+        d.setKi(d.ki() - 1);
+        JobManager.sync(p);
+        p.swing(net.minecraft.world.InteractionHand.MAIN_HAND, p.getMainHandItem().getAttackAnimation(), true);
+        MoreJobSkills.kiShot(p);
+    }
+
     /** Diamond body: any hit builds ki (twice a second at most). */
     static void diamondHit(ServerPlayer p) {
         long now = p.level().getGameTime();
@@ -83,5 +106,6 @@ public final class Monk {
     static void forget(UUID id) {
         LAST.remove(id);
         DIAMOND_LAST.remove(id);
+        SHOT.remove(id);
     }
 }

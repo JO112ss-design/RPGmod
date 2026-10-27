@@ -996,8 +996,6 @@
   "rpgmod.skill.arcane_edge.desc": "One huge slash wrapped in the element.",
   "rpgmod.skill.elemental_burst": "Elemental Burst",
   "rpgmod.skill.elemental_burst.desc": "Fire, ice and thunder burst out around you in turn.",
-  "rpgmod.skill.qi_bullet": "Qi Bullet",
-  "rpgmod.skill.qi_bullet.desc": "A ball of ki; +80% when one ki is spent.",
   "rpgmod.skill.refine_qi": "Refine Qi",
   "rpgmod.skill.refine_qi.desc": "For 4s, ki builds each second and health regenerates.",
   "rpgmod.skill.healing_palm": "Healing Palm",

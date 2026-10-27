@@ -30,6 +30,10 @@ public final class JobActionHandler {
                 else com.jo112ss.rpgmod.job.SpellbladeMagic.release(player);
                 return;
             }
+            case JobActionPayload.KI_SHOT -> { // limited by its own pace
+                com.jo112ss.rpgmod.job.Monk.shoot(player);
+                return;
+            }
             case JobActionPayload.JUDGE_NOTE -> { // limited by the notes that have come so far
                 com.jo112ss.rpgmod.job.Bard.judge(player, p.arg());
                 return;

@@ -44,6 +44,19 @@ public final class JobClient {
         return ModItems.typeOf(mc.player.getMainHandItem().getItem()) == want;
     }
 
+    // ---- ki jobs: ki shots on the right button
+
+    /** A ki job (monk, champion, god hand) with knuckles in hand. */
+    public static boolean kiShooting() {
+        Minecraft mc = Minecraft.getInstance();
+        return mc.player != null && data().kiJob() && ModItems.typeOf(mc.player.getMainHandItem().getItem()) == WeaponType.KNUCKLE;
+    }
+
+    /** Aiming at a villager, an animal, a player...: right click keeps its usual meaning (trading, leads...). */
+    private static boolean aimingAtFriend(Minecraft mc) {
+        return mc.hitResult instanceof net.minecraft.world.phys.EntityHitResult eh && !(eh.getEntity() instanceof net.minecraft.world.entity.monster.Enemy);
+    }
+
     // ---- spellmaster: the left-click spell
 
     /** Ticks the left button has been held for the left-hand spell (-1 = not charging). */
@@ -148,6 +161,13 @@ public final class JobClient {
                 && !mc.player.isShiftKeyDown()) {
             event.setCanceled(true); // the right button charges sword magic (see tickSwordCast)
             event.setSwingHand(false);
+            return;
+        }
+        if (event.isUseItem() && event.getHand() == net.minecraft.world.InteractionHand.MAIN_HAND && kiShooting() && !aimingAtUsable(mc)
+                && !mc.player.isShiftKeyDown() && !aimingAtFriend(mc)) {
+            event.setCanceled(true); // the right button fires a ki shot (held: one every half second)
+            event.setSwingHand(false); // the server swings when the shot goes
+            send(JobActionPayload.KI_SHOT, 0, "");
             return;
         }
         if (event.isUseItem() && event.getHand() == net.minecraft.world.InteractionHand.MAIN_HAND && com.jo112ss.rpgmod.job.DualWield.canDualWield(mc.player)) {

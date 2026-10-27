@@ -476,7 +476,6 @@ public final class JobDefs {
                 stats(JobStat.MAX_HEALTH, 4, JobStat.ATTACK_DAMAGE, 4, JobStat.ATTACK_SPEED, 5),
                 stats(JobStat.ATTACK_DAMAGE, 0.6, JobStat.MAX_HEALTH, hpGrow(1.0, 4)),
                 List.of(
-                        skill("qi_bullet", A, SkillEffect.BOLT, 1.5, 6, 1.2, 18, 0, List.of(), 0, "弾"),
                         skill("refine_qi", A, SkillEffect.BUFF, 7.5, 8, 0, 0, 4, List.of("minecraft:regeneration"), 1, "練"),
                         skill("healing_palm", A, SkillEffect.HEAL, 7.5, 20, 1.0, 4, 0, List.of(), 0, "掌"),
                         skill("hard_qi", A, SkillEffect.BUFF, 18, 20, 0, 0, 16, List.of(), 0, "硬"),

@@ -46,7 +46,7 @@ public final class MoreJobSkills {
             "high_jump", "dragon_spear", "dragon_scale", "spiral_lance", "sky_step", "dragon_king",
             "crescendo", "spell_perform", "arcane_note", "modulate", "heroic_song", "requiem", "shock_chord", "symphony",
             "element_shift", "magic_slash", "thunder_thrust", "mana_share", "mana_meditate", "spell_guard", "arcane_edge", "elemental_burst",
-            "qi_bullet", "refine_qi", "healing_palm", "hard_qi", "qi_burst", "flowing_step", "heaven_earth", "blooming_fists",
+            "refine_qi", "healing_palm", "hard_qi", "qi_burst", "flowing_step", "heaven_earth", "blooming_fists",
             "guard_thrust", "shield_charge", "immovable", "spear_wall", "counter_lance", "provoke", "fortress", "holy_lance",
             "resonance", "grand_concerto", "sealing_chord",
             "vital_shot", "stealth", "shadow_arrow", "hunter_trap", "shadow_leap", "fan_knives", "night_hunt", "shadow_rain",
@@ -101,7 +101,6 @@ public final class MoreJobSkills {
             case "arcane_edge" -> arcaneEdge(c);
             case "elemental_burst" -> elementalBurst(c);
             // qi master
-            case "qi_bullet" -> qiBullet(c);
             case "refine_qi" -> refineQi(c);
             case "healing_palm" -> {
                 heal(c, "heal", false);
@@ -1105,28 +1104,33 @@ public final class MoreJobSkills {
 
     // ================================================================== qi master
 
-    /** A ball of ki; with ki to spend (one point) it hits 80% harder. */
-    private static boolean qiBullet(Ctx c) {
-        ServerPlayer p = c.p();
-        JobData d = JobManager.data(p);
-        double mult = 1;
-        if (d.ki() > 0) {
-            d.setKi(d.ki() - 1);
-            JobManager.sync(p);
-            mult = 1.8;
-        }
-        double m = mult;
-        LivingEntity target = lookTarget(c, c.def().radius(), 12);
+    // ================================================================== ki shot (right click with knuckles, every ki job)
+
+    /** The ki shot's power (x attack, like a punch at range), its reach, and the god hand's heal per hit (share of max health). */
+    public static final double KI_SHOT_POWER = 1.0, KI_SHOT_RANGE = 20, KI_SHOT_HEAL = 0.02;
+    private static final com.jo112ss.rpgmod.job.core.SkillDef KI_SHOT = new com.jo112ss.rpgmod.job.core.SkillDef("ki_shot", "monk",
+            com.jo112ss.rpgmod.job.core.SkillKind.ACTIVE, com.jo112ss.rpgmod.job.core.SkillEffect.BOLT, 0, 0, KI_SHOT_POWER, KI_SHOT_RANGE, 0, List.of(), 0, "気", 0, 0);
+    /** Dev test: ki shots that hit. */
+    public static int kiShotHits;
+
+    /** A ball of ki (the point is paid by {@link Monk#shoot}): flies at what you aim at, a little homing. */
+    public static void kiShot(ServerPlayer p) {
+        ServerLevel level = (ServerLevel) p.level();
+        Ctx c = new Ctx(p, level, KI_SHOT, JobManager.powerMultiplier(p, KI_SHOT), 1.0);
+        boolean godHand = "qi_master".equals(JobManager.data(p).jobId());
+        LivingEntity target = lookTarget(c, KI_SHOT_RANGE, 10);
         Vec3 start = c.hand();
         Vec3 dir = target != null ? mid(target).subtract(start).normalize() : c.look();
-        ServerFx.of("x_bolt", start).vec(dir.scale(1.6)).a(c.def().radius()).b(m > 1 ? 0.45 : 0.3).color(KI).follow(target).send(c.level());
-        sound(c, SoundEvents.BLAZE_SHOOT, 1.6F);
-        projectile(c, start, dir, 1.6, c.def().radius(), target, 0.25, (e, at, dd) -> {
-            hurt(c, e, c.dmg(m), melee(c));
+        int color = godHand ? 0xA0FFB0 : KI;
+        ServerFx.of("x_bolt", start).vec(dir.scale(1.6)).a(KI_SHOT_RANGE).b(0.38).color(color).follow(target).send(level);
+        sound(c, SoundEvents.BLAZE_SHOOT, 1.8F);
+        projectile(c, start, dir, 1.6, KI_SHOT_RANGE, target, 0.25, (e, at, dd) -> {
+            hurt(c, e, c.dmg(1), melee(c));
             push(e, dd, 0.3, 0.1);
-            ServerFx.of("x_hit", at).vec(dd).a(0.9).color(KI).send(c.level());
+            if (godHand) p.heal((float) (p.getMaxHealth() * KI_SHOT_HEAL)); // the god hand's ki mends as it strikes
+            kiShotHits++;
+            ServerFx.of("x_hit", at).vec(dd).a(0.9).color(color).send(level);
         }, (at, dd, wall) -> { });
-        return true;
     }
 
     /** 4s of gathering: a point of ki each second, and regeneration. */

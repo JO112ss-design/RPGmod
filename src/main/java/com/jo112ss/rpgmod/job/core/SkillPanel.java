@@ -124,6 +124,7 @@ public final class SkillPanel {
     public static int version(String job) {
         // bard and spellsinger: songs moved to the lute (spell cells), new skills; +2: no MP cells (MP fixed at 100)
         if ("bard".equals(job) || "spellsinger".equals(job)) return VERSION + 2;
+        if ("qi_master".equals(job)) return VERSION + 1; // god hand: the qi bullet skill went (every ki job shoots ki on the right button)
         return "healer".equals(job) ? VERSION + 1 : VERSION; // healer: heals moved to the staff, three new skills
     }
     public static final int RADIUS = 7;

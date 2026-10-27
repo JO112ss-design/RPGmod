@@ -996,8 +996,6 @@
   "rpgmod.skill.arcane_edge.desc": "属性をまとった巨大な一閃。",
   "rpgmod.skill.elemental_burst": "属性解放",
   "rpgmod.skill.elemental_burst.desc": "火・氷・雷の3連続の爆発を周りに起こす。",
-  "rpgmod.skill.qi_bullet": "気功弾",
-  "rpgmod.skill.qi_bullet.desc": "気の弾を撃つ。気を1つ使えば威力+80%。",
   "rpgmod.skill.refine_qi": "練気",
   "rpgmod.skill.refine_qi.desc": "4秒間、毎秒気が溜まり、体力も回復する。",
   "rpgmod.skill.healing_palm": "治癒の掌",
