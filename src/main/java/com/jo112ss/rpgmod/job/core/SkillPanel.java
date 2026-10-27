@@ -235,18 +235,37 @@ public final class SkillPanel {
 
     /**
      * Boost cells: for each skill cell, its boosts go on free neighbouring cells - outwards first (so
-     * the way on runs through the skill), then beside it, then inwards.
+     * the way on runs through the skill), then beside it, then inwards. A base job's first active (and
+     * first spell) come with the job, from the centre: their boosts sit round the centre.
      */
-    private static Map<Long, Object[]> boostCells(Map<Long, String[]> skills) {
+    private static Map<Long, Object[]> boostCells(JobDefs.Job job, Map<Long, String[]> skills) {
         Map<Long, Object[]> out = new java.util.LinkedHashMap<>();
         java.util.Set<Long> taken = new java.util.HashSet<>(skills.keySet());
         taken.add(key(0, 0));
         // a fixed order, so the layout never changes between runs
         List<long[]> cells = new ArrayList<>();
-        for (int k = 1; k <= RADIUS; k++) for (int[] c : ring(k)) if (skills.containsKey(key(c[0], c[1]))) cells.add(new long[] {c[0], c[1]});
-        for (long[] c : cells) {
+        List<String> ids = new ArrayList<>();
+        if (!JobDefs.isAdvanced(job.id())) { // the skills the centre gives
+            if (!job.actives().isEmpty()) {
+                cells.add(new long[] {0, 0});
+                ids.add(job.actives().get(0));
+            }
+            if (job.usesSpells() && !job.spells().isEmpty()) {
+                cells.add(new long[] {0, 0});
+                ids.add(job.spells().get(0));
+            }
+        }
+        for (int k = 1; k <= RADIUS; k++) {
+            for (int[] c : ring(k)) {
+                if (!skills.containsKey(key(c[0], c[1]))) continue;
+                cells.add(new long[] {c[0], c[1]});
+                ids.add(skills.get(key(c[0], c[1]))[1]);
+            }
+        }
+        for (int ci = 0; ci < cells.size(); ci++) {
+            long[] c = cells.get(ci);
             int q = (int) c[0], r = (int) c[1];
-            SkillDef def = JobDefs.skill(skills.get(key(q, r))[1]);
+            SkillDef def = JobDefs.skill(ids.get(ci));
             if (def == null) continue;
             List<SkillBoost.Cell> want = SkillBoost.cellsFor(def);
             int k = ringOf(q, r);
@@ -277,7 +296,7 @@ public final class SkillPanel {
         List<Node> nodes = new ArrayList<>();
         List<JobStat> stats = job.panelStats();
         Map<Long, String[]> skills = skillCells(job);
-        Map<Long, Object[]> boosts = boostCells(skills);
+        Map<Long, Object[]> boosts = boostCells(job, skills);
         nodes.add(new Node(0, 0, 0, NodeType.START, null, 0, null, 0, null, null));
         for (int k = 1; k <= RADIUS; k++) {
             List<int[]> cells = ring(k);

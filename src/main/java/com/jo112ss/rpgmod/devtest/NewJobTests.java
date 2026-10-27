@@ -1347,21 +1347,23 @@ final class NewJobTests {
             jobs++;
             int js = 0, jc = 0;
             for (var n : panel.nodes()) {
-                if (n.skill() != null) {
+                if (n.skill() != null || n.type() == com.jo112ss.rpgmod.job.core.SkillPanel.NodeType.START) {
+                    String sid = n.skill() != null ? n.skill() : JobDefs.isAdvanced(job.id()) || job.actives().isEmpty() ? null : job.actives().get(0);
+                    if (sid == null) continue;
                     js++;
-                    var def = JobDefs.skill(n.skill());
+                    var def = JobDefs.skill(sid);
                     int want = com.jo112ss.rpgmod.job.core.SkillBoost.cellsFor(def).size();
                     int got = 0;
-                    for (var o : panel.nodes()) if (o.type() == com.jo112ss.rpgmod.job.core.SkillPanel.NodeType.BOOST && n.skill().equals(o.boostSkill())) got++;
+                    for (var o : panel.nodes()) if (o.type() == com.jo112ss.rpgmod.job.core.SkillPanel.NodeType.BOOST && sid.equals(o.boostSkill())) got++;
                     if (got < want) {
                         short_++;
-                        log("boosts: {} {} has {} of {} boost cells", job.id(), n.skill(), got, want);
+                        log("boosts: {} {} has {} of {} boost cells", job.id(), sid, got, want);
                     }
                 }
                 if (n.type() == com.jo112ss.rpgmod.job.core.SkillPanel.NodeType.BOOST) {
                     jc++;
                     boolean next = false;
-                    for (var o : panel.neighbours(n)) if (n.boostSkill().equals(o.skill())) next = true;
+                    for (var o : panel.neighbours(n)) if (n.boostSkill().equals(o.skill()) || o.type() == com.jo112ss.rpgmod.job.core.SkillPanel.NodeType.START) next = true;
                     if (!next) apart++;
                 }
             }
@@ -1377,14 +1379,19 @@ final class NewJobTests {
         d.resetPanel();
         d.addBonusPoints(60);
         var panel = d.panel();
-        var slash = JobDefs.skill("power_slash");
+        // power slash comes with the job (its boosts sit round the centre); the second skill is on the panel
+        List<com.jo112ss.rpgmod.job.core.SkillPanel.Node> starter = new java.util.ArrayList<>();
+        for (var n : panel.nodes()) if ("power_slash".equals(n.boostSkill())) starter.add(n);
+        log("boosts: power slash (from the start) boosts {}", starter.stream().map(b -> b.boost() + "+" + Math.round(b.amount() * 100) + "% ring " + b.ring()).toList());
+        String second = JobDefs.job("fighter").actives().get(1);
+        var slash = JobDefs.skill(second);
         com.jo112ss.rpgmod.job.core.SkillPanel.Node skillNode = null;
         List<com.jo112ss.rpgmod.job.core.SkillPanel.Node> boosts = new java.util.ArrayList<>();
         for (var n : panel.nodes()) {
-            if ("power_slash".equals(n.skill())) skillNode = n;
-            if ("power_slash".equals(n.boostSkill())) boosts.add(n);
+            if (second.equals(n.skill())) skillNode = n;
+            if (second.equals(n.boostSkill())) boosts.add(n);
         }
-        log("boosts: power slash cell ring {} with boosts {}", skillNode == null ? -1 : skillNode.ring(),
+        log("boosts: {} cell ring {} with boosts {}", second, skillNode == null ? -1 : skillNode.ring(),
                 boosts.stream().map(b -> b.boost() + "+" + Math.round(b.amount() * 100) + "% ring " + b.ring() + " cost " + b.cost()).toList());
         double pow0 = JobManager.powerMultiplier(p, slash), cd0 = JobManager.cooldownSeconds(p, slash);
         // a boost next to something owned but without its skill: refused
