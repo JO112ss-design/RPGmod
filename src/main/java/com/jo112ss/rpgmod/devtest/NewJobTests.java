@@ -1419,9 +1419,9 @@ final class NewJobTests {
             JobManager.sync(p);
             com.jo112ss.rpgmod.job.SkillExecutor.execute(p, JobDefs.skill("meditate"), 1);
         });
-        SkillTasks.later(205, () -> log("kishot: meditating 2.25s - ki {} (+{} parts)", d.ki(), d.kiParts()));
-        SkillTasks.later(225, () -> log("kishot: meditation over - ki {} of {}", d.ki(), d.maxKi()));
-        SkillTasks.later(230, () -> {
+        SkillTasks.later(220, () -> log("kishot: meditating 3s - ki {} (+{} parts)", d.ki(), d.kiParts()));
+        SkillTasks.later(262, () -> log("kishot: meditation over (4.5s at this level) - ki {} of {}", d.ki(), d.maxKi()));
+        SkillTasks.later(266, () -> {
             if (dummy[0] != null) dummy[0].discard();
             p.setHealth(p.getMaxHealth());
             p.teleportTo(home.x, home.y, home.z);
