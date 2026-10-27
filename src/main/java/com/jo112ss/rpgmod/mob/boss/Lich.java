@@ -83,6 +83,10 @@ public class Lich extends Monster implements BloodMoonBoss {
     private int stateTicks, stateLength;
     private int nextMove = 50;
     private final Deque<Move> combo = new ArrayDeque<>();
+    /** Keeping out of water, and homing souls for someone out on it. */
+    public final BossWater.Tracker water = new BossWater.Tracker();
+    public final BossWater.Homing homing = new BossWater.Homing(0xB06AFF);
+    private boolean relocating;
     private int combos;
     private float damageTakenMult = 1;
     private int onlineSeen = -1;
@@ -126,6 +130,7 @@ public class Lich extends Monster implements BloodMoonBoss {
                 com.jo112ss.rpgmod.item.WeaponMaterial.NETHERITE)));
         this.setDropChance(EquipmentSlot.MAINHAND, 0);
         this.refreshDimensions(); // the scale attribute sets its size
+        BossWater.avoidWater(this);
     }
 
     public static AttributeSupplier.Builder createAttributes() {
@@ -225,6 +230,7 @@ public class Lich extends Monster implements BloodMoonBoss {
         if (this.tickCount % 8 == 0 && state != State.LEAVE) ServerFx.of("lich_aura", this.position()).follow(this).a(this.getBbWidth()).b(phase()).send(sl, 48);
         tickOrbs(sl);
         tickSigils(sl);
+        homing.tick(sl, this);
         if (state != State.LEAVE && phase() < 2 && this.getHealth() <= this.getMaxHealth() * 0.5F) startRise(sl);
 
         switch (state) {
@@ -235,7 +241,15 @@ public class Lich extends Monster implements BloodMoonBoss {
             case BEAM_AIM -> beamAim(sl);
             case BEAM, CAST_END, BLINK -> {
                 hold();
-                if (stateTicks >= stateLength) moveDone();
+                if (stateTicks >= stateLength) {
+                    if (relocating) { // a blink to dry ground is not a spell of the combo
+                        relocating = false;
+                        setState(State.CHASE, 0);
+                        nextMove = Math.max(nextMove, 12);
+                    } else {
+                        moveDone();
+                    }
+                }
             }
             case SUMMON -> summon(sl);
             case STORM -> storm(sl);
@@ -313,6 +327,14 @@ public class Lich extends Monster implements BloodMoonBoss {
         }
         double dist = Math.sqrt(t.distanceToSqr(this));
         this.getLookControl().setLookAt(t, 20, 20);
+        // out of the water / to the shore nearest someone out on it: it blinks there
+        Vec3 dry = water.relocate(sl, this, t);
+        if (dry != null) {
+            blinkTo(sl, dry, t);
+            relocating = true;
+            return;
+        }
+        if (water.homingDue(t, phase())) homing.volley(sl, this, t, phase() >= 2 ? 5 : 3, 6, 0.6, 14);
         // keep a caster's distance: closer than 7 it backs off, further than 16 it comes on
         if (this.tickCount % 10 == 0) {
             if (dist < 7) {
@@ -345,6 +367,7 @@ public class Lich extends Monster implements BloodMoonBoss {
                 : List.of(Move.BOLTS, Move.BOLTS, Move.SIGILS, Move.SIGILS, Move.BEAM, Move.NOVA));
         if (minions(sl) < (p2 ? 3 : 2)) pool.add(Move.SUMMON);
         int n = p2 ? 4 : 3;
+        if (water.ranged(target(sl))) pool.removeIf(x -> x == Move.NOVA); // someone out on the water: no use
         if (crowded > 30) {
             combo.add(this.random.nextBoolean() ? Move.NOVA : Move.BLINK);
             pool.removeIf(x -> x == Move.NOVA);
@@ -641,6 +664,19 @@ public class Lich extends Monster implements BloodMoonBoss {
     }
 
     // ------------------------------------------------------------------ blink
+
+    /** Vanishes and steps out at {@code at} (dry ground). */
+    private void blinkTo(ServerLevel sl, Vec3 at, LivingEntity t) {
+        Vec3 from = this.position();
+        ServerFx.of("lich_blink", from).a(this.getBbWidth()).b(this.getBbHeight()).send(sl, 64);
+        ServerFx.of("lich_blink", at).a(this.getBbWidth()).b(this.getBbHeight()).send(sl, 64);
+        sl.playSound(null, BlockPos.containing(from), SoundEvents.ENDERMAN_TELEPORT, SoundSource.HOSTILE, 2.0F, 0.5F);
+        this.teleportTo(at.x, at.y, at.z);
+        sl.playSound(null, this.blockPosition(), SoundEvents.ENDERMAN_TELEPORT, SoundSource.HOSTILE, 2.0F, 0.5F);
+        this.getNavigation().stop();
+        if (t != null) faceTarget(t);
+        setState(State.BLINK, 8);
+    }
 
     private void blink(ServerLevel sl, LivingEntity t) {
         Vec3 from = this.position();

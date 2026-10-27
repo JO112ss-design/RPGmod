@@ -172,6 +172,7 @@ public final class AutoTestClient {
             case "nj:dgallery" -> new int[] {70, 130, 190, 250, 310, 370, 430, 490, 550, 610, 670, 730, 790};
             case "nj:dungeon" -> new int[] {45, 70, 90, 300, 500, 700, 900};
             case "nj:eggs" -> new int[] {30, 70, 110, 190};
+            case "nj:bosswater" -> new int[] {95, 160, 218, 265, 395, 460, 518, 565, 695, 760, 818, 865, 995, 1060, 1118, 1165};
             case "sealing_chord", "holy_lance" -> new int[] {3, 8};
             case "earthshatter" -> new int[] {4, 10};
             case "earthshatter_", "frost_nova", "flame_burst", "berserk", "holy_guard", "lay_on_hands", "heal", "arcane_shield", "shadow_dance" -> new int[] {6};
@@ -314,6 +315,7 @@ public final class AutoTestClient {
             case "nj:dgallery" -> 840;
             case "nj:bosses" -> 1180;
             case "nj:eggs" -> 280;
+            case "nj:bosswater" -> 1320;
             case "nj:linger" -> 140;
             case "nj:ward" -> 210;
             case "nj:wardlinger" -> 80;
@@ -413,8 +415,10 @@ public final class AutoTestClient {
             if (false) showSkills.addAll(java.util.List.of("nj:restore", "nj:dgallery", "nj:dungeon", "nj:restore"));
             if (false) showSkills.clear(); // the two new bosses, every move
             if (false) showSkills.addAll(java.util.List.of("nj:restore", "nj:bosses", "nj:dungeon", "nj:restore"));
-            showSkills.clear(); // the spawn eggs
-            showSkills.addAll(java.util.List.of("nj:restore", "nj:eggs", "nj:restore"));
+            if (false) showSkills.clear(); // the spawn eggs
+            if (false) showSkills.addAll(java.util.List.of("nj:restore", "nj:eggs", "nj:restore"));
+            showSkills.clear(); // bosses against a player out on the water
+            showSkills.addAll(java.util.List.of("nj:restore", "nj:bosswater", "nj:restore"));
             if (false) showSkills.clear(); // spellsinger afterglow
             if (false) showSkills.addAll(java.util.List.of("nj:restore", "nj:wardlinger", "nj:ward", "nj:linger", "nj:restore"));
             if (false) showSkills.clear(); // songs: each with its own rhythm (bars from the song's style) and tune

@@ -88,6 +88,10 @@ public class KingSlime extends Slime implements BloodMoonBoss {
     private int stateLength;
     private int nextMove = 50;
     private final Deque<Move> combo = new ArrayDeque<>();
+    /** Keeping out of water, and homing slime for someone out on it. */
+    public final BossWater.Tracker water = new BossWater.Tracker();
+    public final BossWater.Homing homing = new BossWater.Homing(0x5FD8FF);
+    private boolean relocating, holdShore;
     private int splits;
     private float damageTakenMult = 1;
     private int absorbCooldown = 300;
@@ -240,7 +244,7 @@ public class KingSlime extends Slime implements BloodMoonBoss {
     @Override
     protected boolean isImmobile() {
         // during its moves the king is steered by the move itself, not by the slime AI
-        return super.isImmobile() || (!this.level().isClientSide() && state != State.CHASE);
+        return super.isImmobile() || (!this.level().isClientSide() && (state != State.CHASE || holdShore));
     }
 
     @Override
@@ -282,6 +286,7 @@ public class KingSlime extends Slime implements BloodMoonBoss {
         tickWaves(sl);
         tickDrops(sl);
         tickPuddles(sl);
+        homing.tick(sl, this);
         touchCooldown.replaceAll((k, v) -> v - 1);
         touchCooldown.values().removeIf(v -> v <= 0);
         if (state != State.LEAVE) checkSplit(sl);
@@ -339,7 +344,20 @@ public class KingSlime extends Slime implements BloodMoonBoss {
 
     private void chase(ServerLevel sl) {
         LivingEntity t = target(sl);
+        holdShore = false;
         if (t == null) return;
+        // out of the water / to the shore nearest someone out on it
+        Vec3 dry = water.relocate(sl, this, t);
+        if (dry != null) {
+            relocating = true;
+            hop = Hop.SLAM;
+            hopsLeft = 1;
+            windupTo(sl, dry, true);
+            return;
+        }
+        // someone out on the water: no hopping in after them (from close by), homing slime instead
+        holdShore = water.ranged(t) && t.distanceToSqr(this) < 24 * 24 && !BossWater.inWater(this);
+        if (water.homingDue(t, phase())) homing.volley(sl, this, t, phase() >= 2 ? 5 : 3, 6, 0.6, 14);
         if (--nextMove > 0 || !this.onGround()) return;
         if (Math.sqrt(t.distanceToSqr(this)) > 40) return;
         if (combo.isEmpty()) buildCombo(sl);
@@ -354,6 +372,10 @@ public class KingSlime extends Slime implements BloodMoonBoss {
                 ? List.of(Move.TRIPLE, Move.TRIPLE, Move.SLAM, Move.BOUNCE, Move.BOUNCE, Move.SPIT, Move.DASH, Move.DASH, Move.RAIN, Move.RIPPLE, Move.RIPPLE)
                 : List.of(Move.SLAM, Move.SLAM, Move.BOUNCE, Move.BOUNCE, Move.SPIT, Move.DASH, Move.DASH, Move.RAIN));
         int n = p2 ? 4 : 3;
+        if (water.ranged(target(sl))) { // someone out on the water: spit and rain only
+            pool = new ArrayList<>(List.of(Move.SPIT, Move.RAIN));
+            n = 2;
+        }
         if (p2 && absorbCooldown <= 0 && children(sl).size() >= 2 && this.random.nextBoolean()) {
             combo.add(Move.ABSORB);
             n--;
@@ -435,8 +457,11 @@ public class KingSlime extends Slime implements BloodMoonBoss {
     }
 
     private void windupAt(ServerLevel sl, LivingEntity t, boolean first) {
+        windupTo(sl, t.position().add(t.getDeltaMovement().multiply(4, 0, 4)), first); // a little lead
+    }
+
+    private void windupTo(ServerLevel sl, Vec3 aim, boolean first) {
         boolean p2 = phase() >= 2;
-        Vec3 aim = t.position().add(t.getDeltaMovement().multiply(4, 0, 4)); // a little lead
         Vec3 flat = aim.subtract(this.position()).multiply(1, 0, 1);
         double dist = flat.length();
         int windup;
@@ -491,14 +516,16 @@ public class KingSlime extends Slime implements BloodMoonBoss {
     private void leap(ServerLevel sl) {
         double s = Math.min(1, (stateTicks + 1) / (double) stateLength);
         Vec3 want = leapFrom.lerp(leapTo, s).add(0, leapHeight * 4 * s * (1 - s), 0);
+        this.noPhysics = relocating && s < 0.85; // out of the water and over the bank
         this.setDeltaMovement(want.subtract(this.position()));
         this.needsSync = true;
         this.resetFallDistance();
-        boolean blocked = stateTicks > stateLength / 2 && this.onGround();
+        boolean blocked = !relocating && stateTicks > stateLength / 2 && this.onGround();
         if (s >= 1 || blocked || stateTicks > stateLength + 10) land(sl);
     }
 
     private void land(ServerLevel sl) {
+        this.noPhysics = false;
         Vec3 c = this.position();
         lastLand = this.tickCount;
         float slam = switch (hop) { case BOUNCE -> 5; case TRIPLE -> 7; default -> 8; };
@@ -520,6 +547,13 @@ public class KingSlime extends Slime implements BloodMoonBoss {
         if (hop != Hop.BOUNCE) sl.playSound(null, this.blockPosition(), SoundEvents.GENERIC_EXPLODE.value(), SoundSource.HOSTILE, 1.2F, 0.7F);
         sl.playSound(null, this.blockPosition(), SoundEvents.SLIME_SQUISH, SoundSource.HOSTILE, 3.0F, 0.4F);
         this.setDeltaMovement(Vec3.ZERO);
+        if (relocating) { // a leap to dry ground is not a move of the combo
+            relocating = false;
+            hopsLeft = 0;
+            setState(State.CHASE, 0);
+            nextMove = Math.max(nextMove, 12);
+            return;
+        }
         if (--hopsLeft > 0) {
             LivingEntity t = target(sl);
             if (t != null) {

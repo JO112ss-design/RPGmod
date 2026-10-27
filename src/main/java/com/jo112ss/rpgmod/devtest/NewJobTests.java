@@ -102,6 +102,7 @@ final class NewJobTests {
             case "dgallery" -> dungeonGallery(level, p);
             case "bosses" -> newBosses(level, p);
             case "eggs" -> spawnEggs(level, p);
+            case "bosswater" -> bossWater(level, p);
             case "counter_lance" -> counterLance(level, p, dummies);
             case "wall", "unwall" -> wall(level, p, name.equals("wall"));
             default -> {
@@ -343,6 +344,111 @@ final class NewJobTests {
         SkillTasks.later(300, () -> {
             for (var z : level.getEntitiesOfClass(net.minecraft.world.entity.monster.zombie.Husk.class, p.getBoundingBox().inflate(20))) z.discard();
         });
+    }
+
+    /**
+     * Bosses against a player in a boat out on a pond: each boss should leap to the shore nearest them
+     * (not wade in), fire homing shots that hit, and, dropped into the water, leap back out.
+     */
+    private static void bossWater(ServerLevel level, ServerPlayer p) {
+        Vec3 home = p.position();
+        int cx = (int) Math.floor(home.x), cz = (int) Math.floor(home.z) - 220;
+        int top = (int) Math.floor(home.y) - 1; // the grass of the flat test world
+        p.teleportTo(cx + 0.5, top + 1, cz + 0.5);
+        var mode = p.gameMode();
+        boolean keep = com.jo112ss.rpgmod.mob.boss.BloodMoon.testKeep;
+        com.jo112ss.rpgmod.mob.boss.BloodMoon.testKeep = true;
+        boolean[] done = {false};
+        net.minecraft.world.entity.Entity[] boat = {null};
+        float[] lost = {0};
+        SkillTasks.later(30, () -> {
+            // a pond 17 x 17, three deep, in the flat ground
+            for (int x = -8; x <= 8; x++) {
+                for (int z = -8; z <= 8; z++) {
+                    for (int y = top - 2; y <= top; y++) level.setBlockAndUpdate(new net.minecraft.core.BlockPos(cx + x, y, cz + z), net.minecraft.world.level.block.Blocks.WATER.defaultBlockState());
+                }
+            }
+            for (var m : level.getEntitiesOfClass(net.minecraft.world.entity.Mob.class, p.getBoundingBox().inflate(60))) m.discard();
+            p.setGameMode(net.minecraft.world.level.GameType.SURVIVAL);
+            p.getAbilities().invulnerable = false;
+            p.onUpdateAbilities();
+            var b = net.minecraft.world.entity.EntityTypes.DARK_OAK_BOAT.create(level, net.minecraft.world.entity.EntitySpawnReason.COMMAND);
+            b.snapTo(cx + 0.5, top + 0.6, cz + 0.5, 0, 0);
+            level.addFreshEntity(b);
+            boat[0] = b;
+            p.startRiding(b, true, true);
+            log("bosswater: pond at {} {} {}, player riding {} - out on the water {}", cx, top, cz, p.getVehicle() != null,
+                    com.jo112ss.rpgmod.mob.boss.BossWater.waterBound(p));
+        });
+        SkillTasks.run(age -> { // keep the tester afloat and standing
+            if (age > 30) {
+                lost[0] += Math.max(0, p.getMaxHealth() - p.getHealth());
+                p.setHealth(p.getMaxHealth());
+                p.addEffect(new net.minecraft.world.effect.MobEffectInstance(net.minecraft.world.effect.MobEffects.RESISTANCE, 20, 3, false, false));
+                if (boat[0] != null && p.getVehicle() == null) p.startRiding(boat[0], true, true);
+                p.setYRot(0);
+            }
+            return done[0] || age > 1400;
+        });
+        var types = com.jo112ss.rpgmod.mob.boss.BloodMoon.bosses();
+        for (int i = 0; i < types.size(); i++) {
+            var type = types.get(i);
+            int t0 = 50 + i * 300;
+            net.minecraft.world.entity.Mob[] boss = {null};
+            SkillTasks.later(t0, () -> {
+                for (var m : level.getEntitiesOfClass(net.minecraft.world.entity.Mob.class, p.getBoundingBox().inflate(60))) m.discard();
+                var b = type.create(level, net.minecraft.world.entity.EntitySpawnReason.EVENT);
+                b.snapTo(cx + 0.5, top + 1, cz + 24.5, 180, 0);
+                b.setPersistenceRequired();
+                b.setData(com.jo112ss.rpgmod.registry.ModRegistries.MOB_LEVEL, 60);
+                level.addFreshEntity(b);
+                ((com.jo112ss.rpgmod.mob.boss.BloodMoonBoss) b).recomputeHealth(true);
+                b.setTarget(p);
+                boss[0] = b;
+                log("bosswater: {} on the bank, {} blocks from the boat", b.getType().getDescriptionId(), String.format("%.1f", b.distanceTo(p)));
+            });
+            java.util.function.Consumer<String> report = when -> {
+                var b = boss[0];
+                if (b == null) return;
+                com.jo112ss.rpgmod.mob.boss.BossWater.Tracker w = waterOf(b);
+                com.jo112ss.rpgmod.mob.boss.BossWater.Homing h = homingOf(b);
+                log("bosswater: {} {} - at {} {} from the boat, in water {}, leaps {} volleys {} homing hits {}, alive {}", b.getType().getDescriptionId(), when,
+                        b.blockPosition(), String.format("%.1f", b.distanceTo(p)), com.jo112ss.rpgmod.mob.boss.BossWater.inWater(b), w.leaps, w.volleys, h.hits, b.isAlive());
+            };
+            SkillTasks.later(t0 + 150, () -> report.accept("after 7 s"));
+            SkillTasks.later(t0 + 160, () -> { // dropped into the pond
+                var b = boss[0];
+                if (b == null) return;
+                b.teleportTo(cx + 4.5, top - 1, cz + 4.5);
+                log("bosswater: {} dropped into the pond, in water {}", b.getType().getDescriptionId(), b.isInWater());
+            });
+            SkillTasks.later(t0 + 175, () -> report.accept("0.75 s in the water"));
+            SkillTasks.later(t0 + 290, () -> report.accept("after 6.5 s more"));
+        }
+        SkillTasks.later(50 + types.size() * 300 + 10, () -> {
+            done[0] = true;
+            log("bosswater: player took {} in all", String.format("%.0f", lost[0]));
+            for (var m : level.getEntitiesOfClass(net.minecraft.world.entity.Mob.class, p.getBoundingBox().inflate(60))) m.discard();
+            p.stopRiding();
+            if (boat[0] != null) boat[0].discard();
+            com.jo112ss.rpgmod.mob.boss.BloodMoon.testKeep = keep;
+            p.setGameMode(mode);
+            p.teleportTo(home.x, home.y, home.z);
+        });
+    }
+
+    private static com.jo112ss.rpgmod.mob.boss.BossWater.Tracker waterOf(net.minecraft.world.entity.Mob b) {
+        if (b instanceof com.jo112ss.rpgmod.mob.boss.KingSlime k) return k.water;
+        if (b instanceof com.jo112ss.rpgmod.mob.boss.Golem g) return g.water;
+        if (b instanceof com.jo112ss.rpgmod.mob.boss.Lich l) return l.water;
+        return ((com.jo112ss.rpgmod.mob.boss.SpiderQueen) b).water;
+    }
+
+    private static com.jo112ss.rpgmod.mob.boss.BossWater.Homing homingOf(net.minecraft.world.entity.Mob b) {
+        if (b instanceof com.jo112ss.rpgmod.mob.boss.KingSlime k) return k.homing;
+        if (b instanceof com.jo112ss.rpgmod.mob.boss.Golem g) return g.homing;
+        if (b instanceof com.jo112ss.rpgmod.mob.boss.Lich l) return l.homing;
+        return ((com.jo112ss.rpgmod.mob.boss.SpiderQueen) b).homing;
     }
 
     /**

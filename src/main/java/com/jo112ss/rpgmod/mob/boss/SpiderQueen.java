@@ -81,6 +81,11 @@ public class SpiderQueen extends Monster implements BloodMoonBoss {
     private int stateTicks, stateLength;
     private int nextMove = 50;
     private final Deque<Move> combo = new ArrayDeque<>();
+    /** Keeping out of water, and homing venom for someone out on it. */
+    public final BossWater.Tracker water = new BossWater.Tracker();
+    public final BossWater.Homing homing = new BossWater.Homing(0x9AF060);
+    private boolean relocating;
+    private int pounceTime = 14;
     private int combos;
     private float damageTakenMult = 1;
     private int onlineSeen = -1;
@@ -126,6 +131,7 @@ public class SpiderQueen extends Monster implements BloodMoonBoss {
         super(type, level);
         this.xpReward = 200;
         this.refreshDimensions(); // the scale attribute sets her size
+        BossWater.avoidWater(this);
     }
 
     public static AttributeSupplier.Builder createAttributes() {
@@ -225,6 +231,7 @@ public class SpiderQueen extends Monster implements BloodMoonBoss {
         tickWebs(sl);
         tickZones(sl);
         tickEggs(sl);
+        homing.tick(sl, this);
         if (state != State.LEAVE && phase() < 2 && this.getHealth() <= this.getMaxHealth() * 0.5F) startShriek(sl);
 
         switch (state) {
@@ -331,6 +338,16 @@ public class SpiderQueen extends Monster implements BloodMoonBoss {
         }
         double dist = Math.sqrt(t.distanceToSqr(this));
         this.getLookControl().setLookAt(t, 30, 30);
+        // out of the water / to the shore nearest someone out on it
+        Vec3 dry = water.relocate(sl, this, t);
+        if (dry != null) {
+            relocating = true;
+            pouncesLeft = 0;
+            pounceTo(sl, dry, 6);
+            return;
+        }
+        boolean ranged = water.ranged(t);
+        if (water.homingDue(t, phase())) homing.volley(sl, this, t, phase() >= 2 ? 5 : 3, 6, 0.6, 14);
         if (this.tickCount % 8 == 0) this.getNavigation().moveTo(t, 1.0);
         close = dist < reach() + 1.5 ? close + 1 : Math.max(0, close - 2);
         // stuck (walls, a tower): she leaps at the target
@@ -338,7 +355,7 @@ public class SpiderQueen extends Monster implements BloodMoonBoss {
             boolean moved = this.position().distanceTo(lastPos) > 1.0;
             lastPos = this.position();
             stuckTicks = moved || dist < reach() + 1 ? 0 : stuckTicks + 20;
-            if (stuckTicks >= 60 && this.onGround()) {
+            if (stuckTicks >= 60 && this.onGround() && !ranged) {
                 stuckTicks = 0;
                 pouncesLeft = 0;
                 startPounce(sl, t, 8);
@@ -365,6 +382,12 @@ public class SpiderQueen extends Monster implements BloodMoonBoss {
                 : List.of(Move.POUNCE, Move.POUNCE, Move.WEBS, Move.WEBS, Move.SPRAY, Move.SPRAY, Move.SKITTER, Move.SKITTER));
         if (brood(sl) < (p2 ? 6 : 4)) pool.add(Move.EGGS);
         int n = p2 ? 4 : 3;
+        if (water.ranged(target(sl))) { // someone out on the water: webs, and a brood that swims after them
+            boolean eggs = pool.contains(Move.EGGS);
+            pool = new ArrayList<>(List.of(Move.WEBS));
+            if (eggs) pool.add(Move.EGGS);
+            n = 2;
+        }
         if (close > 25 && this.random.nextDouble() < 0.75) {
             combo.add(Move.SWIPE);
             close = 0;
@@ -433,9 +456,19 @@ public class SpiderQueen extends Monster implements BloodMoonBoss {
         Vec3 lead = t.position().add(t.getDeltaMovement().multiply(6, 0, 6));
         Vec3 d = lead.subtract(leapFrom).multiply(1, 0, 1);
         if (d.length() > 18) lead = leapFrom.add(d.normalize().scale(18));
-        leapTo = groundBelow(sl, lead.add(0, 2, 0));
+        pounceTo(sl, groundBelow(sl, lead.add(0, 2, 0)), crouch);
+    }
+
+    /** A pounce onto a spot: crouch, mark, leap (longer leaps take longer). */
+    private void pounceTo(ServerLevel sl, Vec3 to, int crouch) {
+        leapFrom = this.position();
+        leapTo = to;
+        aimDir = to.subtract(leapFrom).multiply(1, 0, 1);
+        aimDir = aimDir.lengthSqr() < 1e-4 ? Vec3.directionFromRotation(0, this.getYRot()) : aimDir.normalize();
+        face(aimDir);
+        pounceTime = (int) Mth.clamp(10 + leapFrom.distanceTo(leapTo) * 0.4, 14, 26);
         setState(State.CROUCH, crouch);
-        ServerFx.of("king_mark", leapTo).a(pounceRadius()).b(crouch + 14).send(sl, 64);
+        ServerFx.of("king_mark", leapTo).a(pounceRadius()).b(crouch + pounceTime).send(sl, 64);
         sl.playSound(null, this.blockPosition(), SoundEvents.SPIDER_AMBIENT, SoundSource.HOSTILE, 2.5F, 0.5F);
     }
 
@@ -443,7 +476,7 @@ public class SpiderQueen extends Monster implements BloodMoonBoss {
         hold();
         face(aimDir);
         if (stateTicks >= stateLength) {
-            setState(State.POUNCE, 14);
+            setState(State.POUNCE, pounceTime);
             sl.playSound(null, this.blockPosition(), SoundEvents.SPIDER_STEP, SoundSource.HOSTILE, 3.0F, 0.6F);
         }
     }
@@ -472,6 +505,13 @@ public class SpiderQueen extends Monster implements BloodMoonBoss {
             ServerFx.of("queen_land", c).a(pounceRadius()).send(sl, 64);
             sl.playSound(null, this.blockPosition(), SoundEvents.SPIDER_STEP, SoundSource.HOSTILE, 3.0F, 0.4F);
             sl.playSound(null, this.blockPosition(), SoundEvents.GENERIC_EXPLODE.value(), SoundSource.HOSTILE, 0.8F, 1.2F);
+            if (relocating) { // a leap to dry ground is not a move of the combo
+                relocating = false;
+                pouncesLeft = 0;
+                setState(State.CHASE, 0);
+                nextMove = Math.max(nextMove, 12);
+                return;
+            }
             if (pouncesLeft > 0) pouncesLeft--;
             setState(State.LANDED, pouncesLeft > 0 ? 4 : 10);
         }

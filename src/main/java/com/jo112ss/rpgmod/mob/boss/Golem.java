@@ -83,6 +83,10 @@ public class Golem extends Monster implements BloodMoonBoss {
     private final Deque<Move> combo = new ArrayDeque<>();
     private float damageTakenMult = 1;
     private int armours;
+    /** Keeping out of water, and homing rocks for someone out on it. */
+    public final BossWater.Tracker water = new BossWater.Tracker();
+    private boolean relocating;
+    public final BossWater.Homing homing = new BossWater.Homing(0xFF6A30);
     private int onlineSeen = -1;
     private double healthTarget;
     private float toughness = 1;
@@ -146,6 +150,7 @@ public class Golem extends Monster implements BloodMoonBoss {
     public Golem(EntityType<? extends Golem> type, Level level) {
         super(type, level);
         this.xpReward = 200;
+        BossWater.avoidWater(this);
     }
 
     public static AttributeSupplier.Builder createAttributes() {
@@ -270,6 +275,7 @@ public class Golem extends Monster implements BloodMoonBoss {
         tickWaves(sl);
         tickRocks(sl);
         tickFissures(sl);
+        homing.tick(sl, this);
         if (state != State.LEAVE) checkArmour(sl);
 
         switch (state) {
@@ -365,6 +371,15 @@ public class Golem extends Monster implements BloodMoonBoss {
         }
         double dist = Math.sqrt(t.distanceToSqr(this));
         this.getLookControl().setLookAt(t, 20, 20);
+        // out of the water / to the shore nearest someone out on it
+        Vec3 dry = water.relocate(sl, this, t);
+        if (dry != null) {
+            relocating = true;
+            startLeap(sl, dry);
+            return;
+        }
+        boolean ranged = water.ranged(t);
+        if (water.homingDue(t, phase())) homing.volley(sl, this, t, phase() >= 2 ? 5 : 3, 7, 0.55, 16);
         if (this.tickCount % 8 == 0) this.getNavigation().moveTo(t, 1.0);
         // a plain punch when someone is in reach
         double flat = Math.hypot(t.getX() - this.getX(), t.getZ() - this.getZ());
@@ -380,9 +395,9 @@ public class Golem extends Monster implements BloodMoonBoss {
             boolean moved = this.position().distanceTo(lastPos) > 1.0;
             lastPos = this.position();
             stuckTicks = moved || dist < reach() + 1 ? 0 : stuckTicks + 20;
-            if (stuckTicks >= 60 && this.onGround()) {
+            if (stuckTicks >= 60 && this.onGround() && !ranged) {
                 stuckTicks = 0;
-                startLeap(sl, t);
+                startLeap(sl, groundBelow(sl, t.position()));
                 return;
             }
         }
@@ -399,6 +414,10 @@ public class Golem extends Monster implements BloodMoonBoss {
                 ? List.of(Move.QUAKE, Move.QUAKE, Move.SLAM, Move.THROW, Move.THROW, Move.FISSURE, Move.FISSURE, Move.CHARGE, Move.CHARGE, Move.ROCKFALL)
                 : List.of(Move.SLAM, Move.SLAM, Move.THROW, Move.THROW, Move.FISSURE, Move.FISSURE, Move.CHARGE, Move.ROCKFALL));
         int n = p2 ? 4 : 3;
+        if (water.ranged(target(sl))) { // someone out on the water: rocks only
+            pool = new ArrayList<>(List.of(Move.THROW, Move.ROCKFALL));
+            n = 2;
+        }
         // someone hugging it: the sweep comes first
         if (!fighters(sl, reach() + 1.5).isEmpty() && this.random.nextDouble() < 0.7) {
             combo.add(Move.SWEEP);
@@ -803,8 +822,8 @@ public class Golem extends Monster implements BloodMoonBoss {
 
     // ------------------------------------------------------------------ leap (cannot walk there)
 
-    private void startLeap(ServerLevel sl, LivingEntity t) {
-        leapTo = groundBelow(sl, t.position());
+    private void startLeap(ServerLevel sl, Vec3 to) {
+        leapTo = to;
         leapFrom = this.position();
         double dist = leapTo.subtract(leapFrom).multiply(1, 0, 1).length();
         leapTime = (int) Mth.clamp(12 + dist * 0.6, 16, 30);
@@ -825,6 +844,12 @@ public class Golem extends Monster implements BloodMoonBoss {
         if (s >= 1 || stateTicks > stateLength + 10) {
             this.noPhysics = false;
             slamHit(sl, 9, 5, 7);
+            if (relocating) { // a leap to dry ground is not a move of the combo
+                relocating = false;
+                setState(State.CHASE, 0);
+                nextMove = Math.max(nextMove, 14);
+                return;
+            }
             fistsDown(16);
         }
     }
@@ -1063,7 +1088,7 @@ public class Golem extends Monster implements BloodMoonBoss {
         switch (move) {
             case "overheat" -> startOverheat();
             case "combo" -> nextMove = 0;
-            case "leap" -> startLeap(sl, t);
+            case "leap" -> startLeap(sl, groundBelow(sl, t.position()));
             case "armour" -> raiseArmour(sl);
             default -> start(sl, Move.valueOf(move.toUpperCase(java.util.Locale.ROOT)), t);
         }

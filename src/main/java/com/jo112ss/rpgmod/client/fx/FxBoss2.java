@@ -48,6 +48,8 @@ final class FxBoss2 {
             case "queen_shriek" -> shriek(p);
             case "queen_death" -> queenDeath(p);
             case "queen_spawn" -> queenSpawn(p);
+            case "boss_homing" -> homing(p);
+            case "boss_homing_hit" -> orbHit(p);
             default -> {
                 return false;
             }
@@ -121,6 +123,52 @@ final class FxBoss2 {
                 Fx.p(S.GLOW, end).color(FxUlt.light(c), c).size(0.3F, 0).alpha(0.7F, 0).life(9).spawn();
                 if (age % 3 == 0) Fx.p(S.TWINKLE, end.add(Fx.randomUnit().scale(0.3))).color(0xFFFFFF, c).size(0.3F, 0).life(6).spawn();
             }
+            return wall;
+        });
+    }
+
+    /**
+     * A homing shot (any boss, at someone out on the water): it gathers over the boss, then flies,
+     * turning after its target the way the server's shot does (see BossWater.Homing).
+     */
+    private static void homing(P p) {
+        var level = Minecraft.getInstance().level;
+        if (level == null) return;
+        int c = p.colorOr(SOUL);
+        Entity target = p.e();
+        final Vec3[] pos = {p.pos()};
+        final Vec3[] vel = {p.vec()};
+        double speed = Math.max(0.1, p.vec().length());
+        int delay = Math.max(0, (int) p.a());
+        int life = Math.max(1, (int) p.b());
+        FxAnims.run(delay + life, age -> {
+            Vec3 at = pos[0];
+            if (age < delay) { // gathering: a pulsing orb and motes drawn in
+                float k = (age + 1) / (float) Math.max(1, delay);
+                Fx.p(S.ORB, at).color(0xFFFFFF, c).size(0.2F + 0.3F * k).alpha(1, 1).life(1).spawn();
+                Fx.p(S.GLOW, at).color(c).size(0.6F + 0.6F * k).alpha(0.4F, 0.3F).life(1).spawn();
+                if (age % 2 == 0) {
+                    Vec3 o = at.add(Fx.randomUnit().scale(1.2));
+                    Fx.p(S.GLOW, o).vel(at.subtract(o).scale(0.15)).color(0xFFFFFF, c).size(0.15F, 0).life(7).spawn();
+                }
+                return false;
+            }
+            if (target != null && target.isAlive()) {
+                Vec3 want = target.position().add(0, target.getBbHeight() * 0.5, 0).subtract(at);
+                if (want.lengthSqr() > 1e-4) vel[0] = vel[0].normalize().lerp(want.normalize(), 0.14).normalize().scale(speed);
+            }
+            Vec3 to = at.add(vel[0]);
+            var block = level.clip(new ClipContext(at, to, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, net.minecraft.world.phys.shapes.CollisionContext.empty()));
+            boolean wall = block.getType() != HitResult.Type.MISS;
+            Vec3 end = wall ? block.getLocation() : to;
+            for (Player pl : level.getEntitiesOfClass(Player.class, new AABB(at, end).inflate(1.0), pl -> pl.isAlive() && !pl.isSpectator())) {
+                if (pl.getBoundingBox().inflate(0.4).clip(at, end).isPresent() || pl.getBoundingBox().inflate(0.4).contains(end)) return true;
+            }
+            pos[0] = end;
+            Fx.p(S.ORB, end).color(0xFFFFFF, c).size(0.5F).alpha(1, 1).life(1).spawn();
+            Fx.p(S.GLOW, end).color(c).size(1.1F).alpha(0.45F, 0.3F).life(1).spawn();
+            Fx.p(S.GLOW, end).color(FxUlt.light(c), c).size(0.35F, 0).alpha(0.7F, 0).life(12).spawn();
+            if (age % 2 == 0) Fx.p(S.TWINKLE, end.add(Fx.randomUnit().scale(0.3))).color(0xFFFFFF, c).size(0.3F, 0).life(8).spawn();
             return wall;
         });
     }
