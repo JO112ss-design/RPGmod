@@ -1408,9 +1408,9 @@ final class NewJobTests {
         });
         SkillTasks.later(120, () -> com.jo112ss.rpgmod.job.Monk.press(p));
         SkillTasks.later(146, () -> com.jo112ss.rpgmod.job.Monk.release(p));
-        SkillTasks.later(150, () -> log("kishot: god hand hits {} healed {} (max {}), ki {}", com.jo112ss.rpgmod.job.MoreJobSkills.kiShotHits,
+        SkillTasks.later(158, () -> log("kishot: god hand hits {} healed {} (max {}), ki {}", com.jo112ss.rpgmod.job.MoreJobSkills.kiShotHits,
                 String.format("%.1f", com.jo112ss.rpgmod.job.MoreJobSkills.kiShotHealed), String.format("%.0f", p.getMaxHealth()), d.ki()));
-        SkillTasks.later(160, () -> {
+        SkillTasks.later(165, () -> {
             if (dummy[0] != null) dummy[0].discard();
             p.setHealth(p.getMaxHealth());
             p.teleportTo(home.x, home.y, home.z);
