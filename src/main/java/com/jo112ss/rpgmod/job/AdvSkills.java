@@ -907,7 +907,7 @@ public final class AdvSkills {
     // ================================================================== joker
 
     private static boolean isBig(LivingEntity e) {
-        return e.is(net.neoforged.neoforge.common.Tags.EntityTypes.BOSSES) || e instanceof com.jo112ss.rpgmod.mob.boss.BloodMoonBoss;
+        return e.is(net.neoforged.neoforge.common.Tags.EntityTypes.BOSSES) || e instanceof com.jo112ss.rpgmod.mob.boss.ModBoss;
     }
 
     /** Trade places with the targeted enemy, leaving it dazed. */

@@ -225,6 +225,8 @@ public final class BuilderGoal extends Goal {
     boolean place(ServerLevel sl, BlockPos p) {
         BlockState at = sl.getBlockState(p);
         if (!at.canBeReplaced()) return false;
+        // never in a dungeon: players cannot break blocks there, so a pillar would stay for good
+        if (com.jo112ss.rpgmod.dungeon.Dungeons.isDungeon(sl)) return false;
         AABB box = new AABB(p);
         if (!sl.getEntitiesOfClass(LivingEntity.class, box, e -> e != mob && e.isAlive()).isEmpty()) return false;
         if (mob.getBoundingBox().intersects(box)) return false;

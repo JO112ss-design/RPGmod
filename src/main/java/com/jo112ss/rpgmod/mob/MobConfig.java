@@ -66,12 +66,8 @@ public final class MobConfig {
     public static final ModConfigSpec.DoubleValue DRAGON_PER_PLAYER = B.comment("Extra Ender Dragon health per additional player online, spectators not counted (0.6 = +60%; 6 players: x4)").defineInRange("dragonHealthPerPlayer", 0.6, 0, 10);
     public static final ModConfigSpec.DoubleValue DRAGON_WINDOW = B.comment("Most of its health the dragon can lose per perch, or per flight between perches (0.2 = 20%; 0 = no limit)").defineInRange("dragonMaxShare", 0.2, 0, 1);
     static {
-        B.pop().push("bloodMoon");
+        B.pop().push("bosses");
     }
-    public static final ModConfigSpec.BooleanValue BLOOD_MOON = B.comment("Blood moon nights with a boss").define("enabled", true);
-    public static final ModConfigSpec.IntValue BLOOD_MOON_DAYS = B.comment("A blood moon (and its boss) comes on the night of every Nth day").defineInRange("everyNthDay", 5, 1, 1000);
-    public static final ModConfigSpec.DoubleValue BLOOD_MOON_SPAWNS = B.comment("Share of normal monster spawns during a blood moon").defineInRange("spawnRate", 0.2, 0, 1);
-    public static final ModConfigSpec.BooleanValue DAY_TITLE = B.comment("Show 'Day N' every morning").define("dayTitle", true);
     public static final ModConfigSpec.DoubleValue KING_HEALTH = B.comment("King Slime health at level 1 for one player (grows with level like other monsters)").defineInRange("kingSlimeBaseHealth", 800.0, 1, 100000);
     public static final ModConfigSpec.DoubleValue GOLEM_HEALTH = B.comment("Golem health at level 1 for one player (grows with level like other monsters)").defineInRange("golemBaseHealth", 800.0, 1, 100000);
     public static final ModConfigSpec.DoubleValue LICH_HEALTH = B.comment("Lich King health at level 1 for one player (grows with level like other monsters)").defineInRange("lichBaseHealth", 800.0, 1, 100000);
@@ -86,28 +82,12 @@ public final class MobConfig {
 
     public static final ModConfigSpec SPEC = B.build();
 
-    public static boolean bloodMoon() {
-        return !SPEC.isLoaded() || BLOOD_MOON.get();
-    }
-
-    public static int bloodMoonDays() {
-        return SPEC.isLoaded() ? BLOOD_MOON_DAYS.get() : 5;
-    }
-
     public static double eliteChance() {
         return SPEC.isLoaded() ? ELITE_CHANCE.get() : 0.08;
     }
 
     public static double revenantChance() {
         return SPEC.isLoaded() ? REVENANT_CHANCE.get() : 0.25;
-    }
-
-    public static double bloodMoonSpawns() {
-        return SPEC.isLoaded() ? BLOOD_MOON_SPAWNS.get() : 0.2;
-    }
-
-    public static boolean dayTitle() {
-        return !SPEC.isLoaded() || DAY_TITLE.get();
     }
 
     public static double golemHealth() {

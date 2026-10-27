@@ -32,7 +32,7 @@ public final class GemDrops {
     }
 
     public static boolean isBoss(LivingEntity e) {
-        return e.is(Tags.EntityTypes.BOSSES) || e instanceof com.jo112ss.rpgmod.mob.boss.BloodMoonBoss;
+        return e.is(Tags.EntityTypes.BOSSES) || e instanceof com.jo112ss.rpgmod.mob.boss.ModBoss;
     }
 
     @SubscribeEvent

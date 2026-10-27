@@ -256,8 +256,8 @@ public final class JobManager {
         double exp = victim.getMaxHealth() * JobConfig.EXP_MULTIPLIER.get();
         // levelled monsters have three times vanilla's health scale: experience stays as it was
         if (com.jo112ss.rpgmod.mob.MobLevels.isLevelled(victim) && com.jo112ss.rpgmod.mob.MobLevels.level(victim) > 0) exp /= com.jo112ss.rpgmod.mob.core.MobLevelMath.HEALTH_SCALE;
-        // the blood moon boss pays in skill books; its job experience is that of its health alone
-        if (victim.is(Tags.EntityTypes.BOSSES) && !(victim instanceof com.jo112ss.rpgmod.mob.boss.BloodMoonBoss)) exp *= JobConfig.BOSS_EXP_MULTIPLIER.get();
+        // the dungeon bosses pay in skill books; its job experience is that of its health alone
+        if (victim.is(Tags.EntityTypes.BOSSES) && !(victim instanceof com.jo112ss.rpgmod.mob.boss.ModBoss)) exp *= JobConfig.BOSS_EXP_MULTIPLIER.get();
         long amount = Math.max(1, Math.round(exp));
         double r = JobConfig.SHARE_RADIUS.get();
         if (r <= 0) {

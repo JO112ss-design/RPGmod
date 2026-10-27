@@ -207,7 +207,7 @@ public final class AutoTestClient {
             case "mob:items" -> new int[] {30, 60, 120, 190};
             case "mob:sense" -> new int[] {40, 200, 380};
             case "mob:leap" -> new int[] {30, 60, 90, 130, 200};
-            case "mob:golem" -> new int[] {54, 72, 80, 84, 112, 118, 128, 164, 178, 186, 214, 228, 268, 271, 300, 328, 340, 380, 452, 470, 504, 512, 590, 600, 660, 676, 712, 800, 900, 1010, 1060};
+            case "mob:golem" -> new int[] {54, 72, 80, 84, 112, 118, 128, 164, 178, 186, 214, 228, 268, 271, 300, 328, 340, 380, 452, 470, 504, 512, 590, 600, 660, 676, 712, 800, 900, 990};
             case "gem:checks" -> new int[] {20};
             case "perf" -> new int[] {200};
             case "gem:socket" -> new int[] {20, 45};
@@ -277,7 +277,7 @@ public final class AutoTestClient {
             case "mob:spider" -> new int[] {40, 80};
             case "mob:dragon" -> new int[] {12, 45, 100, 118, 150, 196, 245, 262, 300};
             case "mob:nether" -> new int[] {30, 70, 110, 150, 190, 230, 270};
-            case "mob:king" -> new int[] {56, 70, 86, 104, 122, 140, 172, 195, 212, 222, 290, 345, 362, 395, 434, 470, 490, 552, 580, 680, 760, 880, 945};
+            case "mob:king" -> new int[] {56, 70, 86, 104, 122, 140, 172, 195, 212, 222, 290, 345, 362, 395, 434, 470, 490, 552, 580, 680, 760, 850};
             default -> new int[] {6};
         };
     }
@@ -293,11 +293,11 @@ public final class AutoTestClient {
             case "mob:creeper", "mob:spider" -> 120;
             case "mob:dragon" -> 330;
             case "mob:nether" -> 280;
-            case "mob:king" -> 960;
+            case "mob:king" -> 860;
             case "mob:sense" -> 400;
             case "decoy" -> 120;
             case "mob:leap" -> 260;
-            case "mob:golem" -> 1110;
+            case "mob:golem" -> 1010;
             case "gem:checks" -> 140;
             case "job:checks" -> 60;
             case "bal:checks" -> 40;
@@ -352,7 +352,6 @@ public final class AutoTestClient {
             showSkills = new java.util.ArrayList<>();
             if ("all".equals(System.getProperty("rpgmod.showcase"))) showSkills.addAll(com.jo112ss.rpgmod.job.core.JobDefs.SKILLS.keySet());
             // enemy work: levels, plates and damage numbers (skills were checked in earlier runs)
-            // blood moon boss (the monster scenes and skills were checked in earlier runs)
             // advanced jobs: every new skill and spell
             for (var j : com.jo112ss.rpgmod.job.core.JobDefs.JOBS.values()) {
                 if (!com.jo112ss.rpgmod.job.core.JobDefs.isAdvanced(j.id())) continue;
@@ -417,8 +416,10 @@ public final class AutoTestClient {
             if (false) showSkills.addAll(java.util.List.of("nj:restore", "nj:bosses", "nj:dungeon", "nj:restore"));
             if (false) showSkills.clear(); // the spawn eggs
             if (false) showSkills.addAll(java.util.List.of("nj:restore", "nj:eggs", "nj:restore"));
-            showSkills.clear(); // bosses against a player out on the water
-            showSkills.addAll(java.util.List.of("nj:restore", "nj:bosswater", "nj:restore"));
+            if (false) showSkills.clear(); // bosses against a player out on the water
+            if (false) showSkills.addAll(java.util.List.of("nj:restore", "nj:bosswater", "nj:restore"));
+            showSkills.clear(); // every boss after the shared code moved to BossCore and the blood moon went: all moves, water, a dungeon
+            showSkills.addAll(java.util.List.of("nj:restore", "mob:king", "nj:restore", "mob:golem", "nj:restore", "nj:bosses", "nj:bosswater", "nj:dungeon", "nj:restore"));
             if (false) showSkills.clear(); // spellsinger afterglow
             if (false) showSkills.addAll(java.util.List.of("nj:restore", "nj:wardlinger", "nj:ward", "nj:linger", "nj:restore"));
             if (false) showSkills.clear(); // songs: each with its own rhythm (bars from the song's style) and tune

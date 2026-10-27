@@ -146,7 +146,7 @@ final class JobChangeTests {
             p.setGameMode(mode);
         });
 
-        // book drops: always from a blood moon boss
+        // book drops: always from a dungeon boss
         var king = ModRegistries.KING_SLIME.get().create(level, EntitySpawnReason.COMMAND);
         if (king != null) {
             king.snapTo(p.getX() + 2, p.getY(), p.getZ(), 0, 0);

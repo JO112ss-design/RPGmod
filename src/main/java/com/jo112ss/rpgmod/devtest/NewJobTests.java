@@ -356,8 +356,6 @@ final class NewJobTests {
         int top = (int) Math.floor(home.y) - 1; // the grass of the flat test world
         p.teleportTo(cx + 0.5, top + 1, cz + 0.5);
         var mode = p.gameMode();
-        boolean keep = com.jo112ss.rpgmod.mob.boss.BloodMoon.testKeep;
-        com.jo112ss.rpgmod.mob.boss.BloodMoon.testKeep = true;
         boolean[] done = {false};
         net.minecraft.world.entity.Entity[] boat = {null};
         float[] lost = {0};
@@ -390,7 +388,7 @@ final class NewJobTests {
             }
             return done[0] || age > 1400;
         });
-        var types = com.jo112ss.rpgmod.mob.boss.BloodMoon.bosses();
+        var types = com.jo112ss.rpgmod.mob.boss.Bosses.all();
         for (int i = 0; i < types.size(); i++) {
             var type = types.get(i);
             int t0 = 50 + i * 300;
@@ -402,7 +400,7 @@ final class NewJobTests {
                 b.setPersistenceRequired();
                 b.setData(com.jo112ss.rpgmod.registry.ModRegistries.MOB_LEVEL, 60);
                 level.addFreshEntity(b);
-                ((com.jo112ss.rpgmod.mob.boss.BloodMoonBoss) b).recomputeHealth(true);
+                ((com.jo112ss.rpgmod.mob.boss.ModBoss) b).recomputeHealth(true);
                 b.setTarget(p);
                 boss[0] = b;
                 log("bosswater: {} on the bank, {} blocks from the boat", b.getType().getDescriptionId(), String.format("%.1f", b.distanceTo(p)));
@@ -431,29 +429,22 @@ final class NewJobTests {
             for (var m : level.getEntitiesOfClass(net.minecraft.world.entity.Mob.class, p.getBoundingBox().inflate(60))) m.discard();
             p.stopRiding();
             if (boat[0] != null) boat[0].discard();
-            com.jo112ss.rpgmod.mob.boss.BloodMoon.testKeep = keep;
             p.setGameMode(mode);
             p.teleportTo(home.x, home.y, home.z);
         });
     }
 
     private static com.jo112ss.rpgmod.mob.boss.BossWater.Tracker waterOf(net.minecraft.world.entity.Mob b) {
-        if (b instanceof com.jo112ss.rpgmod.mob.boss.KingSlime k) return k.water;
-        if (b instanceof com.jo112ss.rpgmod.mob.boss.Golem g) return g.water;
-        if (b instanceof com.jo112ss.rpgmod.mob.boss.Lich l) return l.water;
-        return ((com.jo112ss.rpgmod.mob.boss.SpiderQueen) b).water;
+        return ((com.jo112ss.rpgmod.mob.boss.ModBoss) b).core().water;
     }
 
     private static com.jo112ss.rpgmod.mob.boss.BossWater.Homing homingOf(net.minecraft.world.entity.Mob b) {
-        if (b instanceof com.jo112ss.rpgmod.mob.boss.KingSlime k) return k.homing;
-        if (b instanceof com.jo112ss.rpgmod.mob.boss.Golem g) return g.homing;
-        if (b instanceof com.jo112ss.rpgmod.mob.boss.Lich l) return l.homing;
-        return ((com.jo112ss.rpgmod.mob.boss.SpiderQueen) b).homing;
+        return ((com.jo112ss.rpgmod.mob.boss.ModBoss) b).core().homing;
     }
 
     /**
      * The spawn eggs, used like a player would on the ground: every boss and every adventurer, an elite
-     * when sneaking, a party of four; by day the egg bosses stay while a blood-moon boss starts to leave.
+     * when sneaking, a party of four; the bosses then left to fight on their own for a while.
      */
     private static void spawnEggs(ServerLevel level, ServerPlayer p) {
         Vec3 home = p.position();
@@ -461,9 +452,6 @@ final class NewJobTests {
         p.teleportTo(field.x, field.y, field.z);
         p.setYRot(0);
         p.setXRot(10);
-        boolean keep = com.jo112ss.rpgmod.mob.boss.BloodMoon.testKeep;
-        com.jo112ss.rpgmod.mob.boss.BloodMoon.testKeep = false;
-        log("eggs: blood moon now {}", com.jo112ss.rpgmod.mob.boss.BloodMoon.isBloodMoon(level));
         var eggs = new java.util.ArrayList<>(com.jo112ss.rpgmod.registry.ModRegistries.SPAWN_EGGS.values());
         ItemStack[] saved = new ItemStack[9];
         for (int i = 0; i < 9; i++) {
@@ -514,12 +502,6 @@ final class NewJobTests {
                 }
                 log("eggs: {}{} -> {} (eggs left {}) : {}", k.itemId(), sneak ? " (sneaking)" : "", result, stack.getCount(), sb);
             }
-            // a blood-moon boss for comparison: no egg tag, so it should start to leave by day
-            var plain = com.jo112ss.rpgmod.registry.ModRegistries.KING_SLIME.get().create(level, net.minecraft.world.entity.EntitySpawnReason.EVENT);
-            plain.snapTo(field.x + 40, level.getHeight(net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, (int) field.x + 40, (int) field.z + 26),
-                    field.z + 26, 0, 0);
-            level.addFreshEntity(plain);
-            bosses.add(plain);
             p.getInventory().setItem(p.getInventory().getSelectedSlot(), new ItemStack(eggs.get(p.getInventory().getSelectedSlot()).get(), 4));
         });
         SkillTasks.later(200, () -> {
@@ -527,12 +509,11 @@ final class NewJobTests {
                 Object st = b instanceof com.jo112ss.rpgmod.mob.boss.KingSlime k ? k.state() : b instanceof com.jo112ss.rpgmod.mob.boss.Golem g ? g.state()
                         : b instanceof com.jo112ss.rpgmod.mob.boss.Lich l ? l.state() : b instanceof com.jo112ss.rpgmod.mob.boss.SpiderQueen q ? q.state() : "?";
                 log("eggs: by day {} {} alive {} state {}", b.getType().getDescriptionId(),
-                        b.entityTags().contains(com.jo112ss.rpgmod.item.RpgSpawnEggItem.SUMMONED) ? "(egg)" : "(blood moon)", b.isAlive(), st);
+                        "(egg)", b.isAlive(), st);
             }
         });
         SkillTasks.later(260, () -> {
             for (var m : level.getEntitiesOfClass(net.minecraft.world.entity.Mob.class, p.getBoundingBox().inflate(80))) m.discard();
-            com.jo112ss.rpgmod.mob.boss.BloodMoon.testKeep = keep;
             for (int i = 0; i < 9; i++) p.getInventory().setItem(i, saved[i]);
             p.teleportTo(home.x, home.y, home.z);
         });
@@ -557,7 +538,6 @@ final class NewJobTests {
             p.addEffect(new net.minecraft.world.effect.MobEffectInstance(net.minecraft.world.effect.MobEffects.RESISTANCE, 20, 3, false, false));
             return done[0] || age > 1300;
         });
-        com.jo112ss.rpgmod.mob.boss.BloodMoon.testKeep = true;
         com.jo112ss.rpgmod.mob.boss.Lich[] lich = {null};
         com.jo112ss.rpgmod.mob.boss.SpiderQueen[] queen = {null};
         java.util.function.Function<net.minecraft.world.entity.EntityType<? extends net.minecraft.world.entity.Mob>, net.minecraft.world.entity.Mob> summon = type -> {
@@ -567,10 +547,10 @@ final class NewJobTests {
             b.setPersistenceRequired();
             b.setData(com.jo112ss.rpgmod.registry.ModRegistries.MOB_LEVEL, 60);
             level.addFreshEntity(b);
-            ((com.jo112ss.rpgmod.mob.boss.BloodMoonBoss) b).recomputeHealth(true);
+            ((com.jo112ss.rpgmod.mob.boss.ModBoss) b).recomputeHealth(true);
             b.setTarget(p);
             log("bosses: {} Lv{} health {} toughness {} size {}x{}", b.getType().getDescriptionId(), com.jo112ss.rpgmod.mob.MobLevels.level(b),
-                    String.format("%.0f", b.getMaxHealth()), String.format("%.2f", ((com.jo112ss.rpgmod.mob.boss.BloodMoonBoss) b).toughness()),
+                    String.format("%.0f", b.getMaxHealth()), String.format("%.2f", ((com.jo112ss.rpgmod.mob.boss.ModBoss) b).toughness()),
                     String.format("%.1f", b.getBbWidth()), String.format("%.1f", b.getBbHeight()));
             return b;
         };
@@ -667,7 +647,6 @@ final class NewJobTests {
         });
         SkillTasks.later(1140, () -> {
             for (var m : level.getEntitiesOfClass(net.minecraft.world.entity.Mob.class, p.getBoundingBox().inflate(60))) m.discard();
-            com.jo112ss.rpgmod.mob.boss.BloodMoon.testKeep = false;
             p.removeAllEffects();
             p.teleportTo(home.x, home.y, home.z);
             p.setGameMode(mode);
@@ -766,7 +745,7 @@ final class NewJobTests {
                             com.jo112ss.rpgmod.mob.Elite.traits(e), e instanceof net.minecraft.world.entity.Mob m && m.getTarget() != null ? "player" : "-");
                     if (a % 40 == 0) continue; // the log round lets the picture show them first
                     e.hurtServer(dl, p.damageSources().playerAttack(p), 1e7F);
-                    if (e.isAlive() && e instanceof com.jo112ss.rpgmod.mob.boss.BloodMoonBoss) e.discard(); // bosses cap what they take
+                    if (e.isAlive() && e instanceof com.jo112ss.rpgmod.mob.boss.ModBoss) e.discard(); // bosses cap what they take
                 }
             }
             if (a > 900) {

@@ -63,12 +63,12 @@ import net.minecraft.world.phys.Vec3;
  * adds the <b>soul storm</b>: a spiral of orbs pouring out for a few seconds</li>
  * </ul>
  * No single hit takes more than a fifth of a player's health (see {@link BossEvents}). Health follows
- * the boss level and the players fighting it. Fades at dawn.
+ * the boss level and the players fighting it..
  */
-public class Lich extends Monster implements BloodMoonBoss {
+public class Lich extends Monster implements ModBoss {
     public static final float SCALE = 2.4F;
 
-    public enum State { CHASE, BOLTS_UP, SIGILS_UP, NOVA_UP, BEAM_AIM, BEAM, SUMMON, BLINK, STORM, DRAINED, RISE, CAST_END, LEAVE }
+    public enum State { CHASE, BOLTS_UP, SIGILS_UP, NOVA_UP, BEAM_AIM, BEAM, SUMMON, BLINK, STORM, DRAINED, RISE, CAST_END }
 
     enum Move { BOLTS, SIGILS, NOVA, BEAM, SUMMON, BLINK, STORM }
 
@@ -83,20 +83,14 @@ public class Lich extends Monster implements BloodMoonBoss {
     private int stateTicks, stateLength;
     private int nextMove = 50;
     private final Deque<Move> combo = new ArrayDeque<>();
-    /** Keeping out of water, and homing souls for someone out on it. */
-    public final BossWater.Tracker water = new BossWater.Tracker();
-    public final BossWater.Homing homing = new BossWater.Homing(0xB06AFF);
+    /** Health, boss bar, targets, water, rewards: what every boss shares. */
+    private final BossCore core = new BossCore(this, "lich", MobConfig::lichHealth, BossEvent.BossBarColor.BLUE, 0xB06AFF);
     private boolean relocating;
     private int combos;
     private float damageTakenMult = 1;
-    private int onlineSeen = -1;
-    private double healthTarget;
-    private float toughness = 1;
     private int crowded;
-    private final Set<UUID> participants = new HashSet<>();
     private final List<Orb> orbs = new ArrayList<>();
     private final List<Sigil> sigils = new ArrayList<>();
-    private ServerBossEvent bossBar;
     private Vec3 aimDir = Vec3.ZERO;
     private float stormAngle;
     /** Dev test counters. */
@@ -158,10 +152,15 @@ public class Lich extends Monster implements BloodMoonBoss {
         this.targetSelector.addGoal(1, new NearestAttackableTargetGoal<>(this, Player.class, false));
     }
 
-    // ------------------------------------------------------------------ health, level, state
+    // ------------------------------------------------------------------ level, state
+
+    @Override
+    public BossCore core() {
+        return core;
+    }
 
     public int bossLevel() {
-        return Math.max(1, MobLevels.level(this));
+        return core.level();
     }
 
     public int phase() {
@@ -170,25 +169,6 @@ public class Lich extends Monster implements BloodMoonBoss {
 
     public State state() {
         return State.values()[Mth.clamp(this.entityData.get(DATA_STATE), 0, State.values().length - 1)];
-    }
-
-    @Override
-    public void recomputeHealth(boolean fill) {
-        if (!(this.level() instanceof ServerLevel sl)) return;
-        int online = com.jo112ss.rpgmod.dungeon.Dungeons.bossPlayers(this, sl);
-        onlineSeen = online;
-        double hp = MobConfig.lichHealth() * MobLevelMath.healthMultiplier(MobConfig.rules(), bossLevel()) * (1 + MobConfig.bossPerPlayer() * (online - 1));
-        float ratio = this.getMaxHealth() > 0 ? this.getHealth() / this.getMaxHealth() : 1;
-        double applied = Math.min(hp, 1000);
-        toughness = (float) (hp / applied);
-        healthTarget = applied;
-        this.getAttribute(Attributes.MAX_HEALTH).setBaseValue(applied);
-        this.setHealth(fill ? this.getMaxHealth() : Math.max(1, ratio * this.getMaxHealth()));
-    }
-
-    @Override
-    public float toughness() {
-        return toughness;
     }
 
     private void setState(State s, int length) {
@@ -222,19 +202,13 @@ public class Lich extends Monster implements BloodMoonBoss {
     private void serverTick(ServerLevel sl) {
         if (!this.isAlive()) return;
         stateTicks++;
-        if (this.tickCount % 10 == 0) updateBossBar(sl);
-        if (this.tickCount % 20 == 0) {
-            if (com.jo112ss.rpgmod.dungeon.Dungeons.bossPlayers(this, sl) != onlineSeen && healthTarget > 0) recomputeHealth(false);
-            if (state != State.LEAVE && !BloodMoon.isBloodMoon(sl) && !BloodMoon.staysByDay(this, sl)) startLeaving(sl);
-        }
-        if (this.tickCount % 8 == 0 && state != State.LEAVE) ServerFx.of("lich_aura", this.position()).follow(this).a(this.getBbWidth()).b(phase()).send(sl, 48);
+        core.tick(sl, phase(), state == State.DRAINED ? BossCore.opening() : null);
+        if (this.tickCount % 8 == 0) ServerFx.of("lich_aura", this.position()).follow(this).a(this.getBbWidth()).b(phase()).send(sl, 48);
         tickOrbs(sl);
         tickSigils(sl);
-        homing.tick(sl, this);
-        water.tick(this.getTarget());
         // in the water mid-spell: drop it and get out first
-        if (state != State.CHASE && state != State.BLINK && state != State.RISE && state != State.LEAVE && stateTicks > 10 && BossWater.inWater(this)) setState(State.CHASE, 0);
-        if (state != State.LEAVE && phase() < 2 && this.getHealth() <= this.getMaxHealth() * 0.5F) startRise(sl);
+        if (state != State.CHASE && state != State.BLINK && state != State.RISE && stateTicks > 10 && BossWater.inWater(this)) setState(State.CHASE, 0);
+        if (phase() < 2 && this.getHealth() <= this.getMaxHealth() * 0.5F) startRise(sl);
 
         switch (state) {
             case CHASE -> chase(sl);
@@ -265,44 +239,12 @@ public class Lich extends Monster implements BloodMoonBoss {
                 }
             }
             case RISE -> rise(sl);
-            case LEAVE -> leave(sl);
         }
     }
 
     private void hold() {
         this.getNavigation().stop();
         this.setDeltaMovement(this.getDeltaMovement().multiply(0.2, 1, 0.2));
-    }
-
-    private boolean valid(Player p) {
-        return p.isAlive() && !p.isSpectator() && !p.isCreative() && !com.jo112ss.rpgmod.compat.Downed.is(p);
-    }
-
-    private LivingEntity target(ServerLevel sl) {
-        LivingEntity t = this.getTarget();
-        if (t instanceof Player p && !valid(p)) t = null;
-        if (t != null && !t.isAlive()) t = null;
-        if (t == null || t.distanceToSqr(this) > 48 * 48) {
-            Player best = null;
-            double bd = 48 * 48;
-            for (ServerPlayer p : sl.players()) {
-                if (!valid(p)) continue;
-                double d = p.distanceToSqr(this);
-                if (d < bd) {
-                    bd = d;
-                    best = p;
-                }
-            }
-            t = best;
-            this.setTarget(best);
-        }
-        return t;
-    }
-
-    private List<ServerPlayer> fighters(ServerLevel sl, double range) {
-        List<ServerPlayer> out = new ArrayList<>();
-        for (ServerPlayer p : sl.players()) if (valid(p) && p.distanceToSqr(this) <= range * range) out.add(p);
-        return out;
     }
 
     private Vec3 eye() {
@@ -323,7 +265,7 @@ public class Lich extends Monster implements BloodMoonBoss {
     // ------------------------------------------------------------------ rhythm: combo -> drained
 
     private void chase(ServerLevel sl) {
-        LivingEntity t = target(sl);
+        LivingEntity t = core.target(sl);
         if (t == null) {
             this.getNavigation().stop();
             return;
@@ -331,13 +273,13 @@ public class Lich extends Monster implements BloodMoonBoss {
         double dist = Math.sqrt(t.distanceToSqr(this));
         this.getLookControl().setLookAt(t, 20, 20);
         // out of the water / to the shore nearest someone out on it: it blinks there
-        Vec3 dry = water.relocate(sl, this, t);
+        Vec3 dry = core.water.relocate(sl, this, t);
         if (dry != null) {
             blinkTo(sl, dry, t);
             relocating = true;
             return;
         }
-        if (water.homingDue(t, phase())) homing.volley(sl, this, t, phase() >= 2 ? 5 : 3, 6, 0.6, 14);
+        if (core.water.homingDue(t, phase())) core.homing.volley(sl, this, t, phase() >= 2 ? 5 : 3, 6, 0.6, 14);
         // keep a caster's distance: closer than 7 it backs off, further than 16 it comes on
         if (this.tickCount % 10 == 0) {
             if (dist < 7) {
@@ -370,7 +312,7 @@ public class Lich extends Monster implements BloodMoonBoss {
                 : List.of(Move.BOLTS, Move.BOLTS, Move.SIGILS, Move.SIGILS, Move.BEAM, Move.NOVA));
         if (minions(sl) < (p2 ? 3 : 2)) pool.add(Move.SUMMON);
         int n = p2 ? 4 : 3;
-        if (water.ranged(target(sl))) pool.removeIf(x -> x == Move.NOVA); // someone out on the water: no use
+        if (core.water.ranged(core.target(sl))) pool.removeIf(x -> x == Move.NOVA); // someone out on the water: no use
         if (crowded > 30) {
             combo.add(this.random.nextBoolean() ? Move.NOVA : Move.BLINK);
             pool.removeIf(x -> x == Move.NOVA);
@@ -432,7 +374,7 @@ public class Lich extends Monster implements BloodMoonBoss {
 
     private void boltsUp(ServerLevel sl) {
         hold();
-        LivingEntity t = target(sl);
+        LivingEntity t = core.target(sl);
         if (t != null) faceTarget(t);
         if (stateTicks < stateLength) return;
         int n = phase() >= 2 ? 7 : 5;
@@ -475,7 +417,7 @@ public class Lich extends Monster implements BloodMoonBoss {
             }
             if (hit != null) {
                 hit.hurtServer(sl, this.damageSources().indirectMagic(this, this), o.damage);
-                participants.add(hit.getUUID());
+                core.participants.add(hit.getUUID());
                 ServerFx.of("lich_orb_hit", end).color(0x7FE8FF).send(sl, 48);
                 it.remove();
                 continue;
@@ -494,7 +436,7 @@ public class Lich extends Monster implements BloodMoonBoss {
         sl.playSound(null, this.blockPosition(), SoundEvents.EVOKER_PREPARE_SUMMON, SoundSource.HOSTILE, 2.0F, 0.7F);
         int delay = phase() >= 2 ? 24 : 30;
         int extra = phase() >= 2 ? 4 : 2;
-        for (ServerPlayer p : fighters(sl, 36)) {
+        for (ServerPlayer p : core.fighters(sl, 36)) {
             List<Vec3> spots = new ArrayList<>();
             spots.add(p.position().add(p.getDeltaMovement().multiply(6, 0, 6)));
             for (int i = 0; i < extra; i++) {
@@ -502,7 +444,7 @@ public class Lich extends Monster implements BloodMoonBoss {
                 spots.add(p.position().add(Math.cos(a) * r, 0, Math.sin(a) * r));
             }
             for (int i = 0; i < spots.size(); i++) {
-                Vec3 at = groundBelow(sl, spots.get(i));
+                Vec3 at = BossCore.groundBelow(sl, spots.get(i));
                 int when = this.tickCount + up + delay + i * 3;
                 sigils.add(new Sigil(at, when, 1.9F, 8));
                 ServerFx.of("lich_sigil", at).a(1.9F).b(when - this.tickCount).color(0x9A6AFF).send(sl, 64);
@@ -525,27 +467,18 @@ public class Lich extends Monster implements BloodMoonBoss {
             it.remove();
             sigilsBurst++;
             for (ServerPlayer p : sl.players()) {
-                if (!valid(p)) continue;
+                if (!BossCore.valid(p)) continue;
                 Vec3 v = p.position().subtract(s.at());
                 if (Math.hypot(v.x, v.z) < s.radius() && v.y > -1 && v.y < 3) {
                     p.hurtServer(sl, this.damageSources().indirectMagic(this, this), s.damage());
                     p.setDeltaMovement(p.getDeltaMovement().add(0, 0.6, 0));
                     p.syncVelocity = true;
-                    participants.add(p.getUUID());
+                    core.participants.add(p.getUUID());
                 }
             }
             ServerFx.of("lich_pillar", s.at()).a(s.radius()).color(0x9A6AFF).send(sl, 64);
             sl.playSound(null, s.at().x, s.at().y, s.at().z, SoundEvents.SOUL_ESCAPE.value(), SoundSource.HOSTILE, 1.5F, 0.6F);
         }
-    }
-
-    private static Vec3 groundBelow(ServerLevel sl, Vec3 at) {
-        BlockPos pos = BlockPos.containing(at);
-        for (int i = 0; i < 12; i++) {
-            if (!sl.getBlockState(pos.below()).getCollisionShape(sl, pos.below()).isEmpty()) break;
-            pos = pos.below();
-        }
-        return new Vec3(at.x, pos.getY(), at.z);
     }
 
     // ------------------------------------------------------------------ nova
@@ -562,14 +495,14 @@ public class Lich extends Monster implements BloodMoonBoss {
         hold();
         if (stateTicks < stateLength) return;
         for (ServerPlayer p : sl.players()) {
-            if (!valid(p)) continue;
+            if (!BossCore.valid(p)) continue;
             Vec3 d = p.position().subtract(this.position());
             if (Math.hypot(d.x, d.z) <= NOVA_RADIUS && Math.abs(d.y) < 4) {
                 p.hurtServer(sl, this.damageSources().indirectMagic(this, this), 9);
                 Vec3 out = d.multiply(1, 0, 1).lengthSqr() < 1e-4 ? new Vec3(1, 0, 0) : d.multiply(1, 0, 1).normalize();
                 p.setDeltaMovement(p.getDeltaMovement().add(out.scale(1.3)).add(0, 0.5, 0));
                 p.syncVelocity = true;
-                participants.add(p.getUUID());
+                core.participants.add(p.getUUID());
                 novaHits++;
             }
         }
@@ -591,7 +524,7 @@ public class Lich extends Monster implements BloodMoonBoss {
 
     private void beamAim(ServerLevel sl) {
         hold();
-        LivingEntity t = target(sl);
+        LivingEntity t = core.target(sl);
         // the sight follows the target, then holds still for the last 10 ticks
         if (t != null && stateTicks < stateLength - 10) {
             faceTarget(t);
@@ -608,10 +541,10 @@ public class Lich extends Monster implements BloodMoonBoss {
         var block = sl.clip(new ClipContext(from, to, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, this));
         if (block.getType() != HitResult.Type.MISS) to = block.getLocation();
         for (ServerPlayer p : sl.players()) {
-            if (!valid(p)) continue;
+            if (!BossCore.valid(p)) continue;
             if (p.getBoundingBox().inflate(0.7).clip(from, to).isPresent()) {
                 p.hurtServer(sl, this.damageSources().indirectMagic(this, this), 10);
-                participants.add(p.getUUID());
+                core.participants.add(p.getUUID());
                 beamHits++;
             }
         }
@@ -642,7 +575,7 @@ public class Lich extends Monster implements BloodMoonBoss {
         Revenant.Role[] roles = {Revenant.Role.WARRIOR, Revenant.Role.ARCHER, Revenant.Role.MAGE, Revenant.Role.THIEF};
         for (int i = 0; i < n; i++) {
             double a = this.random.nextDouble() * Math.PI * 2, r = 3 + this.random.nextDouble() * 3;
-            Vec3 at = groundBelow(sl, this.position().add(Math.cos(a) * r, 1, Math.sin(a) * r));
+            Vec3 at = BossCore.groundBelow(sl, this.position().add(Math.cos(a) * r, 1, Math.sin(a) * r));
             if (!sl.getBlockState(BlockPos.containing(at)).isAir() || !sl.getBlockState(BlockPos.containing(at).above()).isAir()) continue;
             Revenant m = ModRegistries.REVENANT.get().create(sl, EntitySpawnReason.MOB_SUMMONED);
             if (m == null) continue;
@@ -659,7 +592,7 @@ public class Lich extends Monster implements BloodMoonBoss {
                 MobLevels.forceLevel = null;
                 com.jo112ss.rpgmod.mob.Elite.forceNext = null;
             }
-            m.setTarget(target(sl));
+            m.setTarget(core.target(sl));
             summoned++;
             ServerFx.of("dg_summon", m.position()).a(m.getBbWidth()).color(0x7FE8FF).send(sl, 64);
         }
@@ -685,7 +618,7 @@ public class Lich extends Monster implements BloodMoonBoss {
         Vec3 from = this.position();
         for (int tries = 0; tries < 20; tries++) {
             double a = this.random.nextDouble() * Math.PI * 2, r = 10 + this.random.nextDouble() * 4;
-            Vec3 at = groundBelow(sl, t.position().add(Math.cos(a) * r, 2, Math.sin(a) * r));
+            Vec3 at = BossCore.groundBelow(sl, t.position().add(Math.cos(a) * r, 2, Math.sin(a) * r));
             this.setPos(at);
             if (sl.noCollision(this) && !sl.containsAnyLiquid(this.getBoundingBox())
                     && !sl.getBlockState(BlockPos.containing(at).below()).getCollisionShape(sl, BlockPos.containing(at).below()).isEmpty()) {
@@ -737,10 +670,10 @@ public class Lich extends Monster implements BloodMoonBoss {
         combo.clear();
         sigils.clear();
         setState(State.RISE, 40);
-        if (bossBar != null) bossBar.setColor(BossEvent.BossBarColor.PURPLE);
+        core.enraged();
         ServerFx.of("lich_rise", this.position()).follow(this).a(this.getBbWidth()).b(40).send(sl, 64);
         sl.playSound(null, this.blockPosition(), SoundEvents.WITHER_SPAWN, SoundSource.HOSTILE, 1.5F, 1.2F);
-        for (ServerPlayer p : bossPlayers()) p.sendSystemMessage(Component.translatable("rpgmod.boss.lich.enraged").withStyle(ChatFormatting.LIGHT_PURPLE), true);
+        for (ServerPlayer p : core.barPlayers()) p.sendSystemMessage(Component.translatable("rpgmod.boss.lich.enraged").withStyle(ChatFormatting.LIGHT_PURPLE), true);
     }
 
     private void rise(ServerLevel sl) {
@@ -756,8 +689,7 @@ public class Lich extends Monster implements BloodMoonBoss {
 
     @Override
     public boolean hurtServer(ServerLevel level, DamageSource source, float damage) {
-        if (state == State.LEAVE) return false;
-        if (source.getEntity() instanceof ServerPlayer p) participants.add(p.getUUID());
+        core.hurtBy(source);
         if (state == State.DRAINED || state == State.BLINK) damage *= state == State.DRAINED ? damageTakenMult : 1;
         if (state == State.RISE) damage *= 0.3F; // wreathed in light while it rises
         return super.hurtServer(level, source, damage);
@@ -809,33 +741,6 @@ public class Lich extends Monster implements BloodMoonBoss {
 
     // ------------------------------------------------------------------ boss bar
 
-    private List<ServerPlayer> bossPlayers() {
-        return bossBar == null ? List.of() : List.copyOf(bossBar.getPlayers());
-    }
-
-    private void updateBossBar(ServerLevel sl) {
-        if (bossBar == null) {
-            bossBar = new ServerBossEvent(UUID.randomUUID(), name(), phase() >= 2 ? BossEvent.BossBarColor.PURPLE : BossEvent.BossBarColor.BLUE,
-                    BossEvent.BossBarOverlay.NOTCHED_10);
-        }
-        bossBar.setName(name());
-        bossBar.setProgress(Mth.clamp(this.getHealth() / this.getMaxHealth(), 0, 1));
-        for (ServerPlayer p : sl.players()) {
-            boolean near = p.distanceToSqr(this) < 72 * 72;
-            if (near && !bossBar.getPlayers().contains(p)) bossBar.addPlayer(p);
-            else if (!near && bossBar.getPlayers().contains(p)) bossBar.removePlayer(p);
-        }
-        for (ServerPlayer p : List.copyOf(bossBar.getPlayers())) {
-            if (p.level() != sl || p.isRemoved()) bossBar.removePlayer(p);
-        }
-    }
-
-    private Component name() {
-        Component n = Component.translatable("entity.rpgmod.lich").append(Component.literal("  Lv " + bossLevel()));
-        if (state == State.DRAINED) n = n.copy().append(Component.literal("  ")).append(Component.translatable("rpgmod.boss.opening").withStyle(ChatFormatting.YELLOW));
-        return n;
-    }
-
     private void dismissMinions(ServerLevel sl) {
         for (Mob m : sl.getEntitiesOfClass(Mob.class, this.getBoundingBox().inflate(64), m -> m.getPersistentData().getIntOr(MINION_OF, -1) == this.getId())) {
             ServerFx.of("lich_blink", m.position()).a(m.getBbWidth()).b(m.getBbHeight()).send(sl, 48);
@@ -845,38 +750,21 @@ public class Lich extends Monster implements BloodMoonBoss {
 
     @Override
     public void remove(RemovalReason reason) {
-        if (bossBar != null) bossBar.removeAllPlayers();
+        core.removeBar();
         if (this.level() instanceof ServerLevel sl) dismissMinions(sl);
         super.remove(reason);
     }
 
     // ------------------------------------------------------------------ leaving and dying
 
-    private void startLeaving(ServerLevel sl) {
-        setState(State.LEAVE, 60);
-        orbs.clear();
-        sigils.clear();
-        combo.clear();
-        dismissMinions(sl);
-        ServerFx.of("lich_leave", this.position()).follow(this).a(this.getBbWidth()).b(60).send(sl, 64);
-        sl.playSound(null, this.blockPosition(), SoundEvents.WITHER_SKELETON_DEATH, SoundSource.HOSTILE, 2.0F, 0.5F);
-        BossEvents.broadcast(sl.getServer(), Component.translatable("rpgmod.boss.lich.left").withStyle(ChatFormatting.GRAY));
-    }
-
-    private void leave(ServerLevel sl) {
-        hold();
-        if (stateTicks >= stateLength) this.discard();
-    }
-
     @Override
     public void die(DamageSource source) {
         super.die(source);
-        if (!(this.level() instanceof ServerLevel sl) || state == State.LEAVE) return;
-        if (bossBar != null) bossBar.removeAllPlayers();
+        if (!(this.level() instanceof ServerLevel sl)) return;
         dismissMinions(sl);
         com.jo112ss.rpgmod.job.SkillTasks.later(10, () -> dismissMinions(sl));
         com.jo112ss.rpgmod.job.SkillTasks.later(40, () -> dismissMinions(sl));
-        BossEvents.reward(sl, this, participants, "lich");
+        core.died(sl);
         ServerFx.of("lich_death", this.position()).a(this.getBbWidth()).b(this.getBbHeight()).send(sl, 96);
     }
 
@@ -899,7 +787,7 @@ public class Lich extends Monster implements BloodMoonBoss {
     /** Autotest: start a move right away (bolts, sigils, nova, beam, summon, blink, storm, drained, rise, combo). */
     public void testMove(String move) {
         if (!(this.level() instanceof ServerLevel sl)) return;
-        LivingEntity t = target(sl);
+        LivingEntity t = core.target(sl);
         if (t == null) return;
         setState(State.CHASE, 0);
         combo.clear();

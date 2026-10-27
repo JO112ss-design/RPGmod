@@ -16,7 +16,7 @@ import net.neoforged.neoforge.network.PacketDistributor;
 /**
  * Job change book: use it to open the job selection and change to another job, or to the advanced
  * job of a mastered one. The book is spent only when a job is actually picked (see
- * {@link JobManager#changeJob}). Dropped rarely by monsters, always by blood moon bosses and the
+ * {@link JobManager#changeJob}). Dropped rarely by monsters, always by the dungeon bosses and the
  * dragon, and given once for each job mastered.
  */
 public class JobBookItem extends Item {

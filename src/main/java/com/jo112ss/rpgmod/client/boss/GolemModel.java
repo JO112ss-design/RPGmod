@@ -162,10 +162,6 @@ public class GolemModel extends EntityModel<GolemRenderState> {
                 rightArm.zRot = 0.2F + Mth.sin(t * 0.3F) * 0.08F;
                 leftArm.zRot = -0.2F - Mth.sin(t * 0.3F) * 0.08F;
             }
-            case LEAVE -> {
-                armsBoth(0.1F);
-                head.xRot = 0.6F;
-            }
             default -> { }
         }
     }

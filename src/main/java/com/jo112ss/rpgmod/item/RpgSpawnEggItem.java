@@ -2,7 +2,7 @@ package com.jo112ss.rpgmod.item;
 
 import com.jo112ss.rpgmod.RpgMod;
 import com.jo112ss.rpgmod.mob.Elite;
-import com.jo112ss.rpgmod.mob.boss.BloodMoon;
+import com.jo112ss.rpgmod.mob.boss.Bosses;
 import com.jo112ss.rpgmod.mob.revenant.Revenant;
 import com.jo112ss.rpgmod.mob.revenant.Revenant.Role;
 import com.jo112ss.rpgmod.mob.revenant.RevenantSpawns;
@@ -35,7 +35,6 @@ import net.minecraft.world.phys.Vec3;
  * Spawn eggs for the mod's own monsters, for trying them out: the four bosses, a fallen adventurer of
  * each job, and a whole party of them. Use one on a block like a vanilla egg.
  * <ul>
- * <li>a boss from an egg stays when the day comes (it does not go away like a blood-moon boss)</li>
  * <li>a fallen adventurer is never an elite by chance; used while sneaking it comes as an elite with three
  * traits (in a party, the first of them)</li>
  * </ul>
@@ -86,9 +85,6 @@ public class RpgSpawnEggItem extends Item {
         }
     }
 
-    /** Tag on a boss that came from an egg: it does not leave at dawn. */
-    public static final String SUMMONED = "rpgmod_egg_summoned";
-
     private final Kind kind;
 
     public RpgSpawnEggItem(Item.Properties properties, Kind kind) {
@@ -128,12 +124,11 @@ public class RpgSpawnEggItem extends Item {
             // room to stand: step up a little out of the ground or a wall if needed
             for (int up = 0; up < 6 && !sl.noCollision(boss); up++) boss.snapTo(v.x, v.y + up + 1, v.z, yaw, 0);
             if (!sl.noCollision(boss)) boss.snapTo(v.x, v.y, v.z, yaw, 0);
-            boss.addTag(SUMMONED);
             boss.setPersistenceRequired();
             boss.setYHeadRot(yaw);
             sl.addFreshEntity(boss);
-            BloodMoon.arrivalFx(sl, boss);
-            RpgMod.LOGGER.info("[spawn egg] {} at {}", BloodMoon.key(boss.getType()), boss.blockPosition());
+            Bosses.arrivalFx(sl, boss);
+            RpgMod.LOGGER.info("[spawn egg] {} at {}", Bosses.key(boss.getType()), boss.blockPosition());
             return List.of(boss);
         }
         List<Role> roles = new ArrayList<>();
@@ -173,10 +168,6 @@ public class RpgSpawnEggItem extends Item {
 
     @Override
     public void appendHoverText(ItemStack stack, Item.TooltipContext context, TooltipDisplay display, Consumer<Component> builder, TooltipFlag flag) {
-        if (kind.boss()) {
-            builder.accept(Component.translatable("item.rpgmod.spawn_egg.boss_tip").withStyle(ChatFormatting.GRAY));
-        } else {
-            builder.accept(Component.translatable("item.rpgmod.spawn_egg.elite_tip").withStyle(ChatFormatting.GRAY));
-        }
+        if (!kind.boss()) builder.accept(Component.translatable("item.rpgmod.spawn_egg.elite_tip").withStyle(ChatFormatting.GRAY));
     }
 }

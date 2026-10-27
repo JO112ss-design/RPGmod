@@ -60,7 +60,7 @@ public final class BossEvents {
     @SubscribeEvent(priority = EventPriority.LOW)
     public static void onBossHit(LivingIncomingDamageEvent event) {
         if (!(event.getEntity() instanceof Player p)) return;
-        if (!(event.getSource().getEntity() instanceof BloodMoonBoss)) return;
+        if (!(event.getSource().getEntity() instanceof ModBoss)) return;
         float cap = (float) (p.getMaxHealth() * MobConfig.bossMaxHit());
         if (event.getAmount() > cap) event.setAmount(cap);
     }
@@ -72,7 +72,7 @@ public final class BossEvents {
      */
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public static void onKingHurt(LivingIncomingDamageEvent event) {
-        if (event.getEntity() instanceof BloodMoonBoss king && king.toughness() > 1) {
+        if (event.getEntity() instanceof ModBoss king && king.toughness() > 1) {
             event.setAmount(event.getAmount() / king.toughness());
         }
     }

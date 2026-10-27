@@ -18,7 +18,7 @@ import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
 
 /**
  * Job change books from monsters killed by a player: 0.5% (luck and looting do not change it).
- * Blood moon bosses and the Ender Dragon always drop one.
+ * The dungeon bosses and the Ender Dragon always drop one.
  */
 @EventBusSubscriber(modid = RpgMod.MODID)
 public final class JobBookDrops {
@@ -32,7 +32,7 @@ public final class JobBookDrops {
         if (!(mob.level() instanceof ServerLevel level)) return;
         boolean byPlayer = event.getSource().getEntity() instanceof Player || mob.getLastHurtByMob() instanceof Player;
         if (!byPlayer) return;
-        boolean boss = mob instanceof EnderDragon || mob instanceof com.jo112ss.rpgmod.mob.boss.BloodMoonBoss;
+        boolean boss = mob instanceof EnderDragon || mob instanceof com.jo112ss.rpgmod.mob.boss.ModBoss;
         if (!boss) {
             if (!(mob instanceof Enemy) || GemDrops.isBoss(mob) || mob instanceof com.jo112ss.rpgmod.mob.boss.GolemPillar) return;
             if (mob.getPersistentData().getBooleanOr(com.jo112ss.rpgmod.mob.boss.BossEvents.CHILD, false)) return;

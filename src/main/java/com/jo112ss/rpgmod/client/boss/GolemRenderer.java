@@ -90,7 +90,6 @@ public class GolemRenderer extends MobRenderer<Golem, GolemRenderState, GolemMod
                 poseStack.translate(0, -0.45F * k * Golem.SCALE, 0);
                 poseStack.rotateDegrees(Axis.XP, -14F * k);
             }
-            case LEAVE -> poseStack.rotateDegrees(Axis.ZP, Math.min(1, t / 70F) * 12F);
             default -> { }
         }
     }

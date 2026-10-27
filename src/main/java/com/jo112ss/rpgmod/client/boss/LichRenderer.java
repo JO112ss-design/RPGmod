@@ -105,8 +105,7 @@ public class LichRenderer extends HumanoidMobRenderer<Lich, LichRenderer.State, 
     protected void setupRotations(State state, PoseStack poseStack, float bodyRot, float entityScale) {
         super.setupRotations(state, poseStack, bodyRot, entityScale);
         if (state.mode == Lich.State.DRAINED) poseStack.translate(0, -0.35F * entityScale, 0); // kneeling
-        else if (state.mode != Lich.State.LEAVE) poseStack.translate(0, (0.06F + 0.06F * Mth.sin(state.ageInTicks * 0.08F)) * entityScale, 0); // a faint hover
-        if (state.mode == Lich.State.LEAVE) poseStack.translate(0, -state.modeTicks / 60F * 2.2F * entityScale, 0); // sinking away
+        else poseStack.translate(0, (0.06F + 0.06F * Mth.sin(state.ageInTicks * 0.08F)) * entityScale, 0); // a faint hover
     }
 
     /** The robe, hood and crown, a size bigger than the bones. */

@@ -45,7 +45,7 @@ import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.Vec3;
 
 /**
- * The Golem, the other blood moon boss: a giant dark stone golem with a glowing core. It walks after
+ * The Golem, a dungeon boss: a giant dark stone golem with a glowing core. It walks after
  * its target and strings together a combo of heavy, readable moves (three, four below half health);
  * every second combo it <b>overheats</b>: it kneels with its core open for a moment and takes 1.4x damage.
  * <ul>
@@ -60,13 +60,13 @@ import net.minecraft.world.phys.Vec3;
  * until they are broken (then it staggers)</li>
  * </ul>
  * It leaps at a target it cannot walk to. No single hit takes more than a fifth of a player's health
- * (see {@link BossEvents}). Health follows the boss level and the players online. Crumbles at dawn.
+ * (see {@link BossEvents}). Health follows the boss level and the players online..
  */
-public class Golem extends Monster implements BloodMoonBoss {
+public class Golem extends Monster implements ModBoss {
     public static final float SCALE = 2.2F;
 
     /** What the golem is doing (synced: the model poses by it). */
-    public enum State { CHASE, SLAM_UP, SLAM, QUAKE, THROW_UP, THROW, STOMP, CHARGE_AIM, CHARGE, SWEEP_UP, SWEEP, ROAR, OVERHEAT, STUN, LEAP, ARMOUR, LEAVE }
+    public enum State { CHASE, SLAM_UP, SLAM, QUAKE, THROW_UP, THROW, STOMP, CHARGE_AIM, CHARGE, SWEEP_UP, SWEEP, ROAR, OVERHEAT, STUN, LEAP, ARMOUR }
 
     enum Move { SLAM, QUAKE, THROW, FISSURE, CHARGE, SWEEP, ROCKFALL }
 
@@ -81,23 +81,17 @@ public class Golem extends Monster implements BloodMoonBoss {
     private int stateTicks, stateLength;
     private int nextMove = 50;
     private final Deque<Move> combo = new ArrayDeque<>();
+    /** Health, boss bar, targets, water, rewards: what every boss shares. */
+    private final BossCore core = new BossCore(this, "golem", MobConfig::golemHealth, BossEvent.BossBarColor.RED, 0xFF6A30);
     private float damageTakenMult = 1;
     private int armours;
-    /** Keeping out of water, and homing rocks for someone out on it. */
-    public final BossWater.Tracker water = new BossWater.Tracker();
     private boolean relocating;
-    public final BossWater.Homing homing = new BossWater.Homing(0xFF6A30);
-    private int onlineSeen = -1;
-    private double healthTarget;
-    private float toughness = 1;
     private int punchCooldown;
     private int stuckTicks;
     private Vec3 lastPos = Vec3.ZERO;
-    private final Set<UUID> participants = new HashSet<>();
     private final List<Wave> waves = new ArrayList<>();
     private final List<Rock> rocks = new ArrayList<>();
     private final List<Fissure> fissures = new ArrayList<>();
-    private ServerBossEvent bossBar;
     // moves
     private int quakesDone;
     private Vec3 aimDir = Vec3.ZERO;
@@ -178,10 +172,15 @@ public class Golem extends Monster implements BloodMoonBoss {
         this.targetSelector.addGoal(1, new NearestAttackableTargetGoal<>(this, Player.class, false));
     }
 
-    // ------------------------------------------------------------------ health, level, state
+    // ------------------------------------------------------------------ level, state
+
+    @Override
+    public BossCore core() {
+        return core;
+    }
 
     public int bossLevel() {
-        return Math.max(1, MobLevels.level(this));
+        return core.level();
     }
 
     public int phase() {
@@ -192,32 +191,18 @@ public class Golem extends Monster implements BloodMoonBoss {
         return this.entityData.get(DATA_SHIELD);
     }
 
+    /** After the name on the boss bar: the stone armour, or the opening. */
+    private Component barTag() {
+        if (shielded()) return Component.translatable("rpgmod.boss.golem.armour_bar").withStyle(ChatFormatting.GRAY);
+        return state == State.OVERHEAT || (state == State.STUN && damageTakenMult > 1.4F) ? BossCore.opening() : null;
+    }
+
     public State state() {
         return State.values()[Mth.clamp(this.entityData.get(DATA_STATE), 0, State.values().length - 1)];
     }
 
-    @Override
-    public void recomputeHealth(boolean fill) {
-        if (!(this.level() instanceof ServerLevel sl)) return;
-        int online = com.jo112ss.rpgmod.dungeon.Dungeons.bossPlayers(this, sl);
-        onlineSeen = online;
-        double hp = MobConfig.golemHealth() * MobLevelMath.healthMultiplier(MobConfig.rules(), bossLevel())
-                * (1 + MobConfig.bossPerPlayer() * (online - 1));
-        float ratio = this.getMaxHealth() > 0 ? this.getHealth() / this.getMaxHealth() : 1;
-        double applied = Math.min(hp, 1000);
-        toughness = (float) (hp / applied);
-        healthTarget = applied;
-        this.getAttribute(Attributes.MAX_HEALTH).setBaseValue(applied);
-        this.setHealth(fill ? this.getMaxHealth() : Math.max(1, ratio * this.getMaxHealth()));
-    }
-
-    @Override
-    public float toughness() {
-        return toughness;
-    }
-
     public float effectiveMaxHealth() {
-        return this.getMaxHealth() * toughness;
+        return this.getMaxHealth() * toughness();
     }
 
     private void setState(State s, int length) {
@@ -261,10 +246,8 @@ public class Golem extends Monster implements BloodMoonBoss {
         if (!this.isAlive()) return;
         stateTicks++;
         if (punchCooldown > 0) punchCooldown--;
-        if (this.tickCount % 10 == 0) updateBossBar(sl);
+        core.tick(sl, phase(), barTag());
         if (this.tickCount % 20 == 0) {
-            if (com.jo112ss.rpgmod.dungeon.Dungeons.bossPlayers(this, sl) != onlineSeen && healthTarget > 0) recomputeHealth(false);
-            if (state != State.LEAVE && !BloodMoon.isBloodMoon(sl) && !BloodMoon.staysByDay(this, sl)) startLeaving(sl);
             if (shielded() && pillars(sl).isEmpty()) breakShield(sl);
         }
         if (shielded() && this.tickCount % 6 == 0) {
@@ -275,11 +258,9 @@ public class Golem extends Monster implements BloodMoonBoss {
         tickWaves(sl);
         tickRocks(sl);
         tickFissures(sl);
-        homing.tick(sl, this);
-        water.tick(this.getTarget());
         // in the water mid-move: drop it and get out first
-        if (state != State.CHASE && state != State.LEAP && state != State.CHARGE && state != State.LEAVE && stateTicks > 10 && BossWater.inWater(this)) setState(State.CHASE, 0);
-        if (state != State.LEAVE) checkArmour(sl);
+        if (state != State.CHASE && state != State.LEAP && state != State.CHARGE && stateTicks > 10 && BossWater.inWater(this)) setState(State.CHASE, 0);
+        checkArmour(sl);
 
         switch (state) {
             case CHASE -> chase(sl);
@@ -320,44 +301,12 @@ public class Golem extends Monster implements BloodMoonBoss {
                 }
             }
             case LEAP -> leap(sl);
-            case LEAVE -> leave(sl);
         }
     }
 
     private void hold() {
         this.getNavigation().stop();
         this.setDeltaMovement(this.getDeltaMovement().multiply(0.2, 1, 0.2));
-    }
-
-    private boolean valid(Player p) {
-        return p.isAlive() && !p.isSpectator() && !p.isCreative() && !com.jo112ss.rpgmod.compat.Downed.is(p);
-    }
-
-    private LivingEntity target(ServerLevel sl) {
-        LivingEntity t = this.getTarget();
-        if (t instanceof Player p && !valid(p)) t = null;
-        if (t != null && !t.isAlive()) t = null;
-        if (t == null || t.distanceToSqr(this) > 48 * 48) {
-            Player best = null;
-            double bd = 48 * 48;
-            for (ServerPlayer p : sl.players()) {
-                if (!valid(p)) continue;
-                double d = p.distanceToSqr(this);
-                if (d < bd) {
-                    bd = d;
-                    best = p;
-                }
-            }
-            t = best;
-            this.setTarget(best);
-        }
-        return t;
-    }
-
-    private List<ServerPlayer> fighters(ServerLevel sl, double range) {
-        List<ServerPlayer> out = new ArrayList<>();
-        for (ServerPlayer p : sl.players()) if (valid(p) && p.distanceToSqr(this) <= range * range) out.add(p);
-        return out;
     }
 
     private double reach() {
@@ -367,7 +316,7 @@ public class Golem extends Monster implements BloodMoonBoss {
     // ------------------------------------------------------------------ rhythm: combo -> overheat
 
     private void chase(ServerLevel sl) {
-        LivingEntity t = target(sl);
+        LivingEntity t = core.target(sl);
         if (t == null) {
             this.getNavigation().stop();
             return;
@@ -375,14 +324,14 @@ public class Golem extends Monster implements BloodMoonBoss {
         double dist = Math.sqrt(t.distanceToSqr(this));
         this.getLookControl().setLookAt(t, 20, 20);
         // out of the water / to the shore nearest someone out on it
-        Vec3 dry = water.relocate(sl, this, t);
+        Vec3 dry = core.water.relocate(sl, this, t);
         if (dry != null) {
             relocating = true;
             startLeap(sl, dry);
             return;
         }
-        boolean ranged = water.ranged(t);
-        if (water.homingDue(t, phase())) homing.volley(sl, this, t, phase() >= 2 ? 5 : 3, 7, 0.55, 16);
+        boolean ranged = core.water.ranged(t);
+        if (core.water.homingDue(t, phase())) core.homing.volley(sl, this, t, phase() >= 2 ? 5 : 3, 7, 0.55, 16);
         if (this.tickCount % 8 == 0) this.getNavigation().moveTo(t, 1.0);
         // a plain punch when someone is in reach
         double flat = Math.hypot(t.getX() - this.getX(), t.getZ() - this.getZ());
@@ -390,7 +339,7 @@ public class Golem extends Monster implements BloodMoonBoss {
             punchCooldown = phase() >= 2 ? 24 : 32;
             sl.broadcastEntityEvent(this, (byte) 4);
             t.hurtServer(sl, this.damageSources().mobAttack(this), 7);
-            fling(t, this.position(), 0.7, 0.4);
+            BossCore.fling(t, this.position(), 0.7, 0.4);
             sl.playSound(null, this.blockPosition(), SoundEvents.IRON_GOLEM_ATTACK, SoundSource.HOSTILE, 2.0F, 0.6F);
         }
         // stuck (walls, a tower, water): leap at the target
@@ -400,7 +349,7 @@ public class Golem extends Monster implements BloodMoonBoss {
             stuckTicks = moved || dist < reach() + 1 ? 0 : stuckTicks + 20;
             if (stuckTicks >= 60 && this.onGround() && !ranged) {
                 stuckTicks = 0;
-                startLeap(sl, groundBelow(sl, t.position()));
+                startLeap(sl, BossCore.groundBelow(sl, t.position()));
                 return;
             }
         }
@@ -417,12 +366,12 @@ public class Golem extends Monster implements BloodMoonBoss {
                 ? List.of(Move.QUAKE, Move.QUAKE, Move.SLAM, Move.THROW, Move.THROW, Move.FISSURE, Move.FISSURE, Move.CHARGE, Move.CHARGE, Move.ROCKFALL)
                 : List.of(Move.SLAM, Move.SLAM, Move.THROW, Move.THROW, Move.FISSURE, Move.FISSURE, Move.CHARGE, Move.ROCKFALL));
         int n = p2 ? 4 : 3;
-        if (water.ranged(target(sl))) { // someone out on the water: rocks only
+        if (core.water.ranged(core.target(sl))) { // someone out on the water: rocks only
             pool = new ArrayList<>(List.of(Move.THROW, Move.ROCKFALL));
             n = 2;
         }
         // someone hugging it: the sweep comes first
-        if (!fighters(sl, reach() + 1.5).isEmpty() && this.random.nextDouble() < 0.7) {
+        if (!core.fighters(sl, reach() + 1.5).isEmpty() && this.random.nextDouble() < 0.7) {
             combo.add(Move.SWEEP);
             n--;
         }
@@ -484,16 +433,6 @@ public class Golem extends Monster implements BloodMoonBoss {
         ServerFx.of("king_stun", this.position()).follow(this).a(this.getBbWidth()).b(ticks).send(sl);
     }
 
-    private void face(Vec3 dir) {
-        this.setYRot((float) Math.toDegrees(Math.atan2(-dir.x, dir.z)));
-        this.yBodyRot = this.yHeadRot = this.getYRot();
-    }
-
-    private Vec3 toward(LivingEntity t) {
-        Vec3 d = t.position().subtract(this.position()).multiply(1, 0, 1);
-        return d.lengthSqr() < 1e-4 ? Vec3.directionFromRotation(0, this.getYRot()) : d.normalize();
-    }
-
     // ------------------------------------------------------------------ slam / quake
 
     private float slamRadius() {
@@ -550,8 +489,8 @@ public class Golem extends Monster implements BloodMoonBoss {
             Vec3 d = p.position().subtract(c);
             if (Math.hypot(d.x, d.z) <= r && Math.abs(d.y) < 3) {
                 p.hurtServer(sl, this.damageSources().mobAttack(this), dmg);
-                fling(p, c, 0.9, 0.55);
-                participants.add(p.getUUID());
+                BossCore.fling(p, c, 0.9, 0.55);
+                core.participants.add(p.getUUID());
             }
         }
         waves.add(new Wave(c, this.getBbWidth() / 2, this.getBbWidth() / 2 + reach, 0.6, waveDmg));
@@ -571,35 +510,19 @@ public class Golem extends Monster implements BloodMoonBoss {
                 if (Math.abs(h - w.r) < 0.8 && d.y > -1.5 && d.y < 0.9) {
                     w.hit.add(p.getUUID());
                     p.hurtServer(sl, this.damageSources().mobAttack(this), w.damage);
-                    fling(p, w.c, 0.6, 0.35);
+                    BossCore.fling(p, w.c, 0.6, 0.35);
                 }
             }
             if (w.r > w.max) it.remove();
         }
     }
 
-    private static void fling(LivingEntity e, Vec3 from, double out, double up) {
-        Vec3 d = e.position().subtract(from).multiply(1, 0, 1);
-        d = d.lengthSqr() < 1e-4 ? new Vec3(1, 0, 0) : d.normalize();
-        e.setDeltaMovement(e.getDeltaMovement().add(d.scale(out)).add(0, up, 0));
-        e.syncVelocity = true;
-    }
-
     // ------------------------------------------------------------------ boulder throw
-
-    private static Vec3 groundBelow(ServerLevel sl, Vec3 at) {
-        BlockPos pos = BlockPos.containing(at);
-        for (int i = 0; i < 12; i++) {
-            if (!sl.getBlockState(pos.below()).getCollisionShape(sl, pos.below()).isEmpty()) break;
-            pos = pos.below();
-        }
-        return new Vec3(at.x, pos.getY(), at.z);
-    }
 
     private void startThrow(ServerLevel sl, LivingEntity t) {
         int up = phase() >= 2 ? 16 : 20;
-        aimDir = toward(t);
-        face(aimDir);
+        aimDir = core.toward(t);
+        core.face(aimDir);
         setState(State.THROW_UP, up);
         ServerFx.of("golem_rip", this.position().add(aimDir.scale(this.getBbWidth() * 0.6))).a(this.getBbWidth()).send(sl);
         sl.playSound(null, this.blockPosition(), SoundEvents.STONE_BREAK, SoundSource.HOSTILE, 2.0F, 0.5F);
@@ -607,14 +530,14 @@ public class Golem extends Monster implements BloodMoonBoss {
 
     private void throwUp(ServerLevel sl) {
         hold();
-        LivingEntity t = target(sl);
-        if (t != null) face(toward(t));
+        LivingEntity t = core.target(sl);
+        if (t != null) core.face(core.toward(t));
         if (stateTicks < stateLength) return;
         Vec3 from = this.position().add(0, this.getBbHeight() + 0.5, 0);
         List<LivingEntity> aims = new ArrayList<>();
         if (t != null) aims.add(t);
         if (phase() >= 2) { // a second boulder at someone else (or ahead of the same one)
-            for (ServerPlayer p : fighters(sl, 34)) if (p != t) {
+            for (ServerPlayer p : core.fighters(sl, 34)) if (p != t) {
                 aims.add(p);
                 break;
             }
@@ -622,8 +545,8 @@ public class Golem extends Monster implements BloodMoonBoss {
         int i = 0;
         for (LivingEntity a : aims) {
             Vec3 lead = a.position().add(a.getDeltaMovement().multiply(10, 0, 10));
-            if (i == 1 && a == t) lead = lead.add(toward(a).scale(3));
-            Vec3 at = groundBelow(sl, lead);
+            if (i == 1 && a == t) lead = lead.add(core.toward(a).scale(3));
+            Vec3 at = BossCore.groundBelow(sl, lead);
             int flight = (int) Mth.clamp(10 + from.distanceTo(at) * 0.5, 12, 26) + i * 6;
             rocks.add(new Rock(at, this.tickCount + flight, 2.4F, 8, true));
             ServerFx.of("golem_rock_mark", at).a(2.4F).b(flight).color(0xFF3A30).send(sl);
@@ -642,7 +565,7 @@ public class Golem extends Monster implements BloodMoonBoss {
         sl.playSound(null, this.blockPosition(), SoundEvents.RAVAGER_ROAR, SoundSource.HOSTILE, 3.0F, 0.5F);
         int extra = phase() >= 2 ? 4 : 2;
         int land = this.tickCount + 34;
-        for (ServerPlayer p : fighters(sl, 34)) {
+        for (ServerPlayer p : core.fighters(sl, 34)) {
             List<Vec3> spots = new ArrayList<>();
             spots.add(p.position().add(p.getDeltaMovement().multiply(8, 0, 8)));
             for (int i = 0; i < extra; i++) {
@@ -650,7 +573,7 @@ public class Golem extends Monster implements BloodMoonBoss {
                 spots.add(p.position().add(Math.cos(a) * r, 0, Math.sin(a) * r));
             }
             for (int i = 0; i < spots.size(); i++) {
-                Vec3 at = groundBelow(sl, spots.get(i));
+                Vec3 at = BossCore.groundBelow(sl, spots.get(i));
                 int when = land + i * 4;
                 rocks.add(new Rock(at, when, 1.9F, 5, false));
                 ServerFx.of("golem_rock_mark", at).a(1.9F).b(when - this.tickCount).send(sl);
@@ -668,7 +591,7 @@ public class Golem extends Monster implements BloodMoonBoss {
                 double h = Math.hypot(v.x, v.z);
                 if (h < r.radius && Math.abs(v.y) < 2.5) {
                     p.hurtServer(sl, this.damageSources().mobAttack(this), r.damage);
-                    fling(p, r.at, 0.5, 0.35);
+                    BossCore.fling(p, r.at, 0.5, 0.35);
                 } else if (r.boulder && h < r.radius + 2.5 && Math.abs(v.y) < 2.5) {
                     p.hurtServer(sl, this.damageSources().mobAttack(this), 3); // flying fragments
                 }
@@ -688,9 +611,9 @@ public class Golem extends Monster implements BloodMoonBoss {
         setState(State.STOMP, up + 6);
         int start = this.tickCount + up + 10; // the spikes come after the lanes have shown a moment
         int lanes = 0;
-        for (ServerPlayer p : fighters(sl, 30)) {
+        for (ServerPlayer p : core.fighters(sl, 30)) {
             if (lanes >= (phase() >= 2 ? 4 : 3)) break;
-            Vec3 dir = toward(p);
+            Vec3 dir = core.toward(p);
             Vec3 from = this.position().add(dir.scale(this.getBbWidth() / 2));
             fissures.add(new Fissure(from, dir, start, FISSURE_LEN));
             ServerFx.of("golem_lane", from).vec(dir.scale(FISSURE_LEN)).a(1.6F).b(start - this.tickCount).send(sl);
@@ -721,7 +644,7 @@ public class Golem extends Monster implements BloodMoonBoss {
             if (k < 0) continue;
             // two spikes a tick along the lane
             for (int s = 0; s < 2 && f.done < f.length; s++) {
-                Vec3 at = groundBelow(sl, f.from.add(f.dir.scale(f.done + 0.5)));
+                Vec3 at = BossCore.groundBelow(sl, f.from.add(f.dir.scale(f.done + 0.5)));
                 f.done++;
                 ServerFx.of("golem_spike", at).send(sl);
                 for (ServerPlayer p : sl.players()) {
@@ -747,17 +670,17 @@ public class Golem extends Monster implements BloodMoonBoss {
     }
 
     private void startCharge(ServerLevel sl, LivingEntity t) {
-        aimDir = toward(t);
+        aimDir = core.toward(t);
         int aim = phase() >= 2 ? 14 : 20;
         setState(State.CHARGE_AIM, aim);
-        face(aimDir);
+        core.face(aimDir);
         ServerFx.of("king_dash_line", this.position()).vec(aimDir.scale(chargeSpeed() * 24)).a(this.getBbWidth()).b(aim + 6).send(sl);
         sl.playSound(null, this.blockPosition(), SoundEvents.RAVAGER_ROAR, SoundSource.HOSTILE, 2.0F, 0.7F);
     }
 
     private void chargeAim(ServerLevel sl) {
         hold();
-        face(aimDir);
+        core.face(aimDir);
         if (stateTicks >= stateLength) {
             chargeHit.clear();
             setState(State.CHARGE, 24);
@@ -768,7 +691,7 @@ public class Golem extends Monster implements BloodMoonBoss {
         Vec3 v = this.getDeltaMovement();
         this.setDeltaMovement(aimDir.x * chargeSpeed(), v.y, aimDir.z * chargeSpeed());
         this.needsSync = true;
-        face(aimDir);
+        core.face(aimDir);
         var box = this.getBoundingBox().inflate(0.5);
         for (ServerPlayer p : sl.players()) {
             if (!p.isAlive() || p.isSpectator() || chargeHit.contains(p.getUUID()) || !p.getBoundingBox().intersects(box)) continue;
@@ -814,7 +737,7 @@ public class Golem extends Monster implements BloodMoonBoss {
             Vec3 d = p.position().subtract(this.position());
             if (Math.hypot(d.x, d.z) <= r && Math.abs(d.y) < 3.5) {
                 p.hurtServer(sl, this.damageSources().mobAttack(this), 7);
-                fling(p, this.position(), 1.5, 0.6);
+                BossCore.fling(p, this.position(), 1.5, 0.6);
             }
         }
         ServerFx.of("golem_sweep", this.position().add(0, 1.2, 0)).a((float) r).send(sl);
@@ -869,8 +792,8 @@ public class Golem extends Monster implements BloodMoonBoss {
         if (phase() < 2) {
             this.entityData.set(DATA_PHASE, 2);
             this.getAttribute(Attributes.MOVEMENT_SPEED).setBaseValue(0.26);
-            if (bossBar != null) bossBar.setColor(BossEvent.BossBarColor.PURPLE);
-            for (ServerPlayer p : bossPlayers()) p.sendSystemMessage(Component.translatable("rpgmod.boss.golem.enraged").withStyle(ChatFormatting.LIGHT_PURPLE), true);
+            core.enraged();
+            for (ServerPlayer p : core.barPlayers()) p.sendSystemMessage(Component.translatable("rpgmod.boss.golem.enraged").withStyle(ChatFormatting.LIGHT_PURPLE), true);
         }
         raiseArmour(sl);
     }
@@ -888,7 +811,7 @@ public class Golem extends Monster implements BloodMoonBoss {
         for (int i = 0; i < n; i++) {
             double a = phase0 + Math.PI * 2 * i / n;
             double r = 8 + this.random.nextDouble() * 3;
-            Vec3 at = groundBelow(sl, this.position().add(Math.cos(a) * r, 2, Math.sin(a) * r));
+            Vec3 at = BossCore.groundBelow(sl, this.position().add(Math.cos(a) * r, 2, Math.sin(a) * r));
             GolemPillar p = ModRegistries.GOLEM_PILLAR.get().create(sl, EntitySpawnReason.MOB_SUMMONED);
             if (p == null) continue;
             p.snapTo(at.x, at.y, at.z, this.random.nextFloat() * 360, 0);
@@ -902,7 +825,7 @@ public class Golem extends Monster implements BloodMoonBoss {
         ServerFx.of("golem_shield", this.position()).follow(this).a(this.getBbWidth()).send(sl);
         sl.playSound(null, this.blockPosition(), SoundEvents.RAVAGER_ROAR, SoundSource.HOSTILE, 3.0F, 0.4F);
         sl.playSound(null, this.blockPosition(), SoundEvents.BEACON_ACTIVATE, SoundSource.HOSTILE, 2.0F, 0.5F);
-        for (ServerPlayer p : bossPlayers()) p.sendSystemMessage(Component.translatable("rpgmod.boss.golem.armour").withStyle(ChatFormatting.GOLD), true);
+        for (ServerPlayer p : core.barPlayers()) p.sendSystemMessage(Component.translatable("rpgmod.boss.golem.armour").withStyle(ChatFormatting.GOLD), true);
         RpgMod.LOGGER.info("[boss] golem raises stone armour ({} pillars)", n);
     }
 
@@ -912,7 +835,7 @@ public class Golem extends Monster implements BloodMoonBoss {
         ServerFx.of("golem_shield_break", this.position()).a(this.getBbWidth()).send(sl);
         sl.playSound(null, this.blockPosition(), SoundEvents.GLASS_BREAK, SoundSource.HOSTILE, 3.0F, 0.5F);
         sl.playSound(null, this.blockPosition(), SoundEvents.IRON_GOLEM_HURT, SoundSource.HOSTILE, 3.0F, 0.4F);
-        for (ServerPlayer p : bossPlayers()) p.sendSystemMessage(Component.translatable("rpgmod.boss.golem.armour_broken").withStyle(ChatFormatting.YELLOW), true);
+        for (ServerPlayer p : core.barPlayers()) p.sendSystemMessage(Component.translatable("rpgmod.boss.golem.armour_broken").withStyle(ChatFormatting.YELLOW), true);
         if (state != State.LEAP && state != State.CHARGE) {
             combo.clear();
             stun(sl, 40, 1.4F);
@@ -923,8 +846,7 @@ public class Golem extends Monster implements BloodMoonBoss {
 
     @Override
     public boolean hurtServer(ServerLevel level, DamageSource source, float damage) {
-        if (state == State.LEAVE) return false;
-        if (source.getEntity() instanceof ServerPlayer p) participants.add(p.getUUID());
+        core.hurtBy(source);
         if (state == State.STUN || state == State.OVERHEAT || state == State.SLAM) damage *= damageTakenMult;
         if (shielded()) damage *= 0.5F;
         return super.hurtServer(level, source, damage);
@@ -976,91 +898,22 @@ public class Golem extends Monster implements BloodMoonBoss {
 
     // ------------------------------------------------------------------ boss bar
 
-    private List<ServerPlayer> bossPlayers() {
-        return bossBar == null ? List.of() : List.copyOf(bossBar.getPlayers());
-    }
-
-    private void updateBossBar(ServerLevel sl) {
-        if (bossBar == null) {
-            bossBar = new ServerBossEvent(UUID.randomUUID(), name(), phase() >= 2 ? BossEvent.BossBarColor.PURPLE : BossEvent.BossBarColor.RED,
-                    BossEvent.BossBarOverlay.NOTCHED_10);
-        }
-        bossBar.setName(name());
-        bossBar.setProgress(Mth.clamp(this.getHealth() / this.getMaxHealth(), 0, 1));
-        for (ServerPlayer p : sl.players()) {
-            boolean near = p.distanceToSqr(this) < 72 * 72;
-            if (near && !bossBar.getPlayers().contains(p)) bossBar.addPlayer(p);
-            else if (!near && bossBar.getPlayers().contains(p)) bossBar.removePlayer(p);
-        }
-        for (ServerPlayer p : List.copyOf(bossBar.getPlayers())) {
-            if (p.level() != sl || p.isRemoved()) bossBar.removePlayer(p);
-        }
-    }
-
-    private Component name() {
-        Component n = Component.translatable("entity.rpgmod.golem").append(Component.literal("  Lv " + bossLevel()));
-        if (shielded()) {
-            n = n.copy().append(Component.literal("  ")).append(Component.translatable("rpgmod.boss.golem.armour_bar").withStyle(ChatFormatting.GRAY));
-        } else if (state == State.OVERHEAT || (state == State.STUN && damageTakenMult > 1.4F)) {
-            n = n.copy().append(Component.literal("  ")).append(Component.translatable("rpgmod.boss.opening").withStyle(ChatFormatting.YELLOW));
-        }
-        return n;
-    }
-
     @Override
     public void remove(RemovalReason reason) {
-        if (bossBar != null) bossBar.removeAllPlayers();
+        core.removeBar();
         if (this.level() instanceof ServerLevel sl) for (GolemPillar p : pillars(sl)) p.discard();
         super.remove(reason);
     }
 
     // ------------------------------------------------------------------ leaving and dying
 
-    private void startLeaving(ServerLevel sl) {
-        setState(State.LEAVE, 70);
-        waves.clear();
-        rocks.clear();
-        fissures.clear();
-        combo.clear();
-        this.noPhysics = true;
-        for (GolemPillar p : pillars(sl)) p.discard();
-        this.entityData.set(DATA_SHIELD, false);
-        ServerFx.of("golem_leave", this.position()).follow(this).a(this.getBbWidth()).b(70).send(sl);
-        sl.playSound(null, this.blockPosition(), SoundEvents.STONE_BREAK, SoundSource.HOSTILE, 3.0F, 0.3F);
-        BossEvents.broadcast(sl.getServer(), Component.translatable("rpgmod.boss.golem.left").withStyle(ChatFormatting.GRAY));
-    }
-
-    private void leave(ServerLevel sl) {
-        this.noPhysics = true;
-        this.setDeltaMovement(0, -this.getBbHeight() / 70.0, 0);
-        this.needsSync = true;
-        if (stateTicks >= stateLength) this.discard();
-    }
-
     @Override
     public void die(DamageSource source) {
         super.die(source);
-        if (!(this.level() instanceof ServerLevel sl) || state == State.LEAVE) return;
-        if (bossBar != null) bossBar.removeAllPlayers();
+        if (!(this.level() instanceof ServerLevel sl)) return;
         for (GolemPillar p : pillars(sl)) p.discard();
-        Set<UUID> who = new HashSet<>(participants);
-        for (ServerPlayer p : sl.getEntitiesOfClass(ServerPlayer.class, this.getBoundingBox().inflate(48))) who.add(p.getUUID());
-        int books = MobConfig.bossBooks();
-        List<String> names = new ArrayList<>();
-        for (UUID id : who) {
-            ServerPlayer p = sl.getServer().getPlayerList().getPlayer(id);
-            if (p == null) continue;
-            names.add(p.getGameProfile().name());
-            if (books > 0) {
-                ItemStack stack = new ItemStack(ModRegistries.SKILL_BOOK.get(), books);
-                if (!p.getInventory().add(stack)) p.drop(stack, false, net.minecraft.util.Prediction.SERVER_ONLY);
-                p.sendSystemMessage(Component.translatable("rpgmod.boss.reward", books).withStyle(ChatFormatting.GOLD));
-            }
-            sl.playSound(null, p.getX(), p.getY(), p.getZ(), SoundEvents.UI_TOAST_CHALLENGE_COMPLETE, SoundSource.PLAYERS, 1.0F, 1.0F);
-        }
+        core.died(sl);
         ServerFx.of("golem_death", this.position()).a(this.getBbWidth()).b(this.getBbHeight()).send(sl);
-        BossEvents.broadcast(sl.getServer(), Component.translatable("rpgmod.boss.golem.defeated", String.join(", ", names)).withStyle(ChatFormatting.GOLD));
-        RpgMod.LOGGER.info("[boss] Golem defeated, {} participants rewarded", names.size());
     }
 
     // ------------------------------------------------------------------ save
@@ -1084,14 +937,14 @@ public class Golem extends Monster implements BloodMoonBoss {
     /** Autotest: start a move right away (slam, quake, throw, fissure, charge, sweep, rockfall, overheat, leap, armour, combo). */
     public void testMove(String move) {
         if (!(this.level() instanceof ServerLevel sl)) return;
-        LivingEntity t = target(sl);
+        LivingEntity t = core.target(sl);
         if (t == null) return;
         setState(State.CHASE, 0);
         combo.clear();
         switch (move) {
             case "overheat" -> startOverheat();
             case "combo" -> nextMove = 0;
-            case "leap" -> startLeap(sl, groundBelow(sl, t.position()));
+            case "leap" -> startLeap(sl, BossCore.groundBelow(sl, t.position()));
             case "armour" -> raiseArmour(sl);
             default -> start(sl, Move.valueOf(move.toUpperCase(java.util.Locale.ROOT)), t);
         }

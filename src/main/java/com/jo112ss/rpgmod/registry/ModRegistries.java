@@ -48,12 +48,12 @@ public final class ModRegistries {
 
     public static final DeferredRegister.Entities ENTITIES = DeferredRegister.createEntities(RpgMod.MODID);
 
-    /** The blood moon boss. Same base box as a slime; the size scales it. */
+    /** The King Slime (a dungeon boss). Same base box as a slime; the size scales it. */
     public static final DeferredHolder<net.minecraft.world.entity.EntityType<?>, net.minecraft.world.entity.EntityType<com.jo112ss.rpgmod.mob.boss.KingSlime>> KING_SLIME =
             ENTITIES.registerEntityType("king_slime", com.jo112ss.rpgmod.mob.boss.KingSlime::new, net.minecraft.world.entity.MobCategory.MONSTER,
                     b -> b.sized(0.52F, 0.52F).eyeHeight(0.325F).clientTrackingRange(16).fireImmune());
 
-    /** The other blood moon boss: a giant stone golem (2.2x an iron golem). */
+    /** The Golem (a dungeon boss): a giant stone golem (2.2x an iron golem). */
     public static final DeferredHolder<net.minecraft.world.entity.EntityType<?>, net.minecraft.world.entity.EntityType<com.jo112ss.rpgmod.mob.boss.Golem>> GOLEM =
             ENTITIES.registerEntityType("golem", com.jo112ss.rpgmod.mob.boss.Golem::new, net.minecraft.world.entity.MobCategory.MONSTER,
                     b -> b.sized(1.4F * com.jo112ss.rpgmod.mob.boss.Golem.SCALE, 2.7F * com.jo112ss.rpgmod.mob.boss.Golem.SCALE).eyeHeight(2.3F * com.jo112ss.rpgmod.mob.boss.Golem.SCALE)
@@ -178,11 +178,6 @@ public final class ModRegistries {
                     .sync(net.minecraft.network.codec.ByteBufCodecs.VAR_INT)
                     .build());
 
-    /** Overworld: the day whose blood moon already had its boss (so it is not summoned twice). */
-    public static final java.util.function.Supplier<net.neoforged.neoforge.attachment.AttachmentType<Long>> BOSS_DAY =
-            ATTACHMENTS.register("boss_day", () -> net.neoforged.neoforge.attachment.AttachmentType.builder(() -> -1L)
-                    .serialize(com.mojang.serialization.Codec.LONG.fieldOf("day"), v -> v >= 0)
-                    .build());
 
     public static final DeferredHolder<CreativeModeTab, CreativeModeTab> TAB = CREATIVE_TABS.register("main", () -> CreativeModeTab.builder()
             .title(Component.translatable("itemGroup.rpgmod"))

@@ -49,7 +49,7 @@ import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.Vec3;
 
 /**
- * King Slime, the blood moon boss: a giant crowned slime with a rhythm. It hops after its target
+ * King Slime, a dungeon boss: a giant crowned slime with a rhythm. It hops after its target
  * quickly, then strings together a <b>combo</b> of readable moves (three, four below half health);
  * every second combo ends <b>exhausted</b>: it sags and pants for a moment and takes 1.4x damage. A
  * dash into a wall leaves it dazed for a while too.
@@ -65,15 +65,15 @@ import net.minecraft.world.phys.Vec3;
  * <li>split: at 75 / 50 / 25 % health it shrinks a size and throws out small slimes</li>
  * </ul>
  * No single hit takes more than a fifth of a player's health (see {@link BossEvents}). Health follows
- * the boss level (highest player job level) and the number of players online. Leaves at dawn.
+ * the boss level (highest player job level) and the number of players online..
  */
-public class KingSlime extends Slime implements BloodMoonBoss {
+public class KingSlime extends Slime implements ModBoss {
     public static final int START_SIZE = 10;
     private static final int[] SPLIT_SIZES = {8, 7, 6};
     private static final float[] SPLIT_AT = {0.75F, 0.5F, 0.25F};
 
     /** What the king is doing (synced: the renderer squashes and stretches the body by it). */
-    public enum State { CHASE, WINDUP, LEAP, STUN, SPIT, ROAR, LEAVE, DASH_AIM, DASH, STOMP, TIRED, ABSORB, CAST }
+    public enum State { CHASE, WINDUP, LEAP, STUN, SPIT, ROAR, DASH_AIM, DASH, STOMP, TIRED, ABSORB, CAST }
 
     enum Move { SLAM, TRIPLE, BOUNCE, SPIT, DASH, RAIN, RIPPLE, ABSORB }
 
@@ -88,27 +88,21 @@ public class KingSlime extends Slime implements BloodMoonBoss {
     private int stateLength;
     private int nextMove = 50;
     private final Deque<Move> combo = new ArrayDeque<>();
-    /** Keeping out of water, and homing slime for someone out on it. */
-    public final BossWater.Tracker water = new BossWater.Tracker();
-    public final BossWater.Homing homing = new BossWater.Homing(0x5FD8FF);
+    /** Health, boss bar, targets, water, rewards: what every boss shares. */
+    private final BossCore core = new BossCore(this, "king_slime", MobConfig::kingHealth, BossEvent.BossBarColor.BLUE, 0x5FD8FF);
     private boolean relocating, holdShore;
     private int splits;
     private float damageTakenMult = 1;
     private int absorbCooldown = 300;
     private int lastLand = -100;
-    private int onlineSeen = -1;
-    private double healthTarget;
     /**
      * Vanilla caps max health at 1024: past that the king keeps a capped health bar and takes damage
      * divided by this, so it still lasts as long as its full health would.
      */
-    private float toughness = 1;
-    private final Set<UUID> participants = new HashSet<>();
     private final Map<UUID, Integer> touchCooldown = new HashMap<>();
     private final List<Wave> waves = new ArrayList<>();
     private final List<Drop> drops = new ArrayList<>();
     private final List<Puddle> puddles = new ArrayList<>();
-    private ServerBossEvent bossBar;
     /** Dev test: how many dashes ended against a wall. */
     public int wallHits;
 
@@ -204,12 +198,12 @@ public class KingSlime extends Slime implements BloodMoonBoss {
 
     @Override
     protected void setCubeMobHealth(int actualSize) {
-        if (healthTarget > 0) this.getAttribute(Attributes.MAX_HEALTH).setBaseValue(healthTarget);
+        if (core.healthTarget() > 0) this.getAttribute(Attributes.MAX_HEALTH).setBaseValue(core.healthTarget());
         else super.setCubeMobHealth(actualSize);
     }
 
     public int bossLevel() {
-        return Math.max(1, MobLevels.level(this));
+        return core.level();
     }
 
     public int phase() {
@@ -218,25 +212,6 @@ public class KingSlime extends Slime implements BloodMoonBoss {
 
     public State state() {
         return State.values()[Mth.clamp(this.entityData.get(DATA_STATE), 0, State.values().length - 1)];
-    }
-
-    /**
-     * Max health = base x level growth x (1 + share per extra player online). The current share of
-     * health is kept, so people joining mid-fight do not reset it.
-     */
-    @Override
-    public void recomputeHealth(boolean fill) {
-        if (!(this.level() instanceof ServerLevel sl)) return;
-        int online = com.jo112ss.rpgmod.dungeon.Dungeons.bossPlayers(this, sl);
-        onlineSeen = online;
-        double hp = MobConfig.kingHealth() * MobLevelMath.healthMultiplier(MobConfig.rules(), bossLevel())
-                * (1 + MobConfig.bossPerPlayer() * (online - 1));
-        float ratio = this.getMaxHealth() > 0 ? this.getHealth() / this.getMaxHealth() : 1;
-        double applied = Math.min(hp, 1000);
-        toughness = (float) (hp / applied);
-        healthTarget = applied;
-        this.getAttribute(Attributes.MAX_HEALTH).setBaseValue(applied);
-        this.setHealth(fill ? this.getMaxHealth() : Math.max(1, ratio * this.getMaxHealth()));
     }
 
     // ------------------------------------------------------------------ tick
@@ -278,25 +253,19 @@ public class KingSlime extends Slime implements BloodMoonBoss {
         if (!this.isAlive()) return;
         stateTicks++;
         if (absorbCooldown > 0) absorbCooldown--;
-        if (this.tickCount % 10 == 0) updateBossBar(sl);
-        if (this.tickCount % 20 == 0) {
-            if (com.jo112ss.rpgmod.dungeon.Dungeons.bossPlayers(this, sl) != onlineSeen && healthTarget > 0) recomputeHealth(false);
-            if (state != State.LEAVE && !BloodMoon.isBloodMoon(sl) && !BloodMoon.staysByDay(this, sl)) startLeaving(sl);
-        }
+        core.tick(sl, phase(), (state == State.TIRED || (state == State.STUN && damageTakenMult > 1.4F)) ? BossCore.opening() : null);
         tickWaves(sl);
         tickDrops(sl);
         tickPuddles(sl);
-        homing.tick(sl, this);
-        water.tick(this.getTarget());
         // in the water mid-move: drop it and get out first
-        if (state != State.CHASE && state != State.LEAP && state != State.WINDUP && state != State.DASH && state != State.LEAVE && stateTicks > 10
+        if (state != State.CHASE && state != State.LEAP && state != State.WINDUP && state != State.DASH && stateTicks > 10
                 && BossWater.inWater(this)) {
             relocating = false;
             setState(State.CHASE, 0);
         }
         touchCooldown.replaceAll((k, v) -> v - 1);
         touchCooldown.values().removeIf(v -> v <= 0);
-        if (state != State.LEAVE) checkSplit(sl);
+        checkSplit(sl);
 
         switch (state) {
             case CHASE -> chase(sl);
@@ -322,39 +291,17 @@ public class KingSlime extends Slime implements BloodMoonBoss {
             case STOMP -> stomp(sl);
             case ABSORB -> absorb(sl);
             case CAST -> cast(sl);
-            case LEAVE -> leave(sl);
         }
-    }
-
-    private LivingEntity target(ServerLevel sl) {
-        LivingEntity t = this.getTarget();
-        if (t instanceof Player p && (!p.isAlive() || p.isSpectator() || p.isCreative() || com.jo112ss.rpgmod.compat.Downed.is(p))) t = null;
-        if (t != null && !t.isAlive()) t = null;
-        if (t == null || t.distanceToSqr(this) > 48 * 48) {
-            Player best = null;
-            double bd = 48 * 48;
-            for (ServerPlayer p : sl.players()) {
-                if (!p.isAlive() || p.isSpectator() || p.isCreative() || com.jo112ss.rpgmod.compat.Downed.is(p)) continue;
-                double d = p.distanceToSqr(this);
-                if (d < bd) {
-                    bd = d;
-                    best = p;
-                }
-            }
-            t = best;
-            this.setTarget(best);
-        }
-        return t;
     }
 
     // ------------------------------------------------------------------ rhythm: combo -> exhausted
 
     private void chase(ServerLevel sl) {
-        LivingEntity t = target(sl);
+        LivingEntity t = core.target(sl);
         holdShore = false;
         if (t == null) return;
         // out of the water / to the shore nearest someone out on it
-        Vec3 dry = water.relocate(sl, this, t);
+        Vec3 dry = core.water.relocate(sl, this, t);
         if (dry != null) {
             relocating = true;
             hop = Hop.SLAM;
@@ -363,8 +310,8 @@ public class KingSlime extends Slime implements BloodMoonBoss {
             return;
         }
         // someone out on the water: no hopping in after them (from close by), homing slime instead
-        holdShore = water.ranged(t) && t.distanceToSqr(this) < 24 * 24 && !BossWater.inWater(this);
-        if (water.homingDue(t, phase())) homing.volley(sl, this, t, phase() >= 2 ? 5 : 3, 6, 0.6, 14);
+        holdShore = core.water.ranged(t) && t.distanceToSqr(this) < 24 * 24 && !BossWater.inWater(this);
+        if (core.water.homingDue(t, phase())) core.homing.volley(sl, this, t, phase() >= 2 ? 5 : 3, 6, 0.6, 14);
         if (--nextMove > 0 || !this.onGround()) return;
         if (Math.sqrt(t.distanceToSqr(this)) > 40) return;
         if (combo.isEmpty()) buildCombo(sl);
@@ -379,7 +326,7 @@ public class KingSlime extends Slime implements BloodMoonBoss {
                 ? List.of(Move.TRIPLE, Move.TRIPLE, Move.SLAM, Move.BOUNCE, Move.BOUNCE, Move.SPIT, Move.DASH, Move.DASH, Move.RAIN, Move.RIPPLE, Move.RIPPLE)
                 : List.of(Move.SLAM, Move.SLAM, Move.BOUNCE, Move.BOUNCE, Move.SPIT, Move.DASH, Move.DASH, Move.RAIN));
         int n = p2 ? 4 : 3;
-        if (water.ranged(target(sl))) { // someone out on the water: spit and rain only
+        if (core.water.ranged(core.target(sl))) { // someone out on the water: spit and rain only
             pool = new ArrayList<>(List.of(Move.SPIT, Move.RAIN));
             n = 2;
         }
@@ -491,7 +438,7 @@ public class KingSlime extends Slime implements BloodMoonBoss {
                 leapHeight = 4.5 + dist * 0.2;
             }
         }
-        Vec3 to = groundBelow(sl, aim);
+        Vec3 to = BossCore.groundBelow(sl, aim);
         leapFrom = this.position();
         leapTo = to;
         setState(State.WINDUP, windup);
@@ -499,16 +446,6 @@ public class KingSlime extends Slime implements BloodMoonBoss {
         // the circle stays until the landing: windup + flight
         ServerFx.of("king_mark", to).a(hitRadius()).b(windup + leapTime).send(sl);
         if (first || hop != Hop.BOUNCE) sl.playSound(null, this.blockPosition(), SoundEvents.SLIME_SQUISH, SoundSource.HOSTILE, 3.0F, 0.5F);
-    }
-
-    /** Lands on the ground under a point (a player in the air or on a ledge). */
-    private static Vec3 groundBelow(ServerLevel sl, Vec3 at) {
-        var pos = net.minecraft.core.BlockPos.containing(at);
-        for (int i = 0; i < 12; i++) {
-            if (!sl.getBlockState(pos.below()).getCollisionShape(sl, pos.below()).isEmpty()) break;
-            pos = pos.below();
-        }
-        return new Vec3(at.x, pos.getY(), at.z);
     }
 
     private void windup(ServerLevel sl) {
@@ -544,8 +481,8 @@ public class KingSlime extends Slime implements BloodMoonBoss {
             Vec3 d = p.position().subtract(c);
             if (Math.hypot(d.x, d.z) <= r && Math.abs(d.y) < 3) {
                 p.hurtServer(sl, this.damageSources().mobAttack(this), slam);
-                fling(p, c, 0.9, 0.55);
-                participants.add(p.getUUID());
+                BossCore.fling(p, c, 0.9, 0.55);
+                core.participants.add(p.getUUID());
             }
         }
         waves.add(new Wave(c, this.getBbWidth() / 2, this.getBbWidth() / 2 + reach, 0.6, waveDmg));
@@ -562,7 +499,7 @@ public class KingSlime extends Slime implements BloodMoonBoss {
             return;
         }
         if (--hopsLeft > 0) {
-            LivingEntity t = target(sl);
+            LivingEntity t = core.target(sl);
             if (t != null) {
                 windupAt(sl, t, false);
                 return;
@@ -587,18 +524,11 @@ public class KingSlime extends Slime implements BloodMoonBoss {
                 if (Math.abs(h - w.r) < 0.8 && d.y > -1.5 && d.y < 0.9) {
                     w.hit.add(p.getUUID());
                     p.hurtServer(sl, this.damageSources().mobAttack(this), w.damage);
-                    fling(p, w.c, 0.6, 0.35);
+                    BossCore.fling(p, w.c, 0.6, 0.35);
                 }
             }
             if (w.r > w.max) it.remove();
         }
-    }
-
-    private static void fling(LivingEntity e, Vec3 from, double out, double up) {
-        Vec3 d = e.position().subtract(from).multiply(1, 0, 1);
-        d = d.lengthSqr() < 1e-4 ? new Vec3(1, 0, 0) : d.normalize();
-        e.setDeltaMovement(e.getDeltaMovement().add(d.scale(out)).add(0, up, 0));
-        e.syncVelocity = true; // also to the player being thrown, who moves on their own computer
     }
 
     // ------------------------------------------------------------------ dash
@@ -707,7 +637,7 @@ public class KingSlime extends Slime implements BloodMoonBoss {
                     spots.add(p.position().add(Math.cos(a) * r, 0, Math.sin(a) * r));
                 }
                 for (int i = 0; i < spots.size(); i++) {
-                    Vec3 at = groundBelow(sl, spots.get(i));
+                    Vec3 at = BossCore.groundBelow(sl, spots.get(i));
                     int when = land + i * 3; // they come down one after another
                     drops.add(new Drop(at, when));
                     ServerFx.of("king_rain_mark", at).a(1.8).b(when - this.tickCount).send(sl);
@@ -779,7 +709,7 @@ public class KingSlime extends Slime implements BloodMoonBoss {
         absorbCooldown = 600;
         setState(State.ABSORB, 70);
         damageTakenMult = 1;
-        for (ServerPlayer p : bossPlayers()) {
+        for (ServerPlayer p : core.barPlayers()) {
             p.sendSystemMessage(Component.translatable("rpgmod.boss.king_slime.absorb").withStyle(ChatFormatting.AQUA), true);
         }
         sl.playSound(null, this.blockPosition(), SoundEvents.BEACON_POWER_SELECT, SoundSource.HOSTILE, 2.0F, 0.5F);
@@ -816,7 +746,7 @@ public class KingSlime extends Slime implements BloodMoonBoss {
     private void spit(ServerLevel sl) {
         this.setDeltaMovement(this.getDeltaMovement().multiply(0.2, 1, 0.2));
         if (stateTicks < stateLength) return;
-        LivingEntity t = target(sl);
+        LivingEntity t = core.target(sl);
         if (t != null) {
             int n = phase() >= 2 ? 5 : 3;
             Vec3 from = this.position().add(0, this.getBbHeight() * 0.6, 0);
@@ -854,7 +784,7 @@ public class KingSlime extends Slime implements BloodMoonBoss {
         if (splits >= 2 && phase() < 2) {
             this.entityData.set(DATA_PHASE, 2);
             this.getAttribute(Attributes.MOVEMENT_SPEED).setBaseValue(chaseSpeed());
-            if (bossBar != null) bossBar.setColor(BossEvent.BossBarColor.PURPLE);
+            core.enraged();
         }
         int online = com.jo112ss.rpgmod.dungeon.Dungeons.bossPlayers(this, sl);
         int kids = Math.min(6, 2 + (online - 1));
@@ -879,7 +809,7 @@ public class KingSlime extends Slime implements BloodMoonBoss {
         sl.playSound(null, this.blockPosition(), SoundEvents.SLIME_DEATH, SoundSource.HOSTILE, 3.0F, 0.5F);
         sl.playSound(null, this.blockPosition(), SoundEvents.RAVAGER_ROAR, SoundSource.HOSTILE, 1.5F, 1.4F);
         if (phase() >= 2 && splits == 2) {
-            for (ServerPlayer p : bossPlayers()) {
+            for (ServerPlayer p : core.barPlayers()) {
                 p.sendSystemMessage(Component.translatable("rpgmod.boss.king_slime.enraged").withStyle(ChatFormatting.LIGHT_PURPLE), true);
             }
         }
@@ -889,8 +819,7 @@ public class KingSlime extends Slime implements BloodMoonBoss {
 
     @Override
     public boolean hurtServer(ServerLevel level, DamageSource source, float damage) {
-        if (state == State.LEAVE) return false;
-        if (source.getEntity() instanceof ServerPlayer p) participants.add(p.getUUID());
+        core.hurtBy(source);
         // the openings: after a slam, dazed against a wall, exhausted after a combo, absorbing
         if (state == State.STUN || state == State.TIRED || state == State.ABSORB) damage *= damageTakenMult;
         // the toughness share is taken off last, in BossEvents.onKingHurt, so bonuses added on the way
@@ -936,61 +865,13 @@ public class KingSlime extends Slime implements BloodMoonBoss {
 
     // ------------------------------------------------------------------ boss bar
 
-    private List<ServerPlayer> bossPlayers() {
-        return bossBar == null ? List.of() : List.copyOf(bossBar.getPlayers());
-    }
-
-    private void updateBossBar(ServerLevel sl) {
-        if (bossBar == null) {
-            bossBar = new ServerBossEvent(UUID.randomUUID(), name(), phase() >= 2 ? BossEvent.BossBarColor.PURPLE : BossEvent.BossBarColor.BLUE,
-                    BossEvent.BossBarOverlay.NOTCHED_10);
-        }
-        bossBar.setName(name());
-        bossBar.setProgress(Mth.clamp(this.getHealth() / this.getMaxHealth(), 0, 1));
-        for (ServerPlayer p : sl.players()) {
-            boolean near = p.distanceToSqr(this) < 72 * 72;
-            if (near && !bossBar.getPlayers().contains(p)) bossBar.addPlayer(p);
-            else if (!near && bossBar.getPlayers().contains(p)) bossBar.removePlayer(p);
-        }
-        for (ServerPlayer p : List.copyOf(bossBar.getPlayers())) {
-            if (p.level() != sl || p.isRemoved()) bossBar.removePlayer(p);
-        }
-    }
-
-    private Component name() {
-        Component n = Component.translatable("entity.rpgmod.king_slime").append(Component.literal("  Lv " + bossLevel()));
-        if (state == State.TIRED || (state == State.STUN && damageTakenMult > 1.4F)) {
-            n = n.copy().append(Component.literal("  ")).append(Component.translatable("rpgmod.boss.opening").withStyle(ChatFormatting.YELLOW));
-        }
-        return n;
-    }
-
     @Override
     public void remove(RemovalReason reason) {
-        if (bossBar != null) bossBar.removeAllPlayers();
+        core.removeBar();
         super.remove(reason);
     }
 
     // ------------------------------------------------------------------ leaving and dying
-
-    private void startLeaving(ServerLevel sl) {
-        setState(State.LEAVE, 70);
-        waves.clear();
-        drops.clear();
-        combo.clear();
-        this.noPhysics = true;
-        ServerFx.of("king_leave", this.position()).follow(this).a(this.getBbWidth()).b(70).send(sl);
-        sl.playSound(null, this.blockPosition(), SoundEvents.SLIME_SQUISH, SoundSource.HOSTILE, 3.0F, 0.3F);
-        BossEvents.broadcast(sl.getServer(), Component.translatable("rpgmod.boss.king_slime.left").withStyle(ChatFormatting.GRAY));
-        dissolveChildren(sl);
-    }
-
-    private void leave(ServerLevel sl) {
-        this.noPhysics = true;
-        this.setDeltaMovement(0, -this.getBbHeight() / 60.0, 0);
-        this.needsSync = true;
-        if (stateTicks >= stateLength) this.discard();
-    }
 
     private void dissolveChildren(ServerLevel sl) {
         for (Slime s : sl.getEntitiesOfClass(Slime.class, this.getBoundingBox().inflate(64), s -> s != this && s.getPersistentData().getBooleanOr(BossEvents.CHILD, false))) {
@@ -1002,27 +883,10 @@ public class KingSlime extends Slime implements BloodMoonBoss {
     @Override
     public void die(DamageSource source) {
         super.die(source);
-        if (!(this.level() instanceof ServerLevel sl) || state == State.LEAVE) return;
-        if (bossBar != null) bossBar.removeAllPlayers();
+        if (!(this.level() instanceof ServerLevel sl)) return;
         dissolveChildren(sl);
-        Set<UUID> who = new HashSet<>(participants);
-        for (ServerPlayer p : sl.getEntitiesOfClass(ServerPlayer.class, this.getBoundingBox().inflate(48))) who.add(p.getUUID());
-        int books = MobConfig.bossBooks();
-        List<String> names = new ArrayList<>();
-        for (UUID id : who) {
-            ServerPlayer p = sl.getServer().getPlayerList().getPlayer(id);
-            if (p == null) continue;
-            names.add(p.getGameProfile().name());
-            if (books > 0) {
-                ItemStack stack = new ItemStack(ModRegistries.SKILL_BOOK.get(), books);
-                if (!p.getInventory().add(stack)) p.drop(stack, false, net.minecraft.util.Prediction.SERVER_ONLY);
-                p.sendSystemMessage(Component.translatable("rpgmod.boss.reward", books).withStyle(ChatFormatting.GOLD));
-            }
-            sl.playSound(null, p.getX(), p.getY(), p.getZ(), SoundEvents.UI_TOAST_CHALLENGE_COMPLETE, SoundSource.PLAYERS, 1.0F, 1.0F);
-        }
+        core.died(sl);
         ServerFx.of("king_death", this.position()).a(this.getBbWidth()).send(sl);
-        BossEvents.broadcast(sl.getServer(), Component.translatable("rpgmod.boss.king_slime.defeated", String.join(", ", names)).withStyle(ChatFormatting.GOLD));
-        RpgMod.LOGGER.info("[boss] King Slime defeated, {} participants rewarded", names.size());
     }
 
     // ------------------------------------------------------------------ save
@@ -1046,7 +910,7 @@ public class KingSlime extends Slime implements BloodMoonBoss {
     /** Autotest: start a move right away (slam, triple, bounce, spit, dash, rain, ripple, absorb, tired, combo). */
     public void testMove(String move) {
         if (!(this.level() instanceof ServerLevel sl)) return;
-        LivingEntity t = target(sl);
+        LivingEntity t = core.target(sl);
         if (t == null) return;
         setState(State.CHASE, 0);
         combo.clear();
@@ -1057,15 +921,9 @@ public class KingSlime extends Slime implements BloodMoonBoss {
         }
     }
 
-    /** Damage taken is divided by this past the max health cap (1 below it). */
-    @Override
-    public float toughness() {
-        return toughness;
-    }
-
     /** Health the fight is really worth (max health x toughness past the vanilla cap). */
     public float effectiveMaxHealth() {
-        return this.getMaxHealth() * toughness;
+        return this.getMaxHealth() * toughness();
     }
 
     public int splits() {

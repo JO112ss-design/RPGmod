@@ -445,7 +445,7 @@ public final class DungeonManager {
             MobLevels.forceLevel = null;
             Elite.forceNext = null;
         }
-        if (m instanceof com.jo112ss.rpgmod.mob.boss.BloodMoonBoss boss) {
+        if (m instanceof com.jo112ss.rpgmod.mob.boss.ModBoss boss) {
             boss.recomputeHealth(true); // fought by the party inside, not by everyone online
         } else if (n > 1) {
             var hp = m.getAttribute(Attributes.MAX_HEALTH);

@@ -226,14 +226,10 @@ final class MobScenes {
             case "golem" -> {
                 tp(player, Vec3.atBottomCenterOf(c), -90, -2);
                 savedTime = level.getOverworldClockTime();
-                setTime(level, 9 * 24000L + 14000); // night of day 10: blood moon
-                level.setData(com.jo112ss.rpgmod.registry.ModRegistries.BOSS_DAY, com.jo112ss.rpgmod.mob.boss.BloodMoon.day(level)); // no natural boss: this scene calls its own
             }
             case "king" -> {
                 tp(player, Vec3.atBottomCenterOf(c), -90, -6);
                 savedTime = level.getOverworldClockTime();
-                level.setData(com.jo112ss.rpgmod.registry.ModRegistries.BOSS_DAY, -1L);
-                setTime(level, 9 * 24000L + 14000); // night of day 10: blood moon
             }
             default -> {
                 tp(player, Vec3.atBottomCenterOf(c), -90, 15);
@@ -260,14 +256,10 @@ final class MobScenes {
         var k = king;
         switch (t) {
             case 45 -> {
-                k = king = findKing(level, player);
-                RpgMod.LOGGER.info("[AUTOTEST] king natural spawn={} bloodMoon={} day={} dist={} level={} hp={}", k != null,
-                        com.jo112ss.rpgmod.mob.boss.BloodMoon.active(), com.jo112ss.rpgmod.mob.boss.BloodMoon.day(level),
-                        k == null ? -1 : String.format("%.1f", k.distanceTo(player)), k == null ? -1 : MobLevels.level(k),
+                k = king = com.jo112ss.rpgmod.mob.boss.Bosses.spawnNear(level, player);
+                RpgMod.LOGGER.info("[AUTOTEST] king spawned={} level={} hp={}", k != null, k == null ? -1 : MobLevels.level(k),
                         k == null ? -1 : String.format("%.0f", k.effectiveMaxHealth()));
-                if (k == null) k = king = com.jo112ss.rpgmod.mob.boss.BloodMoon.spawnNear(level, player);
                 if (k != null) {
-                    com.jo112ss.rpgmod.mob.boss.BloodMoon.testKeep = true;
                     k.snapTo(c.getX() + 22.5, c.getY(), c.getZ() + 0.5, 90, 0);
                     // the scripted moves aim at a dummy in front of the camera; its waves still reach the player
                     dummy = EntityTypes.HUSK.create(level, EntitySpawnReason.COMMAND);
@@ -279,9 +271,6 @@ final class MobScenes {
                     level.addFreshEntity(dummy);
                     k.setTarget(dummy);
                 }
-                var ev = new net.neoforged.neoforge.event.entity.player.CanPlayerSleepEvent(player, c, null);
-                net.neoforged.neoforge.common.NeoForge.EVENT_BUS.post(ev);
-                RpgMod.LOGGER.info("[AUTOTEST] king sleep blocked={}", ev.getProblem() != null);
             }
             case 52, 100, 168, 285, 430 -> portrait(player, k, -1);
             case 548 -> portrait(player, k, 1); // from the open side of the wall
@@ -317,7 +306,7 @@ final class MobScenes {
                 RpgMod.LOGGER.info("[AUTOTEST] king dead={} books={}", k == null || !k.isAlive(), books);
             }
             case 590 -> { // a free-running king: its own combos and exhausted windows
-                k = king = com.jo112ss.rpgmod.mob.boss.BloodMoon.spawnNear(level, player);
+                k = king = com.jo112ss.rpgmod.mob.boss.Bosses.spawnNear(level, player);
                 kingMoves.clear();
                 if (k != null) {
                     k.snapTo(c.getX() + 14.5, c.getY(), c.getZ() + 0.5, 90, 0);
@@ -327,13 +316,7 @@ final class MobScenes {
                     }
                 }
             }
-            case 840 -> {
-                RpgMod.LOGGER.info("[AUTOTEST] king free run states={}", kingMoves);
-                com.jo112ss.rpgmod.mob.boss.BloodMoon.testKeep = false;
-                setTime(level, 9 * 24000L + 23300); // dawn
-            }
-            case 930 -> RpgMod.LOGGER.info("[AUTOTEST] king left at dawn={} bloodMoon={}", k == null || k.isRemoved(), com.jo112ss.rpgmod.mob.boss.BloodMoon.active());
-            case 935 -> setTime(level, 10 * 24000L + 300); // morning of day 11: the day title
+            case 840 -> RpgMod.LOGGER.info("[AUTOTEST] king free run states={}", kingMoves);
             default -> { }
         }
         if (t % 10 == 0) { // keep the stage to the boss: no wandering monsters, the player stays alive
@@ -360,12 +343,10 @@ final class MobScenes {
         var g = golem;
         switch (t) {
             case 45 -> {
-                var b = com.jo112ss.rpgmod.mob.boss.BloodMoon.summon(level, true);
-                g = golem = b instanceof com.jo112ss.rpgmod.mob.boss.Golem gg ? gg : null;
+                g = golem = com.jo112ss.rpgmod.mob.boss.Bosses.spawnNear(level, player, com.jo112ss.rpgmod.registry.ModRegistries.GOLEM.get());
                 RpgMod.LOGGER.info("[AUTOTEST] golem summoned={} level={} hp={} toughness={} size={}x{}", g != null, g == null ? -1 : MobLevels.level(g),
                         g == null ? -1 : String.format("%.0f", g.effectiveMaxHealth()), g == null ? -1 : g.toughness(), g == null ? -1 : g.getBbWidth(), g == null ? -1 : g.getBbHeight());
                 if (g != null) {
-                    com.jo112ss.rpgmod.mob.boss.BloodMoon.testKeep = true;
                     g.snapTo(c.getX() + 19.5, c.getY(), c.getZ() + 0.5, 90, 0);
                     dummy = EntityTypes.HUSK.create(level, EntitySpawnReason.COMMAND);
                     dummy.snapTo(c.getX() + 9.5, c.getY(), c.getZ() + 0.5, 90, 0);
@@ -422,7 +403,7 @@ final class MobScenes {
                 for (int y = 0; y < 5; y++) for (int x = -1; x <= 1; x++) for (int z = -1; z <= 1; z++) level.setBlockAndUpdate(c.offset(9 + x, y, z), Blocks.AIR.defaultBlockState());
             }
             case 725 -> { // a free-running golem: its own combos and overheats
-                g = golem = com.jo112ss.rpgmod.mob.boss.BloodMoon.spawnNear(level, player, com.jo112ss.rpgmod.registry.ModRegistries.GOLEM.get());
+                g = golem = com.jo112ss.rpgmod.mob.boss.Bosses.spawnNear(level, player, com.jo112ss.rpgmod.registry.ModRegistries.GOLEM.get());
                 golemStates.clear();
                 if (g != null) {
                     g.snapTo(c.getX() + 16.5, c.getY(), c.getZ() + 0.5, 90, 0);
@@ -432,12 +413,7 @@ final class MobScenes {
                     }
                 }
             }
-            case 1000 -> {
-                RpgMod.LOGGER.info("[AUTOTEST] golem free run states={}", golemStates);
-                com.jo112ss.rpgmod.mob.boss.BloodMoon.testKeep = false;
-                setTime(level, 9 * 24000L + 23300); // dawn
-            }
-            case 1090 -> RpgMod.LOGGER.info("[AUTOTEST] golem left at dawn={}", g == null || g.isRemoved());
+            case 1000 -> RpgMod.LOGGER.info("[AUTOTEST] golem free run states={}", golemStates);
             default -> { }
         }
         if (t % 10 == 0) {
@@ -696,7 +672,6 @@ final class MobScenes {
         golem = null;
         if (dummy != null) dummy.discard();
         dummy = null;
-        com.jo112ss.rpgmod.mob.boss.BloodMoon.testKeep = false;
         if (savedTime >= 0) setTime(level, savedTime);
         savedTime = -1;
         if (dragon != null) dragon.discard();

@@ -24,7 +24,7 @@ import net.minecraft.util.Mth;
 
 /**
  * The King Slime: a big blue slime with a gold crown. Its body squashes while it winds up a slam,
- * flattens while stunned, puffs up before spitting, and sinks away at dawn.
+ * flattens while stunned, puffs up before spitting.
  */
 public class KingSlimeRenderer extends AbstractCubeMobRenderer<KingSlime, KingSlimeRenderState, SlimeModel> {
     public static final Identifier TEXTURE = Identifier.fromNamespaceAndPath(RpgMod.MODID, "textures/entity/king_slime.png");
@@ -85,11 +85,6 @@ public class KingSlimeRenderer extends AbstractCubeMobRenderer<KingSlime, KingSl
                 float k = Mth.sin(t * 0.9F) * Math.max(0, 1 - t / 22F);
                 y = 1 + 0.14F * k;
                 xz = 1 - 0.08F * k;
-            }
-            case LEAVE -> {
-                float k = Math.min(1, t / 70F);
-                y = 1 - 0.55F * k;
-                xz = 1 + 0.35F * k;
             }
             case DASH_AIM -> { // dug in, leaning forward, shaking
                 float k = Math.min(1, t / 10F);

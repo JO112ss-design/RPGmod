@@ -61,12 +61,12 @@ import net.minecraft.world.phys.Vec3;
  * row and casts a <b>web field</b>: marked circles all round that turn into webbing for a while</li>
  * </ul>
  * No single hit takes more than a fifth of a player's health (see {@link BossEvents}). Health follows
- * the boss level and the players fighting her. Burrows away at dawn.
+ * the boss level and the players fighting her..
  */
-public class SpiderQueen extends Monster implements BloodMoonBoss {
+public class SpiderQueen extends Monster implements ModBoss {
     public static final float SCALE = 3.0F;
 
-    public enum State { CHASE, CROUCH, POUNCE, LANDED, WEB_UP, SPRAY_UP, SPRAY, EGGS, SKITTER_AIM, SKITTER, SWIPE_UP, SWIPE, FIELD_UP, SPENT, SHRIEK, LEAVE }
+    public enum State { CHASE, CROUCH, POUNCE, LANDED, WEB_UP, SPRAY_UP, SPRAY, EGGS, SKITTER_AIM, SKITTER, SWIPE_UP, SWIPE, FIELD_UP, SPENT, SHRIEK }
 
     enum Move { POUNCE, TRIPLE, WEBS, SPRAY, EGGS, SKITTER, SWIPE, FIELD }
 
@@ -81,23 +81,17 @@ public class SpiderQueen extends Monster implements BloodMoonBoss {
     private int stateTicks, stateLength;
     private int nextMove = 50;
     private final Deque<Move> combo = new ArrayDeque<>();
-    /** Keeping out of water, and homing venom for someone out on it. */
-    public final BossWater.Tracker water = new BossWater.Tracker();
-    public final BossWater.Homing homing = new BossWater.Homing(0x9AF060);
+    /** Health, boss bar, targets, water, rewards: what every boss shares. */
+    private final BossCore core = new BossCore(this, "spider_queen", MobConfig::queenHealth, BossEvent.BossBarColor.GREEN, 0x9A9060);
     private boolean relocating;
     private int pounceTime = 14;
     private int combos;
     private float damageTakenMult = 1;
-    private int onlineSeen = -1;
-    private double healthTarget;
-    private float toughness = 1;
     private int close, stuckTicks;
     private Vec3 lastPos = Vec3.ZERO;
-    private final Set<UUID> participants = new HashSet<>();
     private final List<Web> webs = new ArrayList<>();
     private final List<Zone> zones = new ArrayList<>();
     private final List<Egg> eggs = new ArrayList<>();
-    private ServerBossEvent bossBar;
     private Vec3 aimDir = Vec3.ZERO;
     private Vec3 leapFrom = Vec3.ZERO, leapTo = Vec3.ZERO;
     private int pouncesLeft;
@@ -159,10 +153,15 @@ public class SpiderQueen extends Monster implements BloodMoonBoss {
         this.targetSelector.addGoal(1, new NearestAttackableTargetGoal<>(this, Player.class, false));
     }
 
-    // ------------------------------------------------------------------ health, level, state
+    // ------------------------------------------------------------------ level, state
+
+    @Override
+    public BossCore core() {
+        return core;
+    }
 
     public int bossLevel() {
-        return Math.max(1, MobLevels.level(this));
+        return core.level();
     }
 
     public int phase() {
@@ -171,25 +170,6 @@ public class SpiderQueen extends Monster implements BloodMoonBoss {
 
     public State state() {
         return State.values()[Mth.clamp(this.entityData.get(DATA_STATE), 0, State.values().length - 1)];
-    }
-
-    @Override
-    public void recomputeHealth(boolean fill) {
-        if (!(this.level() instanceof ServerLevel sl)) return;
-        int online = com.jo112ss.rpgmod.dungeon.Dungeons.bossPlayers(this, sl);
-        onlineSeen = online;
-        double hp = MobConfig.queenHealth() * MobLevelMath.healthMultiplier(MobConfig.rules(), bossLevel()) * (1 + MobConfig.bossPerPlayer() * (online - 1));
-        float ratio = this.getMaxHealth() > 0 ? this.getHealth() / this.getMaxHealth() : 1;
-        double applied = Math.min(hp, 1000);
-        toughness = (float) (hp / applied);
-        healthTarget = applied;
-        this.getAttribute(Attributes.MAX_HEALTH).setBaseValue(applied);
-        this.setHealth(fill ? this.getMaxHealth() : Math.max(1, ratio * this.getMaxHealth()));
-    }
-
-    @Override
-    public float toughness() {
-        return toughness;
     }
 
     private void setState(State s, int length) {
@@ -223,24 +203,18 @@ public class SpiderQueen extends Monster implements BloodMoonBoss {
     private void serverTick(ServerLevel sl) {
         if (!this.isAlive()) return;
         stateTicks++;
-        if (this.tickCount % 10 == 0) updateBossBar(sl);
-        if (this.tickCount % 20 == 0) {
-            if (com.jo112ss.rpgmod.dungeon.Dungeons.bossPlayers(this, sl) != onlineSeen && healthTarget > 0) recomputeHealth(false);
-            if (state != State.LEAVE && !BloodMoon.isBloodMoon(sl) && !BloodMoon.staysByDay(this, sl)) startLeaving(sl);
-        }
+        core.tick(sl, phase(), state == State.SPENT ? BossCore.opening() : null);
         tickWebs(sl);
         tickZones(sl);
         tickEggs(sl);
-        homing.tick(sl, this);
-        water.tick(this.getTarget());
         // in the water mid-move: drop it and get out first
-        if (state != State.CHASE && state != State.CROUCH && state != State.POUNCE && state != State.SKITTER && state != State.SHRIEK && state != State.LEAVE
+        if (state != State.CHASE && state != State.CROUCH && state != State.POUNCE && state != State.SKITTER && state != State.SHRIEK
                 && stateTicks > 10 && BossWater.inWater(this)) {
             relocating = false;
             pouncesLeft = 0;
             setState(State.CHASE, 0);
         }
-        if (state != State.LEAVE && phase() < 2 && this.getHealth() <= this.getMaxHealth() * 0.5F) startShriek(sl);
+        if (phase() < 2 && this.getHealth() <= this.getMaxHealth() * 0.5F) startShriek(sl);
 
         switch (state) {
             case CHASE -> chase(sl);
@@ -250,7 +224,7 @@ public class SpiderQueen extends Monster implements BloodMoonBoss {
                 hold();
                 if (stateTicks >= stateLength) {
                     if (state == State.LANDED && pouncesLeft > 0) {
-                        LivingEntity t = target(sl);
+                        LivingEntity t = core.target(sl);
                         if (t != null) {
                             startPounce(sl, t, 8);
                             return;
@@ -273,7 +247,6 @@ public class SpiderQueen extends Monster implements BloodMoonBoss {
                 }
             }
             case SHRIEK -> shriek(sl);
-            case LEAVE -> leave(sl);
         }
     }
 
@@ -282,64 +255,14 @@ public class SpiderQueen extends Monster implements BloodMoonBoss {
         this.setDeltaMovement(this.getDeltaMovement().multiply(0.2, 1, 0.2));
     }
 
-    private boolean valid(Player p) {
-        return p.isAlive() && !p.isSpectator() && !p.isCreative() && !com.jo112ss.rpgmod.compat.Downed.is(p);
-    }
-
-    private LivingEntity target(ServerLevel sl) {
-        LivingEntity t = this.getTarget();
-        if (t instanceof Player p && !valid(p)) t = null;
-        if (t != null && !t.isAlive()) t = null;
-        if (t == null || t.distanceToSqr(this) > 48 * 48) {
-            Player best = null;
-            double bd = 48 * 48;
-            for (ServerPlayer p : sl.players()) {
-                if (!valid(p)) continue;
-                double d = p.distanceToSqr(this);
-                if (d < bd) {
-                    bd = d;
-                    best = p;
-                }
-            }
-            t = best;
-            this.setTarget(best);
-        }
-        return t;
-    }
-
-    private List<ServerPlayer> fighters(ServerLevel sl, double range) {
-        List<ServerPlayer> out = new ArrayList<>();
-        for (ServerPlayer p : sl.players()) if (valid(p) && p.distanceToSqr(this) <= range * range) out.add(p);
-        return out;
-    }
-
     private double reach() {
         return this.getBbWidth() / 2 + 1.5;
-    }
-
-    private void face(Vec3 dir) {
-        this.setYRot((float) Math.toDegrees(Math.atan2(-dir.x, dir.z)));
-        this.yBodyRot = this.yHeadRot = this.getYRot();
-    }
-
-    private Vec3 toward(LivingEntity t) {
-        Vec3 d = t.position().subtract(this.position()).multiply(1, 0, 1);
-        return d.lengthSqr() < 1e-4 ? Vec3.directionFromRotation(0, this.getYRot()) : d.normalize();
-    }
-
-    private static Vec3 groundBelow(ServerLevel sl, Vec3 at) {
-        BlockPos pos = BlockPos.containing(at);
-        for (int i = 0; i < 12; i++) {
-            if (!sl.getBlockState(pos.below()).getCollisionShape(sl, pos.below()).isEmpty()) break;
-            pos = pos.below();
-        }
-        return new Vec3(at.x, pos.getY(), at.z);
     }
 
     // ------------------------------------------------------------------ rhythm: combo -> spent
 
     private void chase(ServerLevel sl) {
-        LivingEntity t = target(sl);
+        LivingEntity t = core.target(sl);
         if (t == null) {
             this.getNavigation().stop();
             return;
@@ -347,15 +270,15 @@ public class SpiderQueen extends Monster implements BloodMoonBoss {
         double dist = Math.sqrt(t.distanceToSqr(this));
         this.getLookControl().setLookAt(t, 30, 30);
         // out of the water / to the shore nearest someone out on it
-        Vec3 dry = water.relocate(sl, this, t);
+        Vec3 dry = core.water.relocate(sl, this, t);
         if (dry != null) {
             relocating = true;
             pouncesLeft = 0;
             pounceTo(sl, dry, 6);
             return;
         }
-        boolean ranged = water.ranged(t);
-        if (water.homingDue(t, phase())) homing.volley(sl, this, t, phase() >= 2 ? 5 : 3, 6, 0.6, 14);
+        boolean ranged = core.water.ranged(t);
+        if (core.water.homingDue(t, phase())) core.homing.volley(sl, this, t, phase() >= 2 ? 5 : 3, 6, 0.6, 14);
         if (this.tickCount % 8 == 0) this.getNavigation().moveTo(t, 1.0);
         close = dist < reach() + 1.5 ? close + 1 : Math.max(0, close - 2);
         // stuck (walls, a tower): she leaps at the target
@@ -390,7 +313,7 @@ public class SpiderQueen extends Monster implements BloodMoonBoss {
                 : List.of(Move.POUNCE, Move.POUNCE, Move.WEBS, Move.WEBS, Move.SPRAY, Move.SPRAY, Move.SKITTER, Move.SKITTER));
         if (brood(sl) < (p2 ? 6 : 4)) pool.add(Move.EGGS);
         int n = p2 ? 4 : 3;
-        if (water.ranged(target(sl))) { // someone out on the water: webs, and a brood that swims after them
+        if (core.water.ranged(core.target(sl))) { // someone out on the water: webs, and a brood that swims after them
             boolean eggs = pool.contains(Move.EGGS);
             pool = new ArrayList<>(List.of(Move.WEBS));
             if (eggs) pool.add(Move.EGGS);
@@ -458,13 +381,13 @@ public class SpiderQueen extends Monster implements BloodMoonBoss {
     }
 
     private void startPounce(ServerLevel sl, LivingEntity t, int crouch) {
-        aimDir = toward(t);
-        face(aimDir);
+        aimDir = core.toward(t);
+        core.face(aimDir);
         leapFrom = this.position();
         Vec3 lead = t.position().add(t.getDeltaMovement().multiply(6, 0, 6));
         Vec3 d = lead.subtract(leapFrom).multiply(1, 0, 1);
         if (d.length() > 18) lead = leapFrom.add(d.normalize().scale(18));
-        pounceTo(sl, groundBelow(sl, lead.add(0, 2, 0)), crouch);
+        pounceTo(sl, BossCore.groundBelow(sl, lead.add(0, 2, 0)), crouch);
     }
 
     /** A pounce onto a spot: crouch, mark, leap (longer leaps take longer). */
@@ -473,7 +396,7 @@ public class SpiderQueen extends Monster implements BloodMoonBoss {
         leapTo = to;
         aimDir = to.subtract(leapFrom).multiply(1, 0, 1);
         aimDir = aimDir.lengthSqr() < 1e-4 ? Vec3.directionFromRotation(0, this.getYRot()) : aimDir.normalize();
-        face(aimDir);
+        core.face(aimDir);
         pounceTime = (int) Mth.clamp(10 + leapFrom.distanceTo(leapTo) * 0.4, 14, 26);
         setState(State.CROUCH, crouch);
         ServerFx.of("king_mark", leapTo).a(pounceRadius()).b(crouch + pounceTime).send(sl, 64);
@@ -482,7 +405,7 @@ public class SpiderQueen extends Monster implements BloodMoonBoss {
 
     private void crouch(ServerLevel sl) {
         hold();
-        face(aimDir);
+        core.face(aimDir);
         if (stateTicks >= stateLength) {
             setState(State.POUNCE, pounceTime);
             sl.playSound(null, this.blockPosition(), SoundEvents.SPIDER_STEP, SoundSource.HOSTILE, 3.0F, 0.6F);
@@ -501,12 +424,12 @@ public class SpiderQueen extends Monster implements BloodMoonBoss {
             this.noPhysics = false;
             Vec3 c = this.position();
             for (ServerPlayer p : sl.players()) {
-                if (!valid(p)) continue;
+                if (!BossCore.valid(p)) continue;
                 Vec3 d = p.position().subtract(c);
                 if (Math.hypot(d.x, d.z) <= pounceRadius() && Math.abs(d.y) < 3) {
                     p.hurtServer(sl, this.damageSources().mobAttack(this), 8);
-                    fling(p, c, 0.8, 0.45);
-                    participants.add(p.getUUID());
+                    BossCore.fling(p, c, 0.8, 0.45);
+                    core.participants.add(p.getUUID());
                     pounceHits++;
                 }
             }
@@ -525,13 +448,6 @@ public class SpiderQueen extends Monster implements BloodMoonBoss {
         }
     }
 
-    private static void fling(LivingEntity e, Vec3 from, double out, double up) {
-        Vec3 d = e.position().subtract(from).multiply(1, 0, 1);
-        d = d.lengthSqr() < 1e-4 ? new Vec3(1, 0, 0) : d.normalize();
-        e.setDeltaMovement(e.getDeltaMovement().add(d.scale(out)).add(0, up, 0));
-        e.syncVelocity = true;
-    }
-
     // ------------------------------------------------------------------ webs
 
     private Vec3 mouth() {
@@ -539,8 +455,8 @@ public class SpiderQueen extends Monster implements BloodMoonBoss {
     }
 
     private void startWebs(ServerLevel sl, LivingEntity t) {
-        aimDir = toward(t);
-        face(aimDir);
+        aimDir = core.toward(t);
+        core.face(aimDir);
         int up = phase() >= 2 ? 10 : 14;
         setState(State.WEB_UP, up);
         ServerFx.of("queen_rear", this.position()).follow(this).a(this.getBbWidth()).b(up).color(0xE8E8F0).send(sl, 64);
@@ -549,8 +465,8 @@ public class SpiderQueen extends Monster implements BloodMoonBoss {
 
     private void webUp(ServerLevel sl) {
         hold();
-        LivingEntity t = target(sl);
-        if (t != null) face(toward(t));
+        LivingEntity t = core.target(sl);
+        if (t != null) core.face(core.toward(t));
         if (stateTicks < stateLength) return;
         int n = phase() >= 2 ? 5 : 3;
         Vec3 from = mouth();
@@ -583,7 +499,7 @@ public class SpiderQueen extends Monster implements BloodMoonBoss {
             if (hit != null) {
                 hit.hurtServer(sl, this.damageSources().mobAttack(this), 3);
                 hit.addEffect(new MobEffectInstance(MobEffects.SLOWNESS, 60, 3), this);
-                participants.add(hit.getUUID());
+                core.participants.add(hit.getUUID());
                 webHits++;
                 ServerFx.of("queen_web_hit", end).send(sl, 48);
                 it.remove();
@@ -602,8 +518,8 @@ public class SpiderQueen extends Monster implements BloodMoonBoss {
     private static final double SPRAY_LEN = 8, SPRAY_HALF = Math.toRadians(35);
 
     private void startSpray(ServerLevel sl, LivingEntity t) {
-        aimDir = toward(t);
-        face(aimDir);
+        aimDir = core.toward(t);
+        core.face(aimDir);
         int up = phase() >= 2 ? 16 : 20;
         setState(State.SPRAY_UP, up);
         Vec3 base = this.position().add(aimDir.scale(this.getBbWidth() * 0.4));
@@ -614,23 +530,23 @@ public class SpiderQueen extends Monster implements BloodMoonBoss {
 
     private void sprayUp(ServerLevel sl) {
         hold();
-        face(aimDir);
+        core.face(aimDir);
         if (stateTicks < stateLength) return;
         Vec3 base = this.position().add(aimDir.scale(this.getBbWidth() * 0.4));
         for (ServerPlayer p : sl.players()) {
-            if (!valid(p)) continue;
+            if (!BossCore.valid(p)) continue;
             Vec3 d = p.position().subtract(base).multiply(1, 0, 1);
             double len = d.length();
             if (len > SPRAY_LEN || Math.abs(p.getY() - this.getY()) > 4) continue;
             if (len > 1 && Math.acos(Mth.clamp(d.normalize().dot(aimDir), -1, 1)) > SPRAY_HALF + 0.08) continue;
             p.hurtServer(sl, this.damageSources().mobAttack(this), 5);
             p.addEffect(new MobEffectInstance(MobEffects.POISON, 100, 1), this);
-            participants.add(p.getUUID());
+            core.participants.add(p.getUUID());
             sprayHits++;
         }
         // the mist lingers where it fell
         for (int i = 1; i <= 3; i++) {
-            Vec3 at = groundBelow(sl, base.add(aimDir.scale(SPRAY_LEN * i / 3.5)).add(0, 1, 0));
+            Vec3 at = BossCore.groundBelow(sl, base.add(aimDir.scale(SPRAY_LEN * i / 3.5)).add(0, 1, 0));
             float r = 1.4F + i * 0.6F;
             zones.add(new Zone(at, r, this.tickCount + 100, true, this.tickCount));
             ServerFx.of("queen_mist", at).a(r).b(100).send(sl, 64);
@@ -653,7 +569,7 @@ public class SpiderQueen extends Monster implements BloodMoonBoss {
             }
             if (this.tickCount < z.from()) continue;
             for (ServerPlayer p : sl.players()) {
-                if (!valid(p)) continue;
+                if (!BossCore.valid(p)) continue;
                 Vec3 v = p.position().subtract(z.at());
                 if (Math.hypot(v.x, v.z) > z.radius() || Math.abs(v.y) > 2) continue;
                 if (z.poison()) {
@@ -674,7 +590,7 @@ public class SpiderQueen extends Monster implements BloodMoonBoss {
         if (brood(sl) >= MAX_BROOD) return;
         for (int i = 0; i < n; i++) {
             double a = this.random.nextDouble() * Math.PI * 2, r = 4 + this.random.nextDouble() * 4;
-            Vec3 at = groundBelow(sl, this.position().add(Math.cos(a) * r, 2, Math.sin(a) * r));
+            Vec3 at = BossCore.groundBelow(sl, this.position().add(Math.cos(a) * r, 2, Math.sin(a) * r));
             int hatch = this.tickCount + 70 + i * 6;
             eggs.add(new Egg(at, hatch));
             ServerFx.of("queen_egg", at).b(hatch - this.tickCount).send(sl, 64);
@@ -702,7 +618,7 @@ public class SpiderQueen extends Monster implements BloodMoonBoss {
                     MobLevels.forceLevel = null;
                     com.jo112ss.rpgmod.mob.Elite.forceNext = null;
                 }
-                s.setTarget(target(sl));
+                s.setTarget(core.target(sl));
                 hatched++;
             }
             ServerFx.of("queen_hatch", e.at()).send(sl, 64);
@@ -713,8 +629,8 @@ public class SpiderQueen extends Monster implements BloodMoonBoss {
     // ------------------------------------------------------------------ skitter
 
     private void startSkitter(ServerLevel sl, LivingEntity t) {
-        aimDir = toward(t);
-        face(aimDir);
+        aimDir = core.toward(t);
+        core.face(aimDir);
         int aim = phase() >= 2 ? 12 : 16;
         setState(State.SKITTER_AIM, aim);
         ServerFx.of("king_dash_line", this.position()).vec(aimDir.scale(1.1 * 18)).a(this.getBbWidth()).b(aim + 4).send(sl, 64);
@@ -723,7 +639,7 @@ public class SpiderQueen extends Monster implements BloodMoonBoss {
 
     private void skitterAim(ServerLevel sl) {
         hold();
-        face(aimDir);
+        core.face(aimDir);
         if (stateTicks >= stateLength) {
             dashHit.clear();
             setState(State.SKITTER, 18);
@@ -734,17 +650,17 @@ public class SpiderQueen extends Monster implements BloodMoonBoss {
         Vec3 v = this.getDeltaMovement();
         this.setDeltaMovement(aimDir.x * 1.1, v.y, aimDir.z * 1.1);
         this.needsSync = true;
-        face(aimDir);
+        core.face(aimDir);
         var box = this.getBoundingBox().inflate(0.4);
         for (ServerPlayer p : sl.players()) {
-            if (!valid(p) || dashHit.contains(p.getUUID()) || !p.getBoundingBox().intersects(box)) continue;
+            if (!BossCore.valid(p) || dashHit.contains(p.getUUID()) || !p.getBoundingBox().intersects(box)) continue;
             dashHit.add(p.getUUID());
             p.hurtServer(sl, this.damageSources().mobAttack(this), 7);
             Vec3 side = new Vec3(-aimDir.z, 0, aimDir.x);
             if (side.dot(p.position().subtract(this.position())) < 0) side = side.scale(-1);
             p.setDeltaMovement(p.getDeltaMovement().add(side.scale(1.0)).add(0, 0.45, 0));
             p.syncVelocity = true;
-            participants.add(p.getUUID());
+            core.participants.add(p.getUUID());
             skitterHits++;
         }
         if (stateTicks % 3 == 0) sl.playSound(null, this.blockPosition(), SoundEvents.SPIDER_STEP, SoundSource.HOSTILE, 2.0F, 1.3F);
@@ -758,8 +674,8 @@ public class SpiderQueen extends Monster implements BloodMoonBoss {
     // ------------------------------------------------------------------ leg swipe
 
     private void startSwipe(ServerLevel sl, LivingEntity t) {
-        aimDir = toward(t);
-        face(aimDir);
+        aimDir = core.toward(t);
+        core.face(aimDir);
         int up = phase() >= 2 ? 10 : 12;
         setState(State.SWIPE_UP, up);
         ServerFx.of("rv_cone", this.position()).vec(aimDir).a(reach() + 1.5).b(up).color(0xFF3030).send(sl, 64);
@@ -768,17 +684,17 @@ public class SpiderQueen extends Monster implements BloodMoonBoss {
 
     private void swipeUp(ServerLevel sl) {
         hold();
-        face(aimDir);
+        core.face(aimDir);
         if (stateTicks < stateLength) return;
         double r = reach() + 1.5;
         for (ServerPlayer p : sl.players()) {
-            if (!valid(p)) continue;
+            if (!BossCore.valid(p)) continue;
             Vec3 d = p.position().subtract(this.position()).multiply(1, 0, 1);
             if (d.length() > r || Math.abs(p.getY() - this.getY()) > 3) continue;
             if (d.length() > 1.5 && d.normalize().dot(aimDir) < Math.cos(Math.toRadians(55))) continue;
             p.hurtServer(sl, this.damageSources().mobAttack(this), 8);
-            fling(p, this.position(), 1.4, 0.5);
-            participants.add(p.getUUID());
+            BossCore.fling(p, this.position(), 1.4, 0.5);
+            core.participants.add(p.getUUID());
             swipeHits++;
         }
         ServerFx.of("x_slash", this.position().add(0, 1.2, 0).add(aimDir.scale(this.getBbWidth() * 0.5))).vec(aimDir).a((float) r).b(0.1).color(0xB070FF).send(sl, 64);
@@ -793,10 +709,10 @@ public class SpiderQueen extends Monster implements BloodMoonBoss {
         setState(State.FIELD_UP, up);
         ServerFx.of("queen_rear", this.position()).follow(this).a(this.getBbWidth()).b(up).color(0xE8E8F0).send(sl, 64);
         sl.playSound(null, this.blockPosition(), SoundEvents.SPIDER_AMBIENT, SoundSource.HOSTILE, 3.0F, 0.6F);
-        for (ServerPlayer p : fighters(sl, 32)) {
+        for (ServerPlayer p : core.fighters(sl, 32)) {
             for (int i = 0; i < 3; i++) {
                 double a = this.random.nextDouble() * Math.PI * 2, r = i == 0 ? 0 : 3 + this.random.nextDouble() * 3;
-                Vec3 at = groundBelow(sl, p.position().add(Math.cos(a) * r, 1, Math.sin(a) * r));
+                Vec3 at = BossCore.groundBelow(sl, p.position().add(Math.cos(a) * r, 1, Math.sin(a) * r));
                 int from = this.tickCount + up + 4;
                 zones.add(new Zone(at, 2.4F, from + 160, false, from));
                 ServerFx.of("queen_field", at).a(2.4F).b(up + 4).vec(new Vec3(160, 0, 0)).send(sl, 64);
@@ -819,11 +735,11 @@ public class SpiderQueen extends Monster implements BloodMoonBoss {
         this.getAttribute(Attributes.MOVEMENT_SPEED).setBaseValue(0.36);
         combo.clear();
         setState(State.SHRIEK, 34);
-        if (bossBar != null) bossBar.setColor(BossEvent.BossBarColor.PURPLE);
+        core.enraged();
         ServerFx.of("queen_shriek", this.position()).follow(this).a(this.getBbWidth()).b(34).send(sl, 64);
         sl.playSound(null, this.blockPosition(), SoundEvents.RAVAGER_ROAR, SoundSource.HOSTILE, 3.0F, 1.5F);
         sl.playSound(null, this.blockPosition(), SoundEvents.SPIDER_DEATH, SoundSource.HOSTILE, 3.0F, 0.5F);
-        for (ServerPlayer p : bossPlayers()) p.sendSystemMessage(Component.translatable("rpgmod.boss.spider_queen.enraged").withStyle(ChatFormatting.LIGHT_PURPLE), true);
+        for (ServerPlayer p : core.barPlayers()) p.sendSystemMessage(Component.translatable("rpgmod.boss.spider_queen.enraged").withStyle(ChatFormatting.LIGHT_PURPLE), true);
     }
 
     private void shriek(ServerLevel sl) {
@@ -847,8 +763,7 @@ public class SpiderQueen extends Monster implements BloodMoonBoss {
 
     @Override
     public boolean hurtServer(ServerLevel level, DamageSource source, float damage) {
-        if (state == State.LEAVE) return false;
-        if (source.getEntity() instanceof ServerPlayer p) participants.add(p.getUUID());
+        core.hurtBy(source);
         if (state == State.SPENT) damage *= damageTakenMult;
         if (state == State.SHRIEK) damage *= 0.3F;
         return super.hurtServer(level, source, damage);
@@ -910,33 +825,6 @@ public class SpiderQueen extends Monster implements BloodMoonBoss {
 
     // ------------------------------------------------------------------ boss bar
 
-    private List<ServerPlayer> bossPlayers() {
-        return bossBar == null ? List.of() : List.copyOf(bossBar.getPlayers());
-    }
-
-    private void updateBossBar(ServerLevel sl) {
-        if (bossBar == null) {
-            bossBar = new ServerBossEvent(UUID.randomUUID(), name(), phase() >= 2 ? BossEvent.BossBarColor.PURPLE : BossEvent.BossBarColor.GREEN,
-                    BossEvent.BossBarOverlay.NOTCHED_10);
-        }
-        bossBar.setName(name());
-        bossBar.setProgress(Mth.clamp(this.getHealth() / this.getMaxHealth(), 0, 1));
-        for (ServerPlayer p : sl.players()) {
-            boolean near = p.distanceToSqr(this) < 72 * 72;
-            if (near && !bossBar.getPlayers().contains(p)) bossBar.addPlayer(p);
-            else if (!near && bossBar.getPlayers().contains(p)) bossBar.removePlayer(p);
-        }
-        for (ServerPlayer p : List.copyOf(bossBar.getPlayers())) {
-            if (p.level() != sl || p.isRemoved()) bossBar.removePlayer(p);
-        }
-    }
-
-    private Component name() {
-        Component n = Component.translatable("entity.rpgmod.spider_queen").append(Component.literal("  Lv " + bossLevel()));
-        if (state == State.SPENT) n = n.copy().append(Component.literal("  ")).append(Component.translatable("rpgmod.boss.opening").withStyle(ChatFormatting.YELLOW));
-        return n;
-    }
-
     private void dismissBrood(ServerLevel sl) {
         eggs.clear();
         for (Mob m : sl.getEntitiesOfClass(Mob.class, this.getBoundingBox().inflate(64), m -> m.getPersistentData().getIntOr(BROOD_OF, -1) == this.getId())) m.discard();
@@ -944,42 +832,22 @@ public class SpiderQueen extends Monster implements BloodMoonBoss {
 
     @Override
     public void remove(RemovalReason reason) {
-        if (bossBar != null) bossBar.removeAllPlayers();
+        core.removeBar();
         if (this.level() instanceof ServerLevel sl) dismissBrood(sl);
         super.remove(reason);
     }
 
     // ------------------------------------------------------------------ leaving and dying
 
-    private void startLeaving(ServerLevel sl) {
-        setState(State.LEAVE, 60);
-        webs.clear();
-        zones.clear();
-        combo.clear();
-        dismissBrood(sl);
-        this.noPhysics = true;
-        ServerFx.of("golem_leave", this.position()).follow(this).a(this.getBbWidth()).b(60).send(sl, 64);
-        sl.playSound(null, this.blockPosition(), SoundEvents.SPIDER_AMBIENT, SoundSource.HOSTILE, 3.0F, 0.4F);
-        BossEvents.broadcast(sl.getServer(), Component.translatable("rpgmod.boss.spider_queen.left").withStyle(ChatFormatting.GRAY));
-    }
-
-    private void leave(ServerLevel sl) {
-        this.noPhysics = true;
-        this.setDeltaMovement(0, -this.getBbHeight() / 60.0, 0);
-        this.needsSync = true;
-        if (stateTicks >= stateLength) this.discard();
-    }
-
     @Override
     public void die(DamageSource source) {
         super.die(source);
-        if (!(this.level() instanceof ServerLevel sl) || state == State.LEAVE) return;
-        if (bossBar != null) bossBar.removeAllPlayers();
+        if (!(this.level() instanceof ServerLevel sl)) return;
         dismissBrood(sl);
         // and once more a moment later, for any that were still joining the world
         com.jo112ss.rpgmod.job.SkillTasks.later(10, () -> dismissBrood(sl));
         com.jo112ss.rpgmod.job.SkillTasks.later(40, () -> dismissBrood(sl));
-        BossEvents.reward(sl, this, participants, "spider_queen");
+        core.died(sl);
         ServerFx.of("queen_death", this.position()).a(this.getBbWidth()).b(this.getBbHeight()).send(sl, 96);
     }
 
@@ -1002,7 +870,7 @@ public class SpiderQueen extends Monster implements BloodMoonBoss {
     /** Autotest: start a move right away (pounce, triple, webs, spray, eggs, skitter, swipe, field, spent, shriek, combo). */
     public void testMove(String move) {
         if (!(this.level() instanceof ServerLevel sl)) return;
-        LivingEntity t = target(sl);
+        LivingEntity t = core.target(sl);
         if (t == null) return;
         setState(State.CHASE, 0);
         combo.clear();

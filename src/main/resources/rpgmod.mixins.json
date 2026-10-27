@@ -8,9 +8,7 @@
     "HealthCapMixin",
     "DungeonDimensionMixin"
   ],
-  "client": [
-    "SkyRendererMixin"
-  ],
+  "client": [],
   "injectors": {
     "defaultRequire": 1
   }

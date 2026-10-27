@@ -7,7 +7,7 @@ import com.jo112ss.rpgmod.client.fx.SkillFx.P;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;
 
-/** Effects of the blood moon bosses (King Slime) and of the skill book. */
+/** Effects of the King Slime and of the skill book. */
 final class FxBoss {
     private FxBoss() {}
 
