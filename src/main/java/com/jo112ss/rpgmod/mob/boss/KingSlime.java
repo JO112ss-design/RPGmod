@@ -202,6 +202,11 @@ public class KingSlime extends Slime implements ModBoss {
         else super.setCubeMobHealth(actualSize);
     }
 
+    @Override
+    public BossCore core() {
+        return core;
+    }
+
     public int bossLevel() {
         return core.level();
     }

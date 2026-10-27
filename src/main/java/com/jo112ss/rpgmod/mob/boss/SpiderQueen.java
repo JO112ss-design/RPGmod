@@ -490,7 +490,7 @@ public class SpiderQueen extends Monster implements ModBoss {
             boolean wall = block.getType() != HitResult.Type.MISS;
             Vec3 end = wall ? block.getLocation() : next;
             ServerPlayer hit = null;
-            for (ServerPlayer p : sl.getEntitiesOfClass(ServerPlayer.class, new AABB(w.pos, end).inflate(0.8), this::valid)) {
+            for (ServerPlayer p : sl.getEntitiesOfClass(ServerPlayer.class, new AABB(w.pos, end).inflate(0.8), BossCore::valid)) {
                 if (p.getBoundingBox().inflate(0.35).clip(w.pos, end).isPresent() || p.getBoundingBox().inflate(0.35).contains(end)) {
                     hit = p;
                     break;
