@@ -1112,6 +1112,7 @@ public final class MoreJobSkills {
             com.jo112ss.rpgmod.job.core.SkillKind.ACTIVE, com.jo112ss.rpgmod.job.core.SkillEffect.BOLT, 0, 0, KI_SHOT_POWER, KI_SHOT_RANGE, 0, List.of(), 0, "気", 0, 0);
     /** Dev test: ki shots that hit. */
     public static int kiShotHits;
+    public static float kiShotHealed;
 
     /** A ball of ki (the point is paid by {@link Monk#shoot}): flies at what you aim at, a little homing. */
     public static void kiShot(ServerPlayer p) {
@@ -1127,7 +1128,11 @@ public final class MoreJobSkills {
         projectile(c, start, dir, 1.6, KI_SHOT_RANGE, target, 0.25, (e, at, dd) -> {
             hurt(c, e, c.dmg(1), melee(c));
             push(e, dd, 0.3, 0.1);
-            if (godHand) p.heal((float) (p.getMaxHealth() * KI_SHOT_HEAL)); // the god hand's ki mends as it strikes
+            if (godHand) { // the god hand's ki mends as it strikes
+                float h = (float) (p.getMaxHealth() * KI_SHOT_HEAL);
+                p.heal(h);
+                kiShotHealed += h;
+            }
             kiShotHits++;
             ServerFx.of("x_hit", at).vec(dd).a(0.9).color(color).send(level);
         }, (at, dd, wall) -> { });

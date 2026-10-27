@@ -1357,6 +1357,7 @@ final class NewJobTests {
             h.setHealth(5000);
             dummy[0] = h;
             p.setYRot(180);
+            com.jo112ss.rpgmod.job.Monk.add(p, 0); // as if just fighting: no fading
             d.setKi(3);
             JobManager.sync(p);
             com.jo112ss.rpgmod.job.MoreJobSkills.kiShotHits = 0;
@@ -1375,8 +1376,10 @@ final class NewJobTests {
         SkillTasks.later(115, () -> {
             become(p, "qi_master");
             p.setYRot(180);
+            com.jo112ss.rpgmod.job.Monk.add(p, 0);
             d.setKi(2);
             JobManager.sync(p);
+            com.jo112ss.rpgmod.job.MoreJobSkills.kiShotHealed = 0;
             p.setHealth(p.getMaxHealth() * 0.5F);
             com.jo112ss.rpgmod.job.MoreJobSkills.kiShotHits = 0;
         });
@@ -1385,7 +1388,8 @@ final class NewJobTests {
             hp[0] = p.getHealth();
             com.jo112ss.rpgmod.job.Monk.shoot(p);
         });
-        SkillTasks.later(150, () -> log("kishot: god hand hits {} health {} -> {} (max {}), ki {}", com.jo112ss.rpgmod.job.MoreJobSkills.kiShotHits,
+        SkillTasks.later(150, () -> log("kishot: god hand hits {} healed {} health {} -> {} (max {}), ki {}", com.jo112ss.rpgmod.job.MoreJobSkills.kiShotHits,
+                String.format("%.1f", com.jo112ss.rpgmod.job.MoreJobSkills.kiShotHealed),
                 String.format("%.1f", hp[0]), String.format("%.1f", p.getHealth()), String.format("%.0f", p.getMaxHealth()), d.ki()));
         SkillTasks.later(160, () -> {
             if (dummy[0] != null) dummy[0].discard();
