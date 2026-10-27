@@ -69,7 +69,11 @@ public final class ServerFx {
         send(level, RANGE);
     }
 
+    /** Dev tests: send no effects (a benchmark running the server at full speed). */
+    public static boolean mute;
+
     public void send(ServerLevel level, double range) {
+        if (mute) return;
         PacketDistributor.sendToPlayersNear(level, null, pos.x, pos.y, pos.z, range,
                 new FxPayload(fx, pos, vec, a, b, color, entity, List.copyOf(points)));
     }

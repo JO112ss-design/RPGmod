@@ -781,7 +781,7 @@ public final class JobManager {
         return cast(player, data(player), def);
     }
 
-    static boolean cast(ServerPlayer player, JobData d, SkillDef def) {
+    public static boolean cast(ServerPlayer player, JobData d, SkillDef def) {
         long now = player.level().getGameTime();
         if (!"mana_meditate".equals(def.id())) MoreJobHooks.endMeditation(player); // another skill breaks the meditation
         long ready = d.cooldownEnd(def.id());

@@ -19,7 +19,7 @@ import java.util.Set;
  *   <li>skills spread over rings 2-6 at different angles (2-4 points by ring), spells between them</li>
  *   <li>ultimates on opposite sides of the outer ring (5 points)</li>
  *   <li>next to every skill, spell and ultimate, its boost cells ({@link SkillBoost}): power, cooldown,
- *   mana or duration of that skill, priced like the stat cells of their ring, learnable once the skill is</li>
+ *   mana or duration of that skill, priced like the skill cells of their ring, learnable once the skill is</li>
  * </ul>
  */
 public final class SkillPanel {
@@ -123,9 +123,9 @@ public final class SkillPanel {
     }
 
     /** Panel layout version; bump when node ids change so saved progress is refunded. */
-    public static final int VERSION = 7; // 6: skill power cells became other stats; 7: skill boost cells (points refunded)
+    public static final int VERSION = 8; // 6: skill power cells became other stats; 7: skill boost cells; 8: their price (points refunded)
     /** Layout version of the advanced panels (bump when their cells change). */
-    public static final int ADV_VERSION = 4; // 4: skill boost cells
+    public static final int ADV_VERSION = 5; // 4: skill boost cells; 5: their price
 
     /**
      * Layout version of one job's base panel: {@link #VERSION}, or higher for a job whose cells changed
@@ -315,7 +315,8 @@ public final class SkillPanel {
                 } else if (boosts.containsKey(key(p[0], p[1]))) {
                     Object[] b = boosts.get(key(p[0], p[1]));
                     SkillBoost.Cell cell = (SkillBoost.Cell) b[1];
-                    node = new Node(nodes.size(), p[0], p[1], NodeType.BOOST, null, cell.amount(), null, statCost(k), (String) b[0], cell.kind());
+                    // priced like a skill cell of the ring: a skill's own boost is worth far more than a stat cell
+                    node = new Node(nodes.size(), p[0], p[1], NodeType.BOOST, null, cell.amount(), null, skillCost(k), (String) b[0], cell.kind());
                 } else {
                     JobStat st = stats.get((i + k) % stats.size());
                     node = new Node(nodes.size(), p[0], p[1], NodeType.STAT, st, st.nodeAmount() * ringMultiplier(k), null, statCost(k), null, null);

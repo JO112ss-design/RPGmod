@@ -53,6 +53,7 @@ final class NewJobTests {
             case "monk" -> monk(level, p, dummies);
             case "kishot" -> kiShot(level, p);
             case "boosts" -> skillBoosts(level, p);
+            case "dps" -> DpsBench.start(level, p);
             case "bard" -> become(p, "bard");
             case "hybrids" -> hybrids(level, p, dummies);
             case "coins" -> coins(level, p);

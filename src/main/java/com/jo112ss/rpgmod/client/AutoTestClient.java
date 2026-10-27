@@ -174,6 +174,7 @@ public final class AutoTestClient {
             case "nj:eggs" -> new int[] {30, 70, 110, 190};
             case "nj:kishot" -> new int[] {52, 62, 100, 140};
             case "nj:boosts" -> new int[] {20};
+            case "nj:dps" -> new int[] {60};
             case "nj:bosswater" -> new int[] {95, 160, 218, 265, 395, 460, 518, 565, 695, 760, 818, 865, 995, 1060, 1118, 1165};
             case "sealing_chord", "holy_lance" -> new int[] {3, 8};
             case "earthshatter" -> new int[] {4, 10};
@@ -319,6 +320,7 @@ public final class AutoTestClient {
             case "nj:eggs" -> 280;
             case "nj:kishot" -> 280;
             case "nj:boosts" -> 40;
+            case "nj:dps" -> 7200;
             case "nj:bosswater" -> 1480;
             case "nj:linger" -> 140;
             case "nj:ward" -> 210;
@@ -426,8 +428,10 @@ public final class AutoTestClient {
             if (false) showSkills.addAll(java.util.List.of("nj:restore", "nj:bosses", "nj:dungeon", "nj:restore"));
             if (false) showSkills.clear(); // ki shots on the right button (monk, god hand)
             if (false) showSkills.addAll(java.util.List.of("nj:restore", "nj:kishot", "nj:restore"));
-            showSkills.clear(); // skill boost cells on the panels, and the panel screen
-            showSkills.addAll(java.util.List.of("nj:restore", "nj:boosts", "nj:restore"));
+            if (false) showSkills.clear(); // skill boost cells on the panels, and the panel screen
+            if (false) showSkills.addAll(java.util.List.of("nj:restore", "nj:boosts", "nj:restore"));
+            showSkills.clear(); // every job's damage on equal terms (the server sprints)
+            showSkills.addAll(java.util.List.of("nj:restore", "nj:dps", "nj:restore"));
             if (false) showSkills.clear(); // spellsinger afterglow
             if (false) showSkills.addAll(java.util.List.of("nj:restore", "nj:wardlinger", "nj:ward", "nj:linger", "nj:restore"));
             if (false) showSkills.clear(); // songs: each with its own rhythm (bars from the song's style) and tune
