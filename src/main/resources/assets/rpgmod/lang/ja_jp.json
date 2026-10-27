@@ -787,7 +787,7 @@
   "rpgmod.skill.whirl_kick": "旋風脚",
   "rpgmod.skill.whirl_kick.desc": "回し蹴りで周りの敵を蹴り飛ばす。当たった数だけ気が溜まる（最大4/3）。",
   "rpgmod.skill.meditate": "瞑想",
-  "rpgmod.skill.meditate.desc": "3秒間動けない代わりに、毎秒最大HPの8%回復し、気が最大まで溜まる。",
+  "rpgmod.skill.meditate.desc": "3秒間動けない代わりに、毎秒最大HPの8%回復し、終わったときに気が最大まで溜まる。",
   "rpgmod.skill.shrink_step": "縮地",
   "rpgmod.skill.shrink_step.desc": "狙った敵の背後へ瞬間移動し、背中を打つ（1.3倍）。元の場所に残像が残る。気+2/3。",
   "rpgmod.skill.hundred_fists": "百裂拳",

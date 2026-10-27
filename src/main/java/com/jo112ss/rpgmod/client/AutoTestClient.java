@@ -316,7 +316,7 @@ public final class AutoTestClient {
             case "nj:dgallery" -> 840;
             case "nj:bosses" -> 1180;
             case "nj:eggs" -> 280;
-            case "nj:kishot" -> 180;
+            case "nj:kishot" -> 245;
             case "nj:bosswater" -> 1480;
             case "nj:linger" -> 140;
             case "nj:ward" -> 210;

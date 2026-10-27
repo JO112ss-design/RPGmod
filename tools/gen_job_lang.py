@@ -73,7 +73,7 @@ SKILLS = {  # id: (ja, ja desc, en, en desc)
  'ki_blast': ('発勁', '気をすべて使い、溜めた量に応じた一撃を叩き込む（気1つにつき威力+120%）。', 'Ki Blast', 'Spend all your ki on one strike: +120% power per point.'),
  'parry': ('受け流し', '1.2秒間構え、次に受ける近接攻撃を無効にして反撃する。成功すると気が4/3溜まる。', 'Parry', 'For 1.2s the next melee hit is turned aside and answered. Success gives 2 ki.'),
  'whirl_kick': ('旋風脚', '回し蹴りで周りの敵を蹴り飛ばす。当たった数だけ気が溜まる（最大4/3）。', 'Whirlwind Kick', 'A spinning kick that knocks enemies around you away. Ki for each hit (up to 2).'),
- 'meditate': ('瞑想', '3秒間動けない代わりに、毎秒最大HPの8%回復し、気が最大まで溜まる。', 'Meditate', 'Stand still for 3s: heal 8% of max health a second and fill your ki.'),
+ 'meditate': ('瞑想', '3秒間動けない代わりに、毎秒最大HPの8%回復し、終わったときに気が最大まで溜まる。', 'Meditate', 'Stand still for 3s: heal 8% of max health a second and fill your ki.'),
  'shrink_step': ('縮地', '狙った敵の背後へ瞬間移動し、背中を打つ（1.3倍）。元の場所に残像が残る。気+2/3。', 'Shrinking Step', 'Blink behind the enemy you aim at and strike its back (x1.3), leaving an afterimage. +2/3 ki.'),
  'hundred_fists': ('百裂拳', '3秒間、目の前に拳の嵐を浴びせる。', 'Hundred Fists', 'A storm of punches in front of you for 3s.'),
  'diamond_body': ('金剛', '6秒間、受けるダメージが80%減り、吹き飛ばされず、攻撃するたびに気が溜まる。', 'Diamond Body', 'For 6s: 80% less damage, no knockback, and every hit builds ki.'),

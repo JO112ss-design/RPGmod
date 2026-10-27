@@ -1410,7 +1410,18 @@ final class NewJobTests {
         SkillTasks.later(146, () -> com.jo112ss.rpgmod.job.Monk.release(p));
         SkillTasks.later(158, () -> log("kishot: god hand hits {} healed {} (max {}), ki {}", com.jo112ss.rpgmod.job.MoreJobSkills.kiShotHits,
                 String.format("%.1f", com.jo112ss.rpgmod.job.MoreJobSkills.kiShotHealed), String.format("%.0f", p.getMaxHealth()), d.ki()));
-        SkillTasks.later(165, () -> {
+        // meditation: no ki while it lasts (3s), all of it at the end
+        SkillTasks.later(160, () -> {
+            become(p, "monk");
+            com.jo112ss.rpgmod.job.Monk.add(p, 0);
+            d.setKi(0);
+            d.setKiParts(0);
+            JobManager.sync(p);
+            com.jo112ss.rpgmod.job.SkillExecutor.execute(p, JobDefs.skill("meditate"), 1);
+        });
+        SkillTasks.later(205, () -> log("kishot: meditating 2.25s - ki {} (+{} parts)", d.ki(), d.kiParts()));
+        SkillTasks.later(225, () -> log("kishot: meditation over - ki {} of {}", d.ki(), d.maxKi()));
+        SkillTasks.later(230, () -> {
             if (dummy[0] != null) dummy[0].discard();
             p.setHealth(p.getMaxHealth());
             p.teleportTo(home.x, home.y, home.z);

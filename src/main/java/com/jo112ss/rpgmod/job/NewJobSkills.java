@@ -908,8 +908,7 @@ public final class NewJobSkills {
         SkillTasks.run(age -> {
             if (!p.isAlive()) return true;
             if (age % 20 == 19) {
-                HealthScale.heal(p, p.getMaxHealth() * 0.08F);
-                Monk.add(p, 2);
+                HealthScale.heal(p, p.getMaxHealth() * 0.08F); // the ki comes all at once at the end
                 sound(c, p.position(), SoundEvents.AMETHYST_BLOCK_CHIME, 0.6F, 1.0F + age * 0.01F);
             }
             if (age >= t - 1) {
