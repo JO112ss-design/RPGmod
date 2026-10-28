@@ -45,7 +45,8 @@ public final class DpsBench {
     public static final int LEVEL = 130, RUN = 300, GAP = 30, GCD = 10;
 
     private static boolean counting;
-    private static double dealt;
+    private static double dealt, basicDealt;
+    private static int basicHits;
 
     /** The benchmark under way (driven by the server tick: skill tasks give up after a minute). */
     private static Runner active;
@@ -68,7 +69,13 @@ public final class DpsBench {
 
     @SubscribeEvent
     public static void onDamage(LivingDamageEvent.Post event) {
-        if (counting && event.getEntity().entityTags().contains(DUMMY)) dealt += event.getInflictedDamage();
+        if (!counting || !event.getEntity().entityTags().contains(DUMMY)) return;
+        dealt += event.getInflictedDamage();
+        var src = event.getSource();
+        if (src.is(net.minecraft.world.damagesource.DamageTypes.PLAYER_ATTACK) || src.getDirectEntity() instanceof net.minecraft.world.entity.projectile.arrow.AbstractArrow) {
+            basicDealt += event.getInflictedDamage();
+            basicHits++;
+        }
     }
 
     private record Result(String job, String group, double plain, String ult1, double withUlt1, String ult2, double withUlt2, int skills) {}
@@ -131,6 +138,8 @@ public final class DpsBench {
         double[] dps = new double[3];
         int busy;
         boolean bow;
+        final java.util.Map<String, Integer> casts = new java.util.LinkedHashMap<>();
+        int swings;
 
         Runner(ServerLevel level, ServerPlayer p, Vec3 field, List<String> jobs, List<Result> results, Runnable done) {
             this.level = level;
@@ -173,6 +182,10 @@ public final class DpsBench {
             if (t >= RUN) {
                 counting = false;
                 dps[run] = dealt / (RUN / 20.0);
+                if (run == 0) {
+                    log("  {} plain run: total {} = plain attacks {} ({} hits of {} swings) + skills {}; casts {}; mana left {}", jobs.get(ji), Math.round(dealt),
+                            Math.round(basicDealt), basicHits, swings, Math.round(dealt - basicDealt), casts, Math.round(JobManager.data(p).mana()));
+                }
                 run++;
                 t = -GAP;
                 if (run >= 1 && run - 1 >= ults.size() && run < 3) { // no (second) ultimate: nothing more to try
@@ -254,6 +267,10 @@ public final class DpsBench {
             }
             busy = 0;
             dealt = 0;
+            basicDealt = 0;
+            basicHits = 0;
+            swings = 0;
+            casts.clear();
             counting = true;
             JobManager.sync(p);
         }
@@ -275,6 +292,7 @@ public final class DpsBench {
             long now = level.getGameTime();
             if (d.cooldownEnd(def.id()) > now || d.mana() < JobManager.manaCost(p, def)) return false;
             if (!JobManager.cast(p, d, def)) return false;
+            casts.merge(def.id(), 1, Integer::sum);
             busy = Math.max(GCD, JobManager.castTicks(p, def));
             return true;
         }
@@ -291,9 +309,11 @@ public final class DpsBench {
                     ItemStack b = p.getMainHandItem();
                     p.getInventory().setItem(7, new ItemStack(Items.ARROW, 64));
                     b.getItem().releaseUsing(b, level, p, b.getUseDuration(p) - 20);
+                    swings++;
                 }
             } else if (p.getAttackStrengthScale(0.5F) >= 0.95F) {
                 p.attack(dummy);
+                swings++;
                 p.swing(net.minecraft.world.InteractionHand.MAIN_HAND, p.getMainHandItem().getAttackAnimation(), true);
             }
         }
