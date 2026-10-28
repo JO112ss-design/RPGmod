@@ -887,7 +887,7 @@ public final class AdvSkills {
         SkillTasks.run(age -> {
             if (age % 10 == 0) {
                 for (ServerPlayer a : playersIn(c, o, r)) {
-                    keep(a, MobEffects.STRENGTH, 40, 0, c.p());
+                    keep(a, com.jo112ss.rpgmod.registry.ModEffects.ATTACK_UP, 40, 0, c.p());
                     keep(a, MobEffects.RESISTANCE, 40, 0, c.p());
                     keep(a, MobEffects.SPEED, 40, 0, c.p());
                     keep(a, MobEffects.REGENERATION, 60, 0, c.p());

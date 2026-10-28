@@ -25,6 +25,12 @@ def attack_down(d):
     d.rectangle([13, 7, 15, 11], fill=(230, 60, 40, 255))
 
 
+def attack_up(d):
+    sword(d, (235, 235, 245, 255), (120, 80, 50, 255))
+    d.polygon([(11, 10), (17, 10), (14, 5)], fill=(255, 150, 40, 255))
+    d.rectangle([13, 10, 15, 15], fill=(255, 150, 40, 255))
+
+
 def armor_break(d):
     d.polygon([(3, 3), (14, 3), (14, 9), (8.5, 15), (3, 9)], fill=(150, 165, 200, 255), outline=(70, 80, 110, 255))
     d.line([(9, 3), (7, 7), (10, 9), (8, 14)], fill=(30, 30, 40, 255), width=1)
@@ -56,7 +62,7 @@ def fortune(d):
     d.ellipse([7, 7, 11, 11], fill=(255, 245, 190, 255))
 
 
-for n, f in [('fortune', fortune), ('attack_down', attack_down), ('armor_break', armor_break), ('quick_cast', quick_cast), ('poison_coat', poison_coat), ('fire_weapon', fire_weapon)]:
+for n, f in [('fortune', fortune), ('attack_down', attack_down), ('attack_up', attack_up), ('armor_break', armor_break), ('quick_cast', quick_cast), ('poison_coat', poison_coat), ('fire_weapon', fire_weapon)]:
     icon(n, f)
 print('icons written')
 

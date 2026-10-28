@@ -89,7 +89,7 @@ public final class JobDefs {
                 List.of(
                         skill("power_slash", SkillKind.ACTIVE, SkillEffect.SWEEP, 4, 15, 3.0, 4.5, 0, List.of(), 0, "斬"),
                         skill("charge", SkillKind.ACTIVE, SkillEffect.DASH, 4, 8, 2.0, 0, 0, List.of(), 0, "突"),
-                        skill("war_cry", SkillKind.ACTIVE, SkillEffect.BUFF, 20, 20, 0, 8, 20, List.of("minecraft:strength"), 0, "鬨"),
+                        skill("war_cry", SkillKind.ACTIVE, SkillEffect.BUFF, 20, 20, 0, 8, 20, List.of("rpgmod:attack_up"), 0, "鬨"),
                         skill("whirlwind", SkillKind.ACTIVE, SkillEffect.WHIRL, 5, 15, 1.6, 4.5, 0, List.of(), 0, "旋"),
                         skill("intimidate", SkillKind.ACTIVE, SkillEffect.SWEEP, 8, 15, 1.0, 4.5, 8, List.of("rpgmod:attack_down"), 1, "圧"),
                         skill("taunt", SkillKind.ACTIVE, SkillEffect.BUFF, 8, 15, 0, 10, 6, List.of("minecraft:resistance"), 0, "挑")),
@@ -109,7 +109,7 @@ public final class JobDefs {
                         skill("explosive_arrow", SkillKind.ACTIVE, SkillEffect.SHOT, 5, 15, 2.4, 3, 0, List.of(), 0, "爆")),
                 List.of(
                         skill("arrow_rain", SkillKind.ULTIMATE, SkillEffect.SHOT, 60, 40, 1.2, 10, 0, List.of(), 0, "雨"),
-                        skill("eagle_eye", SkillKind.ULTIMATE, SkillEffect.BUFF, 60, 40, 0, 0, 15, List.of("minecraft:strength", "minecraft:speed", "minecraft:night_vision"), 1, "鷹")),
+                        skill("eagle_eye", SkillKind.ULTIMATE, SkillEffect.BUFF, 60, 40, 0, 0, 15, List.of("rpgmod:attack_up", "minecraft:speed", "minecraft:night_vision"), 1, "鷹")),
                 List.of());
         // ---- Paladin: front line, protects allies
         job("paladin", 0xF0C040, "聖", List.of(JobStat.MAX_HEALTH, JobStat.ARMOR, JobStat.ATTACK_DAMAGE, JobStat.COOLDOWN_REDUCTION),
@@ -182,14 +182,14 @@ public final class JobDefs {
         job("enchanter", 0xE67EB5, "付", List.of(JobStat.MANA_REGEN, JobStat.MAGIC_ATTACK, JobStat.COOLDOWN_REDUCTION, JobStat.MAX_MANA),
                 stats(JobStat.COOLDOWN_REDUCTION, 5, JobStat.MAX_MANA, 30, JobStat.MAGIC_ATTACK, 3), stats(JobStat.MAGIC_ATTACK, 0.6, JobStat.ATTACK_DAMAGE, 0.3, JobStat.COOLDOWN_REDUCTION, 0.05, JobStat.MAX_HEALTH, hpGrow(0.6, 0)),
                 List.of(
-                        skill("empower", SkillKind.ACTIVE, SkillEffect.BUFF, 18, 35, 0, 8, 20, List.of("minecraft:strength"), 0, "強"),
+                        skill("empower", SkillKind.ACTIVE, SkillEffect.BUFF, 18, 35, 0, 8, 20, List.of("rpgmod:attack_up"), 0, "強"),
                         skill("haste", SkillKind.ACTIVE, SkillEffect.BUFF, 18, 35, 0, 8, 20, List.of("minecraft:speed", "minecraft:haste"), 0, "速"),
                         skill("weaken", SkillKind.ACTIVE, SkillEffect.DEBUFF, 15, 28, 0, 8, 8, List.of("minecraft:weakness"), 0, "弱"),
                         skill("mana_link", SkillKind.ACTIVE, SkillEffect.MANA, 25, 0, 20, 8, 0, List.of(), 0, "繋"),
                         skill("fire_weapon", SkillKind.ACTIVE, SkillEffect.BUFF, 25, 42, 0.6, 8, 30, List.of("rpgmod:fire_weapon"), 0, "焔"),
                         skill("binding_field", SkillKind.ACTIVE, SkillEffect.DEBUFF, 18, 35, 0, 4, 5, List.of("rpgmod:attack_down"), 0, "陣")),
                 List.of(
-                        skill("grand_enchant", SkillKind.ULTIMATE, SkillEffect.BUFF, 100, 84, 0, 20, 30, List.of("minecraft:strength", "minecraft:resistance", "minecraft:speed"), 1, "極"),
+                        skill("grand_enchant", SkillKind.ULTIMATE, SkillEffect.BUFF, 100, 84, 0, 20, 30, List.of("rpgmod:attack_up", "minecraft:resistance", "minecraft:speed"), 1, "極"),
                         skill("hex", SkillKind.ULTIMATE, SkillEffect.DEBUFF, 90, 84, 1.2, 20, 10, List.of("minecraft:weakness", "minecraft:slowness"), 1, "呪")),
                 List.of());
         // ---- Gambler: random results
@@ -291,7 +291,7 @@ public final class JobDefs {
         advanced("fighter", "berserker", 0xB0201C, "狂", List.of(JobStat.ATTACK_DAMAGE, JobStat.CRIT_CHANCE, JobStat.ATTACK_SPEED, JobStat.MAX_HEALTH),
                 stats(JobStat.CRIT_CHANCE, 0.05),
                 List.of(
-                        skill("blood_frenzy", A, SkillEffect.BUFF, 22, 20, 0.15, 0, 24, List.of("minecraft:strength", "minecraft:haste"), 1, "血"),
+                        skill("blood_frenzy", A, SkillEffect.BUFF, 22, 20, 0.15, 0, 24, List.of("rpgmod:attack_up", "minecraft:haste"), 1, "血"),
                         skill("decapitate", A, SkillEffect.SWEEP, 4, 15, 4.0, 4, 0, List.of(), 0, "断"),
                         skill("triple_whirl", A, SkillEffect.WHIRL, 6, 22, 1.8, 5, 0, List.of(), 0, "渦"),
                         skill("reckless_charge", A, SkillEffect.DASH, 5, 15, 3.0, 0, 4, List.of(), 0, "捨"),

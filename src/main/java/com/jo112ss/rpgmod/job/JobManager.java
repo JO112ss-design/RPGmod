@@ -665,12 +665,18 @@ public final class JobManager {
         if (ModItems.typeOf(held.getItem()) == WeaponType.BOW) {
             var rb = held.getItem() instanceof com.jo112ss.rpgmod.item.RpgBowItem r ? r : null;
             double bow = 15 + (rb != null ? rb.damageBonus() : 0); // a full-draw arrow on the x3 scale
-            atk += bow * (1 + com.jo112ss.rpgmod.gem.Gear.option(held, com.jo112ss.rpgmod.smithing.core.OptionType.ATTACK_DAMAGE) / 100.0);
+            atk += bow * (1 + com.jo112ss.rpgmod.gem.Gear.option(held, com.jo112ss.rpgmod.smithing.core.OptionType.ATTACK_DAMAGE) / 100.0) * attackUp(player);
             if (rb != null) atk *= rb.material().multiplier; // the bow's material multiplies the whole attack
         } else if (held.is(net.minecraft.world.item.Items.BOW) || held.is(net.minecraft.world.item.Items.CROSSBOW)) {
-            atk += 15;
+            atk += 15 * attackUp(player);
         }
         return atk;
+    }
+
+    /** The attack-up buff's multiplier (it is an attribute modifier, so the bow part outside the attribute needs it too). */
+    public static double attackUp(Player player) {
+        var e = player.getEffect(com.jo112ss.rpgmod.registry.ModEffects.ATTACK_UP);
+        return e == null ? 1 : 1 + com.jo112ss.rpgmod.registry.ModEffects.ATTACK_UP_STEP * (e.getAmplifier() + 1);
     }
 
     /** Magic attack used by spells and caster skills: (1 + staff + own magic attack) x (1 + forged magic power %). */

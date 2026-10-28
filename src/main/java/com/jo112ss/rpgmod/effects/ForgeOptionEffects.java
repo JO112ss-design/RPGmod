@@ -183,6 +183,7 @@ public final class ForgeOptionEffects {
         ItemStack bow = arrow.getWeaponItem();
         if (bow == null || !(bow.getItem() instanceof net.minecraft.world.item.ProjectileWeaponItem)) return;
         double own = ownAttack(player, bow);
+        own += 15 * (com.jo112ss.rpgmod.job.JobManager.attackUp(player) - 1); // attack up also lifts the arrow's own part
         if (Math.abs(own) < 1e-4) return;
         double drawn = Math.min(1.0, arrow.getDeltaMovement().length() / 3.0);
         arrow.getPersistentData().putDouble(OWN_ATTACK, own * drawn);

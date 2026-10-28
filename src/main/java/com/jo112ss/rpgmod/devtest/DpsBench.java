@@ -47,6 +47,9 @@ public final class DpsBench {
     private static boolean counting;
     private static double dealt, basicDealt;
     private static int basicHits;
+    /** The skill last cast (damage that is not a plain attack is put down to it) and each skill's damage. */
+    private static String lastCast;
+    private static final java.util.Map<String, Long> bySkill = new java.util.LinkedHashMap<>();
 
     /** The benchmark under way (driven by the server tick: skill tasks give up after a minute). */
     private static Runner active;
@@ -97,6 +100,8 @@ public final class DpsBench {
         if (src.is(net.minecraft.world.damagesource.DamageTypes.PLAYER_ATTACK) || src.getDirectEntity() instanceof net.minecraft.world.entity.projectile.arrow.AbstractArrow) {
             basicDealt += event.getInflictedDamage();
             basicHits++;
+        } else if (lastCast != null) {
+            bySkill.merge(lastCast, (long) Math.round(event.getInflictedDamage()), Long::sum);
         }
     }
 
@@ -208,6 +213,7 @@ public final class DpsBench {
                 if (run == 0) {
                     log("  {} plain run: total {} = plain attacks {} ({} hits of {} swings) + skills {}; casts {}; mana left {}", jobs.get(ji), Math.round(dealt),
                             Math.round(basicDealt), basicHits, swings, Math.round(dealt - basicDealt), casts, Math.round(JobManager.data(p).mana()));
+                    log("  {} skill damage {}", jobs.get(ji), bySkill);
                 }
                 run++;
                 t = -GAP;
@@ -247,6 +253,17 @@ public final class DpsBench {
             p.getInventory().setItem(7, bow ? new ItemStack(Items.ARROW, 64) : ItemStack.EMPTY);
             p.getInventory().setSelectedSlot(6);
             JobStats.apply(p, d);
+            if (id.equals("fighter") || id.equals("ranger")) { // the attack-up buff: +20% / +40%
+                double a0 = JobManager.physicalAttack(p);
+                p.addEffect(new net.minecraft.world.effect.MobEffectInstance(com.jo112ss.rpgmod.registry.ModEffects.ATTACK_UP, 100, 0));
+                double a1 = JobManager.physicalAttack(p);
+                p.removeEffect(com.jo112ss.rpgmod.registry.ModEffects.ATTACK_UP);
+                p.addEffect(new net.minecraft.world.effect.MobEffectInstance(com.jo112ss.rpgmod.registry.ModEffects.ATTACK_UP, 100, 1));
+                double a2 = JobManager.physicalAttack(p);
+                p.removeEffect(com.jo112ss.rpgmod.registry.ModEffects.ATTACK_UP);
+                log("{} attack up: {} -> I {} ({}%) -> II {} ({}%)", id, String.format("%.1f", a0), String.format("%.1f", a1), Math.round((a1 / a0 - 1) * 100),
+                        String.format("%.1f", a2), Math.round((a2 / a0 - 1) * 100));
+            }
             List<SkillDef> rot = new ArrayList<>(), ult = new ArrayList<>();
             for (String s : d.knownSkills()) {
                 SkillDef def = JobDefs.skill(s);
@@ -260,6 +277,11 @@ public final class DpsBench {
             }
             // buffs and debuffs first (they raise what follows), then the hardest hitters
             rot.sort(Comparator.comparingDouble((SkillDef s) -> JobDefs.powerKind(s) == null ? -1e9 : -s.power()));
+            if (adv && d.panel(true) != null) { // the advanced job's own ultimate first
+                java.util.Set<String> own = new java.util.HashSet<>();
+                for (SkillPanel.Node n : d.panel(true).nodes()) if (n.skill() != null) own.add(n.skill());
+                ult.sort(Comparator.comparingInt((SkillDef s) -> own.contains(s.id()) ? 0 : 1));
+            }
             rotation = rot;
             ults = ult;
             dps = new double[3];
@@ -289,6 +311,8 @@ public final class DpsBench {
                 com.jo112ss.rpgmod.mob.Elite.forceNext = null;
             }
             busy = 0;
+            lastCast = null;
+            bySkill.clear();
             dealt = 0;
             basicDealt = 0;
             basicHits = 0;
@@ -302,8 +326,14 @@ public final class DpsBench {
             p.setHealth(p.getMaxHealth());
             if (dummy != null && dummy.isAlive()) dummy.setHealth(dummy.getMaxHealth());
             if (dummy == null) return;
+            Vec3 home = new Vec3(field.x, field.y, field.z + 3);
+            if (dummy.position().distanceTo(home) > 0.3) { // knocked back: a player would follow, so the fight stays in reach
+                dummy.teleportTo(home.x, home.y, home.z);
+                dummy.setDeltaMovement(Vec3.ZERO);
+            }
             Vec3 at = dummy.position();
-            if (p.position().distanceTo(at) > 5 || p.position().distanceTo(at) < 1.5) p.teleportTo(at.x, at.y, at.z - 3);
+            double dist = p.position().distanceTo(at);
+            if ((dist > 3.2 || dist < 1.5) && busy <= 0) p.teleportTo(at.x, at.y, at.z - 2.5);
             Vec3 d = dummy.position().add(0, dummy.getBbHeight() * 0.6, 0).subtract(p.getEyePosition());
             p.setYRot((float) Math.toDegrees(Math.atan2(-d.x, d.z)));
             p.setXRot((float) -Math.toDegrees(Math.atan2(d.y, Math.hypot(d.x, d.z))));
@@ -316,6 +346,7 @@ public final class DpsBench {
             if (d.cooldownEnd(def.id()) > now || d.mana() < JobManager.manaCost(p, def)) return false;
             if (!JobManager.cast(p, d, def)) return false;
             casts.merge(def.id(), 1, Integer::sum);
+            lastCast = def.id();
             busy = Math.max(GCD, JobManager.castTicks(p, def));
             return true;
         }

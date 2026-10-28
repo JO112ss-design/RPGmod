@@ -30,6 +30,13 @@ public final class ModEffects {
         return Identifier.fromNamespaceAndPath(RpgMod.MODID, "effect." + path);
     }
 
+    /** Attack +20% per level: the skills' own attack buff (war cry, empower, blood frenzy...), used instead of vanilla strength. */
+    public static final double ATTACK_UP_STEP = 0.2;
+    public static final DeferredHolder<MobEffect, MobEffect> ATTACK_UP = EFFECTS.register("attack_up",
+            () -> new Simple(MobEffectCategory.BENEFICIAL, 0xE04A2A)
+                    .addAttributeModifier(Attributes.ATTACK_DAMAGE, id("attack_up"), AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL,
+                            amp -> ATTACK_UP_STEP * (amp + 1)));
+
     /** Attack -25% per level (milder than vanilla weakness, which can zero a mob's attack). */
     public static final DeferredHolder<MobEffect, MobEffect> ATTACK_DOWN = EFFECTS.register("attack_down",
             () -> new Simple(MobEffectCategory.HARMFUL, 0x8A4A3A)

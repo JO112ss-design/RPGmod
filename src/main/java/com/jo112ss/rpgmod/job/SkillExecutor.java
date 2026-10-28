@@ -1127,7 +1127,7 @@ public final class SkillExecutor {
             case 2 -> { // buff the party
                 allies = allies(c.p, r);
                 for (ServerPlayer a : allies) {
-                    a.addEffect(new MobEffectInstance(MobEffects.STRENGTH, ticks(def.duration()), 0), c.p);
+                    a.addEffect(new MobEffectInstance(com.jo112ss.rpgmod.registry.ModEffects.ATTACK_UP, ticks(def.duration()), 0), c.p);
                     a.addEffect(new MobEffectInstance(MobEffects.SPEED, ticks(def.duration()), 0), c.p);
                 }
                 sound(c, o, SoundEvents.BEACON_POWER_SELECT, 1.0F, 1.4F);
