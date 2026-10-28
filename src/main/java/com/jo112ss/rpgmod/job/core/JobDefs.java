@@ -186,7 +186,7 @@ public final class JobDefs {
                         skill("haste", SkillKind.ACTIVE, SkillEffect.BUFF, 18, 35, 0, 8, 20, List.of("minecraft:speed", "minecraft:haste"), 0, "速"),
                         skill("weaken", SkillKind.ACTIVE, SkillEffect.DEBUFF, 15, 28, 0, 8, 8, List.of("minecraft:weakness"), 0, "弱"),
                         skill("mana_link", SkillKind.ACTIVE, SkillEffect.MANA, 25, 0, 20, 8, 0, List.of(), 0, "繋"),
-                        skill("fire_weapon", SkillKind.ACTIVE, SkillEffect.BUFF, 25, 42, 0.6, 8, 30, List.of("rpgmod:fire_weapon"), 0, "焔"),
+                        skill("fire_weapon", SkillKind.ACTIVE, SkillEffect.BUFF, 25, 42, 0, 8, 30, List.of("rpgmod:fire_weapon"), 0, "焔"),
                         skill("binding_field", SkillKind.ACTIVE, SkillEffect.DEBUFF, 18, 35, 0, 4, 5, List.of("rpgmod:attack_down"), 0, "陣")),
                 List.of(
                         skill("grand_enchant", SkillKind.ULTIMATE, SkillEffect.BUFF, 100, 84, 0, 20, 30, List.of("rpgmod:attack_up", "minecraft:resistance", "minecraft:speed"), 1, "極"),

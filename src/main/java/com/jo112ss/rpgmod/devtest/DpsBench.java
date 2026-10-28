@@ -215,6 +215,7 @@ public final class DpsBench {
                 new Probe("speed II", MobEffects.SPEED, 1, false), new Probe("strength I", MobEffects.STRENGTH, 0, false),
                 new Probe("war_song 6", ModEffects.WAR_SONG, 5, false), new Probe("rhapsody 6", ModEffects.RHAPSODY, 5, false),
                 new Probe("flame_song 4", ModEffects.FLAME_SONG, 3, false),
+                new Probe("fire_weapon +25%", ModEffects.FIRE_WEAPON, 24, false),
                 new Probe("foe exposed I", ModEffects.EXPOSED, 0, true), new Probe("foe exposed II", ModEffects.EXPOSED, 1, true),
                 new Probe("foe armor_break I", ModEffects.ARMOR_BREAK, 0, true), new Probe("foe weakness", MobEffects.WEAKNESS, 0, true));
     }

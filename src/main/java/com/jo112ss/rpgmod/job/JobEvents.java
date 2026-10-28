@@ -176,7 +176,7 @@ public final class JobEvents {
         var fire = sp.getEffect(com.jo112ss.rpgmod.registry.ModEffects.FIRE_WEAPON);
         if (fire != null) {
             target.igniteForSeconds(3);
-            event.setAmount(event.getAmount() + fire.getAmplifier() + 1);
+            event.setAmount(event.getAmount() * (1 + (fire.getAmplifier() + 1) / 100.0F)); // +percent (see SkillExecutor.FIRE_WEAPON_BONUS)
             com.jo112ss.rpgmod.job.fx.ServerFx.of("fire_weapon_hit", target.position().add(0, target.getBbHeight() * 0.5, 0))
                     .send((net.minecraft.server.level.ServerLevel) sp.level());
         }

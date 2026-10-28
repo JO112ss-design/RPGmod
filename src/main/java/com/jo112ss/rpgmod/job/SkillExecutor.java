@@ -1575,10 +1575,17 @@ public final class SkillExecutor {
         return true;
     }
 
-    /** Enchanter: allies' weapons burn - hits set enemies on fire and deal extra damage. */
+    /**
+     * Fire weapon: allies' normal hits deal this much more (a share) and set enemies on fire. A
+     * share, not a flat amount: a flat bonus on every hit made it worth twice as much on a fast weapon.
+     */
+    public static final double FIRE_WEAPON_BONUS = 0.25;
+
+    /** Enchanter: allies' weapons burn - normal hits set enemies on fire and deal {@link #FIRE_WEAPON_BONUS} more. */
     static boolean fireWeapon(Ctx c) {
         List<ServerPlayer> allies = allies(c.p, c.def.radius());
-        int bonus = Math.max(1, (int) Math.round(c.dmg(1)));
+        // the effect's level carries the bonus in percent
+        int bonus = Math.max(1, (int) Math.round(FIRE_WEAPON_BONUS * 100));
         double scale = JobManager.buffDurationScale(c.p, c.def);
         for (ServerPlayer a : allies) {
             a.addEffect(new MobEffectInstance(com.jo112ss.rpgmod.registry.ModEffects.FIRE_WEAPON, ticks(c.def.duration() * scale), bonus - 1), c.p);
