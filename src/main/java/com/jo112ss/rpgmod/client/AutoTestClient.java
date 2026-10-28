@@ -322,7 +322,7 @@ public final class AutoTestClient {
             case "nj:kishot" -> 280;
             case "nj:boosts" -> 40;
             case "nj:robes" -> 180;
-            case "nj:dps" -> 3000;
+            case "nj:dps" -> 200;
             case "nj:bosswater" -> 1480;
             case "nj:linger" -> 140;
             case "nj:ward" -> 210;
@@ -354,6 +354,7 @@ public final class AutoTestClient {
 
     /** Casts every skill in front of training dummies and photographs each mid-effect. */
     private static void showcase(Minecraft mc) {
+        if (show > 40 && com.jo112ss.rpgmod.devtest.DpsBench.running()) return; // the bench sprints the server: wait for it
         int t = show++;
         if (t == 0) {
             // the newest skills (the older ones were checked in earlier runs; set rpgmod.showcase=all for every skill)
@@ -432,10 +433,10 @@ public final class AutoTestClient {
             if (false) showSkills.addAll(java.util.List.of("nj:restore", "nj:kishot", "nj:restore"));
             if (false) showSkills.clear(); // skill boost cells on the panels, and the panel screen
             if (false) showSkills.addAll(java.util.List.of("nj:restore", "nj:boosts", "nj:restore"));
-            if (false) showSkills.clear(); // every job's damage on equal terms (the server sprints)
-            if (false) showSkills.addAll(java.util.List.of("nj:restore", "nj:dps", "nj:restore"));
-            showSkills.clear(); // robes: armour, option pools, a set worn (seen from the front) and every material on stands
-            showSkills.addAll(java.util.List.of("nj:restore", "front:nj:robes", "nj:restore"));
+            if (false) showSkills.clear(); // robes: armour, option pools, a set worn (seen from the front) and every material on stands
+            if (false) showSkills.addAll(java.util.List.of("nj:restore", "front:nj:robes", "nj:restore"));
+            showSkills.clear(); // every job's damage on equal terms (the server sprints): solo, in forged gear, and its gift to a party of six
+            showSkills.addAll(java.util.List.of("nj:restore", "nj:dps", "nj:restore"));
             if (false) showSkills.clear(); // spellsinger afterglow
             if (false) showSkills.addAll(java.util.List.of("nj:restore", "nj:wardlinger", "nj:ward", "nj:linger", "nj:restore"));
             if (false) showSkills.clear(); // songs: each with its own rhythm (bars from the song's style) and tune

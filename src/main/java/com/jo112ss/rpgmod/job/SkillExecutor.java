@@ -252,8 +252,8 @@ public final class SkillExecutor {
 
     static List<ServerPlayer> allies(ServerPlayer p, double r) {
         if (r <= 0) return List.of(p);
-        return p.level().getEntitiesOfClass(ServerPlayer.class, p.getBoundingBox().inflate(r),
-                e -> e.isAlive() && !e.isSpectator() && e.distanceTo(p) <= r);
+        return com.jo112ss.rpgmod.devtest.DpsBench.withPartyAlly(p.level().getEntitiesOfClass(ServerPlayer.class, p.getBoundingBox().inflate(r),
+                e -> e.isAlive() && !e.isSpectator() && e.distanceTo(p) <= r));
     }
 
     static List<ServerPlayer> others(ServerPlayer p, List<ServerPlayer> all) {

@@ -175,8 +175,8 @@ public final class AdvSkills {
     }
 
     private static List<ServerPlayer> playersIn(Ctx c, Vec3 o, double r) {
-        return c.level().getEntitiesOfClass(ServerPlayer.class, new AABB(o, o).inflate(r, 3, r),
-                a -> a.isAlive() && !a.isSpectator() && horizontal(a.position(), o) <= r);
+        return com.jo112ss.rpgmod.devtest.DpsBench.withPartyAlly(c.level().getEntitiesOfClass(ServerPlayer.class, new AABB(o, o).inflate(r, 3, r),
+                a -> a.isAlive() && !a.isSpectator() && horizontal(a.position(), o) <= r));
     }
 
     private static boolean consumeLoaded(ServerPlayer p) {
