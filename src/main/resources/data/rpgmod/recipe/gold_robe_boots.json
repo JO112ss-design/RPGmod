@@ -6,7 +6,7 @@
     "I I"
   ],
   "key": {
-    "W": "#minecraft:wool",
+    "W": "minecraft:string",
     "I": "minecraft:gold_ingot"
   },
   "result": {

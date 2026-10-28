@@ -7,7 +7,7 @@
     "W W"
   ],
   "key": {
-    "W": "#minecraft:wool",
+    "W": "minecraft:string",
     "I": "minecraft:iron_ingot"
   },
   "result": {

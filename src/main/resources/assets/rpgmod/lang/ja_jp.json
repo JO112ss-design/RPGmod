@@ -1193,6 +1193,10 @@
   "item.rpgmod.netherite_robe": "ネザライトのローブ",
   "item.rpgmod.netherite_robe_pants": "ネザライトのズボン",
   "item.rpgmod.netherite_robe_boots": "ネザライトのシューズ",
+  "rpgmod.type.robe_hood": "フード",
+  "rpgmod.type.robe": "ローブ",
+  "rpgmod.type.robe_pants": "ズボン",
+  "rpgmod.type.robe_boots": "シューズ",
   "rpgmod.part.sword.0": "切先",
   "rpgmod.part.sword.1": "前部",
   "rpgmod.part.sword.2": "中央",
@@ -1283,9 +1287,5 @@
   "rpgmod.part.robe_boots.0": "左つま先",
   "rpgmod.part.robe_boots.1": "左かかと",
   "rpgmod.part.robe_boots.2": "右かかと",
-  "rpgmod.part.robe_boots.3": "右つま先",
-  "rpgmod.type.robe_hood": "フード",
-  "rpgmod.type.robe": "ローブ",
-  "rpgmod.type.robe_pants": "ズボン",
-  "rpgmod.type.robe_boots": "シューズ"
+  "rpgmod.part.robe_boots.3": "右つま先"
 }

@@ -1193,6 +1193,10 @@
   "item.rpgmod.netherite_robe": "Netherite Robe",
   "item.rpgmod.netherite_robe_pants": "Netherite Trousers",
   "item.rpgmod.netherite_robe_boots": "Netherite Shoes",
+  "rpgmod.type.robe_hood": "Hood",
+  "rpgmod.type.robe": "Robe",
+  "rpgmod.type.robe_pants": "Trousers",
+  "rpgmod.type.robe_boots": "Shoes",
   "rpgmod.part.sword.0": "Tip",
   "rpgmod.part.sword.1": "Fore",
   "rpgmod.part.sword.2": "Middle",
@@ -1283,9 +1287,5 @@
   "rpgmod.part.robe_boots.0": "Left toe",
   "rpgmod.part.robe_boots.1": "Left heel",
   "rpgmod.part.robe_boots.2": "Right heel",
-  "rpgmod.part.robe_boots.3": "Right toe",
-  "rpgmod.type.robe_hood": "Hood",
-  "rpgmod.type.robe": "Robe",
-  "rpgmod.type.robe_pants": "Trousers",
-  "rpgmod.type.robe_boots": "Shoes"
+  "rpgmod.part.robe_boots.3": "Right toe"
 }

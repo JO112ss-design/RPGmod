@@ -85,7 +85,7 @@ ROBE_PATTERNS = {
 for m, ingot in INGOT.items():
     for t, pat in ROBE_PATTERNS.items():
         write(f'{D}/rpgmod/recipe/{m}_{t}.json', {'type': 'minecraft:crafting_shaped', 'category': 'equipment',
-                                                   'pattern': pat, 'key': {'W': '#minecraft:wool', 'I': ingot}, 'result': {'id': f'rpgmod:{m}_{t}', 'count': 1}})
+                                                   'pattern': pat, 'key': {'W': 'minecraft:string', 'I': ingot}, 'result': {'id': f'rpgmod:{m}_{t}', 'count': 1}})
 for m, ingot in INGOT.items():
     if m in SHIELD_MATS:
         write(f'{D}/rpgmod/recipe/{m}_shield.json', {'type': 'minecraft:crafting_shapeless', 'category': 'equipment',
