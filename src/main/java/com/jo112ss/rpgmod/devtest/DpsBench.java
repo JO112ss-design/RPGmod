@@ -701,9 +701,14 @@ public final class DpsBench {
                 busy--;
                 return;
             }
+            boolean singer = JobManager.data(p).songJob();
+            boolean playing = Bard.performing(p);
             for (SkillDef s : rotation) {
+                boolean perform = s.id().equals("perform") || s.id().equals("spell_perform");
                 // a song keeps playing: "perform" again only once it is over
-                if ((s.id().equals("perform") || s.id().equals("spell_perform")) && Bard.performing(p)) continue;
+                if (perform && playing) continue;
+                // a bard keeps a song up first: nothing else while none plays, and never spending the MP the next one needs
+                if (singer && !perform && (!playing || JobManager.data(p).mana() - JobManager.manaCost(p, s) < Bard.performCost(p))) continue;
                 if (castNow(s)) return;
             }
             if (bow) {
