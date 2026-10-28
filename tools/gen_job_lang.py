@@ -560,7 +560,6 @@ UI = {  # key: (ja, en)
  'rpgmod.tooltip.shield_down': ('壊れている（最大%s秒で満タン復活）', 'Knocked out (back at full within %s s)'),
  'rpgmod.tooltip.bow_penetration': ('防具貫通 %s%%（矢が敵の防御を無視する割合）', 'Armour penetration %s%% (arrows ignore that share of armour)'),
  'rpgmod.tooltip.heavy': ('重量武器：通常攻撃のダメージ ×%s（スキルには影響なし）', 'Heavy weapon: normal hits x%s (skills unaffected)'),
- 'rpgmod.tooltip.bow_mult': ('弓：引き絞りに時間がかかり矢も使うぶん、通常の矢のダメージ ×%s（スキルの矢には影響なし）', 'Bow: slower to draw and it uses arrows, so normal arrows x%s (skill arrows unaffected)'),
  'rpgmod.tooltip.bow_mult': ('弓：通常の矢のダメージ ×%1$s（ボスには ×%2$s。スキルの矢には影響なし）', 'Bow: normal arrows x%1$s (x%2$s against bosses; skill arrows unaffected)'),
  'rpgmod.tooltip.light': ('軽量武器：振りが速く全部当たるぶん、通常攻撃のダメージ ×%s（スキルには影響なし）', 'Light weapon: every quick swing lands, so normal hits x%s (skills unaffected)'),
  'rpgmod.jobscreen.toughness_short': ('強度%s', 'T%s'),
