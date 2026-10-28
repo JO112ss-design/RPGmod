@@ -154,7 +154,7 @@ public final class JobDefs {
                 stats(JobStat.MAX_MANA, 40, JobStat.MAGIC_ATTACK, 3), stats(JobStat.MAGIC_ATTACK, 0.6, JobStat.ATTACK_DAMAGE, 0.6, JobStat.MAX_MANA, 0.75, JobStat.MAX_HEALTH, hpGrow(0.6, 0)),
                 List.of(
                         skill("holy_light", SkillKind.ACTIVE, SkillEffect.BOLT, 6, 14, 1.8, 24, 0, List.of(), 0, "照"),
-                        skill("blessing", SkillKind.ACTIVE, SkillEffect.BUFF, 20, 35, 0, 8, 8, List.of("minecraft:regeneration"), 0, "祝"),
+                        skill("blessing", SkillKind.ACTIVE, SkillEffect.BUFF, 20, 35, 0, 8, 14, List.of("minecraft:regeneration"), 0, "祝"),
                         skill("mana_gift", SkillKind.ACTIVE, SkillEffect.MANA, 25, 0, 30, 8, 0, List.of(), 0, "恵"),
                         skill("nourish", SkillKind.ACTIVE, SkillEffect.BUFF, 30, 35, 4, 8, 0, List.of(), 0, "糧"),
                         skill("holy_barrier", SkillKind.ACTIVE, SkillEffect.BUFF, 20, 28, 0, 8, 15, List.of(), 0, "盾"),

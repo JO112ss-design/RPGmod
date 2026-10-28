@@ -207,7 +207,12 @@ public final class GemEffects {
         p.getPersistentData().putLong(PHOENIX_NEXT, now + (long) (GemSpecial.PHOENIX.value * 60 * 20));
         event.setNewDamage(Math.max(0, room));
         p.addEffect(new MobEffectInstance(MobEffects.RESISTANCE, 40, 3));
-        p.addEffect(new MobEffectInstance(MobEffects.REGENERATION, 100, 1));
+        com.jo112ss.rpgmod.job.HealthScale.SKILL.set("phoenix"); // heals like a skill's regeneration
+        try {
+            p.addEffect(new MobEffectInstance(MobEffects.REGENERATION, 100, 1));
+        } finally {
+            com.jo112ss.rpgmod.job.HealthScale.SKILL.remove();
+        }
         level.sendParticles(ParticleTypes.FLAME, p.getX(), p.getY() + 1, p.getZ(), 40, 0.5, 0.8, 0.5, 0.08);
         level.sendParticles(ParticleTypes.TOTEM_OF_UNDYING, p.getX(), p.getY() + 1, p.getZ(), 30, 0.5, 0.8, 0.5, 0.3);
         level.playSound(null, p.blockPosition(), SoundEvents.TOTEM_USE, SoundSource.PLAYERS, 0.8F, 1.2F);

@@ -60,11 +60,14 @@ public final class SkillTasks {
         while (it.hasNext()) {
             Entry e = it.next();
             boolean done;
+            HealthScale.SKILL.set("task"); // a skill unfolding: its regeneration counts as a skill's
             try {
                 done = e.task.tick(e.age++);
             } catch (RuntimeException ex) {
                 RpgMod.LOGGER.error("Skill task failed", ex);
                 done = true;
+            } finally {
+                HealthScale.SKILL.remove();
             }
             if (done || e.age > 20 * 60) it.remove();
         }

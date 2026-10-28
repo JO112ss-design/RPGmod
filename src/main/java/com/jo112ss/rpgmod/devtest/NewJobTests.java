@@ -55,6 +55,23 @@ final class NewJobTests {
             case "boosts" -> skillBoosts(level, p);
             case "robes" -> robes(level, p);
             case "hitwin" -> hitWindows(level, p);
+            case "regen" -> { // a potion's regeneration (2% a heal), then the blessing (as much in all as before, over 14s)
+                become(p, "healer");
+                JobManager.data(p).devUnlockAll();
+                float max = p.getMaxHealth();
+                p.setHealth(max * 0.1F);
+                p.addEffect(new net.minecraft.world.effect.MobEffectInstance(net.minecraft.world.effect.MobEffects.REGENERATION, 101, 0));
+                SkillTasks.later(105, () -> {
+                    log("regen: potion regeneration I 5s healed {}% of max health (2 heals x 2% expected)", String.format("%.1f", (p.getHealth() / max - 0.1F) * 100));
+                    p.removeEffect(net.minecraft.world.effect.MobEffects.REGENERATION);
+                    p.setHealth(max * 0.1F);
+                    SkillExecutor.execute(p, JobDefs.skill("blessing"), JobManager.powerMultiplier(p, JobDefs.skill("blessing")));
+                    var inst = p.getEffect(net.minecraft.world.effect.MobEffects.REGENERATION);
+                    int dur = inst == null ? 0 : inst.getDuration();
+                    SkillTasks.later(dur + 5, () -> log("regen: blessing ({}t) healed {}% of max health (as before: {} heals x 5% over 8s)", dur,
+                            String.format("%.1f", (p.getHealth() / max - 0.1F) * 100), (int) (dur * 8 / 14 / 50)));
+                });
+            }
             case "harvest" -> { // the harvest song: hunger and saturation back over the song
                 become(p, "bard");
                 JobData hd = JobManager.data(p);

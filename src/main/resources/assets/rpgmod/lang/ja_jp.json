@@ -195,7 +195,7 @@
   "rpgmod.skill.group_heal": "グループヒール",
   "rpgmod.skill.group_heal.desc": "呪文（杖で詠唱）：広い範囲（10ブロック）の味方を回復する。",
   "rpgmod.skill.blessing": "祝福",
-  "rpgmod.skill.blessing.desc": "味方に再生効果を与える。",
+  "rpgmod.skill.blessing.desc": "周りの味方に14秒間の再生効果を与える。",
   "rpgmod.skill.mana_gift": "マナの恵み",
   "rpgmod.skill.mana_gift.desc": "近くの味方のMPを回復する。",
   "rpgmod.skill.sanctuary": "聖域",

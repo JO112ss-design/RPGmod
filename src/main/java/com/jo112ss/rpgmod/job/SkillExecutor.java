@@ -56,6 +56,16 @@ public final class SkillExecutor {
     private SkillExecutor() {}
 
     public static boolean execute(ServerPlayer p, SkillDef def, double power) {
+        String outer = HealthScale.SKILL.get();
+        HealthScale.SKILL.set(def.id()); // regeneration a skill gives heals as it always did (see HealthScale)
+        try {
+            return run(p, def, power);
+        } finally {
+            HealthScale.SKILL.set(outer);
+        }
+    }
+
+    private static boolean run(ServerPlayer p, SkillDef def, double power) {
         ServerLevel level = (ServerLevel) p.level();
         // longer effects at higher levels (not ultimates, not the enchanter's magic-scaled buffs)
         double longer = JobManager.levelDurationScale(p, def);

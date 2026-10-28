@@ -195,7 +195,7 @@
   "rpgmod.skill.group_heal": "Group Heal",
   "rpgmod.skill.group_heal.desc": "Spell (cast from the staff): heal allies in a wide area (10 blocks).",
   "rpgmod.skill.blessing": "Blessing",
-  "rpgmod.skill.blessing.desc": "Give allies regeneration.",
+  "rpgmod.skill.blessing.desc": "Give allies around you regeneration for 14s.",
   "rpgmod.skill.mana_gift": "Mana Gift",
   "rpgmod.skill.mana_gift.desc": "Restore mana to nearby allies.",
   "rpgmod.skill.sanctuary": "Sanctuary",

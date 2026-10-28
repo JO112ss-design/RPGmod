@@ -210,7 +210,7 @@ SKILLS = {  # id: (ja, ja desc, en, en desc)
  'arcane_shield': ('アーケインシールド', '吸収ハートと耐性を得る。', 'Arcane Shield', 'Gain absorption and resistance.'),
  'heal': ('ヒール', '呪文（杖で詠唱）：自分と近くの味方を回復する。', 'Heal', 'Spell (cast from the staff): heal yourself and nearby allies.'),
  'group_heal': ('グループヒール', '呪文（杖で詠唱）：広い範囲（10ブロック）の味方を回復する。', 'Group Heal', 'Spell (cast from the staff): heal allies in a wide area (10 blocks).'),
- 'blessing': ('祝福', '味方に再生効果を与える。', 'Blessing', 'Give allies regeneration.'),
+ 'blessing': ('祝福', '周りの味方に14秒間の再生効果を与える。', 'Blessing', 'Give allies around you regeneration for 14s.'),
  'mana_gift': ('マナの恵み', '近くの味方のMPを回復する。', 'Mana Gift', 'Restore mana to nearby allies.'),
  'sanctuary': ('聖域', '足元に聖域を作り、12秒間中の味方を回復し続け、中の敵を鈍らせて焼く。', 'Sanctuary', 'Create a holy zone for 12 seconds: allies inside heal, enemies inside are slowed and burned.'),
  'guardian_light': ('守護の光', '15秒間、周りの味方が受けたダメージの半分を、3秒かけて回復で戻す。', 'Guardian Light', 'For 15s, half of every blow the allies around take comes back as health over 3s.'),
