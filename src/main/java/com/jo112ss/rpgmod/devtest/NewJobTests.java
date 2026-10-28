@@ -55,6 +55,7 @@ final class NewJobTests {
             case "boosts" -> skillBoosts(level, p);
             case "robes" -> robes(level, p);
             case "hitwin" -> hitWindows(level, p);
+            case "bardults" -> bardUlts(level, p);
             case "masterwork" -> { // one weapon in five, any quality; the boost works from the main hand
                 java.util.Random rnd = new java.util.Random(7);
                 for (var type : java.util.List.of(com.jo112ss.rpgmod.item.WeaponType.SWORD, com.jo112ss.rpgmod.item.WeaponType.STAFF,
@@ -1531,6 +1532,36 @@ final class NewJobTests {
      * second player (a fake one) in the same tick, again by the same skill (blocked), by a bigger skill
      * hit (only the excess) and after the window (in full).
      */
+    /** The bard line's ultimates against a sturdy husk, next to the bard's sonic boom: damage each, and what the formula says. */
+    private static void bardUlts(ServerLevel level, ServerPlayer p) {
+        var m = net.minecraft.world.entity.EntityTypes.HUSK.create(level, net.minecraft.world.entity.EntitySpawnReason.COMMAND);
+        if (m == null) return;
+        Vec3 at = p.position().add(p.getLookAngle().multiply(1, 0, 1).normalize().scale(3));
+        m.snapTo(at.x, p.getY(), at.z, 0, 0);
+        m.setNoAi(true);
+        level.addFreshEntity(m);
+        m.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.MAX_HEALTH).setBaseValue(1000000);
+        m.setHealth(1000000);
+        m.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.KNOCKBACK_RESISTANCE).setBaseValue(1);
+        String[][] plan = {{"bard", "sonic_boom"}, {"bard", "finale"}, {"bard", "grand_concert"}, {"spellsinger", "arcane_note"},
+                {"spellsinger", "sealing_chord"}, {"spellsinger", "grand_concerto"}};
+        for (int k = 0; k < plan.length; k++) {
+            String job = plan[k][0], skill = plan[k][1];
+            SkillTasks.later(10 + k * 260, () -> {
+                become(p, job, false);
+                JobManager.data(p).devUnlockAll();
+                m.snapTo(at.x, p.getY(), at.z, 0, 0);
+                float h0 = m.getHealth();
+                var def = JobDefs.skill(skill);
+                double mult = JobManager.powerMultiplier(p, def);
+                boolean ok = SkillExecutor.execute(p, def, mult);
+                SkillTasks.later(240, () -> log("bard ult {} ({}): {} damage in 12s, ratio {} x power {} = {} a hit{}", skill, job, Math.round(h0 - m.getHealth()),
+                        String.format("%.2f", def.power()), String.format("%.1f", mult), Math.round(def.power() * mult), ok ? "" : " (refused)"));
+            });
+        }
+        SkillTasks.later(10 + plan.length * 260 + 5, m::discard);
+    }
+
     private static void hitWindows(ServerLevel level, ServerPlayer p) {
         var m = net.minecraft.world.entity.EntityTypes.HUSK.create(level, net.minecraft.world.entity.EntitySpawnReason.COMMAND);
         if (m == null) return;
