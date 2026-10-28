@@ -1397,7 +1397,7 @@ final class NewJobTests {
         }
         // a forged iron set on: robes with magic power +5% x4, then metal with attack +5% x4
         var job = JobManager.data(p);
-        double[] base = new double[3];
+        double[] base = new double[5]; // before: magic, attack, health; with the robes: magic, health
         SkillTasks.later(22, () -> {
             for (int i = 0; i < 4; i++) p.setItemSlot(slots[i], ItemStack.EMPTY);
         });
@@ -1414,8 +1414,8 @@ final class NewJobTests {
         }
         });
         SkillTasks.later(26, () -> {
-        double mag1 = JobManager.magicAttack(p);
-        float hp1 = p.getMaxHealth();
+        base[3] = JobManager.magicAttack(p);
+        base[4] = p.getMaxHealth();
         for (int i = 0; i < 4; i++) {
             ItemStack st = new ItemStack(com.jo112ss.rpgmod.item.ModItems.get(metal[i], com.jo112ss.rpgmod.item.WeaponMaterial.IRON));
             st.set(com.jo112ss.rpgmod.registry.ModRegistries.FORGED_DATA.get(), com.jo112ss.rpgmod.smithing.ForgedData.of(com.jo112ss.rpgmod.smithing.core.Quality.FINE,
@@ -1427,7 +1427,7 @@ final class NewJobTests {
         SkillTasks.later(28, () -> {
         double atk1 = JobManager.physicalAttack(p);
         log("robes: job {} magic attack {} -> robes (+5% x4) {} ({}%), max health {} -> robes (+3% x4) {}; attack {} -> armour (+5% x4) {} ({}%), crit from armour {}%",
-                job.displayJobId(), String.format("%.1f", base[0]), String.format("%.1f", mag1), Math.round((mag1 / base[0] - 1) * 100), String.format("%.1f", base[2]), String.format("%.1f", hp1),
+                job.displayJobId(), String.format("%.1f", base[0]), String.format("%.1f", base[3]), Math.round((base[3] / base[0] - 1) * 100), String.format("%.1f", base[2]), String.format("%.1f", base[4]),
                 String.format("%.1f", base[1]), String.format("%.1f", atk1), Math.round((atk1 / base[1] - 1) * 100),
                 com.jo112ss.rpgmod.gem.Gear.total(p, com.jo112ss.rpgmod.smithing.core.OptionType.CRIT_CHANCE, null));
         });
