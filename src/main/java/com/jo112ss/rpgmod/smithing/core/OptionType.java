@@ -6,16 +6,17 @@ package com.jo112ss.rpgmod.smithing.core;
  * Percent options store the percentage (5.0 = +5%).
  *
  * <p>Armour comes in two kinds with their own pools: metal armour (and shields) is for fighting up
- * close - it can roll attack, attack speed, critical and boss damage - and robes are the casters' -
- * magic power, cast speed and MP. Health and the defensive options are in both. A piece's own kind
+ * close - it can roll attack, attack speed and boss damage - and robes are the casters' - magic
+ * power, cast speed and MP. Health, critical chance and damage and the defensive options are in both. A piece's own kind
  * of option is twice as likely as a shared one.
  */
 public enum OptionType {
     //                        id                     step  percent  weapon range   armor range  armour kind
     ATTACK_DAMAGE("attack_damage", 0.1, true, 3, 8, 2, 5, Side.MELEE),
     ATTACK_SPEED("attack_speed", 0.1, true, 3, 8, 2, 5, Side.MELEE),
-    CRIT_CHANCE("crit_chance", 0.1, true, 2, 5, 1, 3, Side.MELEE),
-    CRIT_DAMAGE("crit_damage", 0.1, true, 5, 15, 3, 8, Side.MELEE),
+    // crits work on magic too: robes roll them as well
+    CRIT_CHANCE("crit_chance", 0.1, true, 2, 5, 1, 3, Side.BOTH),
+    CRIT_DAMAGE("crit_damage", 0.1, true, 5, 15, 3, 8, Side.BOTH),
     BOSS_DAMAGE("boss_damage", 0.1, true, 4, 10, 2, 5, Side.MELEE),
     // max health is a percentage now that players reach hundreds (old flat 1-2 options read as 1-2%)
     MAX_HEALTH("max_health", 1, true, 2, 5, 2, 5, Side.BOTH),

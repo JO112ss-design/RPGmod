@@ -410,14 +410,14 @@ public final class DpsBench {
 
     /**
      * Good forged gear (rare: three options, each in the middle of its range, all of them for
-     * damage): a staff or lute with magic power, cast speed and MP regeneration and robes with the
+     * damage): a staff or lute with magic power, crit chance and crit damage and robes with the
      * same; any other weapon with attack, crit chance and crit damage and metal armour with the same.
      */
     private static void gear(ServerPlayer p, WeaponType weapon, boolean on) {
         ItemStack w = new ItemStack(ModItems.get(weapon, WeaponMaterial.DIAMOND));
         boolean magic = weapon.magical();
         if (on) {
-            if (magic) forged(w, OptionType.MAGIC_POWER, 8.5, OptionType.CAST_SPEED, 8.5, OptionType.MANA_REGEN, 14);
+            if (magic) forged(w, OptionType.MAGIC_POWER, 8.5, OptionType.CRIT_CHANCE, 3.5, OptionType.CRIT_DAMAGE, 10);
             else forged(w, OptionType.ATTACK_DAMAGE, 5.5, OptionType.CRIT_CHANCE, 3.5, OptionType.CRIT_DAMAGE, 10);
         }
         ItemStack old = p.getInventory().getItem(6);
@@ -430,7 +430,7 @@ public final class DpsBench {
                 continue;
             }
             ItemStack a = new ItemStack(ModItems.get(magic ? ROBE[i] : METAL[i], WeaponMaterial.DIAMOND));
-            if (magic) forged(a, OptionType.MAGIC_POWER, 3.5, OptionType.CAST_SPEED, 3.5, OptionType.MANA_REGEN, 7);
+            if (magic) forged(a, OptionType.MAGIC_POWER, 3.5, OptionType.CRIT_CHANCE, 2, OptionType.CRIT_DAMAGE, 5.5);
             else forged(a, OptionType.ATTACK_DAMAGE, 3.5, OptionType.CRIT_CHANCE, 2, OptionType.CRIT_DAMAGE, 5.5);
             p.setItemSlot(ARMOUR[i], a);
         }
