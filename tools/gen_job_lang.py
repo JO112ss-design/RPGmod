@@ -159,7 +159,7 @@ SKILLS = {  # id: (ja, ja desc, en, en desc)
  'thunder_tune': ('雷鳴の調べ', '12秒間演奏する。毎秒、周りの敵1体に雷が落ちる。', 'Thunder Tune', 'Play for 12s: lightning strikes an enemy around each second.'),
  'resonance': ('共鳴', '周りの味方の良い効果をすべて5秒延ばす。演奏中なら点数+4。', 'Resonance', 'Every good effect on allies around lasts 5s longer; +4 points if playing.'),
  'grand_concerto': ('大協奏', 'リュートにセットした曲すべての余韻を、最高の点数で周りの味方に付ける（100秒）。同時に周りの敵へ大ダメージ。', 'Grand Concerto', 'Every song set on the lute leaves its afterglow on the allies around at once, as if played perfectly (100s), and the chord strikes the enemies around.'),
- 'sealing_chord': ('魔奏・終曲', '演奏を締めくくり、点数の数だけ（最低6つ）追いかける音符を周りの敵に放つ。当たった敵は3秒間攻撃できない。', 'Sealing Chord', 'End the performance: one seeking note per point (at least 6) flies at the enemies around; those hit cannot attack for 3s.'),
+ 'sealing_chord': ('魔奏・終曲', '演奏を締めくくり、6つ＋点数4ごとに1つ（最大11）の追いかける音符を周りの敵に放つ。当たった敵は3秒間攻撃できない。', 'Sealing Chord', 'End the performance: 6 seeking notes plus one per 4 points (up to 11) flies at the enemies around; those hit cannot attack for 3s.'),
  # ---- shadow hunter
  'vital_shot': ('急所狙い', '照準の先を射抜く。体力が半分以下の敵には2倍。', 'Vital Shot', 'A shot along the crosshair; double damage on enemies at half health or less.'),
  'stealth': ('隠密', '姿を消し、敵に見失わせる。次の一撃は必ず会心で威力+60%。', 'Stealth', 'Vanish and lose the monsters. The next hit is a sure crit, +60%.'),

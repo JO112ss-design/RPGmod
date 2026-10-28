@@ -969,7 +969,7 @@
   "rpgmod.skill.grand_concerto": "Grand Concerto",
   "rpgmod.skill.grand_concerto.desc": "Every song set on the lute leaves its afterglow on the allies around at once, as if played perfectly (100s), and the chord strikes the enemies around.",
   "rpgmod.skill.sealing_chord": "Sealing Chord",
-  "rpgmod.skill.sealing_chord.desc": "End the performance: one seeking note per point (at least 6) flies at the enemies around; those hit cannot attack for 3s.",
+  "rpgmod.skill.sealing_chord.desc": "End the performance: 6 seeking notes plus one per 4 points (up to 11) flies at the enemies around; those hit cannot attack for 3s.",
   "rpgmod.skill.vital_shot": "Vital Shot",
   "rpgmod.skill.vital_shot.desc": "A shot along the crosshair; double damage on enemies at half health or less.",
   "rpgmod.skill.stealth": "Stealth",

@@ -222,7 +222,7 @@ public final class UltSkills {
             return false;
         }
         double r = Bard.radius(JobData.MAX_SONG_POINTS) * Bard.CONCERTO_REACH;
-        // and the chord itself strikes the enemies around (2.0 x magic attack)
+        // and the chord itself strikes the enemies around (10 x magic attack)
         List<LivingEntity> foes = enemies(p, p.position(), r);
         for (LivingEntity e : foes) hurt(c, e, c.dmg(1), magic(c));
         if (!foes.isEmpty()) ServerFx.of("hit", p.position()).color(0x9A6AD8).a(1.0).points(foes).send(c.level());
@@ -254,7 +254,7 @@ public final class UltSkills {
         Bard.stop(p);
         d.setSongPoints(0);
         JobManager.sync(p);
-        int n = Math.max(MIN_SEALING_NOTES, points);
+        int n = MIN_SEALING_NOTES + points / 4; // 6 to 11 notes
         for (int k = 0; k < n; k++) {
             LivingEntity t = foes.get(k % foes.size());
             float pitch = 1.0F + (k % 8) * 0.12F;

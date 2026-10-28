@@ -262,8 +262,8 @@ public final class JobDefs {
                         skill("sonic_boom", SkillKind.ACTIVE, SkillEffect.SWEEP, 8, 14, 1.6, 6, 0, List.of(), 0, "響"),
                         skill("cheer", SkillKind.ACTIVE, SkillEffect.BUFF, 20, 20, 0, 8, 5, List.of(), 0, "鼓")),
                 List.of(
-                        skill("grand_concert", SkillKind.ULTIMATE, SkillEffect.BUFF, 90, 50, 0.2, 20, 10, List.of(), 0, "合"),
-                        skill("finale", SkillKind.ULTIMATE, SkillEffect.WHIRL, 90, 42, 7.0, 10, 0, List.of(), 0, "幕")),
+                        skill("grand_concert", SkillKind.ULTIMATE, SkillEffect.BUFF, 90, 50, 0.8, 20, 10, List.of(), 0, "合"),
+                        skill("finale", SkillKind.ULTIMATE, SkillEffect.WHIRL, 90, 42, 36.0, 10, 0, List.of(), 0, "幕")),
                 List.of(
                         skill("war_song", SkillKind.SPELL, SkillEffect.BUFF, 3, 14, 0, 6, 12, List.of(), 0, "戦"),
                         skill("heal_song", SkillKind.SPELL, SkillEffect.BUFF, 3, 18, 0, 6, 12, List.of(), 0, "癒"),
@@ -510,8 +510,8 @@ public final class JobDefs {
                         skill("resonance", A, SkillEffect.BUFF, 30, 30, 0, 10, 0, List.of(), 0, "共"),
                         skill("arcane_note", A, SkillEffect.BOLT, 6, 14, 1.4, 16, 0, List.of(), 0, "符")),
                 List.of(
-                        skill("grand_concerto", U, SkillEffect.BUFF, 90, 50, 2.0, 10, 10, List.of(), 0, "協"),
-                        skill("sealing_chord", U, SkillEffect.WHIRL, 90, 42, 0.8, 16, 0, List.of(), 0, "曲")),
+                        skill("grand_concerto", U, SkillEffect.BUFF, 90, 50, 10.0, 10, 10, List.of(), 0, "協"),
+                        skill("sealing_chord", U, SkillEffect.WHIRL, 90, 42, 2.4, 16, 0, List.of(), 0, "曲")),
                 List.of(
                         skill("flame_melody", SkillKind.SPELL, SkillEffect.BUFF, 3, 14, 0, 6, 12, List.of(), 0, "炎"),
                         skill("haste_tune", SkillKind.SPELL, SkillEffect.BUFF, 3, 14, 0, 6, 12, List.of(), 0, "速"),
