@@ -323,6 +323,7 @@ public final class AutoTestClient {
             case "nj:boosts" -> 40;
             case "nj:robes" -> 180;
             case "nj:hitwin" -> 40;
+            case "spearshield" -> 50;
             case "nj:dps" -> 200;
             case "nj:bosswater" -> 1480;
             case "nj:linger" -> 140;
@@ -437,7 +438,7 @@ public final class AutoTestClient {
             if (false) showSkills.clear(); // robes: armour, option pools, a set worn (seen from the front) and every material on stands
             if (false) showSkills.addAll(java.util.List.of("nj:restore", "front:nj:robes", "nj:restore"));
             showSkills.clear(); // every job's damage on equal terms (the server sprints): solo, in forged gear, and its gift to a party of six
-            showSkills.addAll(java.util.List.of("nj:restore", "nj:hitwin", "nj:dps", "nj:restore"));
+            showSkills.addAll(java.util.List.of("nj:restore", "spearshield", "nj:restore", "nj:dps", "nj:restore"));
             if (false) showSkills.clear(); // spellsinger afterglow
             if (false) showSkills.addAll(java.util.List.of("nj:restore", "nj:wardlinger", "nj:ward", "nj:linger", "nj:restore"));
             if (false) showSkills.clear(); // songs: each with its own rhythm (bars from the song's style) and tune
@@ -569,6 +570,22 @@ public final class AutoTestClient {
             if (k == 6) mc.gui.setScreen(new com.jo112ss.rpgmod.client.job.JobScreen(com.jo112ss.rpgmod.client.job.JobScreen.Tab.SPELLS));
             if (k == 16) shot(mc, String.format("t%02d_maestro_songs", i));
             if (k == 20) mc.gui.setScreen(null);
+            return;
+        }
+        if (entry.equals("spearshield")) { // spear in hand, shield in the off hand: holding right click raises the shield
+            if (k == 0) {
+                mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_FRONT);
+                AutoTestServer.requestCast("nj:spearshield");
+            }
+            if (k == 10) mc.player.getInventory().setSelectedSlot(6);
+            if (k == 14) mc.options.keyUse.setDown(true);
+            if (k == 34) {
+                RpgMod.LOGGER.info("[AUTOTEST] spear+shield: using {} hand {} item {} blocking {}", mc.player.isUsingItem(), mc.player.getUsedItemHand(),
+                        mc.player.getUseItem().getItem(), mc.player.isBlocking());
+                shot(mc, String.format("s%02d_spear_shield", i));
+            }
+            if (k == 40) mc.options.keyUse.setDown(false);
+            if (k == 44) mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK);
             return;
         }
         if (entry.equals("swordtwice")) { // release and press again at once: both must cast

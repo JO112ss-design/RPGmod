@@ -55,6 +55,10 @@ final class NewJobTests {
             case "boosts" -> skillBoosts(level, p);
             case "robes" -> robes(level, p);
             case "hitwin" -> hitWindows(level, p);
+            case "spearshield" -> { // a lancer with a shield in the off hand: right click should raise the shield
+                become(p, "lancer");
+                p.setItemSlot(net.minecraft.world.entity.EquipmentSlot.OFFHAND, new ItemStack(ModItems.get(com.jo112ss.rpgmod.item.WeaponType.SHIELD, WeaponMaterial.IRON)));
+            }
             case "dps" -> DpsBench.start(level, p);
             case "bard" -> become(p, "bard");
             case "hybrids" -> hybrids(level, p, dummies);
