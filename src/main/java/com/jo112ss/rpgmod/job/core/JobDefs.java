@@ -77,6 +77,8 @@ public final class JobDefs {
     /** Mana every job starts with before job / level / panel bonuses. */
     public static final double BASE_MANA = 100;
     public static final double BASE_MANA_REGEN = 1.0;
+    /** Extra MP a second for the casters (every job with MP of its own; the physical jobs win theirs back by hitting). */
+    public static final double CASTER_MANA_REGEN = 0.5;
     // Attack and magic attack from levels: 0.6 a level counted in whole points (+1 at almost every
     // level, see JobStats); casters' melee and the enchanter's dagger 0.3. Weapon materials multiply it.
 
@@ -129,7 +131,7 @@ public final class JobDefs {
         job("wizard", 0x7B68EE, "魔", List.of(JobStat.MAX_MANA, JobStat.MAGIC_ATTACK, JobStat.COOLDOWN_REDUCTION, JobStat.CAST_SPEED, JobStat.MANA_REGEN),
                 stats(JobStat.MAX_MANA, 50, JobStat.MANA_REGEN, 0.5, JobStat.MAGIC_ATTACK, 6), stats(JobStat.MAX_MANA, 1, JobStat.MAGIC_ATTACK, 0.6, JobStat.ATTACK_DAMAGE, 0.3, JobStat.MAX_HEALTH, hpGrow(0.6, 0)),
                 List.of(
-                        skill("mana_surge", SkillKind.ACTIVE, SkillEffect.MANA, 20, 0, 40, 0, 0, List.of(), 0, "充"),
+                        skill("mana_surge", SkillKind.ACTIVE, SkillEffect.MANA, 10, 0, 0.4, 0, 0, List.of(), 0, "充"),
                         skill("blink", SkillKind.ACTIVE, SkillEffect.BLINK, 8, 21, 0, 10, 0, List.of(), 0, "瞬"),
                         skill("mana_barrier", SkillKind.ACTIVE, SkillEffect.BUFF, 25, 42, 0, 0, 10, List.of("minecraft:absorption"), 1, "障"),
                         skill("arcane_focus", SkillKind.ACTIVE, SkillEffect.MANA, 30, 0, 25, 6, 0, List.of(), 0, "集"),

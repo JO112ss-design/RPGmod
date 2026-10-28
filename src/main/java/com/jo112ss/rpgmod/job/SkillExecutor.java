@@ -94,7 +94,7 @@ public final class SkillExecutor {
             case "divine_aegis" -> UltSkills.divineAegis(c);
             case "judgement" -> judgement(c);
             // wizard
-            case "mana_surge" -> mana(c, "mana_surge");
+            case "mana_surge" -> manaSurge(c);
             case "blink" -> blink(c);
             case "mana_barrier" -> selfBuff(c, "mana_barrier", SoundEvents.AMETHYST_BLOCK_RESONATE, 1.2F);
             case "arcane_focus" -> mana(c, "arcane_focus");
@@ -673,6 +673,27 @@ public final class SkillExecutor {
         ServerFx.of(fx, c.p.position()).follow(c.p).a(Math.max(1, c.def.radius())).points(others(c.p, allies)).send(c.level);
         sound(c, SoundEvents.AMETHYST_BLOCK_RESONATE, 0.8F);
         sound(c, c.p.position(), SoundEvents.EXPERIENCE_ORB_PICKUP, 0.5F, 0.6F);
+        return true;
+    }
+
+    /** Mana surge: this much food (3 drumsticks) for this share of the max MP, the caster only. */
+    public static final int SURGE_FOOD = 6;
+
+    static boolean manaSurge(Ctx c) {
+        var food = c.p.getFoodData();
+        boolean free = c.p.isCreative();
+        if (!free && food.getFoodLevel() < SURGE_FOOD) {
+            fail(c.p, "rpgmod.job.too_hungry");
+            return false;
+        }
+        if (!free) {
+            food.setFoodLevel(food.getFoodLevel() - SURGE_FOOD);
+            food.setSaturation(Math.min(food.getSaturationLevel(), food.getFoodLevel()));
+        }
+        JobManager.restoreMana(c.p, JobManager.maxMana(c.p) * c.def.power() * c.boost);
+        ServerFx.of("mana_surge", c.p.position()).follow(c.p).a(1).send(c.level);
+        sound(c, SoundEvents.AMETHYST_BLOCK_RESONATE, 0.8F);
+        sound(c, c.p.position(), SoundEvents.GENERIC_EAT.value(), 0.6F, 0.8F);
         return true;
     }
 

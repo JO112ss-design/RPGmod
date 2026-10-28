@@ -169,7 +169,7 @@
   "rpgmod.skill.judgement": "審判",
   "rpgmod.skill.judgement.desc": "聖なる陣を広げ、光で周囲の敵を一掃する。",
   "rpgmod.skill.mana_surge": "魔力充填",
-  "rpgmod.skill.mana_surge.desc": "MPを回復する。",
+  "rpgmod.skill.mana_surge.desc": "満腹度を6（肉3つ分）使って、最大MPの40%を回復する（自分だけ）。",
   "rpgmod.skill.blink": "ブリンク",
   "rpgmod.skill.blink.desc": "見ている方向へ最大10ブロック瞬間移動する。",
   "rpgmod.skill.mana_barrier": "魔力障壁",
@@ -1289,5 +1289,6 @@
   "rpgmod.part.robe_boots.2": "右かかと",
   "rpgmod.part.robe_boots.3": "右つま先",
   "rpgmod.tooltip.light": "軽量武器：振りが速く全部当たるぶん、通常攻撃のダメージ ×%s（スキルには影響なし）",
-  "rpgmod.tooltip.bow_mult": "弓：通常の矢のダメージ ×%1$s（ボスには ×%2$s。スキルの矢には影響なし）"
+  "rpgmod.tooltip.bow_mult": "弓：通常の矢のダメージ ×%1$s（ボスには ×%2$s。スキルの矢には影響なし）",
+  "rpgmod.job.too_hungry": "満腹度が足りません"
 }

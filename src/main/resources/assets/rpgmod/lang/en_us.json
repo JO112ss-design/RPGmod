@@ -169,7 +169,7 @@
   "rpgmod.skill.judgement": "Judgement",
   "rpgmod.skill.judgement.desc": "A holy circle spreads, then light strikes every enemy in it.",
   "rpgmod.skill.mana_surge": "Mana Surge",
-  "rpgmod.skill.mana_surge.desc": "Restore your mana.",
+  "rpgmod.skill.mana_surge.desc": "Spend 6 food (three drumsticks) to restore 40% of your max MP (yourself only).",
   "rpgmod.skill.blink": "Blink",
   "rpgmod.skill.blink.desc": "Teleport up to 10 blocks where you look.",
   "rpgmod.skill.mana_barrier": "Mana Barrier",
@@ -1289,5 +1289,6 @@
   "rpgmod.part.robe_boots.2": "Right heel",
   "rpgmod.part.robe_boots.3": "Right toe",
   "rpgmod.tooltip.light": "Light weapon: every quick swing lands, so normal hits x%s (skills unaffected)",
-  "rpgmod.tooltip.bow_mult": "Bow: normal arrows x%1$s (x%2$s against bosses; skill arrows unaffected)"
+  "rpgmod.tooltip.bow_mult": "Bow: normal arrows x%1$s (x%2$s against bosses; skill arrows unaffected)",
+  "rpgmod.job.too_hungry": "Too hungry"
 }

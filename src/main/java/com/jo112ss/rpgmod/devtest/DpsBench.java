@@ -719,6 +719,7 @@ public final class DpsBench {
             // health is not refilled during a run: what blood frenzy and the blood price take stays taken
             // (the dummy does not fight back), so asura sees it; it is refilled between runs
             if (!counting) p.setHealth(p.getMaxHealth());
+            p.getFoodData().setFoodLevel(20); // a player eats between casts: mana surge costs food
             if (dummy != null && dummy.isAlive()) dummy.setHealth(dummy.getMaxHealth());
             if (dummy == null) return;
             Vec3 home = new Vec3(field.x, field.y, field.z + 3);

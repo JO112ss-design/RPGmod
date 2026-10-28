@@ -442,7 +442,9 @@ public final class JobManager {
 
     /** Mana per second: the job stat, raised by the gear's mana regeneration option (%). */
     public static double manaRegen(Player player) {
-        double base = JobStats.compute(data(player)).get(JobStat.MANA_REGEN);
+        JobData d = data(player);
+        double base = JobStats.compute(d).get(JobStat.MANA_REGEN);
+        if (d.hasJob() && !HitMana.physical(d)) base += JobDefs.CASTER_MANA_REGEN;
         return base * (1 + gearOption(player, com.jo112ss.rpgmod.smithing.core.OptionType.MANA_REGEN) / 100.0);
     }
 
