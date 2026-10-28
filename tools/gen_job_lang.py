@@ -256,7 +256,7 @@ SKILLS = {  # id: (ja, ja desc, en, en desc)
  'triple_whirl': ('怒涛の三連旋風', '3回転して周囲を斬る。回転の合間に敵を引き寄せ、最後に吹き飛ばす。', 'Triple Whirl', 'Spin three times, pulling enemies in between; the last spin throws them out.'),
  'reckless_charge': ('捨て身の突進', '長く突進し、ぶつかった敵を打ち上げる。4秒間、自分の被ダメージが30%増える。', 'Reckless Charge', 'A long dash that throws enemies up. For 4s you take 30% more damage.'),
  'terror_roar': ('威圧の咆哮', '周囲8ブロックの敵の攻撃力と速度を大きく下げ、自分の会心率が25%上がる。', 'Terror Roar', 'Enemies within 8 blocks lose much of their attack and speed; your crit rate rises by 25%.'),
- 'asura': ('修羅', '15秒間、与ダメージ+40%。HPが減っているほど更に上がり（最大+150%）、通常攻撃で与えたダメージの15%を回復する（スキルでは回復しない）。', 'Asura', 'For 15s you hit 40% harder, more the lower your health (up to +150%), and 15% of your normal attacks' damage heals you (skills do not).'),
+ 'asura': ('修羅', '15秒間、与ダメージ+40%。HPが減っているほど更に上がり（最大+150%）、通常攻撃で与えたダメージの15%を回復する（スキルでは回復しない）。', 'Asura', 'For 15s you hit 40% harder, more the lower your health (up to +150%), and 15% of the damage of your normal attacks heals you (skills do not).'),
  'iron_wall': ('鉄壁', '16秒間、受けるダメージが半分になり、ノックバックしなくなる。', 'Iron Wall', 'For 16s you take half damage and cannot be knocked back.'),
  'provoke_shield': ('挑発の盾', '周囲12ブロックの敵を全部自分に向けさせ、防御力+16・防具強度+8。', 'Provoking Shield', 'Every monster within 12 blocks turns on you; armour +16 and toughness +8.'),
  'cover': ('かばう', '20秒間、周囲10ブロックの味方が受けるダメージの70%を代わりに受ける。', 'Cover', 'For 20s you take 70% of the damage meant for allies within 10 blocks.'),

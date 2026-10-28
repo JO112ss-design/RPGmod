@@ -481,7 +481,7 @@
   "rpgmod.skill.terror_roar": "Terror Roar",
   "rpgmod.skill.terror_roar.desc": "Enemies within 8 blocks lose much of their attack and speed; your crit rate rises by 25%.",
   "rpgmod.skill.asura": "Asura",
-  "rpgmod.skill.asura.desc": "For 15s you hit 40% harder, more the lower your health (up to +150%), and 15% of the damage you deal heals you.",
+  "rpgmod.skill.asura.desc": "For 15s you hit 40% harder, more the lower your health (up to +150%), and 15% of the damage of your normal attacks heals you (skills do not).",
   "rpgmod.skill.iron_wall": "Iron Wall",
   "rpgmod.skill.iron_wall.desc": "For 16s you take half damage and cannot be knocked back.",
   "rpgmod.skill.provoke_shield": "Provoking Shield",

@@ -481,7 +481,7 @@
   "rpgmod.skill.terror_roar": "威圧の咆哮",
   "rpgmod.skill.terror_roar.desc": "周囲8ブロックの敵の攻撃力と速度を大きく下げ、自分の会心率が25%上がる。",
   "rpgmod.skill.asura": "修羅",
-  "rpgmod.skill.asura.desc": "15秒間、与ダメージ+40%。HPが減っているほど更に上がり（最大+150%）、与えたダメージの15%を回復する。",
+  "rpgmod.skill.asura.desc": "15秒間、与ダメージ+40%。HPが減っているほど更に上がり（最大+150%）、通常攻撃で与えたダメージの15%を回復する（スキルでは回復しない）。",
   "rpgmod.skill.iron_wall": "鉄壁",
   "rpgmod.skill.iron_wall.desc": "16秒間、受けるダメージが半分になり、ノックバックしなくなる。",
   "rpgmod.skill.provoke_shield": "挑発の盾",
