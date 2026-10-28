@@ -54,6 +54,7 @@ final class NewJobTests {
             case "kishot" -> kiShot(level, p);
             case "boosts" -> skillBoosts(level, p);
             case "robes" -> robes(level, p);
+            case "hitwin" -> hitWindows(level, p);
             case "dps" -> DpsBench.start(level, p);
             case "bard" -> become(p, "bard");
             case "hybrids" -> hybrids(level, p, dummies);
@@ -1452,6 +1453,47 @@ final class NewJobTests {
         SkillTasks.later(170, () -> {
             for (var st : stands) st.discard();
             for (int i = 0; i < 4; i++) p.setItemSlot(slots[i], saved[i]);
+        });
+    }
+
+    /**
+     * Hit cooldowns per player and kind: one monster hit by this player (plain, then a skill), by a
+     * second player (a fake one) in the same tick, again by the same skill (blocked), by a bigger skill
+     * hit (only the excess) and after the window (in full).
+     */
+    private static void hitWindows(ServerLevel level, ServerPlayer p) {
+        var m = net.minecraft.world.entity.EntityTypes.HUSK.create(level, net.minecraft.world.entity.EntitySpawnReason.COMMAND);
+        if (m == null) return;
+        Vec3 at = p.position().add(p.getLookAngle().multiply(1, 0, 1).normalize().scale(3));
+        m.snapTo(at.x, p.getY(), at.z, 0, 0);
+        m.setNoAi(true);
+        m.addEffect(new net.minecraft.world.effect.MobEffectInstance(net.minecraft.world.effect.MobEffects.FIRE_RESISTANCE, 2000, 0));
+        level.addFreshEntity(m);
+        m.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.MAX_HEALTH).setBaseValue(100000);
+        m.setHealth(100000);
+        var other = net.neoforged.neoforge.common.util.FakePlayerFactory.getMinecraft(level);
+        var skillKey = net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.DAMAGE_TYPE,
+                net.minecraft.resources.Identifier.fromNamespaceAndPath(com.jo112ss.rpgmod.RpgMod.MODID, "skill"));
+        StringBuilder sb = new StringBuilder();
+        java.util.function.BiConsumer<String, Runnable> hit = (name, r) -> {
+            float h0 = m.getHealth();
+            r.run();
+            sb.append(name).append('=').append(String.format("%.1f", h0 - m.getHealth())).append("; ");
+        };
+        SkillTasks.later(5, () -> {
+            com.jo112ss.rpgmod.mob.HitWindows.testBlocked = 0;
+            com.jo112ss.rpgmod.mob.HitWindows.testCut = 0;
+            hit.accept("plain 20", () -> m.hurtServer(level, p.damageSources().playerAttack(p), 20));
+            hit.accept("skill 20 (same tick)", () -> m.hurtServer(level, p.damageSources().source(skillKey, p, p), 20));
+            hit.accept("other player's skill 20 (same tick)", () -> m.hurtServer(level, other.damageSources().source(skillKey, other, other), 20));
+            hit.accept("skill 20 again", () -> m.hurtServer(level, p.damageSources().source(skillKey, p, p), 20));
+            hit.accept("skill 30", () -> m.hurtServer(level, p.damageSources().source(skillKey, p, p), 30));
+        });
+        SkillTasks.later(10, () -> hit.accept("skill 20 after 5 ticks", () -> m.hurtServer(level, p.damageSources().source(skillKey, p, p), 20)));
+        SkillTasks.later(17, () -> {
+            hit.accept("skill 20 after 12 ticks", () -> m.hurtServer(level, p.damageSources().source(skillKey, p, p), 20));
+            log("hit windows: {}blocked {} cut {}", sb, com.jo112ss.rpgmod.mob.HitWindows.testBlocked, com.jo112ss.rpgmod.mob.HitWindows.testCut);
+            m.discard();
         });
     }
 
