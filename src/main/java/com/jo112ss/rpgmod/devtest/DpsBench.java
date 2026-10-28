@@ -198,17 +198,35 @@ public final class DpsBench {
 
     // ------------------------------------------------------------------ the runs
 
-    private enum Kind { PLAIN, ULT, GEAR, PARTY, ALLY_BASE, ALLY_REPLAY }
+    private enum Kind { PLAIN, ULT, GEAR, PARTY, ALLY_BASE, ALLY_REPLAY, PROBE }
+
+    /** Single effects kept on an ally (or the dummy) for a whole run: what each one is worth. */
+    private record Probe(String name, Holder<MobEffect> effect, int amp, boolean onDummy) {}
+
+    private static List<Probe> probes() {
+        return List.of(
+                new Probe("attack_up I", ModEffects.ATTACK_UP, 0, false), new Probe("attack_up II", ModEffects.ATTACK_UP, 1, false),
+                new Probe("haste I", MobEffects.HASTE, 0, false), new Probe("haste II", MobEffects.HASTE, 1, false),
+                new Probe("speed II", MobEffects.SPEED, 1, false), new Probe("strength I", MobEffects.STRENGTH, 0, false),
+                new Probe("war_song 6", ModEffects.WAR_SONG, 5, false), new Probe("rhapsody 6", ModEffects.RHAPSODY, 5, false),
+                new Probe("flame_song 4", ModEffects.FLAME_SONG, 3, false),
+                new Probe("foe exposed I", ModEffects.EXPOSED, 0, true), new Probe("foe exposed II", ModEffects.EXPOSED, 1, true),
+                new Probe("foe armor_break I", ModEffects.ARMOR_BREAK, 0, true), new Probe("foe weakness", MobEffects.WEAKNESS, 0, true));
+    }
 
     /** One run: the job fighting, what kind, the ultimate (ULT) or the job whose effects are played back (ALLY_REPLAY). */
-    private record Spec(String job, Kind kind, int ult, String replayOf) {
+    private record Spec(String job, Kind kind, int ult, String replayOf, Probe probe) {
+        Spec(String job, Kind kind, int ult, String replayOf) {
+            this(job, kind, ult, replayOf, null);
+        }
+
         int length() {
             return kind == Kind.PLAIN || kind == Kind.ULT ? RUN : PARTY_RUN;
         }
 
         @Override
         public String toString() {
-            return job + "/" + kind + (kind == Kind.ULT ? ult : "") + (replayOf != null ? "<-" + replayOf : "");
+            return job + "/" + kind + (kind == Kind.ULT ? ult : "") + (replayOf != null ? "<-" + replayOf : "") + (probe != null ? "<-" + probe.name() : "");
         }
     }
 
@@ -257,6 +275,7 @@ public final class DpsBench {
         for (String a : ALLIES) {
             queue.add(new Spec(a, Kind.ALLY_BASE, 0, null));
             for (String j : jobs) queue.add(new Spec(a, Kind.ALLY_REPLAY, 0, j));
+            for (Probe pr : probes()) queue.add(new Spec(a, Kind.PROBE, 0, null, pr));
         }
         log("{} jobs at Lv{}, diamond weapons, every skill, no stat or boost cells; solo {}s per run, party {}s with {} as the allies; {} runs",
                 jobs.size(), LEVEL, RUN / 20, PARTY_RUN / 20, ALLIES, queue.size());
@@ -329,6 +348,20 @@ public final class DpsBench {
         }
         double allyDps = n == 0 ? 0 : base / n;
         log("allies on their own: {}", noise.toString().trim());
+        // what single effects are worth (kept on all run long)
+        Map<String, Double> means = new LinkedHashMap<>();
+        for (String a : ALLIES) {
+            Result ar = results.get(a);
+            List<Double> same = new ArrayList<>();
+            if (ar != null && ar.allyBase > 0) same.add(ar.allyBase);
+            for (Result r : results.values()) if (r.party.isEmpty() && r.replayed.containsKey(a)) same.add(r.replayed.get(a));
+            means.put(a, same.stream().mapToDouble(Double::doubleValue).average().orElse(1));
+        }
+        for (var e : PROBED.entrySet()) {
+            StringBuilder sb = new StringBuilder();
+            for (var v : e.getValue().entrySet()) sb.append(v.getKey()).append(' ').append(pct(v.getValue() / means.getOrDefault(v.getKey(), 1.0) - 1)).append("% ");
+            log("effect {} all the time: {}", e.getKey(), sb.toString().trim());
+        }
         log("---- party of {} ({}s; gift = what the job's effects add to each of the {} others, measured on {} - average ally {} DPS) ----",
                 PARTY, PARTY_RUN / 20, PARTY - 1, ALLIES, Math.round(allyDps));
         list.sort(Comparator.comparingDouble((Result r) -> -(r.sustained + (PARTY - 1) * allyDps * r.avgGain())));
@@ -343,6 +376,9 @@ public final class DpsBench {
         }
         log("---- end ----");
     }
+
+    /** Probe runs: effect -> ally -> damage per second. */
+    private static final Map<String, Map<String, Double>> PROBED = new LinkedHashMap<>();
 
     private static String pct(double share) {
         return String.format("%.1f", share * 100);
@@ -466,6 +502,11 @@ public final class DpsBench {
                     if (to != null) to.addEffect(new MobEffectInstance(ev.effect(), ev.dur(), ev.amp()));
                 }
             }
+            if (cur.kind() == Kind.PROBE && t % 10 == 0) {
+                Probe pr = cur.probe();
+                LivingEntity to = pr.onDummy() ? dummy : p;
+                if (to != null) to.addEffect(new MobEffectInstance(pr.effect(), 40, pr.amp()));
+            }
             if (t == 0 && cur.kind() == Kind.ULT) castNow(ults.get(cur.ult()));
             if (Bard.performing(p)) Bard.judge(p, Bard.PERFECT); // a perfect player (one judgement a note at most)
             act();
@@ -514,6 +555,7 @@ public final class DpsBench {
                     Result of = results.get(cur.replayOf());
                     if (of != null) of.replayed.put(cur.job(), dps);
                 }
+                case PROBE -> PROBED.computeIfAbsent(cur.probe().name(), k -> new LinkedHashMap<>()).put(cur.job(), dps);
             }
             cur = null;
         }
@@ -606,7 +648,7 @@ public final class DpsBench {
             swings = 0;
             p.setHealth(p.getMaxHealth());
             casts.clear();
-            onlyOwn = cur.kind() == Kind.ALLY_BASE || cur.kind() == Kind.ALLY_REPLAY;
+            onlyOwn = cur.kind() == Kind.ALLY_BASE || cur.kind() == Kind.ALLY_REPLAY || cur.kind() == Kind.PROBE;
             if (cur.kind() == Kind.PARTY && partyAlly != null) {
                 partyAlly.removeAllEffects();
                 recordingTo = new ArrayList<>();
