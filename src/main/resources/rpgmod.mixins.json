@@ -6,7 +6,8 @@
     "PlayerTargetMixin",
     "PathThrottleMixin",
     "HealthCapMixin",
-    "DungeonDimensionMixin"
+    "DungeonDimensionMixin",
+    "EntityInvulnerableAccessor"
   ],
   "client": [],
   "injectors": {

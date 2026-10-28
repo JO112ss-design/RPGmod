@@ -66,7 +66,7 @@ public final class HitWindows {
         String key = key(attacker.getUUID(), src);
         Hit last = hits.get(key);
         // vanilla's shared cooldown never blocks it: the player's own decides below
-        victim.invulnerableTime = 0;
+        ((com.jo112ss.rpgmod.mixin.EntityInvulnerableAccessor) victim).rpgmod$setInvulnerableTime(0);
         if (last == null) {
             hits.put(key, new Hit(now, amount));
             return;
