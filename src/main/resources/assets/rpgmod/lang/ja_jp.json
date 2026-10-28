@@ -1290,5 +1290,7 @@
   "rpgmod.part.robe_boots.3": "右つま先",
   "rpgmod.tooltip.light": "軽量武器：振りが速く全部当たるぶん、通常攻撃のダメージ ×%s（スキルには影響なし）",
   "rpgmod.tooltip.bow_mult": "弓：通常の矢のダメージ ×%1$s（ボスには ×%2$s。スキルの矢には影響なし）",
-  "rpgmod.job.too_hungry": "満腹度が足りません"
+  "rpgmod.job.too_hungry": "満腹度が足りません",
+  "rpgmod.skill.harvest_song": "豊穣の歌",
+  "rpgmod.skill.harvest_song.desc": "周りの味方の満腹度と隠し満腹度を毎秒少しずつ回復する（上手に演奏すると1曲で各5〜6）。"
 }

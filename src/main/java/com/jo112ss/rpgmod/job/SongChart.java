@@ -28,7 +28,7 @@ public final class SongChart {
 
     private static int[][] style(String song) {
         return switch (song) {
-            case "heal_song", "lullaby", "mana_chord", "ward_melody" -> CALM;
+            case "heal_song", "lullaby", "mana_chord", "ward_melody", "harvest_song" -> CALM;
             case "wind_song", "haste_tune", "fanfare", "rhapsody", "thunder_tune" -> LIVELY;
             case "discord", "dirge", "seal_melody", "drain_tune" -> DARK;
             default -> STEADY;
@@ -103,6 +103,7 @@ public final class SongChart {
             case "rhapsody" -> SoundEvents.NOTE_BLOCK_BANJO;
             case "fanfare" -> SoundEvents.NOTE_BLOCK_PLING;
             case "dirge" -> SoundEvents.NOTE_BLOCK_DIDGERIDOO;
+            case "harvest_song" -> SoundEvents.NOTE_BLOCK_GUITAR;
             case "flame_melody" -> SoundEvents.NOTE_BLOCK_XYLOPHONE;
             case "haste_tune" -> SoundEvents.NOTE_BLOCK_COW_BELL;
             case "mana_chord" -> SoundEvents.NOTE_BLOCK_BELL;
@@ -129,6 +130,7 @@ public final class SongChart {
             case "rhapsody" -> new int[] {7, 11, 9, 12, 11, 14, 12, 9};
             case "fanfare" -> new int[] {7, 7, 7, 11, 9, 11, 14, 14};
             case "dirge" -> new int[] {4, 3, 2, 0, 2, 3, 1, 0};
+            case "harvest_song" -> new int[] {4, 7, 9, 7, 4, 7, 11, 9};
             case "flame_melody" -> new int[] {7, 9, 10, 12, 10, 9, 7, 5};
             case "haste_tune" -> new int[] {9, 11, 9, 12, 9, 11, 14, 11};
             case "mana_chord" -> new int[] {7, 11, 14, 11, 9, 12, 14, 12};

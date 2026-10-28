@@ -61,7 +61,7 @@ public final class Bard {
 
     public static boolean isSong(String id) {
         return switch (id) {
-            case "war_song", "heal_song", "guard_song", "wind_song", "discord", "lullaby", "rhapsody", "fanfare", "dirge",
+            case "war_song", "heal_song", "guard_song", "wind_song", "discord", "lullaby", "rhapsody", "fanfare", "dirge", "harvest_song",
                  "flame_melody", "haste_tune", "mana_chord", "seal_melody", "thunder_tune", "ward_melody", "drain_tune" -> true;
             default -> false;
         };
@@ -83,6 +83,7 @@ public final class Bard {
             case "rhapsody" -> 0xFF5AA8;
             case "fanfare" -> 0xFFD050;
             case "dirge" -> 0x8A7AB8;
+            case "harvest_song" -> 0xE8B850;
             case "ward_melody" -> 0x9FD8FF;
             case "drain_tune" -> 0x7A60FF;
             default -> COLOR;
@@ -399,10 +400,30 @@ public final class Bard {
                 }
             }
             case "ward_melody" -> allies(p, r, a -> ward(p, a, f, dur));
+            case "harvest_song" -> allies(p, r, a -> harvest(a, f));
             case "drain_tune" -> allies(p, r, a -> a.addEffect(new MobEffectInstance(ModEffects.DRAIN_TUNE, dur, singerAmp, true, true), p));
             default -> { }
         }
         ServerFx.of("n_song", p.position()).follow(p).a(r).b(f).color(color).send(level);
+    }
+
+    /**
+     * Harvest song: hunger and as much saturation each second, this much at full strength (x0.6 to
+     * x1.2 by the points). A whole song gives about 3 to 4 of each, 5 to 6 played perfectly with the
+     * encore - a little over the healer's nourish (4 and 4), for a song's time.
+     */
+    public static final double HARVEST_PER_SECOND = 0.3;
+    /** Food not yet given (it comes in whole points). */
+    private static final Map<UUID, Double> HARVEST_FOOD = new HashMap<>();
+
+    private static void harvest(ServerPlayer a, double f) {
+        var food = a.getFoodData();
+        double add = HARVEST_PER_SECOND * f;
+        double owed = HARVEST_FOOD.getOrDefault(a.getUUID(), 0.0) + add;
+        int whole = (int) owed;
+        if (whole > 0) food.eat(whole, 0);
+        HARVEST_FOOD.put(a.getUUID(), owed - whole);
+        food.setSaturation((float) Math.min(food.getFoodLevel(), food.getSaturationLevel() + add));
     }
 
     /** Rhapsody: crit chance (percent) per level of the song (levels 2 to 6 by the points). */
@@ -515,7 +536,7 @@ public final class Bard {
     }
 
     /** The bard's songs, and the spellsinger's, in the order modulation walks through them. */
-    private static final List<String> BARD_SONGS = List.of("war_song", "heal_song", "guard_song", "wind_song", "discord", "lullaby", "rhapsody", "fanfare", "dirge");
+    private static final List<String> BARD_SONGS = List.of("war_song", "heal_song", "guard_song", "wind_song", "discord", "lullaby", "rhapsody", "fanfare", "dirge", "harvest_song");
     private static final List<String> SINGER_SONGS = List.of("flame_melody", "haste_tune", "mana_chord", "seal_melody", "thunder_tune", "ward_melody", "drain_tune");
 
     /** Maestro's modulation: the next song, same time left and points, plus a little. */

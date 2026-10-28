@@ -273,7 +273,8 @@ public final class JobDefs {
                         skill("lullaby", SkillKind.SPELL, SkillEffect.DEBUFF, 3, 18, 0, 6, 12, List.of("minecraft:slowness", "rpgmod:attack_down"), 3, "眠"),
                         skill("rhapsody", SkillKind.SPELL, SkillEffect.BUFF, 3, 16, 0, 6, 12, List.of(), 0, "狂"),
                         skill("fanfare", SkillKind.SPELL, SkillEffect.BUFF, 3, 20, 0, 6, 12, List.of(), 0, "凱"),
-                        skill("dirge", SkillKind.SPELL, SkillEffect.DEBUFF, 3, 20, 0.4, 6, 12, List.of(), 0, "葬")));
+                        skill("dirge", SkillKind.SPELL, SkillEffect.DEBUFF, 3, 20, 0.4, 6, 12, List.of(), 0, "葬"),
+                        skill("harvest_song", SkillKind.SPELL, SkillEffect.BUFF, 3, 16, 0, 6, 12, List.of(), 0, "穣")));
     }
 
     // ------------------------------------------------------------------ advanced jobs (level 100+)

@@ -1290,5 +1290,7 @@
   "rpgmod.part.robe_boots.3": "Right toe",
   "rpgmod.tooltip.light": "Light weapon: every quick swing lands, so normal hits x%s (skills unaffected)",
   "rpgmod.tooltip.bow_mult": "Bow: normal arrows x%1$s (x%2$s against bosses; skill arrows unaffected)",
-  "rpgmod.job.too_hungry": "Too hungry"
+  "rpgmod.job.too_hungry": "Too hungry",
+  "rpgmod.skill.harvest_song": "Harvest Song",
+  "rpgmod.skill.harvest_song.desc": "Allies around you regain hunger and saturation every second (5 to 6 of each over a well-played song)."
 }

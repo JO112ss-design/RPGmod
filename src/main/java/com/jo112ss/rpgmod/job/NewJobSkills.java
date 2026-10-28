@@ -38,7 +38,7 @@ public final class NewJobSkills {
             "lance_charge", "spear_throw", "spear_sweep", "leap_thrust", "counter_stance", "rapid_thrust", "dragon_fang", "spear_rain",
             "combo", "ki_blast", "parry", "whirl_kick", "meditate", "shrink_step", "hundred_fists", "diamond_body",
             "war_song", "heal_song", "guard_song", "wind_song", "discord", "lullaby", "grand_concert", "finale",
-            "rhapsody", "fanfare", "dirge", "perform", "sonic_boom", "cheer",
+            "rhapsody", "fanfare", "dirge", "harvest_song", "perform", "sonic_boom", "cheer",
             // the spellsinger's songs start the same performance
             "flame_melody", "haste_tune", "mana_chord", "seal_melody", "thunder_tune", "ward_melody", "drain_tune");
 
@@ -77,7 +77,7 @@ public final class NewJobSkills {
             case "diamond_body" -> diamondBody(c);
             // bard
             // a song on its own (normally they are played by "perform" from the lute)
-            case "war_song", "heal_song", "guard_song", "wind_song", "discord", "lullaby", "rhapsody", "fanfare", "dirge",
+            case "war_song", "heal_song", "guard_song", "wind_song", "discord", "lullaby", "rhapsody", "fanfare", "dirge", "harvest_song",
                  "flame_melody", "haste_tune", "mana_chord", "seal_melody", "thunder_tune", "ward_melody", "drain_tune" -> Bard.start(c, Bard.SONG_SECONDS);
             case "perform" -> Bard.perform(c);
             case "sonic_boom" -> sonicBoom(c);

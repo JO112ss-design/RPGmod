@@ -55,6 +55,17 @@ final class NewJobTests {
             case "boosts" -> skillBoosts(level, p);
             case "robes" -> robes(level, p);
             case "hitwin" -> hitWindows(level, p);
+            case "harvest" -> { // the harvest song: hunger and saturation back over the song
+                become(p, "bard");
+                JobData hd = JobManager.data(p);
+                hd.devUnlockAll();
+                p.getFoodData().setFoodLevel(2);
+                p.getFoodData().setSaturation(0);
+                SkillExecutor.execute(p, JobDefs.skill("harvest_song"), JobManager.powerMultiplier(p, JobDefs.skill("harvest_song")));
+                hd.setSongPoints(JobData.MAX_SONG_POINTS);
+                for (int at : new int[] {120, 280, 400}) SkillTasks.later(at, () -> log("harvest: {}s food {} saturation {} performing {}", at / 20,
+                        p.getFoodData().getFoodLevel(), String.format("%.1f", p.getFoodData().getSaturationLevel()), com.jo112ss.rpgmod.job.Bard.performing(p)));
+            }
             case "spearshield" -> { // a lancer with a shield in the off hand: right click should raise the shield
                 become(p, "lancer");
                 p.setItemSlot(net.minecraft.world.entity.EquipmentSlot.OFFHAND, new ItemStack(ModItems.get(com.jo112ss.rpgmod.item.WeaponType.SHIELD, WeaponMaterial.IRON)));
