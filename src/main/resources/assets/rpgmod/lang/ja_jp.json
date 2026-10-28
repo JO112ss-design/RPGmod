@@ -1288,5 +1288,6 @@
   "rpgmod.part.robe_boots.1": "左かかと",
   "rpgmod.part.robe_boots.2": "右かかと",
   "rpgmod.part.robe_boots.3": "右つま先",
-  "rpgmod.tooltip.light": "軽量武器：振りが速く全部当たるぶん、通常攻撃のダメージ ×%s（スキルには影響なし）"
+  "rpgmod.tooltip.light": "軽量武器：振りが速く全部当たるぶん、通常攻撃のダメージ ×%s（スキルには影響なし）",
+  "rpgmod.tooltip.bow_mult": "弓：引き絞りに時間がかかり矢も使うぶん、通常の矢のダメージ ×%s（スキルの矢には影響なし）"
 }

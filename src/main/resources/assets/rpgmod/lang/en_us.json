@@ -1288,5 +1288,6 @@
   "rpgmod.part.robe_boots.1": "Left heel",
   "rpgmod.part.robe_boots.2": "Right heel",
   "rpgmod.part.robe_boots.3": "Right toe",
-  "rpgmod.tooltip.light": "Light weapon: every quick swing lands, so normal hits x%s (skills unaffected)"
+  "rpgmod.tooltip.light": "Light weapon: every quick swing lands, so normal hits x%s (skills unaffected)",
+  "rpgmod.tooltip.bow_mult": "Bow: slower to draw and it uses arrows, so normal arrows x%s (skill arrows unaffected)"
 }
