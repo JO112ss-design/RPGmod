@@ -163,7 +163,7 @@ final class NewJobTests {
             Pirate.fire(p);
             int before = d.ammo();
             p.attack(t);
-            log("gun: bayonet hit loads a round {} -> {}", before, d.ammo());
+            log("gun: bayonet hit (no round loaded any more) {} -> {}", before, d.ammo());
         });
     }
 

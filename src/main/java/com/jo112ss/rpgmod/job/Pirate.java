@@ -25,8 +25,7 @@ import net.minecraft.world.phys.Vec3;
 
 /**
  * The pirate's gun: right-click with the gunblade fires a shot along the crosshair. Six rounds, then
- * it reloads by itself (2s; sneak + right-click reloads early). A bayonet hit (normal melee attack)
- * loads one round. Powder kegs blow up when shot. The flag (jolly roger) gives endless rounds.
+ * it reloads by itself (2s; sneak + right-click reloads early). Powder kegs blow up when shot. The flag (jolly roger) gives endless rounds.
  */
 public final class Pirate {
     private Pirate() {}

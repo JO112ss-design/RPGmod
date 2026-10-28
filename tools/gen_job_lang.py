@@ -3,7 +3,7 @@ import json, os
 A = os.path.join(os.path.dirname(__file__), '..', 'src', 'main', 'resources', 'assets', 'rpgmod', 'lang')
 
 JOBS = {  # id: (ja name, ja role, ja desc, en name, en role, en desc)
- 'pirate': ('パイレーツ', '中衛・銃剣', '銃剣で戦う海賊。離れて撃ち、寄られたら突く。突くと弾が込め直される。大砲や火薬樽で戦場を荒らす。', 'Pirate', 'Mid-range: gunblade', 'A pirate with a gunblade: shoots from range and stabs up close (stabbing reloads the gun). Cannons and powder kegs on top.'),
+ 'pirate': ('パイレーツ', '中衛・銃剣', '銃剣で戦う海賊。離れて撃ち、寄られたら突く。大砲や火薬樽で戦場を荒らす。', 'Pirate', 'Mid-range: gunblade', 'A pirate with a gunblade: shoots from range and stabs up close. Cannons and powder kegs on top.'),
  'lancer': ('ランサー', '中衛・槍', '長い槍で間合いを支配する槍兵。槍の先で当てると威力が上がる。突進と投擲で戦場を駆ける。', 'Lancer', 'Mid-range: spear', 'Rules the distance with a long spear: hits with the far end hit harder. Charges and throws.'),
  'monk': ('モンク', '近接・連撃', '拳で戦う格闘家。攻撃を当てると気が溜まり、大技で一気に放つ。受け流しで反撃も得意。', 'Monk', 'Melee: combos', 'A fist fighter: hits build ki, the big moves spend it. Parries and counters.'),
  'bard': ('バード', '支援・演奏', '演奏で周りの味方を支える吟遊詩人。音符に合わせてクリックすると歌の効果が強くなる（演奏中は攻撃できない）。', 'Bard', 'Support: songs', 'Plays songs for the party around them. Clicking in time with the notes makes the song stronger (no attacking while playing).'),

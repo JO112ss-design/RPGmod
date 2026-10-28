@@ -66,8 +66,6 @@ public final class NewJobHooks {
                         ServerFx.of("x_hit", victim.position().add(0, victim.getBbHeight() * 0.6, 0)).vec(victim.position().subtract(sp.position())).a(0.9).color(0xFFE0A0).send(level);
                         level.playSound(null, victim.blockPosition(), SoundEvents.SPEAR_HIT.value(), SoundSource.PLAYERS, 0.8F, 1.4F);
                     }
-                } else if (held == WeaponType.GUNBLADE && d.gunJob()) {
-                    Pirate.load(sp, 1);
                 } else if (held == WeaponType.KNUCKLE && d.kiJob()) {
                     Monk.hit(sp);
                 }

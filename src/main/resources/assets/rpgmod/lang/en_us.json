@@ -736,7 +736,7 @@
   "rpgmod.type.lute": "Lute",
   "rpgmod.job.pirate": "Pirate",
   "rpgmod.job.pirate.role": "Mid-range: gunblade",
-  "rpgmod.job.pirate.desc": "A pirate with a gunblade: shoots from range and stabs up close (stabbing reloads the gun). Cannons and powder kegs on top.",
+  "rpgmod.job.pirate.desc": "A pirate with a gunblade: shoots from range and stabs up close. Cannons and powder kegs on top.",
   "rpgmod.job.lancer": "Lancer",
   "rpgmod.job.lancer.role": "Mid-range: spear",
   "rpgmod.job.lancer.desc": "Rules the distance with a long spear: hits with the far end hit harder. Charges and throws.",
