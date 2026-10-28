@@ -75,6 +75,8 @@ public final class DpsBench {
 
     public static final String DUMMY = "rpgmod_dps_dummy";
     public static final int LEVEL = 130, RUN = 300, PARTY_RUN = 1200, GAP = 30, GCD = 10;
+    /** MP share below which the MP skills (mana surge, mana well...) are used. */
+    public static final double MANA_LOW = 0.6;
     /** Ticks a bow job takes to draw fully: 20 draw ticks, 3 extra every 10 with the job weapon (x1.3). */
     public static final int BOW_DRAW = 16;
     /** The reference allies a job's party effects are played back onto: melee, bow, magic. */
@@ -453,6 +455,8 @@ public final class DpsBench {
         WeaponType weapon;
         Mob dummy;
         List<SkillDef> rotation = List.of(), ults = List.of();
+        /** Skills that give MP back: cast when MP is below {@link #MANA_LOW} of the max. */
+        List<SkillDef> mana = List.of();
         int busy;
         boolean bow;
         final Map<String, Integer> casts = new LinkedHashMap<>();
@@ -631,6 +635,7 @@ public final class DpsBench {
             p.getInventory().setSelectedSlot(6);
             JobStats.apply(p, d);
             List<SkillDef> rot = new ArrayList<>(), ult = new ArrayList<>();
+            mana = new ArrayList<>();
             for (String s : d.knownSkills()) {
                 SkillDef def = JobDefs.skill(s);
                 if (def == null) continue;
@@ -639,6 +644,10 @@ public final class DpsBench {
                     continue;
                 }
                 if (Bard.isSong(s)) continue; // set on the lute, not cast
+                if (def.effect() == SkillEffect.MANA && !NOT_DAMAGE.contains(s)) { // MP back: used when running low
+                    mana.add(def);
+                    continue;
+                }
                 if ("heal".equals(JobDefs.powerKind(def)) || def.effect() == SkillEffect.HEAL || def.effect() == SkillEffect.MANA || NOT_DAMAGE.contains(s)) continue;
                 rot.add(def);
             }
@@ -660,6 +669,7 @@ public final class DpsBench {
             Bard.stop(p);
             d.setMana(JobManager.maxMana(p));
             for (SkillDef s : rotation) d.setCooldown(s.id(), 0);
+            for (SkillDef s : mana) d.setCooldown(s.id(), 0);
             for (SkillDef s : ults) d.setCooldown(s.id(), 0);
             d.setCooldown("perform", 0);
             d.setCooldown("spell_perform", 0);
@@ -769,6 +779,7 @@ public final class DpsBench {
                 }
                 return;
             }
+            if (JobManager.data(p).mana() < MANA_LOW * JobManager.maxMana(p)) for (SkillDef s : mana) if (castNow(s)) return;
             boolean singer = JobManager.data(p).songJob();
             boolean playing = Bard.performing(p);
             for (SkillDef s : rotation) {
