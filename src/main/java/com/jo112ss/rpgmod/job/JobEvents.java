@@ -168,10 +168,14 @@ public final class JobEvents {
      */
     @SubscribeEvent
     public static void onWeaponBuffHit(net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent event) {
-        if (!(event.getSource().getEntity() instanceof ServerPlayer sp) || event.getSource().getDirectEntity() != sp) return;
+        if (!(event.getSource().getEntity() instanceof ServerPlayer sp)) return;
+        boolean hand = event.getSource().getDirectEntity() == sp;
+        // the fire weapon burns on arrows too (fire arrows); the coatings stay on blades
+        boolean arrow = event.getSource().getDirectEntity() instanceof net.minecraft.world.entity.projectile.arrow.AbstractArrow;
+        if (!hand && !arrow) return;
         if (event.getEntity() == sp || event.getAmount() <= 0) return;
         var target = event.getEntity();
-        int coat = SkillExecutor.activeCoat(sp);
+        int coat = hand ? SkillExecutor.activeCoat(sp) : -1;
         if (coat >= 0) SkillExecutor.applyCoat(target, coat, sp);
         var fire = sp.getEffect(com.jo112ss.rpgmod.registry.ModEffects.FIRE_WEAPON);
         if (fire != null) {

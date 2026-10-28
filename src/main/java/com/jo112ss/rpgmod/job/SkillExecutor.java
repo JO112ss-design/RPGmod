@@ -1576,7 +1576,7 @@ public final class SkillExecutor {
     }
 
     /**
-     * Fire weapon: every hit an ally deals by hand - swings, skills and spells, not arrows - deals
+     * Fire weapon: every hit an ally deals - swings, skills, spells and arrows - deals
      * this much more (a share) and sets enemies on fire. A share, not a flat amount: a flat bonus on
      * every hit made it worth twice as much on a fast weapon.
      */

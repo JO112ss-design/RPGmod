@@ -75,6 +75,8 @@ public final class DpsBench {
 
     public static final String DUMMY = "rpgmod_dps_dummy";
     public static final int LEVEL = 130, RUN = 300, PARTY_RUN = 1200, GAP = 30, GCD = 10;
+    /** Ticks a bow job takes to draw fully: 20 draw ticks, 3 extra every 10 with the job weapon (x1.3). */
+    public static final int BOW_DRAW = 16;
     /** The reference allies a job's party effects are played back onto: melee, bow, magic. */
     public static final List<String> ALLIES = List.of("champion", "sharpshooter", "spellmaster");
     /** Party size the gift is counted for: the job and five others. */
@@ -203,7 +205,7 @@ public final class DpsBench {
     /** Plain swings only, one job weapon each, with the plain-attack window as it was (10 ticks) and cut to the swing. */
     private static final List<String[]> WEAPONS = List.of(new String[] {"fighter", "SWORD"}, new String[] {"assassin", "DAGGER"},
             new String[] {"paladin", "MACE"}, new String[] {"fighter", "HAMMER"}, new String[] {"wizard", "STAFF"}, new String[] {"pirate", "GUNBLADE"},
-            new String[] {"lancer", "SPEAR"}, new String[] {"monk", "KNUCKLE"});
+            new String[] {"lancer", "SPEAR"}, new String[] {"monk", "KNUCKLE"}, new String[] {"ranger", "BOW"});
 
     /** Single effects kept on an ally (or the dummy) for a whole run: what each one is worth. */
     private record Probe(String name, Holder<MobEffect> effect, int amp, boolean onDummy) {}
@@ -736,6 +738,14 @@ public final class DpsBench {
             return true;
         }
 
+        /** A fully drawn arrow from the bow in hand. */
+        void shoot() {
+            ItemStack b = p.getMainHandItem();
+            p.getInventory().setItem(7, new ItemStack(Items.ARROW, 64));
+            b.getItem().releaseUsing(b, level, p, b.getUseDuration(p) - 20);
+            swings++;
+        }
+
         void act() {
             if (dummy == null || !dummy.isAlive()) return;
             if (busy > 0) {
@@ -743,6 +753,10 @@ public final class DpsBench {
                 return;
             }
             if (cur != null && cur.kind() == Kind.WEAPON) {
+                if (p.getMainHandItem().getItem() instanceof net.minecraft.world.item.BowItem) {
+                    if (t % BOW_DRAW == 0) shoot();
+                    return;
+                }
                 if (p.getAttackStrengthScale(0.5F) >= 1.0F) {
                     p.attack(dummy);
                     swings++;
@@ -770,12 +784,7 @@ public final class DpsBench {
                 return;
             }
             if (bow) {
-                if (t % 20 == 0) { // a fully drawn arrow a second
-                    ItemStack b = p.getMainHandItem();
-                    p.getInventory().setItem(7, new ItemStack(Items.ARROW, 64));
-                    b.getItem().releaseUsing(b, level, p, b.getUseDuration(p) - 20);
-                    swings++;
-                }
+                if (t % BOW_DRAW == 0) shoot(); // a fully drawn arrow as often as the job draws
             } else if (p.getAttackStrengthScale(0.5F) >= 1.0F) { // a player swinging when the bar is full
                 p.attack(dummy);
                 swings++;
