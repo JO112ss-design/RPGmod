@@ -67,6 +67,28 @@ public final class DpsBench {
         if (done && active == r) active = null;
     }
 
+    /** The dummy never dies (a big hit would otherwise end the run early). */
+    @SubscribeEvent
+    public static void onDeath(net.neoforged.neoforge.event.entity.living.LivingDeathEvent event) {
+        if (!event.getEntity().entityTags().contains(DUMMY)) return;
+        event.setCanceled(true);
+        event.getEntity().setHealth(event.getEntity().getMaxHealth());
+    }
+
+    /**
+     * Left out of the rotation: guarding, healing, getting away, drawing aggro, mana tricks - what a
+     * player would not spend time on to deal damage to one target.
+     */
+    public static final java.util.Set<String> NOT_DAMAGE = java.util.Set.of(
+            "meditate", "parry", "foresight", "counter_stance", "holy_guard", "guardian_dome", "iron_wall", "shield_wall", "cover", "provoke_shield",
+            "mana_barrier", "arcane_shield", "holy_barrier", "guardian_angel", "nourish", "spell_guard", "mana_meditate", "mana_share", "element_shift",
+            "hard_qi", "immovable", "dragon_scale", "smoke_bomb", "stealth", "vanish", "roll", "backstep", "shadow_leap", "blink", "phase_shift",
+            "decoy", "taunt", "provoke", "switcheroo", "rum", "grapple", "sky_step", "lucky_compass", "shadow_run", "mimic", "steal", "night_sight", "feather_rune",
+            "ward_rune", "chrono", "refine_qi");
+
+    /** Jobs whose damage comes from the lute's rhythm game: the benchmark cannot play it. */
+    public static final java.util.Set<String> SONG_JOBS = java.util.Set.of("bard", "maestro", "spellsinger");
+
     @SubscribeEvent
     public static void onDamage(LivingDamageEvent.Post event) {
         if (!counting || !event.getEntity().entityTags().contains(DUMMY)) return;
@@ -93,7 +115,8 @@ public final class DpsBench {
         String startJob = JobManager.data(p).jobId();
         boolean startAdv = JobManager.data(p).isAdvanced();
         int startLevel = JobManager.data(p).level();
-        log("{} jobs at Lv{}, diamond weapons, every skill, no stat or boost cells; {}s per run", jobs.size(), LEVEL, RUN / 20);
+        jobs.removeAll(SONG_JOBS);
+        log("{} jobs at Lv{}, diamond weapons, every skill, no stat or boost cells; {}s per run (bards left out: their damage is the rhythm game)", jobs.size(), LEVEL, RUN / 20);
         SkillTasks.later(40, () -> {
             com.jo112ss.rpgmod.job.fx.ServerFx.mute = true;
             level.getServer().tickRateManager().requestGameToSprint(200000);
@@ -232,7 +255,7 @@ public final class DpsBench {
                     ult.add(def);
                     continue;
                 }
-                if ("heal".equals(JobDefs.powerKind(def)) || def.effect() == SkillEffect.HEAL || def.effect() == SkillEffect.MANA) continue;
+                if ("heal".equals(JobDefs.powerKind(def)) || def.effect() == SkillEffect.HEAL || def.effect() == SkillEffect.MANA || NOT_DAMAGE.contains(s)) continue;
                 rot.add(def);
             }
             // buffs and debuffs first (they raise what follows), then the hardest hitters
