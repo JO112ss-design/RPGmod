@@ -74,7 +74,7 @@ public final class DpsBench {
     private DpsBench() {}
 
     public static final String DUMMY = "rpgmod_dps_dummy";
-    public static final int LEVEL = 130, RUN = 300, PARTY_RUN = 600, GAP = 30, GCD = 10;
+    public static final int LEVEL = 130, RUN = 300, PARTY_RUN = 1200, GAP = 30, GCD = 10;
     /** The reference allies a job's party effects are played back onto: melee, bow, magic. */
     public static final List<String> ALLIES = List.of("champion", "sharpshooter", "spellmaster");
     /** Party size the gift is counted for: the job and five others. */
@@ -203,7 +203,7 @@ public final class DpsBench {
     /** One run: the job fighting, what kind, the ultimate (ULT) or the job whose effects are played back (ALLY_REPLAY). */
     private record Spec(String job, Kind kind, int ult, String replayOf) {
         int length() {
-            return kind == Kind.PARTY || kind == Kind.ALLY_BASE || kind == Kind.ALLY_REPLAY ? PARTY_RUN : RUN;
+            return kind == Kind.PLAIN || kind == Kind.ULT ? RUN : PARTY_RUN;
         }
 
         @Override
@@ -223,6 +223,8 @@ public final class DpsBench {
         int skills;
         List<Ev> party = List.of();
         final Map<String, Double> gain = new LinkedHashMap<>();
+        /** This job's effects played back on each reference ally: the ally's damage per second. */
+        final Map<String, Double> replayed = new LinkedHashMap<>();
 
         Result(String job) {
             this.job = job;
@@ -291,7 +293,8 @@ public final class DpsBench {
         double bossHp = com.jo112ss.rpgmod.mob.MobConfig.kingHealth()
                 * com.jo112ss.rpgmod.mob.core.MobLevelMath.healthMultiplier(com.jo112ss.rpgmod.mob.MobConfig.rules(), LEVEL);
         List<Result> list = new ArrayList<>(results.values());
-        log("---- solo (damage per second against a Lv{} monster, {}s; boss = a Lv{} boss alone, {} health) ----", LEVEL, RUN / 20, LEVEL, Math.round(bossHp));
+        log("---- solo (damage per second against a Lv{} monster, {}s; then {}s without and with forged gear; boss = a Lv{} boss alone, {} health) ----",
+                LEVEL, RUN / 20, PARTY_RUN / 20, LEVEL, Math.round(bossHp));
         list.sort(Comparator.comparingDouble((Result r) -> -r.plain));
         for (Result r : list) {
             StringBuilder u = new StringBuilder();
@@ -300,20 +303,32 @@ public final class DpsBench {
                 u.append(" | +").append(r.ults.get(i)).append(' ').append(Math.round(r.withUlt.get(i)));
                 best = Math.max(best, r.withUlt.get(i));
             }
-            log("{} [{}] plain {} | geared {} ({}%){} | boss {}s ({} skills)", r.job, r.group, Math.round(r.plain), Math.round(r.geared),
-                    pct(r.geared / Math.max(1, r.plain) - 1), u, Math.round(bossHp / Math.max(1, best)), r.skills);
+            log("{} [{}] plain {}{} | {}s: {} -> geared {} ({}%) | boss {}s ({} skills)", r.job, r.group, Math.round(r.plain), u, PARTY_RUN / 20,
+                    Math.round(r.sustained), Math.round(r.geared), pct(r.geared / Math.max(1, r.sustained) - 1), Math.round(bossHp / Math.max(1, best)), r.skills);
         }
-        // the reference allies' own damage (played-back runs are compared with it)
+        // each reference ally's own damage: its run with nothing played back, and every run with the
+        // effects of a job that gives none (those are the same fight - their spread is the noise)
         double base = 0;
         int n = 0;
+        StringBuilder noise = new StringBuilder();
         for (String a : ALLIES) {
-            Result r = results.get(a);
-            if (r != null && r.allyBase > 0) {
-                base += r.allyBase;
-                n++;
+            Result ar = results.get(a);
+            List<Double> same = new ArrayList<>();
+            if (ar != null && ar.allyBase > 0) same.add(ar.allyBase);
+            for (Result r : results.values()) if (r.party.isEmpty() && r.replayed.containsKey(a)) same.add(r.replayed.get(a));
+            if (same.isEmpty()) continue;
+            double mean = same.stream().mapToDouble(Double::doubleValue).average().orElse(0);
+            double sd = Math.sqrt(same.stream().mapToDouble(v -> (v - mean) * (v - mean)).average().orElse(0));
+            noise.append(a).append(' ').append(Math.round(mean)).append(" +-").append(pct(sd / mean)).append("% (").append(same.size()).append(" runs) ");
+            for (Result r : results.values()) {
+                if (r.party.isEmpty()) r.gain.put(a, 0.0);
+                else if (r.replayed.containsKey(a)) r.gain.put(a, r.replayed.get(a) / mean - 1);
             }
+            base += mean;
+            n++;
         }
         double allyDps = n == 0 ? 0 : base / n;
+        log("allies on their own: {}", noise.toString().trim());
         log("---- party of {} ({}s; gift = what the job's effects add to each of the {} others, measured on {} - average ally {} DPS) ----",
                 PARTY, PARTY_RUN / 20, PARTY - 1, ALLIES, Math.round(allyDps));
         list.sort(Comparator.comparingDouble((Result r) -> -(r.sustained + (PARTY - 1) * allyDps * r.avgGain())));
@@ -496,9 +511,8 @@ public final class DpsBench {
                     log("  ally {} on its own: {} DPS", cur.job(), Math.round(dps));
                 }
                 case ALLY_REPLAY -> {
-                    double base = r.allyBase;
                     Result of = results.get(cur.replayOf());
-                    if (of != null && base > 0) of.gain.put(cur.job(), dps / base - 1);
+                    if (of != null) of.replayed.put(cur.job(), dps);
                 }
             }
             cur = null;
