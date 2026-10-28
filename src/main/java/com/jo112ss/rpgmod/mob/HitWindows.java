@@ -25,8 +25,9 @@ import net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent;
  *
  * <p>Now, for the hits that do not ignore it, each player has a cooldown of their own on each
  * monster, one per kind of hit (plain attacks, explosions...): the vanilla rule (half a second, only
- * the part over the last hit) still applies to one player's own plain attacks, but nobody else's
- * hits and no skill hit block them any more. Players hurting players, and monsters hurting
+ * the part over the last hit) still applies to one player's own hits of a kind - for plain swings
+ * a little shorter than the weapon's swing ({@link #plainWindow}) - but nobody else's hits and no
+ * skill hit block them any more. Players hurting players, and monsters hurting
  * anything, are left to vanilla.
  */
 @EventBusSubscriber(modid = RpgMod.MODID)
@@ -36,8 +37,21 @@ public final class HitWindows {
     /** Ticks after a fresh hit in which the next hit of the same kind only gets its excess through (vanilla: 10). */
     public static final int WINDOW = 10;
 
-    /** A player's last fresh hit of one kind on one monster. */
-    private record Hit(long tick, float amount) {}
+    /**
+     * Plain attacks: the window is cut to just under the weapon's own swing time, so every fully
+     * charged swing lands (knuckles and daggers swing faster than half a second, and attack speed
+     * buffs would otherwise make every other swing count for nothing). Off only for the dev bench.
+     */
+    public static boolean adaptive = true;
+
+    /** Window of a player's plain attacks: 90% of a full swing, at most {@link #WINDOW}. */
+    public static int plainWindow(Player p) {
+        if (!adaptive) return WINDOW;
+        return Math.max(1, Math.min(WINDOW, (int) Math.floor(p.getCurrentItemAttackStrengthDelay() * 0.9)));
+    }
+
+    /** A player's last fresh hit of one kind on one monster, and how long its window lasts. */
+    private record Hit(long tick, float amount, int window) {}
 
     private static final Map<LivingEntity, Map<String, Hit>> HITS = new WeakHashMap<>();
 
@@ -63,15 +77,16 @@ public final class HitWindows {
         if (amount <= 0) return;
         long now = victim.level().getGameTime();
         Map<String, Hit> hits = HITS.computeIfAbsent(victim, k -> new HashMap<>());
-        hits.values().removeIf(h -> now - h.tick() >= WINDOW);
+        hits.values().removeIf(h -> now - h.tick() >= h.window());
         String key = key(attacker.getUUID(), src);
+        int window = key.endsWith("/plain") && !(src.getDirectEntity() instanceof AbstractArrow) ? plainWindow(attacker) : WINDOW;
         Hit last = hits.get(key);
         if (debug) RpgMod.LOGGER.info("[AUTOTEST] hit window {} amount {} last {} vanilla cooldown {} canceled {}", key.substring(key.indexOf('/') + 1), amount, last,
                 victim.damageCooldownTime, event.isCanceled());
         // vanilla's shared cooldown never blocks it: the player's own decides below
         victim.damageCooldownTime = 0;
         if (last == null) {
-            hits.put(key, new Hit(now, amount));
+            hits.put(key, new Hit(now, amount, window));
             return;
         }
         // inside this player's own cooldown for this kind of hit: only what it has over the last one
@@ -82,6 +97,6 @@ public final class HitWindows {
         }
         testCut++;
         event.setAmount(amount - last.amount());
-        hits.put(key, new Hit(last.tick(), amount));
+        hits.put(key, new Hit(last.tick(), amount, last.window()));
     }
 }

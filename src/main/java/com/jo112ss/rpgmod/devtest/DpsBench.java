@@ -198,7 +198,12 @@ public final class DpsBench {
 
     // ------------------------------------------------------------------ the runs
 
-    private enum Kind { PLAIN, ULT, GEAR, PARTY, ALLY_BASE, ALLY_REPLAY, PROBE }
+    private enum Kind { PLAIN, ULT, GEAR, PARTY, ALLY_BASE, ALLY_REPLAY, PROBE, WEAPON }
+
+    /** Plain swings only, one job weapon each, with the plain-attack window as it was (10 ticks) and cut to the swing. */
+    private static final List<String[]> WEAPONS = List.of(new String[] {"fighter", "SWORD"}, new String[] {"assassin", "DAGGER"},
+            new String[] {"paladin", "MACE"}, new String[] {"fighter", "HAMMER"}, new String[] {"wizard", "STAFF"}, new String[] {"pirate", "GUNBLADE"},
+            new String[] {"lancer", "SPEAR"}, new String[] {"monk", "KNUCKLE"});
 
     /** Single effects kept on an ally (or the dummy) for a whole run: what each one is worth. */
     private record Probe(String name, Holder<MobEffect> effect, int amp, boolean onDummy) {}
@@ -221,7 +226,7 @@ public final class DpsBench {
         }
 
         int length() {
-            return kind == Kind.PLAIN || kind == Kind.ULT ? RUN : PARTY_RUN;
+            return kind == Kind.PLAIN || kind == Kind.ULT ? RUN : kind == Kind.WEAPON ? 600 : PARTY_RUN;
         }
 
         @Override
@@ -265,6 +270,10 @@ public final class DpsBench {
         ItemStack[] armour = new ItemStack[4];
         for (int i = 0; i < 4; i++) armour[i] = p.getItemBySlot(ARMOUR[i]).copy();
         List<Spec> queue = new ArrayList<>();
+        for (String[] w : WEAPONS) {
+            queue.add(new Spec(w[0], Kind.WEAPON, 0, w[1] + "/10"));
+            queue.add(new Spec(w[0], Kind.WEAPON, 1, w[1] + "/cut"));
+        }
         for (String j : jobs) {
             queue.add(new Spec(j, Kind.PLAIN, 0, null));
             queue.add(new Spec(j, Kind.ULT, 0, null));
@@ -293,6 +302,7 @@ public final class DpsBench {
                 level.getServer().tickRateManager().stopSprinting();
                 recording = false;
                 partyAlly = null;
+                com.jo112ss.rpgmod.mob.HitWindows.adaptive = true;
                 report(results);
                 log("took {}s", (System.currentTimeMillis() - t0) / 1000);
                 JobData d = JobManager.data(p);
@@ -376,6 +386,9 @@ public final class DpsBench {
         }
         log("---- end ----");
     }
+
+    /** Plain-swing runs per weapon and window. */
+    private static final Map<String, Double> WEAPON_DPS = new LinkedHashMap<>();
 
     /** Probe runs: effect -> ally -> damage per second. */
     private static final Map<String, Map<String, Double>> PROBED = new LinkedHashMap<>();
@@ -478,6 +491,13 @@ public final class DpsBench {
                     return false;
                 }
                 gear(p, weapon, cur.kind() == Kind.GEAR);
+                if (cur.kind() == Kind.WEAPON) {
+                    WeaponType w = WeaponType.valueOf(cur.replayOf().substring(0, cur.replayOf().indexOf('/')));
+                    p.getInventory().setItem(6, new ItemStack(ModItems.get(w, WeaponMaterial.DIAMOND)));
+                    com.jo112ss.rpgmod.mob.HitWindows.adaptive = cur.ult() == 1;
+                } else {
+                    com.jo112ss.rpgmod.mob.HitWindows.adaptive = true;
+                }
                 replay = Map.of();
                 if (cur.kind() == Kind.ALLY_REPLAY) {
                     Result of = results.get(cur.replayOf());
@@ -555,6 +575,17 @@ public final class DpsBench {
                 case ALLY_REPLAY -> {
                     Result of = results.get(cur.replayOf());
                     if (of != null) of.replayed.put(cur.job(), dps);
+                }
+                case WEAPON -> {
+                    String w = cur.replayOf();
+                    WEAPON_DPS.put(w, dps);
+                    log("  weapon {} ({}): {} DPS, {} hits of {} swings, swing {} ticks", w, cur.job(), Math.round(dps), basicHits, swings,
+                            String.format("%.1f", p.getCurrentItemAttackStrengthDelay()));
+                    if (w.endsWith("/cut")) {
+                        String base = w.substring(0, w.indexOf('/'));
+                        Double before = WEAPON_DPS.get(base + "/10");
+                        if (before != null) log("weapon {}: plain attacks {}% with the window cut to the swing", base, pct(dps / before - 1));
+                    }
                 }
                 case PROBE -> {
                     PROBED.computeIfAbsent(cur.probe().name(), k -> new LinkedHashMap<>()).put(cur.job(), dps);
@@ -710,6 +741,14 @@ public final class DpsBench {
                 busy--;
                 return;
             }
+            if (cur != null && cur.kind() == Kind.WEAPON) {
+                if (p.getAttackStrengthScale(0.5F) >= 1.0F) {
+                    p.attack(dummy);
+                    swings++;
+                    p.swing(net.minecraft.world.InteractionHand.MAIN_HAND, p.getMainHandItem().getAttackAnimation(), true);
+                }
+                return;
+            }
             boolean singer = JobManager.data(p).songJob();
             boolean playing = Bard.performing(p);
             for (SkillDef s : rotation) {
@@ -727,7 +766,7 @@ public final class DpsBench {
                     b.getItem().releaseUsing(b, level, p, b.getUseDuration(p) - 20);
                     swings++;
                 }
-            } else if (p.getAttackStrengthScale(0.5F) >= 0.95F) {
+            } else if (p.getAttackStrengthScale(0.5F) >= 1.0F) { // a player swinging when the bar is full
                 p.attack(dummy);
                 swings++;
                 p.swing(net.minecraft.world.InteractionHand.MAIN_HAND, p.getMainHandItem().getAttackAnimation(), true);
