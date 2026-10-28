@@ -52,6 +52,10 @@ public final class HealthScale {
     public static final ThreadLocal<String> SKILL = new ThreadLocal<>();
     /** Set while the regeneration effect heals (RegenerationMixin). */
     public static final ThreadLocal<Boolean> REGEN_TICK = ThreadLocal.withInitial(() -> false);
+    /** Set while instant health heals (RegenerationMixin): 2% of max health per vanilla point, like regeneration. */
+    public static final ThreadLocal<Boolean> POTION_HEAL = ThreadLocal.withInitial(() -> false);
+    /** Instant health: share of max health per vanilla point (I: 4 points = 8%, II: 16%; scaled by max health / 20 it was 20% / 40%). */
+    public static final double POTION_HEAL_PER_POINT = 0.02;
     /** Players with a skill's regeneration: until when, and how much each heal gives. */
     private static final java.util.Map<java.util.UUID, double[]> SKILL_REGEN = new java.util.HashMap<>();
 
@@ -80,6 +84,10 @@ public final class HealthScale {
     @SubscribeEvent
     public static void onHeal(LivingHealEvent event) {
         if (!(event.getEntity() instanceof Player p) || DIRECT.get()) return;
+        if (POTION_HEAL.get()) {
+            event.setAmount((float) (event.getAmount() * p.getMaxHealth() * POTION_HEAL_PER_POINT));
+            return;
+        }
         if (REGEN_TICK.get()) {
             event.setAmount((float) (event.getAmount() * p.getMaxHealth() * regenHeal(p)));
             return;

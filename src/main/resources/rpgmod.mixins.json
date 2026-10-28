@@ -7,7 +7,8 @@
     "PathThrottleMixin",
     "HealthCapMixin",
     "DungeonDimensionMixin",
-    "RegenerationMixin"
+    "RegenerationMixin",
+    "InstantHealthMixin"
   ],
   "client": [],
   "injectors": {

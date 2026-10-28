@@ -18,7 +18,7 @@ import net.minecraft.world.level.Level;
  */
 public class RecoveryPotionItem extends Item {
     /** Share of max health / max MP a potion gives back. */
-    public static final double SHARE = 0.3;
+    public static final double SHARE = 0.5, MANA_SHARE = 0.3;
     /** Seconds before another potion of the same kind can be drunk. */
     public static final float COOLDOWN = 10;
 
@@ -39,7 +39,7 @@ public class RecoveryPotionItem extends Item {
     public ItemStack finishUsingItem(ItemStack stack, Level level, LivingEntity entity) {
         if (!level.isClientSide() && entity instanceof ServerPlayer sp) {
             if (mana) {
-                double amount = JobManager.maxMana(sp) * SHARE;
+                double amount = JobManager.maxMana(sp) * MANA_SHARE;
                 JobManager.restoreMana(sp, amount);
                 sp.sendSystemMessage(Component.translatable("rpgmod.potion.mp_used", Math.round(amount)).withStyle(ChatFormatting.AQUA), true);
             } else {

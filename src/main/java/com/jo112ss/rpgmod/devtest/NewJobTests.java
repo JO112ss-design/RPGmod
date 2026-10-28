@@ -62,8 +62,13 @@ final class NewJobTests {
                 p.getFoodData().setFoodLevel(10); // no natural regeneration from food in the way (needs 18)
                 p.getFoodData().setSaturation(0);
                 p.setHealth(max * 0.1F);
-                p.addEffect(new net.minecraft.world.effect.MobEffectInstance(net.minecraft.world.effect.MobEffects.REGENERATION, 101, 0));
-                SkillTasks.later(105, () -> {
+                p.addEffect(new net.minecraft.world.effect.MobEffectInstance(net.minecraft.world.effect.MobEffects.INSTANT_HEALTH, 1, 1));
+                SkillTasks.later(2, () -> {
+                    log("regen: instant health II healed {}% of max health (16% expected)", String.format("%.1f", (p.getHealth() / max - 0.1F) * 100));
+                    p.setHealth(max * 0.1F);
+                });
+                SkillTasks.later(4, () -> p.addEffect(new net.minecraft.world.effect.MobEffectInstance(net.minecraft.world.effect.MobEffects.REGENERATION, 101, 0)));
+                SkillTasks.later(109, () -> {
                     log("regen: potion regeneration I 5s healed {}% of max health (2 heals x 2% expected)", String.format("%.1f", (p.getHealth() / max - 0.1F) * 100));
                     p.removeEffect(net.minecraft.world.effect.MobEffects.REGENERATION);
                     p.setHealth(max * 0.1F);
