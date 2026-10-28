@@ -63,6 +63,11 @@ public final class ForgeTooltips {
             tip.add(Math.min(1, tip.size()), Component.translatable("rpgmod.tooltip.bow_mult", String.format("%.2f", bowMult).replaceAll("0+$", "").replaceAll("\\.$", ""))
                     .withStyle(ChatFormatting.GREEN));
         }
+        double bowMult = com.jo112ss.rpgmod.job.JobConfig.SPEC.isLoaded() ? com.jo112ss.rpgmod.job.JobEvents.bowMultiplier(event.getItemStack()) : 1;
+        if (bowMult != 1) {
+            tip.add(Math.min(1, tip.size()), Component.translatable("rpgmod.tooltip.bow_mult", String.format("%.2f", bowMult).replaceAll("0+$", "").replaceAll("\\.$", ""),
+                    String.format("%.2f", com.jo112ss.rpgmod.job.JobConfig.BOW_BOSS_MULT.get()).replaceAll("0+$", "").replaceAll("\\.$", "")).withStyle(ChatFormatting.GREEN));
+        }
         double light = com.jo112ss.rpgmod.job.JobConfig.SPEC.isLoaded() ? com.jo112ss.rpgmod.job.JobEvents.lightMultiplier(event.getItemStack()) : 1;
         if (light != 1) {
             tip.add(Math.min(1, tip.size()), Component.translatable("rpgmod.tooltip.light", String.format("%.2f", light).replaceAll("0+$", "").replaceAll("\\.$", ""))

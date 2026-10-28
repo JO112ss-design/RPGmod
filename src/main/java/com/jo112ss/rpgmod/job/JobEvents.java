@@ -123,6 +123,26 @@ public final class JobEvents {
         if (mult != 1) event.setAmount((float) (event.getAmount() * mult));
     }
 
+    /** Normal-arrow multiplier of a bow or crossbow (1 for anything else). */
+    public static double bowMultiplier(net.minecraft.world.item.ItemStack weapon) {
+        return weapon.getItem() instanceof net.minecraft.world.item.ProjectileWeaponItem ? JobConfig.BOW_MULT.get() : 1;
+    }
+
+    /**
+     * Bows: a full draw takes longer than a sword swing (0.8s against 0.5s) and costs an arrow, so a
+     * normal arrow counts for {@link JobConfig#BOW_MULT} - about a sword's damage a second. Against a
+     * boss, which a bow fights from where it cannot reach, {@link JobConfig#BOW_BOSS_MULT} (about 70%
+     * of a sword). Skill arrows carry no bow and are left alone. Low: after the shooter's own attack is added.
+     */
+    @SubscribeEvent(priority = net.neoforged.bus.api.EventPriority.LOW)
+    public static void onBowHit(net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent event) {
+        if (!(event.getSource().getEntity() instanceof ServerPlayer sp) || event.getEntity() == sp) return;
+        if (!(event.getSource().getDirectEntity() instanceof net.minecraft.world.entity.projectile.arrow.AbstractArrow arrow) || arrow.getWeaponItem() == null) return;
+        if (!(arrow.getWeaponItem().getItem() instanceof net.minecraft.world.item.ProjectileWeaponItem)) return;
+        double mult = com.jo112ss.rpgmod.gem.GemDrops.isBoss(event.getEntity()) ? JobConfig.BOW_BOSS_MULT.get() : JobConfig.BOW_MULT.get();
+        if (mult != 1) event.setAmount((float) (event.getAmount() * mult));
+    }
+
     /** After the weapon buffs (fire weapon...) are added: they come with every hit too, so they are halved with it. */
     @SubscribeEvent(priority = net.neoforged.bus.api.EventPriority.LOW)
     public static void onLightHit(net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent event) {
