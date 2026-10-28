@@ -50,7 +50,7 @@ public final class AdvancedHooks {
     public static final double EMPOWERED_MULT = 2.5;
     /** Exposed: +30% damage taken per level. */
     public static final double EXPOSED_PER_LEVEL = 0.3;
-    /** Asura: +40% damage at full health, rising to +150% at (almost) none; 15% of the damage dealt heals. */
+    /** Asura: +40% damage at full health, rising to +150% at (almost) none; 15% of normal attacks' damage heals. */
     public static final double ASURA_MIN = 0.4, ASURA_MAX = 1.5, ASURA_LIFESTEAL = 0.15;
     /** Cover: share of an ally's damage the guardian takes instead. */
     public static final double COVER_SHARE = 0.7, COVER_RANGE = 10;
@@ -161,7 +161,9 @@ public final class AdvancedHooks {
 
     @SubscribeEvent
     public static void onDamaged(LivingDamageEvent.Post event) {
-        if (event.getSource().getEntity() instanceof ServerPlayer sp && sp != event.getEntity() && sp.hasEffect(ModEffects.ASURA) && !event.getSource().is(Venom.DAMAGE)) {
+        // only normal attacks heal: skill hits would pay back the blood price and let it go on for ever
+        if (event.getSource().getEntity() instanceof ServerPlayer sp && sp != event.getEntity() && sp.hasEffect(ModEffects.ASURA)
+                && event.getSource().getDirectEntity() == sp && event.getSource().is(DamageTypes.PLAYER_ATTACK)) {
             float heal = (float) (event.getHealthDamage() * ASURA_LIFESTEAL);
             if (heal > 0) com.jo112ss.rpgmod.job.HealthScale.heal(sp, heal);
         }
