@@ -40,8 +40,9 @@ public final class HitWindows {
 
     private static final Map<LivingEntity, Map<String, Hit>> HITS = new WeakHashMap<>();
 
-    /** Dev test: blocked and cut hits are counted. */
+    /** Dev test: blocked and cut hits are counted; debug logs each decision. */
     public static int testBlocked, testCut;
+    public static boolean debug;
 
     /** Which cooldown a hit counts against: the attacker and the kind of hit. */
     private static String key(UUID attacker, DamageSource src) {
@@ -65,6 +66,8 @@ public final class HitWindows {
         hits.values().removeIf(h -> now - h.tick() >= WINDOW);
         String key = key(attacker.getUUID(), src);
         Hit last = hits.get(key);
+        if (debug) RpgMod.LOGGER.info("[AUTOTEST] hit window {} amount {} last {} vanilla cooldown {} canceled {}", key.substring(key.indexOf('/') + 1), amount, last,
+                ((com.jo112ss.rpgmod.mixin.EntityInvulnerableAccessor) victim).rpgmod$getInvulnerableTime(), event.isCanceled());
         // vanilla's shared cooldown never blocks it: the player's own decides below
         ((com.jo112ss.rpgmod.mixin.EntityInvulnerableAccessor) victim).rpgmod$setInvulnerableTime(0);
         if (last == null) {

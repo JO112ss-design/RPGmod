@@ -9,4 +9,7 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 public interface EntityInvulnerableAccessor {
     @Accessor("invulnerableTime")
     void rpgmod$setInvulnerableTime(int ticks);
+
+    @Accessor("invulnerableTime")
+    int rpgmod$getInvulnerableTime();
 }

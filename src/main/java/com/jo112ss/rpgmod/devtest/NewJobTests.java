@@ -1475,10 +1475,12 @@ final class NewJobTests {
         var skillKey = net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.DAMAGE_TYPE,
                 net.minecraft.resources.Identifier.fromNamespaceAndPath(com.jo112ss.rpgmod.RpgMod.MODID, "skill"));
         StringBuilder sb = new StringBuilder();
-        java.util.function.BiConsumer<String, Runnable> hit = (name, r) -> {
+        java.util.function.BiConsumer<String, java.util.function.BooleanSupplier> hit = (name, r) -> {
             float h0 = m.getHealth();
-            r.run();
-            sb.append(name).append('=').append(String.format("%.1f", h0 - m.getHealth())).append("; ");
+            com.jo112ss.rpgmod.mob.HitWindows.debug = true;
+            boolean ok = r.getAsBoolean();
+            com.jo112ss.rpgmod.mob.HitWindows.debug = false;
+            sb.append(name).append('=').append(String.format("%.1f", h0 - m.getHealth())).append(ok ? "" : " (refused)").append("; ");
         };
         SkillTasks.later(5, () -> {
             com.jo112ss.rpgmod.mob.HitWindows.testBlocked = 0;
