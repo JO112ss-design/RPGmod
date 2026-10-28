@@ -1,0 +1,14 @@
+{
+  "layers": {
+    "humanoid": [
+      {
+        "texture": "rpgmod:robe_diamond"
+      }
+    ],
+    "humanoid_leggings": [
+      {
+        "texture": "rpgmod:robe_diamond"
+      }
+    ]
+  }
+}

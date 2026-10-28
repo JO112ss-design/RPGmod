@@ -1,44 +1,57 @@
 package com.jo112ss.rpgmod.smithing.core;
 
 /**
- * Random options. Weapons and armor draw from separate pools (an option may be in both with
+ * Random options. Weapons and armour draw from separate pools (an option may be in both with
  * different ranges). Values are rolled uniformly in the pool's range and rounded to {@link #step}.
  * Percent options store the percentage (5.0 = +5%).
+ *
+ * <p>Armour comes in two kinds with their own pools: metal armour (and shields) is for fighting up
+ * close - it can roll attack, attack speed, critical and boss damage - and robes are the casters' -
+ * magic power, cast speed and MP. Health and the defensive options are in both. A piece's own kind
+ * of option is twice as likely as a shared one.
  */
 public enum OptionType {
-    //                        id                     step  percent  weapon range   armor range
-    ATTACK_DAMAGE("attack_damage", 0.1, true, 3, 8, NaN(), NaN()),
-    ATTACK_SPEED("attack_speed", 0.1, true, 3, 8, NaN(), NaN()),
-    CRIT_CHANCE("crit_chance", 0.1, true, 2, 5, NaN(), NaN()),
-    CRIT_DAMAGE("crit_damage", 0.1, true, 5, 15, NaN(), NaN()),
-    BOSS_DAMAGE("boss_damage", 0.1, true, 4, 10, NaN(), NaN()),
+    //                        id                     step  percent  weapon range   armor range  armour kind
+    ATTACK_DAMAGE("attack_damage", 0.1, true, 3, 8, 2, 5, Side.MELEE),
+    ATTACK_SPEED("attack_speed", 0.1, true, 3, 8, 2, 5, Side.MELEE),
+    CRIT_CHANCE("crit_chance", 0.1, true, 2, 5, 1, 3, Side.MELEE),
+    CRIT_DAMAGE("crit_damage", 0.1, true, 5, 15, 3, 8, Side.MELEE),
+    BOSS_DAMAGE("boss_damage", 0.1, true, 4, 10, 2, 5, Side.MELEE),
     // max health is a percentage now that players reach hundreds (old flat 1-2 options read as 1-2%)
-    MAX_HEALTH("max_health", 1, true, 2, 5, 2, 5),
-    ARMOR("armor", 1, false, 1, 2, 1, 2),
-    MOVEMENT_SPEED("movement_speed", 0.1, true, 2, 5, 1, 3),
-    DURABILITY("durability", 1, true, 10, 25, 10, 25),
-    EXPERIENCE("experience", 0.1, true, 5, 12, 3, 8),
-    KNOCKBACK_RESISTANCE("knockback_resistance", 0.1, true, 5, 15, 3, 8),
-    ARMOR_TOUGHNESS("armor_toughness", 0.1, false, NaN(), NaN(), 0.5, 1.5),
-    DAMAGE_REDUCTION("damage_reduction", 0.1, true, NaN(), NaN(), 2, 4),
-    BOSS_RESISTANCE("boss_resistance", 0.1, true, NaN(), NaN(), 3, 8),
-    // magic options: weapons only roll them on magic staffs (see OptionRoller)
-    MAGIC_POWER("magic_power", 0.1, true, 5, 12, 2, 5),
-    CAST_SPEED("cast_speed", 0.1, true, 5, 12, 2, 5),
-    // mana: every weapon and armour piece can roll them
-    MAX_MANA("max_mana", 1, false, 10, 25, 5, 12),
-    MANA_REGEN("mana_regen", 0.1, true, 8, 20, 4, 10),
+    MAX_HEALTH("max_health", 1, true, 2, 5, 2, 5, Side.BOTH),
+    ARMOR("armor", 1, false, 1, 2, 1, 2, Side.BOTH),
+    MOVEMENT_SPEED("movement_speed", 0.1, true, 2, 5, 1, 3, Side.BOTH),
+    DURABILITY("durability", 1, true, 10, 25, 10, 25, Side.BOTH),
+    EXPERIENCE("experience", 0.1, true, 5, 12, 3, 8, Side.BOTH),
+    KNOCKBACK_RESISTANCE("knockback_resistance", 0.1, true, 5, 15, 3, 8, Side.BOTH),
+    ARMOR_TOUGHNESS("armor_toughness", 0.1, false, NaN(), NaN(), 0.5, 1.5, Side.BOTH),
+    DAMAGE_REDUCTION("damage_reduction", 0.1, true, NaN(), NaN(), 2, 4, Side.BOTH),
+    BOSS_RESISTANCE("boss_resistance", 0.1, true, NaN(), NaN(), 3, 8, Side.BOTH),
+    // magic options: weapons only roll them on magic staffs (see OptionRoller), armour only on robes
+    MAGIC_POWER("magic_power", 0.1, true, 5, 12, 2, 5, Side.MAGIC),
+    CAST_SPEED("cast_speed", 0.1, true, 5, 12, 2, 5, Side.MAGIC),
+    // mana: every weapon can roll them, armour only robes
+    MAX_MANA("max_mana", 1, false, 10, 25, 5, 12, Side.MAGIC),
+    MANA_REGEN("mana_regen", 0.1, true, 8, 20, 4, 10, Side.MAGIC),
     // gems only (forging never rolls it): flat attack, on the x3 attack scale
-    ATTACK_FLAT("attack_flat", 1, false, NaN(), NaN(), NaN(), NaN()),
+    ATTACK_FLAT("attack_flat", 1, false, NaN(), NaN(), NaN(), NaN(), Side.BOTH),
     // gems only: flat magic attack, the casters' counterpart of ATTACK_FLAT
-    MAGIC_FLAT("magic_flat", 1, false, NaN(), NaN(), NaN(), NaN());
+    MAGIC_FLAT("magic_flat", 1, false, NaN(), NaN(), NaN(), NaN(), Side.BOTH);
+
+    /** The option pools forging rolls from: weapons, metal armour and shields, robes. */
+    public enum Pool { WEAPON, ARMOR, ROBE }
+
+    /** Which kind of armour an option is rolled on. */
+    public enum Side { BOTH, MELEE, MAGIC }
 
     public final String id;
     public final double step;
     public final boolean percent;
     public final double weaponMin, weaponMax, armorMin, armorMax;
+    public final Side side;
 
-    OptionType(String id, double step, boolean percent, double weaponMin, double weaponMax, double armorMin, double armorMax) {
+    OptionType(String id, double step, boolean percent, double weaponMin, double weaponMax, double armorMin, double armorMax, Side side) {
+        this.side = side;
         this.id = id;
         this.step = step;
         this.percent = percent;
@@ -72,6 +85,18 @@ public enum OptionType {
 
     public boolean inPool(boolean armor) {
         return !Double.isNaN(armor ? armorMin : weaponMin);
+    }
+
+    /** Whether forging can roll this option in a pool (weapons: the staff rule is the roller's). */
+    public boolean inPool(Pool pool) {
+        if (pool == Pool.WEAPON) return inPool(false);
+        if (!inPool(true)) return false;
+        return side == Side.BOTH || side == (pool == Pool.ROBE ? Side.MAGIC : Side.MELEE);
+    }
+
+    /** Draw weight in a pool: an armour piece's own kind of option is twice as likely as a shared one. */
+    public int weight(Pool pool) {
+        return pool != Pool.WEAPON && side != Side.BOTH ? 2 : 1;
     }
 
     public double min(boolean armor) {

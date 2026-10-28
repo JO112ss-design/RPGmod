@@ -23,6 +23,8 @@ public final class ModItems {
                 DeferredItem<? extends Item> item;
                 if (type == WeaponType.SHIELD) {
                     item = ModRegistries.ITEMS.registerItem(name, Item::new, p -> Shields.properties(p, mat));
+                } else if (type.isRobe()) {
+                    item = ModRegistries.ITEMS.registerItem(name, Item::new, p -> RobeArmor.properties(p, type, mat));
                 } else if (type.isBow()) {
                     item = ModRegistries.ITEMS.registerItem(name, p -> new RpgBowItem(mat, p), p -> {
                         p = p.durability(mat.bowDurability).enchantable(Math.max(1, mat.tool.enchantmentValue() / 10)).repairable(mat.tool.repairItems());
@@ -101,12 +103,21 @@ public final class ModItems {
         if (reverse == null) {
             Map<Item, WeaponType> m = new java.util.HashMap<>();
             for (WeaponType t : WeaponType.values()) {
-                if (t.isArmor() || t == WeaponType.ARROW) continue; // arrows are ammunition, not a weapon
+                if (t.wearable() || t == WeaponType.ARROW) continue; // arrows are ammunition, not a weapon
                 for (WeaponMaterial mat : WeaponMaterial.values()) m.put(get(t, mat), t);
             }
             reverse = m;
         }
         return reverse.get(item);
+    }
+
+    /** Robe piece type of an item, or null. */
+    public static WeaponType robeOf(Item item) {
+        for (WeaponType t : WeaponType.values()) {
+            if (!t.isRobe()) continue;
+            for (WeaponMaterial mat : WeaponMaterial.values()) if (get(t, mat) == item) return t;
+        }
+        return null;
     }
 
     /** Material of one of the RPG weapons, or null. */

@@ -1,0 +1,10 @@
+{
+  "replace": false,
+  "values": [
+    "rpgmod:copper_robe_hood",
+    "rpgmod:iron_robe_hood",
+    "rpgmod:gold_robe_hood",
+    "rpgmod:diamond_robe_hood",
+    "rpgmod:netherite_robe_hood"
+  ]
+}

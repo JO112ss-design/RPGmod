@@ -34,7 +34,15 @@ public enum WeaponType {
     /** Shields (copper / iron / diamond, netherite by smithing): a vanilla shield + 3 ingots. */
     SHIELD("shield", 0, 0, 3, List.of(new Extra(() -> Items.SHIELD, 1)), TargetProfile.SHIELD, 10, 140),
     /** Vanilla arrows, forged in a batch (iron only): 1 iron + 1 stick, 4 to 32 arrows by quality. */
-    ARROW("arrow", 0, 0, 1, List.of(new Extra(() -> Items.STICK, 1)), TargetProfile.ARROW, 6, 148);
+    ARROW("arrow", 0, 0, 1, List.of(new Extra(() -> Items.STICK, 1)), TargetProfile.ARROW, 6, 148),
+    /**
+     * Robes: the casters' armour (see {@link RobeArmor}) - 60% of a metal piece's armour, and their
+     * forging options lean to magic (magic power, cast speed, MP) where metal armour's lean to attack.
+     */
+    ROBE_HOOD("robe_hood", 0, 0, 2, List.of(new Extra(() -> Items.WHITE_WOOL, 3)), TargetProfile.HELMET, 10, 140),
+    ROBE("robe", 0, 0, 4, List.of(new Extra(() -> Items.WHITE_WOOL, 5)), TargetProfile.CHESTPLATE, 10, 140),
+    ROBE_PANTS("robe_pants", 0, 0, 3, List.of(new Extra(() -> Items.WHITE_WOOL, 4)), TargetProfile.LEGGINGS, 10, 140),
+    ROBE_BOOTS("robe_boots", 0, 0, 2, List.of(new Extra(() -> Items.WHITE_WOOL, 2)), TargetProfile.BOOTS, 10, 140);
 
     public record Extra(Supplier<Item> item, int count) {}
 
@@ -67,9 +75,25 @@ public enum WeaponType {
         return this == HELMET || this == CHESTPLATE || this == LEGGINGS || this == BOOTS;
     }
 
-    /** Armor and shields roll from the armor option pool. */
+    /** The casters' cloth armour. */
+    public boolean isRobe() {
+        return this == ROBE_HOOD || this == ROBE || this == ROBE_PANTS || this == ROBE_BOOTS;
+    }
+
+    /** Anything worn in an armour slot: metal armour and robes. */
+    public boolean wearable() {
+        return isArmor() || isRobe();
+    }
+
+    /** Armor, robes and shields roll from the armour option pools. */
     public boolean defensive() {
-        return isArmor() || this == SHIELD;
+        return wearable() || this == SHIELD;
+    }
+
+    /** Which option pool forging rolls from. */
+    public com.jo112ss.rpgmod.smithing.core.OptionType.Pool optionPool() {
+        if (isRobe()) return com.jo112ss.rpgmod.smithing.core.OptionType.Pool.ROBE;
+        return defensive() ? com.jo112ss.rpgmod.smithing.core.OptionType.Pool.ARMOR : com.jo112ss.rpgmod.smithing.core.OptionType.Pool.WEAPON;
     }
 
     /** Weapons that carry magic attack (and roll the magic forging options): staffs and lutes. */

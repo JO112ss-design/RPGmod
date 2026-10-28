@@ -62,10 +62,11 @@ public class ForgeScreen extends AbstractContainerScreen<ForgeMenu> {
         if (t == com.jo112ss.rpgmod.item.WeaponType.ARROW) return TYPES_PER_ROW + 5;
         if (t == com.jo112ss.rpgmod.item.WeaponType.SHIELD) return TYPES_PER_ROW + 4;
         if (t.isArmor()) return TYPES_PER_ROW + t.ordinal() - com.jo112ss.rpgmod.item.WeaponType.HELMET.ordinal();
+        if (t.isRobe()) return TYPES_PER_ROW + 6 + t.ordinal() - com.jo112ss.rpgmod.item.WeaponType.ROBE_HOOD.ordinal(); // robes end the armour row
         int k = 0;
         for (int j = 0; j < i; j++) {
             var u = ForgeableWeapons.TYPES.get(j);
-            if (!u.isArmor() && u != com.jo112ss.rpgmod.item.WeaponType.SHIELD && u != com.jo112ss.rpgmod.item.WeaponType.ARROW) k++;
+            if (!u.wearable() && u != com.jo112ss.rpgmod.item.WeaponType.SHIELD && u != com.jo112ss.rpgmod.item.WeaponType.ARROW) k++;
         }
         return k;
     }

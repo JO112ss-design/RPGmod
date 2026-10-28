@@ -38,6 +38,11 @@ public final class ArmorTiers {
     };
     private static final Identifier OFF_ID = Identifier.fromNamespaceAndPath(RpgMod.MODID, "armor_tier_off");
 
+    /** The extra armour of a metal piece of this material (piece: helmet, chest, legs, boots). */
+    public static int tierBonus(WeaponMaterial mat, int piece) {
+        return TIER[Math.min(mat.ordinal(), TIER.length - 1)][piece];
+    }
+
     /** The extra armour of one armour piece (0 for anything else). */
     public static int bonus(Item item) {
         for (int i = 0; i < PIECES.length; i++) {

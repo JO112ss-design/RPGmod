@@ -53,6 +53,7 @@ final class NewJobTests {
             case "monk" -> monk(level, p, dummies);
             case "kishot" -> kiShot(level, p);
             case "boosts" -> skillBoosts(level, p);
+            case "robes" -> robes(level, p);
             case "dps" -> DpsBench.start(level, p);
             case "bard" -> become(p, "bard");
             case "hybrids" -> hybrids(level, p, dummies);
@@ -1340,6 +1341,91 @@ final class NewJobTests {
      * Skill boost cells: every job's panel has them next to its skills; learning one needs the skill;
      * owned, they raise the skill's power, cut its cooldown or mana.
      */
+    /**
+     * Robes: a full iron set on (armour against the iron metal set), the option pools of metal
+     * armour and robes (which options, how often), and forged robe / armour options taking effect.
+     */
+    private static void robes(ServerLevel level, ServerPlayer p) {
+        com.jo112ss.rpgmod.item.WeaponType[] robe = {com.jo112ss.rpgmod.item.WeaponType.ROBE_HOOD, com.jo112ss.rpgmod.item.WeaponType.ROBE,
+                com.jo112ss.rpgmod.item.WeaponType.ROBE_PANTS, com.jo112ss.rpgmod.item.WeaponType.ROBE_BOOTS};
+        com.jo112ss.rpgmod.item.WeaponType[] metal = {com.jo112ss.rpgmod.item.WeaponType.HELMET, com.jo112ss.rpgmod.item.WeaponType.CHESTPLATE,
+                com.jo112ss.rpgmod.item.WeaponType.LEGGINGS, com.jo112ss.rpgmod.item.WeaponType.BOOTS};
+        net.minecraft.world.entity.EquipmentSlot[] slots = {net.minecraft.world.entity.EquipmentSlot.HEAD, net.minecraft.world.entity.EquipmentSlot.CHEST,
+                net.minecraft.world.entity.EquipmentSlot.LEGS, net.minecraft.world.entity.EquipmentSlot.FEET};
+        ItemStack[] saved = new ItemStack[4];
+        for (int i = 0; i < 4; i++) saved[i] = p.getItemBySlot(slots[i]).copy();
+        // armour of every material: robe set against metal set
+        StringBuilder sb = new StringBuilder();
+        for (var mat : com.jo112ss.rpgmod.item.WeaponMaterial.values()) {
+            for (int i = 0; i < 4; i++) p.setItemSlot(slots[i], new ItemStack(com.jo112ss.rpgmod.item.ModItems.get(metal[i], mat)));
+            double m = com.jo112ss.rpgmod.mob.Defense.armor(p), mt = com.jo112ss.rpgmod.mob.Defense.toughness(p);
+            for (int i = 0; i < 4; i++) p.setItemSlot(slots[i], new ItemStack(com.jo112ss.rpgmod.item.ModItems.get(robe[i], mat)));
+            double r = com.jo112ss.rpgmod.mob.Defense.armor(p), rt = com.jo112ss.rpgmod.mob.Defense.toughness(p);
+            sb.append(mat.id).append(" metal ").append(Math.round(m)).append('/').append(String.format("%.1f", mt))
+                    .append(" robe ").append(Math.round(r)).append('/').append(String.format("%.1f", rt)).append(" (")
+                    .append(Math.round(r / Math.max(1, m) * 100)).append("%); ");
+        }
+        log("robes: armour/toughness of a full set: {}", sb);
+        StringBuilder pieces = new StringBuilder();
+        for (int i = 0; i < 4; i++) pieces.append(robe[i].id).append(' ').append(com.jo112ss.rpgmod.item.RobeArmor.defense(com.jo112ss.rpgmod.item.WeaponMaterial.COPPER, i)).append(", ");
+        log("robes: copper pieces {}", pieces);
+        // the option pools
+        java.util.Random rr = new java.util.Random(7);
+        for (var pool : com.jo112ss.rpgmod.smithing.core.OptionType.Pool.values()) {
+            java.util.Map<String, Integer> n = new java.util.TreeMap<>();
+            for (int i = 0; i < 2000; i++) {
+                for (var o : com.jo112ss.rpgmod.smithing.core.OptionRoller.roll(2, pool, pool == com.jo112ss.rpgmod.smithing.core.OptionType.Pool.WEAPON, false, rr)) {
+                    n.merge(o.type().id, 1, Integer::sum);
+                }
+            }
+            log("robes: pool {} (2000 pieces x2 options): {}", pool, n);
+        }
+        // a forged iron set on: robes with magic power +5% x4, then metal with attack +5% x4
+        var job = JobManager.data(p);
+        double mag0 = JobManager.magicAttack(p), atk0 = JobManager.physicalAttack(p);
+        for (int i = 0; i < 4; i++) {
+            ItemStack st = new ItemStack(com.jo112ss.rpgmod.item.ModItems.get(robe[i], com.jo112ss.rpgmod.item.WeaponMaterial.IRON));
+            st.set(com.jo112ss.rpgmod.registry.ModRegistries.FORGED_DATA.get(), com.jo112ss.rpgmod.smithing.ForgedData.of(com.jo112ss.rpgmod.smithing.core.Quality.FINE,
+                    java.util.List.of(new com.jo112ss.rpgmod.smithing.core.RolledOption(com.jo112ss.rpgmod.smithing.core.OptionType.MAGIC_POWER, 5),
+                            new com.jo112ss.rpgmod.smithing.core.RolledOption(com.jo112ss.rpgmod.smithing.core.OptionType.MAX_HEALTH, 3)), "test"));
+            p.setItemSlot(slots[i], st);
+        }
+        double mag1 = JobManager.magicAttack(p);
+        float hp1 = p.getMaxHealth();
+        for (int i = 0; i < 4; i++) {
+            ItemStack st = new ItemStack(com.jo112ss.rpgmod.item.ModItems.get(metal[i], com.jo112ss.rpgmod.item.WeaponMaterial.IRON));
+            st.set(com.jo112ss.rpgmod.registry.ModRegistries.FORGED_DATA.get(), com.jo112ss.rpgmod.smithing.ForgedData.of(com.jo112ss.rpgmod.smithing.core.Quality.FINE,
+                    java.util.List.of(new com.jo112ss.rpgmod.smithing.core.RolledOption(com.jo112ss.rpgmod.smithing.core.OptionType.ATTACK_DAMAGE, 5),
+                            new com.jo112ss.rpgmod.smithing.core.RolledOption(com.jo112ss.rpgmod.smithing.core.OptionType.CRIT_CHANCE, 2)), "test"));
+            p.setItemSlot(slots[i], st);
+        }
+        double atk1 = JobManager.physicalAttack(p);
+        log("robes: job {} magic attack {} -> robes (+5% x4) {} ({}%), max health with robes (+3% x4) {}; attack {} -> armour (+5% x4) {} ({}%), crit from armour {}%",
+                job.displayJobId(), String.format("%.1f", mag0), String.format("%.1f", mag1), Math.round((mag1 / mag0 - 1) * 100), String.format("%.1f", hp1),
+                String.format("%.1f", atk0), String.format("%.1f", atk1), Math.round((atk1 / atk0 - 1) * 100),
+                com.jo112ss.rpgmod.gem.Gear.total(p, com.jo112ss.rpgmod.smithing.core.OptionType.CRIT_CHANCE, null));
+        // the iron robe set on for the picture, each material's set in a row of armour stands
+        for (int i = 0; i < 4; i++) p.setItemSlot(slots[i], new ItemStack(com.jo112ss.rpgmod.item.ModItems.get(robe[i], com.jo112ss.rpgmod.item.WeaponMaterial.IRON)));
+        java.util.List<LivingEntity> stands = new java.util.ArrayList<>();
+        Vec3 look = Vec3.directionFromRotation(0, p.getYRot());
+        Vec3 side = new Vec3(-look.z, 0, look.x);
+        int k = 0;
+        for (var mat : com.jo112ss.rpgmod.item.WeaponMaterial.values()) {
+            var st = net.minecraft.world.entity.EntityTypes.ARMOR_STAND.create(level, net.minecraft.world.entity.EntitySpawnReason.COMMAND);
+            if (st == null) break;
+            Vec3 at = p.position().add(look.scale(-3)).add(side.scale((k - 2) * 1.4)); // behind the player: the camera looks from the front
+            st.snapTo(at.x, p.getY(), at.z, p.getYRot(), 0);
+            for (int i = 0; i < 4; i++) st.setItemSlot(slots[i], new ItemStack(com.jo112ss.rpgmod.item.ModItems.get(robe[i], mat)));
+            level.addFreshEntity(st);
+            stands.add(st);
+            k++;
+        }
+        SkillTasks.later(150, () -> {
+            for (var st : stands) st.discard();
+            for (int i = 0; i < 4; i++) p.setItemSlot(slots[i], saved[i]);
+        });
+    }
+
     private static void skillBoosts(ServerLevel level, ServerPlayer p) {
         int jobs = 0, skills = 0, cells = 0, short_ = 0, apart = 0;
         StringBuilder per = new StringBuilder();

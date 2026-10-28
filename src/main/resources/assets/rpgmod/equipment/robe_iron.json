@@ -1,0 +1,14 @@
+{
+  "layers": {
+    "humanoid": [
+      {
+        "texture": "rpgmod:robe_iron"
+      }
+    ],
+    "humanoid_leggings": [
+      {
+        "texture": "rpgmod:robe_iron"
+      }
+    ]
+  }
+}

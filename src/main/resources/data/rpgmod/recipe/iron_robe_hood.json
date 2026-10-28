@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "pattern": [
+    "WIW",
+    "W W"
+  ],
+  "key": {
+    "W": "#minecraft:wool",
+    "I": "minecraft:iron_ingot"
+  },
+  "result": {
+    "id": "rpgmod:iron_robe_hood",
+    "count": 1
+  }
+}

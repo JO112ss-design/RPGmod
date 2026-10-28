@@ -22,17 +22,33 @@ public final class OptionRoller {
      * {@code wears}: durability is only rolled for gear that can wear out (shields; the rest never breaks).
      */
     public static List<RolledOption> roll(int count, boolean armor, boolean staff, boolean wears, RandomGenerator random) {
+        return roll(count, armor ? OptionType.Pool.ARMOR : OptionType.Pool.WEAPON, staff, wears, random);
+    }
+
+    /** Distinct options from a pool, drawn by weight (see {@link OptionType#weight}). */
+    public static List<RolledOption> roll(int count, OptionType.Pool kind, boolean staff, boolean wears, RandomGenerator random) {
+        boolean armor = kind != OptionType.Pool.WEAPON;
         List<OptionType> pool = new ArrayList<>();
         for (OptionType t : OptionType.values()) {
-            if (!t.inPool(armor)) continue;
+            if (!t.inPool(kind)) continue;
             if (t.isMagic() && !armor && !staff) continue;
             if (t == OptionType.DURABILITY && !wears) continue;
             pool.add(t);
         }
-        for (int i = pool.size() - 1; i > 0; i--) Collections.swap(pool, i, random.nextInt(i + 1));
         List<RolledOption> out = new ArrayList<>();
-        for (int i = 0; i < Math.min(count, pool.size()); i++) {
-            OptionType t = pool.get(i);
+        while (out.size() < count && !pool.isEmpty()) {
+            int total = 0;
+            for (OptionType t : pool) total += t.weight(kind);
+            int pick = random.nextInt(total);
+            OptionType t = pool.get(pool.size() - 1);
+            for (OptionType u : pool) {
+                pick -= u.weight(kind);
+                if (pick < 0) {
+                    t = u;
+                    break;
+                }
+            }
+            pool.remove(t);
             double min = t.min(armor), max = t.max(armor);
             double v = Math.max(min, Math.min(max, t.round(min + random.nextDouble() * (max - min))));
             out.add(new RolledOption(t, v));

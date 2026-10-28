@@ -49,6 +49,26 @@
     "rpgmod:copper_shield",
     "rpgmod:iron_shield",
     "rpgmod:diamond_shield",
-    "rpgmod:netherite_shield"
+    "rpgmod:netherite_shield",
+    "rpgmod:copper_robe_hood",
+    "rpgmod:iron_robe_hood",
+    "rpgmod:gold_robe_hood",
+    "rpgmod:diamond_robe_hood",
+    "rpgmod:netherite_robe_hood",
+    "rpgmod:copper_robe",
+    "rpgmod:iron_robe",
+    "rpgmod:gold_robe",
+    "rpgmod:diamond_robe",
+    "rpgmod:netherite_robe",
+    "rpgmod:copper_robe_pants",
+    "rpgmod:iron_robe_pants",
+    "rpgmod:gold_robe_pants",
+    "rpgmod:diamond_robe_pants",
+    "rpgmod:netherite_robe_pants",
+    "rpgmod:copper_robe_boots",
+    "rpgmod:iron_robe_boots",
+    "rpgmod:gold_robe_boots",
+    "rpgmod:diamond_robe_boots",
+    "rpgmod:netherite_robe_boots"
   ]
 }

@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "pattern": [
+    "W W",
+    "I I"
+  ],
+  "key": {
+    "W": "#minecraft:wool",
+    "I": "minecraft:diamond"
+  },
+  "result": {
+    "id": "rpgmod:diamond_robe_boots",
+    "count": 1
+  }
+}

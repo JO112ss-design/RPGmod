@@ -1,0 +1,9 @@
+{
+  "type": "minecraft:smithing_transform",
+  "template": "minecraft:netherite_upgrade_smithing_template",
+  "base": "rpgmod:diamond_robe_hood",
+  "addition": "minecraft:netherite_ingot",
+  "result": {
+    "id": "rpgmod:netherite_robe_hood"
+  }
+}

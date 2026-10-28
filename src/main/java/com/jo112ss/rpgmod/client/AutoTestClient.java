@@ -103,7 +103,7 @@ public final class AutoTestClient {
         if (t >= 0) {
             t++;
             switch (t) {
-                case 15 -> { if (screen instanceof ForgeScreen fs) fs.testChoose(com.jo112ss.rpgmod.item.WeaponType.SHIELD); }
+                case 15 -> { if (screen instanceof ForgeScreen fs) fs.testChoose(com.jo112ss.rpgmod.item.WeaponType.ROBE); } // the select screen with the robe row
                 case 20 -> shot(mc, "01_select");
                 // this run forges an iron shield (vanilla shield + 3 iron)
                 case 25 -> send(ForgeActionPayload.START, com.jo112ss.rpgmod.smithing.ForgeableWeapons.indexOf(com.jo112ss.rpgmod.item.WeaponType.SHIELD, com.jo112ss.rpgmod.item.WeaponMaterial.IRON));
@@ -174,6 +174,7 @@ public final class AutoTestClient {
             case "nj:eggs" -> new int[] {30, 70, 110, 190};
             case "nj:kishot" -> new int[] {52, 62, 100, 140};
             case "nj:boosts" -> new int[] {20};
+            case "nj:robes" -> new int[] {30, 90};
             case "nj:dps" -> new int[] {60};
             case "nj:bosswater" -> new int[] {95, 160, 218, 265, 395, 460, 518, 565, 695, 760, 818, 865, 995, 1060, 1118, 1165};
             case "sealing_chord", "holy_lance" -> new int[] {3, 8};
@@ -320,6 +321,7 @@ public final class AutoTestClient {
             case "nj:eggs" -> 280;
             case "nj:kishot" -> 280;
             case "nj:boosts" -> 40;
+            case "nj:robes" -> 140;
             case "nj:dps" -> 3000;
             case "nj:bosswater" -> 1480;
             case "nj:linger" -> 140;
@@ -430,8 +432,10 @@ public final class AutoTestClient {
             if (false) showSkills.addAll(java.util.List.of("nj:restore", "nj:kishot", "nj:restore"));
             if (false) showSkills.clear(); // skill boost cells on the panels, and the panel screen
             if (false) showSkills.addAll(java.util.List.of("nj:restore", "nj:boosts", "nj:restore"));
-            showSkills.clear(); // every job's damage on equal terms (the server sprints)
-            showSkills.addAll(java.util.List.of("nj:restore", "nj:dps", "nj:restore"));
+            if (false) showSkills.clear(); // every job's damage on equal terms (the server sprints)
+            if (false) showSkills.addAll(java.util.List.of("nj:restore", "nj:dps", "nj:restore"));
+            showSkills.clear(); // robes: armour, option pools, a set worn (seen from the front) and every material on stands
+            showSkills.addAll(java.util.List.of("nj:restore", "front:nj:robes", "nj:restore"));
             if (false) showSkills.clear(); // spellsinger afterglow
             if (false) showSkills.addAll(java.util.List.of("nj:restore", "nj:wardlinger", "nj:ward", "nj:linger", "nj:restore"));
             if (false) showSkills.clear(); // songs: each with its own rhythm (bars from the song's style) and tune

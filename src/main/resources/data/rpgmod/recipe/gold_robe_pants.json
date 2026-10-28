@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "pattern": [
+    "WIW",
+    "W W",
+    "W W"
+  ],
+  "key": {
+    "W": "#minecraft:wool",
+    "I": "minecraft:gold_ingot"
+  },
+  "result": {
+    "id": "rpgmod:gold_robe_pants",
+    "count": 1
+  }
+}
