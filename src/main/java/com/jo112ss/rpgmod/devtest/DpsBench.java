@@ -168,7 +168,6 @@ public final class DpsBench {
         boolean bow;
         final java.util.Map<String, Integer> casts = new java.util.LinkedHashMap<>();
         int swings;
-        double hpPaid;
 
         Runner(ServerLevel level, ServerPlayer p, Vec3 field, List<String> jobs, List<Result> results, Runnable done) {
             this.level = level;
@@ -214,7 +213,7 @@ public final class DpsBench {
                 if (run == 0) {
                     log("  {} plain run: total {} = plain attacks {} ({} hits of {} swings) + skills {}; casts {}; mana left {}", jobs.get(ji), Math.round(dealt),
                             Math.round(basicDealt), basicHits, swings, Math.round(dealt - basicDealt), casts, Math.round(JobManager.data(p).mana()));
-                    log("  {} skill damage {}; health paid {} of {}", jobs.get(ji), bySkill, Math.round(hpPaid), Math.round(p.getMaxHealth()));
+                    log("  {} skill damage {}; health left {} of {}", jobs.get(ji), bySkill, Math.round(p.getHealth()), Math.round(p.getMaxHealth()));
                 }
                 run++;
                 t = -GAP;
@@ -319,15 +318,16 @@ public final class DpsBench {
             basicDealt = 0;
             basicHits = 0;
             swings = 0;
-            hpPaid = 0;
+            p.setHealth(p.getMaxHealth());
             casts.clear();
             counting = true;
             JobManager.sync(p);
         }
 
         void keepUp() {
-            if (counting && p.getHealth() < p.getMaxHealth()) hpPaid += p.getMaxHealth() - p.getHealth(); // blood frenzy, blood price
-            p.setHealth(p.getMaxHealth());
+            // health is not refilled during a run: what blood frenzy and the blood price take stays taken
+            // (the dummy does not fight back), so asura sees it; it is refilled between runs
+            if (!counting) p.setHealth(p.getMaxHealth());
             if (dummy != null && dummy.isAlive()) dummy.setHealth(dummy.getMaxHealth());
             if (dummy == null) return;
             Vec3 home = new Vec3(field.x, field.y, field.z + 3);
@@ -347,7 +347,8 @@ public final class DpsBench {
         boolean castNow(SkillDef def) {
             JobData d = JobManager.data(p);
             long now = level.getGameTime();
-            if (d.cooldownEnd(def.id()) > now || d.mana() < JobManager.manaCost(p, def)) return false;
+            double cost = JobManager.manaCost(p, def);
+            if (d.cooldownEnd(def.id()) > now || d.mana() < cost && !JobManager.canPayBlood(p, d, cost)) return false;
             String before = lastCast;
             lastCast = def.id(); // set first: most skills hit inside the cast
             if (!JobManager.cast(p, d, def)) {
