@@ -437,7 +437,7 @@
   "rpgmod.roulette.fortune": "Lady Luck! Rolled %1$s: every hit crits, crit damage +%2$s%% (%3$ss)",
   "rpgmod.job.berserker": "Berserker",
   "rpgmod.job.berserker.role": "Advanced: melee damage",
-  "rpgmod.job.berserker.desc": "Advanced fighter: throws defence away for raw power. Short of MP, pays for skills with health instead (blood price: 1.5% of max health per MP).",
+  "rpgmod.job.berserker.desc": "Advanced fighter: throws defence away for raw power. Short of MP, pays for skills with health instead (blood price: 0.5% of max health per MP, then not again for 6s).",
   "rpgmod.job.guardian": "Guardian",
   "rpgmod.job.guardian.role": "Advanced: tank",
   "rpgmod.job.guardian.desc": "Advanced paladin: the party's shield, taking every blow.",

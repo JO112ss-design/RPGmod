@@ -814,7 +814,11 @@ public final class JobManager {
     }
 
     /** Berserker's blood price: the MP a skill is short of is paid with health, this share of max health per MP. */
-    public static final double BLOOD_PRICE = 0.015;
+    public static final double BLOOD_PRICE = 0.005;
+    /** After paying, the blood price cannot be paid again for this long (ticks). */
+    public static final int BLOOD_COOLDOWN = 120;
+    /** Its cooldown, kept with the skills' ("#": not a skill, other cooldown cuts leave it alone). */
+    public static final String BLOOD_KEY = "#blood_price";
 
     /** Health the berserker pays for the MP missing for this cost (0 for anyone else, or with MP enough). */
     public static double bloodPrice(Player player, JobData d, double cost) {
@@ -822,8 +826,9 @@ public final class JobManager {
         return (cost - d.mana()) * BLOOD_PRICE * player.getMaxHealth();
     }
 
-    /** The price can be paid without dying (at least 1 health is left). */
+    /** The price can be paid now: not on its cooldown, and at least 1 health is left. */
     public static boolean canPayBlood(Player player, JobData d, double cost) {
+        if (d.cooldownEnd(BLOOD_KEY) > player.level().getGameTime()) return false;
         double price = bloodPrice(player, d, cost);
         return price > 0 && player.getHealth() - price >= 1;
     }
@@ -831,6 +836,7 @@ public final class JobManager {
     private static void payBlood(ServerPlayer player, JobData d, double cost) {
         double price = bloodPrice(player, d, cost);
         d.setMana(0);
+        d.setCooldown(BLOOD_KEY, player.level().getGameTime() + BLOOD_COOLDOWN);
         player.setHealth((float) Math.max(1, player.getHealth() - price));
         com.jo112ss.rpgmod.job.fx.ServerFx.of("x_burst", player.position().add(0, player.getBbHeight() * 0.5, 0)).a(0.9).b(2).color(0xB0101A).send((ServerLevel) player.level());
         player.level().playSound(null, player.blockPosition(), SoundEvents.PLAYER_HURT_SWEET_BERRY_BUSH, SoundSource.PLAYERS, 0.8F, 0.7F);

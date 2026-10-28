@@ -297,7 +297,7 @@ public final class JobDefs {
                         skill("reckless_charge", A, SkillEffect.DASH, 5, 15, 3.0, 0, 4, List.of(), 0, "捨"),
                         skill("terror_roar", A, SkillEffect.DEBUFF, 10, 15, 0, 8, 10, List.of("rpgmod:attack_down", "minecraft:slowness"), 1, "咆")),
                 List.of(
-                        skill("asura", U, SkillEffect.BUFF, 150, 40, 0, 0, 15, List.of(), 0, "修")),
+                        skill("asura", U, SkillEffect.BUFF, 60, 40, 0, 0, 15, List.of(), 0, "修")),
                 List.of());
         // ---- Guardian: stands in front and takes the blows for everyone
         advanced("paladin", "guardian", 0xC8A030, "護", List.of(JobStat.ARMOR, JobStat.MAX_HEALTH, JobStat.ATTACK_DAMAGE),

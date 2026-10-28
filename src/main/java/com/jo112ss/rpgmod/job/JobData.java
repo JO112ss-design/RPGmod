@@ -659,7 +659,7 @@ public final class JobData {
     /** Remaining cooldowns of every skill except {@code except} are multiplied by {@code factor}. */
     /** Takes {@code ticks} off every running cooldown (the bard's fanfare). */
     public void shiftCooldowns(long now, long ticks) {
-        cooldowns.replaceAll((k, v) -> v <= now ? v : Math.max(now, v - ticks));
+        cooldowns.replaceAll((k, v) -> k.startsWith("#") || v <= now ? v : Math.max(now, v - ticks)); // "#..." are not skills
     }
 
     /** Dev test only: every cell of both panels learnt. */
@@ -671,7 +671,7 @@ public final class JobData {
     }
 
     public void scaleCooldowns(long now, double factor, String except) {
-        cooldowns.replaceAll((k, v) -> k.equals(except) || v <= now ? v : now + Math.round((v - now) * factor));
+        cooldowns.replaceAll((k, v) -> k.equals(except) || k.startsWith("#") || v <= now ? v : now + Math.round((v - now) * factor));
     }
 
     /**

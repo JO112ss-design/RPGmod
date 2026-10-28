@@ -296,6 +296,7 @@ public final class DpsBench {
             d.setMana(JobManager.maxMana(p));
             for (SkillDef s : rotation) d.setCooldown(s.id(), 0);
             for (SkillDef s : ults) d.setCooldown(s.id(), 0);
+            d.setCooldown(JobManager.BLOOD_KEY, 0);
             p.removeAllEffects();
             if (dummy != null) dummy.discard();
             com.jo112ss.rpgmod.mob.MobLevels.forceLevel = LEVEL;
