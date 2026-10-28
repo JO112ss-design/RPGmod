@@ -729,14 +729,19 @@ public final class JobManager {
      * What a skill's power ratio is multiplied by: its attack (weapon + own, or staff + own magic).
      * Damage = ratio x this; crits, armour etc. apply after.
      */
+    /** A skill's boost: its boost cells, and a masterwork weapon in the main hand. */
+    public static double skillBoost(Player player, String skill, com.jo112ss.rpgmod.job.core.SkillBoost kind) {
+        return data(player).skillBoost(skill, kind) + com.jo112ss.rpgmod.smithing.Masterwork.boost(player, skill, kind);
+    }
+
     public static double powerMultiplier(Player player, SkillDef def) {
-        return skillAttack(player, def) * (1 + data(player).skillBoost(def.id(), com.jo112ss.rpgmod.job.core.SkillBoost.POWER));
+        return skillAttack(player, def) * (1 + skillBoost(player, def.id(), com.jo112ss.rpgmod.job.core.SkillBoost.POWER));
     }
 
     /** A skill's cooldown in seconds for this player: its own, less cooldown reduction and its boost cells. */
     public static double cooldownSeconds(Player player, SkillDef def) {
         double cdr = JobStats.compute(data(player)).get(JobStat.COOLDOWN_REDUCTION) / 100.0;
-        return def.cooldown() * (1 - cdr) * (1 - data(player).skillBoost(def.id(), com.jo112ss.rpgmod.job.core.SkillBoost.COOLDOWN));
+        return def.cooldown() * (1 - cdr) * (1 - skillBoost(player, def.id(), com.jo112ss.rpgmod.job.core.SkillBoost.COOLDOWN));
     }
 
 
@@ -810,7 +815,7 @@ public final class JobManager {
         if (d.mana() < cost) payBlood(player, d, cost);
         else d.setMana(d.mana() - cost);
         d.pruneCooldowns(now);
-        d.setCooldown(def.id(), now + Math.round(def.cooldown() * 20 * (1 - cdr) * (1 - d.skillBoost(def.id(), com.jo112ss.rpgmod.job.core.SkillBoost.COOLDOWN))));
+        d.setCooldown(def.id(), now + Math.round(def.cooldown() * 20 * (1 - cdr) * (1 - skillBoost(player, def.id(), com.jo112ss.rpgmod.job.core.SkillBoost.COOLDOWN))));
         sync(player);
         return true;
     }
@@ -851,7 +856,7 @@ public final class JobManager {
         if ("mana_share".equals(def.id())) return Math.ceil(maxMana(player) * MoreJobSkills.SHARE_COST); // a share of your own maximum
         boolean overload = def.kind() == SkillKind.SPELL && player.hasEffect(com.jo112ss.rpgmod.registry.ModEffects.OVERLOAD);
         double cost = overload ? Math.ceil(def.mana() * 1.5) : def.mana();
-        double cut = data(player).skillBoost(def.id(), com.jo112ss.rpgmod.job.core.SkillBoost.MANA);
+        double cut = skillBoost(player, def.id(), com.jo112ss.rpgmod.job.core.SkillBoost.MANA);
         return cut > 0 ? Math.ceil(cost * (1 - cut) - 1e-9) : cost;
     }
 

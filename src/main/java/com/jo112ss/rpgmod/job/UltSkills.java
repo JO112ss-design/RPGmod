@@ -222,12 +222,19 @@ public final class UltSkills {
             return false;
         }
         double r = Bard.radius(JobData.MAX_SONG_POINTS) * Bard.CONCERTO_REACH;
+        // and the chord itself strikes the enemies around (2.0 x magic attack)
+        List<LivingEntity> foes = enemies(p, p.position(), r);
+        for (LivingEntity e : foes) hurt(c, e, c.dmg(1), magic(c));
+        if (!foes.isEmpty()) ServerFx.of("hit", p.position()).color(0x9A6AD8).a(1.0).points(foes).send(c.level());
         ServerFx.of("u_grand_concerto", p.position()).follow(p).a(r).send(c.level());
         sound(c, SoundEvents.PLAYER_LEVELUP, 1.1F);
         for (float pitch : new float[] {0.84F, 1.0F, 1.26F, 1.5F}) sound(c, p.position(), SoundEvents.NOTE_BLOCK_CHIME, 0.5F, pitch);
         log("grand_concerto afterglow of {} songs", n);
         return true;
     }
+
+    /** The sealing chord's notes when the song went badly (or there was none). */
+    public static final int MIN_SEALING_NOTES = 6;
 
     /** Silenced enemies cannot hurt anyone for this long. */
     public static final int SILENCE_TICKS = 60;
@@ -247,7 +254,7 @@ public final class UltSkills {
         Bard.stop(p);
         d.setSongPoints(0);
         JobManager.sync(p);
-        int n = Math.max(3, points);
+        int n = Math.max(MIN_SEALING_NOTES, points);
         for (int k = 0; k < n; k++) {
             LivingEntity t = foes.get(k % foes.size());
             float pitch = 1.0F + (k % 8) * 0.12F;

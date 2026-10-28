@@ -807,7 +807,7 @@
   "rpgmod.skill.lullaby": "Lullaby",
   "rpgmod.skill.lullaby.desc": "Play for 12s: enemies around you grow drowsy - slow and weak.",
   "rpgmod.skill.grand_concert": "Grand Concert",
-  "rpgmod.skill.grand_concert.desc": "For 10s, all four songs (war, healing, guard, wind) at full strength at once.",
+  "rpgmod.skill.grand_concert.desc": "For 10s, all four songs (war, healing, guard, wind) at full strength at once; the enemies around take damage every second.",
   "rpgmod.skill.finale": "Finale",
   "rpgmod.skill.finale.desc": "End the performance with a shockwave as big as the combo you built.",
   "rpgmod.jobchange.soon": "Coming soon",
@@ -967,9 +967,9 @@
   "rpgmod.skill.resonance": "Resonance",
   "rpgmod.skill.resonance.desc": "Every good effect on allies around lasts 5s longer; +4 points if playing.",
   "rpgmod.skill.grand_concerto": "Grand Concerto",
-  "rpgmod.skill.grand_concerto.desc": "Every song set on the lute leaves its afterglow on the allies around at once, as if played perfectly (100s).",
+  "rpgmod.skill.grand_concerto.desc": "Every song set on the lute leaves its afterglow on the allies around at once, as if played perfectly (100s), and the chord strikes the enemies around.",
   "rpgmod.skill.sealing_chord": "Sealing Chord",
-  "rpgmod.skill.sealing_chord.desc": "End the performance: one seeking note per point (at least 3) flies at the enemies around; those hit cannot attack for 3s.",
+  "rpgmod.skill.sealing_chord.desc": "End the performance: one seeking note per point (at least 6) flies at the enemies around; those hit cannot attack for 3s.",
   "rpgmod.skill.vital_shot": "Vital Shot",
   "rpgmod.skill.vital_shot.desc": "A shot along the crosshair; double damage on enemies at half health or less.",
   "rpgmod.skill.stealth": "Stealth",
@@ -1292,5 +1292,8 @@
   "rpgmod.tooltip.bow_mult": "Bow: normal arrows x%1$s (x%2$s against bosses; skill arrows unaffected)",
   "rpgmod.job.too_hungry": "Too hungry",
   "rpgmod.skill.harvest_song": "Harvest Song",
-  "rpgmod.skill.harvest_song.desc": "Allies around you regain hunger and saturation every second (5 to 6 of each over a well-played song)."
+  "rpgmod.skill.harvest_song.desc": "Allies around you regain hunger and saturation every second (5 to 6 of each over a well-played song).",
+  "rpgmod.tooltip.masterwork": "★ Masterwork",
+  "rpgmod.masterwork.line": "%s (%s) %s",
+  "rpgmod.message.masterwork": "Masterwork! %s"
 }

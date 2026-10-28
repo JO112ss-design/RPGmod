@@ -14,7 +14,7 @@ import net.minecraft.network.codec.StreamCodec;
  * Item data component stored on forged weapons. Persistent (saved with the item, so it survives
  * drops, trades and server restarts) and synced to clients for tooltips.
  */
-public record ForgedData(int quality, List<Option> options, String crafter) {
+public record ForgedData(int quality, List<Option> options, String crafter, java.util.Optional<Masterwork> masterwork) {
     public record Option(String id, double value) {
         public Option {
             id = OptionType.current(id); // old armour penetration options are attack now
@@ -33,7 +33,8 @@ public record ForgedData(int quality, List<Option> options, String crafter) {
     public static final Codec<ForgedData> CODEC = RecordCodecBuilder.create(i -> i.group(
             Codec.INT.fieldOf("quality").forGetter(ForgedData::quality),
             Option.CODEC.listOf().fieldOf("options").forGetter(ForgedData::options),
-            Codec.STRING.optionalFieldOf("crafter", "").forGetter(ForgedData::crafter)
+            Codec.STRING.optionalFieldOf("crafter", "").forGetter(ForgedData::crafter),
+            Masterwork.CODEC.optionalFieldOf("masterwork").forGetter(ForgedData::masterwork)
     ).apply(i, ForgedData::new));
 
     public static final StreamCodec<FriendlyByteBuf, ForgedData> STREAM_CODEC = StreamCodec.of(
@@ -45,23 +46,41 @@ public record ForgedData(int quality, List<Option> options, String crafter) {
                     buf.writeDouble(o.value);
                 }
                 buf.writeUtf(d.crafter);
+                buf.writeBoolean(d.masterwork.isPresent());
+                d.masterwork.ifPresent(m -> {
+                    buf.writeUtf(m.skill());
+                    buf.writeUtf(m.kind());
+                    buf.writeDouble(m.amount());
+                });
             },
             buf -> {
                 int q = buf.readVarInt();
                 int n = Math.min(buf.readVarInt(), 32);
                 List<Option> list = new ArrayList<>(n);
                 for (int k = 0; k < n; k++) list.add(new Option(buf.readUtf(), buf.readDouble()));
-                return new ForgedData(q, List.copyOf(list), buf.readUtf());
+                String crafter = buf.readUtf();
+                java.util.Optional<Masterwork> m = buf.readBoolean()
+                        ? java.util.Optional.of(new Masterwork(buf.readUtf(), buf.readUtf(), buf.readDouble())) : java.util.Optional.empty();
+                return new ForgedData(q, List.copyOf(list), crafter, m);
             });
 
     public ForgedData {
         options = List.copyOf(options);
+        masterwork = masterwork == null ? java.util.Optional.empty() : masterwork;
+    }
+
+    public ForgedData(int quality, List<Option> options, String crafter) {
+        this(quality, options, crafter, java.util.Optional.empty());
     }
 
     public static ForgedData of(Quality quality, List<RolledOption> rolled, String crafter) {
+        return of(quality, rolled, crafter, null);
+    }
+
+    public static ForgedData of(Quality quality, List<RolledOption> rolled, String crafter, Masterwork masterwork) {
         List<Option> list = new ArrayList<>();
         for (RolledOption r : rolled) list.add(new Option(r.type().id, r.value()));
-        return new ForgedData(quality.ordinal(), list, crafter);
+        return new ForgedData(quality.ordinal(), list, crafter, java.util.Optional.ofNullable(masterwork));
     }
 
     public Quality qualityEnum() {

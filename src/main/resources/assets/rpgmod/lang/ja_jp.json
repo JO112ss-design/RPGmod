@@ -807,7 +807,7 @@
   "rpgmod.skill.lullaby": "子守唄",
   "rpgmod.skill.lullaby.desc": "12秒間演奏する。周りの敵がまどろみ、動きと攻撃が鈍る。",
   "rpgmod.skill.grand_concert": "大合奏",
-  "rpgmod.skill.grand_concert.desc": "10秒間、4つの歌（戦い・癒し・守り・風）を全力で同時に奏でる。",
+  "rpgmod.skill.grand_concert.desc": "10秒間、4つの歌（戦い・癒し・守り・風）を全力で同時に奏でる。周りの敵には毎秒ダメージ。",
   "rpgmod.skill.finale": "終幕",
   "rpgmod.skill.finale.desc": "演奏を締めくくり、盛り上がり（コンボ）に応じた大きな衝撃波を放つ。",
   "rpgmod.jobchange.soon": "準備中",
@@ -967,9 +967,9 @@
   "rpgmod.skill.resonance": "共鳴",
   "rpgmod.skill.resonance.desc": "周りの味方の良い効果をすべて5秒延ばす。演奏中なら点数+4。",
   "rpgmod.skill.grand_concerto": "大協奏",
-  "rpgmod.skill.grand_concerto.desc": "リュートにセットした曲すべての余韻を、最高の点数で周りの味方に付ける（100秒）。",
+  "rpgmod.skill.grand_concerto.desc": "リュートにセットした曲すべての余韻を、最高の点数で周りの味方に付ける（100秒）。同時に周りの敵へ大ダメージ。",
   "rpgmod.skill.sealing_chord": "魔奏・終曲",
-  "rpgmod.skill.sealing_chord.desc": "演奏を締めくくり、点数の数だけ（最低3つ）追いかける音符を周りの敵に放つ。当たった敵は3秒間攻撃できない。",
+  "rpgmod.skill.sealing_chord.desc": "演奏を締めくくり、点数の数だけ（最低6つ）追いかける音符を周りの敵に放つ。当たった敵は3秒間攻撃できない。",
   "rpgmod.skill.vital_shot": "急所狙い",
   "rpgmod.skill.vital_shot.desc": "照準の先を射抜く。体力が半分以下の敵には2倍。",
   "rpgmod.skill.stealth": "隠密",
@@ -1292,5 +1292,8 @@
   "rpgmod.tooltip.bow_mult": "弓：通常の矢のダメージ ×%1$s（ボスには ×%2$s。スキルの矢には影響なし）",
   "rpgmod.job.too_hungry": "満腹度が足りません",
   "rpgmod.skill.harvest_song": "豊穣の歌",
-  "rpgmod.skill.harvest_song.desc": "周りの味方の満腹度と隠し満腹度を毎秒少しずつ回復する（上手に演奏すると1曲で各5〜6）。"
+  "rpgmod.skill.harvest_song.desc": "周りの味方の満腹度と隠し満腹度を毎秒少しずつ回復する（上手に演奏すると1曲で各5〜6）。",
+  "rpgmod.tooltip.masterwork": "★ 会心の出来",
+  "rpgmod.masterwork.line": "%s（%s）%s",
+  "rpgmod.message.masterwork": "会心の出来！ %s"
 }

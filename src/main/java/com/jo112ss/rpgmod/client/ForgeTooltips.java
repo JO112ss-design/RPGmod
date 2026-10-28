@@ -82,6 +82,10 @@ public final class ForgeTooltips {
             tip.add(at++, Component.translatable("rpgmod.tooltip.options").withStyle(ChatFormatting.GRAY));
             for (ForgedData.Option o : d.options()) tip.add(at++, optionLine(o));
         }
+        if (d.masterwork().isPresent()) {
+            tip.add(at++, Component.translatable("rpgmod.tooltip.masterwork").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD));
+            tip.add(at++, Component.literal(" ").append(com.jo112ss.rpgmod.smithing.Masterwork.describe(d.masterwork().get())).withStyle(ChatFormatting.YELLOW));
+        }
         if (!d.crafter().isEmpty()) {
             tip.add(at, Component.translatable("rpgmod.tooltip.crafter", d.crafter()).withStyle(ChatFormatting.DARK_GRAY, ChatFormatting.ITALIC));
         }

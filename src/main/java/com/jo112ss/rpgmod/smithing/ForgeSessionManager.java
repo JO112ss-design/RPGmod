@@ -256,7 +256,8 @@ public final class ForgeSessionManager {
         List<RolledOption> options = OptionRoller.roll(quality.optionCount, s.weapon.type().optionPool(), s.weapon.type().magical(),
                 !com.jo112ss.rpgmod.item.UnbreakableGear.covers(s.weapon.type()), rnd);
         ItemStack stack = new ItemStack(s.weapon.result().get());
-        ForgedData data = ForgedData.of(quality, options, player.getGameProfile().name());
+        Masterwork masterwork = Masterwork.maybe(s.weapon.type(), rnd); // one in five, whatever the quality
+        ForgedData data = ForgedData.of(quality, options, player.getGameProfile().name(), masterwork);
         stack.set(ModRegistries.FORGED_DATA.get(), data);
         applyDurability(stack, data);
 
@@ -267,6 +268,10 @@ public final class ForgeSessionManager {
         player.sendSystemMessage(Component.translatable("rpgmod.message.forged", name, q));
         player.level().playSound(null, player.blockPosition(),
                 quality == Quality.LEGENDARY ? SoundEvents.PLAYER_LEVELUP : SoundEvents.ANVIL_LAND, SoundSource.BLOCKS, 0.6F, 1.0F);
+        if (masterwork != null) {
+            player.sendSystemMessage(Component.translatable("rpgmod.message.masterwork", Masterwork.describe(masterwork)).withStyle(net.minecraft.ChatFormatting.GOLD, net.minecraft.ChatFormatting.BOLD));
+            player.level().playSound(null, player.blockPosition(), SoundEvents.PLAYER_LEVELUP, SoundSource.BLOCKS, 0.7F, 1.4F);
+        }
         give(player, stack, true);
         RpgMod.LOGGER.debug("{} forged {} ({}, error {})", player.getGameProfile().name(), s.weapon.id(), quality, s.state.errorRatio());
     }

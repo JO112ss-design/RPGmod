@@ -167,8 +167,8 @@ public final class SpellCasting {
         double cdr = JobStats.compute(d).get(JobStat.COOLDOWN_REDUCTION) / 100.0;
         d.setMana(d.mana() - cost);
         d.pruneCooldowns(now);
-        d.setCooldown(a.id(), now + Math.round(a.cooldown() * 20 * (1 - cdr) * (1 - d.skillBoost(a.id(), com.jo112ss.rpgmod.job.core.SkillBoost.COOLDOWN))));
-        d.setCooldown(b.id(), now + Math.round(b.cooldown() * 20 * (1 - cdr) * (1 - d.skillBoost(b.id(), com.jo112ss.rpgmod.job.core.SkillBoost.COOLDOWN))));
+        d.setCooldown(a.id(), now + Math.round(a.cooldown() * 20 * (1 - cdr) * (1 - JobManager.skillBoost(p, a.id(), com.jo112ss.rpgmod.job.core.SkillBoost.COOLDOWN))));
+        d.setCooldown(b.id(), now + Math.round(b.cooldown() * 20 * (1 - cdr) * (1 - JobManager.skillBoost(p, b.id(), com.jo112ss.rpgmod.job.core.SkillBoost.COOLDOWN))));
         JobManager.sync(p);
         p.sendSystemMessage(Component.translatable("rpgmod.fusion.cast", Component.translatable("rpgmod.skill." + id))
                 .withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.BOLD), true);

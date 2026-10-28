@@ -1021,6 +1021,10 @@ public final class NewJobSkills {
             if (!p.isAlive()) return true;
             if (age % 20 == 0) {
                 Bard.grand(p, r, 30);
+                // the concert's sound hurts the enemies around every second (0.2 x magic attack)
+                List<LivingEntity> foes = enemies(p, p.position(), r);
+                for (LivingEntity e : foes) hurt(c, e, c.dmg(1), magic(c));
+                if (!foes.isEmpty()) ServerFx.of("hit", p.position()).color(0xFFD050).a(0.6).points(foes).send(c.level());
                 ServerFx.of("u_concert_pulse", p.position()).follow(p).a(r).points(allies(p, r)).send(c.level());
                 float[] chord = {1.0F, 1.26F, 1.5F};
                 for (float pitch : chord) sound(c, p.position(), SoundEvents.NOTE_BLOCK_BELL, 0.5F, pitch * (age % 40 == 0 ? 1F : 0.84F));

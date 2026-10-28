@@ -55,6 +55,34 @@ final class NewJobTests {
             case "boosts" -> skillBoosts(level, p);
             case "robes" -> robes(level, p);
             case "hitwin" -> hitWindows(level, p);
+            case "masterwork" -> { // one weapon in five, any quality; the boost works from the main hand
+                java.util.Random rnd = new java.util.Random(7);
+                for (var type : java.util.List.of(com.jo112ss.rpgmod.item.WeaponType.SWORD, com.jo112ss.rpgmod.item.WeaponType.STAFF,
+                        com.jo112ss.rpgmod.item.WeaponType.LUTE, com.jo112ss.rpgmod.item.WeaponType.CHESTPLATE)) {
+                    int got = 0;
+                    java.util.List<String> some = new java.util.ArrayList<>();
+                    for (int k = 0; k < 1000; k++) {
+                        var m = com.jo112ss.rpgmod.smithing.Masterwork.maybe(type, rnd);
+                        if (m == null) continue;
+                        got++;
+                        if (some.size() < 4) some.add(m.skill() + " " + m.kind() + " " + m.amount());
+                    }
+                    log("masterwork {}: {} of 1000, jobs {}, {} skills, e.g. {}", type, got, com.jo112ss.rpgmod.smithing.Masterwork.jobsFor(type),
+                            com.jo112ss.rpgmod.smithing.Masterwork.skillsFor(type).size(), some);
+                }
+                become(p, "fighter");
+                JobManager.data(p).devUnlockAll();
+                var def = JobDefs.skill("power_slash");
+                var sword = new net.minecraft.world.item.ItemStack(com.jo112ss.rpgmod.item.ModItems.get(com.jo112ss.rpgmod.item.WeaponType.SWORD, com.jo112ss.rpgmod.item.WeaponMaterial.DIAMOND));
+                p.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, sword);
+                double plain = JobManager.powerMultiplier(p, def), cdPlain = JobManager.cooldownSeconds(p, def);
+                sword.set(com.jo112ss.rpgmod.registry.ModRegistries.FORGED_DATA.get(), com.jo112ss.rpgmod.smithing.ForgedData.of(com.jo112ss.rpgmod.smithing.core.Quality.COMMON,
+                        java.util.List.of(), "test", new com.jo112ss.rpgmod.smithing.Masterwork("power_slash", "POWER", 0.15)));
+                double boosted = JobManager.powerMultiplier(p, def);
+                log("masterwork: power slash x{} with the masterwork sword (1.15 expected), cooldown {}s -> {}s; tooltip line '{}'",
+                        String.format("%.3f", boosted / plain), String.format("%.2f", cdPlain), String.format("%.2f", JobManager.cooldownSeconds(p, def)),
+                        com.jo112ss.rpgmod.smithing.Masterwork.describe(new com.jo112ss.rpgmod.smithing.Masterwork("power_slash", "POWER", 0.15)).getString());
+            }
             case "regen" -> { // a potion's regeneration (2% a heal), then the blessing (as much in all as before, over 14s)
                 become(p, "healer");
                 JobManager.data(p).devUnlockAll();
@@ -67,7 +95,10 @@ final class NewJobTests {
                     log("regen: instant health II healed {}% of max health (16% expected)", String.format("%.1f", (p.getHealth() / max - 0.1F) * 100));
                     p.setHealth(max * 0.1F);
                 });
-                SkillTasks.later(4, () -> p.addEffect(new net.minecraft.world.effect.MobEffectInstance(net.minecraft.world.effect.MobEffects.REGENERATION, 101, 0)));
+                SkillTasks.later(4, () -> { // as a potion would: not from a skill (the task runs as one)
+                    com.jo112ss.rpgmod.job.HealthScale.SKILL.remove();
+                    p.addEffect(new net.minecraft.world.effect.MobEffectInstance(net.minecraft.world.effect.MobEffects.REGENERATION, 101, 0));
+                });
                 SkillTasks.later(109, () -> {
                     log("regen: potion regeneration I 5s healed {}% of max health (2 heals x 2% expected)", String.format("%.1f", (p.getHealth() / max - 0.1F) * 100));
                     p.removeEffect(net.minecraft.world.effect.MobEffects.REGENERATION);
