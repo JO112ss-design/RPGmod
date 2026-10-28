@@ -1485,15 +1485,16 @@ final class NewJobTests {
         SkillTasks.later(5, () -> {
             com.jo112ss.rpgmod.mob.HitWindows.testBlocked = 0;
             com.jo112ss.rpgmod.mob.HitWindows.testCut = 0;
-            hit.accept("plain 20", () -> m.hurtServer(level, p.damageSources().playerAttack(p), 20));
-            hit.accept("skill 20 (same tick)", () -> m.hurtServer(level, p.damageSources().source(skillKey, p, p), 20));
-            hit.accept("other player's skill 20 (same tick)", () -> m.hurtServer(level, other.damageSources().source(skillKey, other, other), 20));
-            hit.accept("skill 20 again", () -> m.hurtServer(level, p.damageSources().source(skillKey, p, p), 20));
-            hit.accept("skill 30", () -> m.hurtServer(level, p.damageSources().source(skillKey, p, p), 30));
+            hit.accept("skill 20", () -> m.hurtServer(level, p.damageSources().source(skillKey, p, p), 20));
+            hit.accept("plain 20 right after a skill", () -> m.hurtServer(level, p.damageSources().playerAttack(p), 20));
+            hit.accept("other player's plain 20 (same tick)", () -> m.hurtServer(level, other.damageSources().playerAttack(other), 20));
+            hit.accept("plain 20 again", () -> m.hurtServer(level, p.damageSources().playerAttack(p), 20));
+            hit.accept("plain 30", () -> m.hurtServer(level, p.damageSources().playerAttack(p), 30));
+            hit.accept("skill 20 again (no cooldown)", () -> m.hurtServer(level, p.damageSources().source(skillKey, p, p), 20));
         });
-        SkillTasks.later(10, () -> hit.accept("skill 20 after 5 ticks", () -> m.hurtServer(level, p.damageSources().source(skillKey, p, p), 20)));
+        SkillTasks.later(10, () -> hit.accept("plain 20 after 5 ticks", () -> m.hurtServer(level, p.damageSources().playerAttack(p), 20)));
         SkillTasks.later(17, () -> {
-            hit.accept("skill 20 after 12 ticks", () -> m.hurtServer(level, p.damageSources().source(skillKey, p, p), 20));
+            hit.accept("plain 20 after 12 ticks", () -> m.hurtServer(level, p.damageSources().playerAttack(p), 20));
             log("hit windows: {}blocked {} cut {}", sb, com.jo112ss.rpgmod.mob.HitWindows.testBlocked, com.jo112ss.rpgmod.mob.HitWindows.testCut);
             m.discard();
         });

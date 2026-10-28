@@ -17,16 +17,17 @@ import net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent;
 
 /**
  * Players' hits on monsters do not share the monster's hit cooldown. In vanilla a monster that was
- * just hit takes, for half a second, only what a bigger hit has over the last one - from anyone -
- * so a party of six beating one boss threw most of its damage away, and even one player's own
- * plain attacks ate the skill hits right after them.
+ * just hit takes, for half a second, only what a bigger hit has over the last one - from anyone.
+ * Skills already ignore that cooldown (their damage types are in {@code bypasses_cooldown}), but
+ * every skill hit started it again, so plain attacks - a swing, an arrow from a bow - right after
+ * any skill hit, the player's own or a party member's, were mostly thrown away; and so were a
+ * party's plain attacks on one another.
  *
- * <p>Now each player has a cooldown of their own on each monster, and plain attacks (a swing, an
- * arrow from a bow) and skills keep separate ones: the vanilla rule (half a second, only the part
- * over the last hit gets through) still applies inside one player's skills - the multi-hit skills
- * were made around it - but nobody else's hits, and no plain attack, block them any more.
- * Damage over time of a kind of its own (venom...) keeps its own cooldown too. Players hurting
- * players, and monsters hurting anything, are left to vanilla.
+ * <p>Now, for the hits that do not ignore it, each player has a cooldown of their own on each
+ * monster, one per kind of hit (plain attacks, explosions...): the vanilla rule (half a second, only
+ * the part over the last hit) still applies to one player's own plain attacks, but nobody else's
+ * hits and no skill hit block them any more. Players hurting players, and monsters hurting
+ * anything, are left to vanilla.
  */
 @EventBusSubscriber(modid = RpgMod.MODID)
 public final class HitWindows {
@@ -48,9 +49,7 @@ public final class HitWindows {
     private static String key(UUID attacker, DamageSource src) {
         boolean plain = src.is(DamageTypes.PLAYER_ATTACK) && src.getDirectEntity() == src.getEntity()
                 || src.getDirectEntity() instanceof AbstractArrow arrow && arrow.getWeaponItem() != null;
-        String kind = plain ? "plain" : src.typeHolder().getRegisteredName();
-        if (kind.equals("rpgmod:skill") || kind.equals("rpgmod:skill_magic")) kind = "skill";
-        return attacker + "/" + kind;
+        return attacker + "/" + (plain ? "plain" : src.typeHolder().getRegisteredName());
     }
 
     @SubscribeEvent(priority = EventPriority.LOWEST)
@@ -59,6 +58,7 @@ public final class HitWindows {
         if (victim instanceof Player || victim.level().isClientSide()) return;
         DamageSource src = event.getSource();
         if (!(src.getEntity() instanceof Player attacker)) return;
+        if (src.is(net.minecraft.tags.DamageTypeTags.BYPASSES_COOLDOWN)) return; // skills, venom, gems: no cooldown at all, as before
         float amount = event.getAmount();
         if (amount <= 0) return;
         long now = victim.level().getGameTime();
