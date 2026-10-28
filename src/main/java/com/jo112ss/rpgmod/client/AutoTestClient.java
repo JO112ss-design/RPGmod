@@ -327,7 +327,7 @@ public final class AutoTestClient {
             case "spearshield" -> 50;
             case "nj:dps" -> 200;
             case "nj:harvest" -> 420;
-            case "nj:regen" -> 560;
+            case "nj:regen" -> 900;
             case "nj:bosswater" -> 1480;
             case "nj:linger" -> 140;
             case "nj:ward" -> 210;

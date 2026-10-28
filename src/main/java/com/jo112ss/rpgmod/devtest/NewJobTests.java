@@ -59,6 +59,8 @@ final class NewJobTests {
                 become(p, "healer");
                 JobManager.data(p).devUnlockAll();
                 float max = p.getMaxHealth();
+                p.getFoodData().setFoodLevel(10); // no natural regeneration from food in the way (needs 18)
+                p.getFoodData().setSaturation(0);
                 p.setHealth(max * 0.1F);
                 p.addEffect(new net.minecraft.world.effect.MobEffectInstance(net.minecraft.world.effect.MobEffects.REGENERATION, 101, 0));
                 SkillTasks.later(105, () -> {
@@ -68,7 +70,7 @@ final class NewJobTests {
                     SkillExecutor.execute(p, JobDefs.skill("blessing"), JobManager.powerMultiplier(p, JobDefs.skill("blessing")));
                     var inst = p.getEffect(net.minecraft.world.effect.MobEffects.REGENERATION);
                     int dur = inst == null ? 0 : inst.getDuration();
-                    SkillTasks.later(dur + 5, () -> log("regen: blessing ({}t) healed {}% of max health (as before: {} heals x 5% over 8s)", dur,
+                    SkillTasks.later(Math.min(dur + 5, 700), () -> log("regen: blessing ({}t) healed {}% of max health (as before: {} heals x 5% over 8s)", dur,
                             String.format("%.1f", (p.getHealth() / max - 0.1F) * 100), (int) (dur * 8 / 14 / 50)));
                 });
             }
