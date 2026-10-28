@@ -94,6 +94,27 @@ public final class JobEvents {
         return 1;
     }
 
+    /**
+     * Light weapons (dagger, knuckles): every full swing lands now (see HitWindows), twice as many as
+     * when half of them fell into the monster's hit cooldown, so each normal hit counts for half.
+     */
+    public static double lightMultiplier(net.minecraft.world.item.ItemStack held) {
+        var type = com.jo112ss.rpgmod.item.ModItems.typeOf(held.getItem());
+        if (type == com.jo112ss.rpgmod.item.WeaponType.DAGGER) return JobConfig.DAGGER_MULT.get();
+        if (type == com.jo112ss.rpgmod.item.WeaponType.KNUCKLE) return JobConfig.KNUCKLE_MULT.get();
+        return 1;
+    }
+
+    /** After the weapon buffs (fire weapon...) are added: they come with every hit too, so they are halved with it. */
+    @SubscribeEvent(priority = net.neoforged.bus.api.EventPriority.LOW)
+    public static void onLightHit(net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent event) {
+        var src = event.getSource();
+        if (!(src.getEntity() instanceof ServerPlayer sp) || src.getDirectEntity() != sp || event.getEntity() == sp) return;
+        if (!src.is(net.minecraft.world.damagesource.DamageTypes.PLAYER_ATTACK)) return;
+        double mult = lightMultiplier(DualWield.striking ? sp.getOffhandItem() : sp.getMainHandItem());
+        if (mult != 1) event.setAmount((float) (event.getAmount() * mult));
+    }
+
     /** Set while a hit that must not crit is being dealt (server thread). */
     public static boolean noCrit;
 

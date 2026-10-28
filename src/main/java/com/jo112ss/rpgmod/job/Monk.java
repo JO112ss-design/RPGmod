@@ -13,7 +13,7 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.player.Player;
 
 /**
- * The monk's ki (0 to 5): knuckle hits and some skills build it - three gains make a point
+ * The monk's ki (0 to 5): knuckle hits and some skills build it - six gains make a point
  * ({@link #PARTS}); the ki blast spends it all, and <b>holding right click with knuckles charges a ki
  * shot</b>, one point per charge (every ki job: monk, champion, god hand). It fades one point a second
  * after 8 seconds without building any.
@@ -25,8 +25,11 @@ public final class Monk {
     public static final int FADE_AFTER = 160;
     /** Game time ki was last built, per player. */
     private static final Map<UUID, Long> LAST = new HashMap<>();
-    /** Gains that make one point of ki: a knuckle hit is one gain, a skill's point of ki two. */
-    public static final int PARTS = 3, SKILL_PARTS = 2;
+    /**
+     * Gains that make one point of ki: a knuckle hit is one gain, a skill's point of ki four (every
+     * knuckle swing lands now, twice as many hits as before: six hits make a point, as three did).
+     */
+    public static final int PARTS = 6, SKILL_PARTS = 4;
     /** What each point of ki spent adds to the ki blast and the ki wave (x their ratio). */
     public static final double KI_PER_POINT = 1.2;
     /**

@@ -31,6 +31,8 @@ public final class JobConfig {
     public static final ModConfigSpec.DoubleValue POTION_DROP_LUCK = B.comment("Extra potion drop chance per point of the killer's luck").defineInRange("potionDropPerLuck", 0.005, 0, 1);
     public static final ModConfigSpec.DoubleValue MACE_MULT = B.comment("Normal (non-skill) hits with a mace deal this much (heavy, slow weapon)").defineInRange("maceAttackMultiplier", 1.25, 0, 100);
     public static final ModConfigSpec.DoubleValue HAMMER_MULT = B.comment("Normal (non-skill) hits with a hammer deal this much").defineInRange("hammerAttackMultiplier", 1.6, 0, 100);
+    public static final ModConfigSpec.DoubleValue DAGGER_MULT = B.comment("Normal (non-skill) hits with a dagger deal this much (light, fast weapon: every swing lands)").defineInRange("daggerAttackMultiplier", 0.5, 0, 100);
+    public static final ModConfigSpec.DoubleValue KNUCKLE_MULT = B.comment("Normal (non-skill) hits with knuckles deal this much (light, fast weapon: every swing lands)").defineInRange("knuckleAttackMultiplier", 0.5, 0, 100);
 
     public static final ModConfigSpec SPEC = B.build();
 

@@ -63,6 +63,7 @@ public final class HitWindows {
     private static String key(UUID attacker, DamageSource src) {
         boolean plain = src.is(DamageTypes.PLAYER_ATTACK) && src.getDirectEntity() == src.getEntity()
                 || src.getDirectEntity() instanceof AbstractArrow arrow && arrow.getWeaponItem() != null;
+        if (plain && com.jo112ss.rpgmod.job.DualWield.striking) return attacker + "/offhand"; // the nightblade's second blade swings on its own
         return attacker + "/" + (plain ? "plain" : src.typeHolder().getRegisteredName());
     }
 
@@ -79,7 +80,9 @@ public final class HitWindows {
         Map<String, Hit> hits = HITS.computeIfAbsent(victim, k -> new HashMap<>());
         hits.values().removeIf(h -> now - h.tick() >= h.window());
         String key = key(attacker.getUUID(), src);
-        int window = key.endsWith("/plain") && !(src.getDirectEntity() instanceof AbstractArrow) ? plainWindow(attacker) : WINDOW;
+        int window = key.endsWith("/plain") && !(src.getDirectEntity() instanceof AbstractArrow) ? plainWindow(attacker)
+                : key.endsWith("/offhand") && attacker instanceof net.minecraft.server.level.ServerPlayer sp && adaptive
+                        ? Math.max(1, Math.min(WINDOW, (int) Math.floor(com.jo112ss.rpgmod.job.DualWield.interval(sp) * 0.9))) : WINDOW;
         Hit last = hits.get(key);
         if (debug) RpgMod.LOGGER.info("[AUTOTEST] hit window {} amount {} last {} vanilla cooldown {} canceled {}", key.substring(key.indexOf('/') + 1), amount, last,
                 victim.damageCooldownTime, event.isCanceled());

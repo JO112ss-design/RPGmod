@@ -38,6 +38,9 @@ public final class DualWield {
 
     private static final Map<UUID, Long> NEXT = new HashMap<>();
 
+    /** Set while an off-hand strike is being dealt (its own hit window, its own weapon). */
+    public static boolean striking;
+
     public static boolean canDualWield(Player p) {
         JobData d = JobManager.data(p);
         return (testAllow || d.isAdvancedAs("nightblade")) && isBlade(p.getOffhandItem()) && mainHandLetsGo(p.getMainHandItem());
@@ -97,7 +100,13 @@ public final class DualWield {
             return false;
         }
         float dmg = damage(p);
-        boolean hit = target.hurtServer(level, p.damageSources().playerAttack(p), dmg);
+        boolean hit;
+        striking = true;
+        try {
+            hit = target.hurtServer(level, p.damageSources().playerAttack(p), dmg);
+        } finally {
+            striking = false;
+        }
         if (hit) {
             Vec3 dir = target.position().subtract(p.position()).multiply(1, 0, 1);
             if (dir.lengthSqr() > 1e-4) SkillExecutor.push(target, dir, 0.3, 0.1);
