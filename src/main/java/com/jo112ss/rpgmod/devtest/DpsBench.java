@@ -562,7 +562,7 @@ public final class DpsBench {
                 case ULT -> {
                     r.ults.add(ults.get(cur.ult()).id());
                     r.withUlt.add(dps);
-                    log("  {} with {}: {} ; casts {}; health left {} of {}", cur.job(), ults.get(cur.ult()).id(), Math.round(dps), casts, Math.round(p.getHealth()), Math.round(p.getMaxHealth()));
+                    log("  {} with {}: {} ; casts {}; damage {}; health left {} of {}", cur.job(), ults.get(cur.ult()).id(), Math.round(dps), casts, bySkill, Math.round(p.getHealth()), Math.round(p.getMaxHealth()));
                 }
                 case GEAR -> {
                     r.geared = dps;
