@@ -814,7 +814,7 @@ public final class JobManager {
     }
 
     /** Berserker's blood price: the MP a skill is short of is paid with health, this share of max health per MP. */
-    public static final double BLOOD_PRICE = 0.005;
+    public static final double BLOOD_PRICE = 0.015;
 
     /** Health the berserker pays for the MP missing for this cost (0 for anyone else, or with MP enough). */
     public static double bloodPrice(Player player, JobData d, double cost) {

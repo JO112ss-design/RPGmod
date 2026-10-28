@@ -214,6 +214,8 @@ public final class DpsBench {
                     log("  {} plain run: total {} = plain attacks {} ({} hits of {} swings) + skills {}; casts {}; mana left {}", jobs.get(ji), Math.round(dealt),
                             Math.round(basicDealt), basicHits, swings, Math.round(dealt - basicDealt), casts, Math.round(JobManager.data(p).mana()));
                     log("  {} skill damage {}; health left {} of {}", jobs.get(ji), bySkill, Math.round(p.getHealth()), Math.round(p.getMaxHealth()));
+                } else {
+                    log("  {} with {}: casts {}; health left {} of {}", jobs.get(ji), ults.get(run - 1).id(), casts, Math.round(p.getHealth()), Math.round(p.getMaxHealth()));
                 }
                 run++;
                 t = -GAP;
