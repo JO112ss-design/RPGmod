@@ -459,6 +459,8 @@ public final class DpsBench {
         List<SkillDef> mana = List.of();
         int busy;
         boolean bow;
+        /** The spellmaster charges a spell in each hand and fuses them whenever two that fuse are ready. */
+        boolean fuse;
         final Map<String, Integer> casts = new LinkedHashMap<>();
         int swings, offhand;
         Map<Integer, List<Ev>> replay = Map.of();
@@ -620,6 +622,7 @@ public final class DpsBench {
             JobType type = JobType.byId(base);
             weapon = type.weapons.get(0);
             bow = weapon == WeaponType.BOW;
+            fuse = id.equals("spellmaster");
             ItemStack w = new ItemStack(ModItems.get(weapon, WeaponMaterial.DIAMOND));
             String[] songs = SONGS.get(id);
             if (songs != null) { // the song(s) on the lute; "perform" plays them
@@ -752,6 +755,41 @@ public final class DpsBench {
             return true;
         }
 
+        /**
+         * Both hands charged at once, released together: the strongest pair of ready spells that fuse.
+         * It takes the longer of the two charges.
+         */
+        boolean fuseNow() {
+            JobData d = JobManager.data(p);
+            long now = level.getGameTime();
+            SkillDef bestA = null, bestB = null;
+            for (int i = 0; i < rotation.size(); i++) {
+                SkillDef a = rotation.get(i);
+                if (a.kind() != SkillKind.SPELL || d.cooldownEnd(a.id()) > now) continue;
+                for (int j = i + 1; j < rotation.size(); j++) {
+                    SkillDef b = rotation.get(j);
+                    if (b.kind() != SkillKind.SPELL || d.cooldownEnd(b.id()) > now) continue;
+                    if (com.jo112ss.rpgmod.job.SpellCasting.fusionOf(a.id(), b.id()) == null) continue;
+                    if (d.mana() < JobManager.manaCost(p, a) + JobManager.manaCost(p, b)) continue;
+                    if (bestA == null || a.power() + b.power() > bestA.power() + bestB.power()) {
+                        bestA = a;
+                        bestB = b;
+                    }
+                }
+            }
+            if (bestA == null) return false;
+            String id = com.jo112ss.rpgmod.job.SpellCasting.fusionOf(bestA.id(), bestB.id());
+            String before = lastCast;
+            lastCast = id;
+            if (!com.jo112ss.rpgmod.job.SpellCasting.tryFusion(p, bestA, bestB)) {
+                lastCast = before;
+                return false;
+            }
+            casts.merge(id + "(" + bestA.id() + "+" + bestB.id() + ")", 1, Integer::sum);
+            busy = Math.max(GCD, Math.max(JobManager.castTicks(p, bestA), JobManager.castTicks(p, bestB)));
+            return true;
+        }
+
         /** A fully drawn arrow from the bow in hand. */
         void shoot() {
             ItemStack b = p.getMainHandItem();
@@ -783,7 +821,13 @@ public final class DpsBench {
             if (JobManager.data(p).mana() < MANA_LOW * JobManager.maxMana(p)) for (SkillDef s : mana) if (castNow(s)) return;
             boolean singer = JobManager.data(p).songJob();
             boolean playing = Bard.performing(p);
+            boolean fusionTried = false;
             for (SkillDef s : rotation) {
+                // buffs first; then, before the first spell that hits, a fusion if two that fuse are ready
+                if (fuse && !fusionTried && JobDefs.powerKind(s) != null) {
+                    fusionTried = true;
+                    if (fuseNow()) return;
+                }
                 boolean perform = s.id().equals("perform") || s.id().equals("spell_perform");
                 // a song keeps playing: "perform" again only once it is over
                 if (perform && playing) continue;
