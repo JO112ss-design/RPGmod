@@ -1354,21 +1354,36 @@ final class NewJobTests {
                 net.minecraft.world.entity.EquipmentSlot.LEGS, net.minecraft.world.entity.EquipmentSlot.FEET};
         ItemStack[] saved = new ItemStack[4];
         for (int i = 0; i < 4; i++) saved[i] = p.getItemBySlot(slots[i]).copy();
-        // armour of every material: robe set against metal set
+        // armour of every material: robe set against metal set (worn gear counts from the next tick)
         StringBuilder sb = new StringBuilder();
-        for (var mat : com.jo112ss.rpgmod.item.WeaponMaterial.values()) {
-            for (int i = 0; i < 4; i++) p.setItemSlot(slots[i], new ItemStack(com.jo112ss.rpgmod.item.ModItems.get(metal[i], mat)));
-            double m = com.jo112ss.rpgmod.mob.Defense.armor(p), mt = com.jo112ss.rpgmod.mob.Defense.toughness(p);
-            for (int i = 0; i < 4; i++) p.setItemSlot(slots[i], new ItemStack(com.jo112ss.rpgmod.item.ModItems.get(robe[i], mat)));
-            double r = com.jo112ss.rpgmod.mob.Defense.armor(p), rt = com.jo112ss.rpgmod.mob.Defense.toughness(p);
-            sb.append(mat.id).append(" metal ").append(Math.round(m)).append('/').append(String.format("%.1f", mt))
-                    .append(" robe ").append(Math.round(r)).append('/').append(String.format("%.1f", rt)).append(" (")
-                    .append(Math.round(r / Math.max(1, m) * 100)).append("%); ");
+        var mats = com.jo112ss.rpgmod.item.WeaponMaterial.values();
+        for (int j = 0; j < mats.length; j++) {
+            var mat = mats[j];
+            int t0 = 1 + j * 4;
+            double[] m = new double[2];
+            SkillTasks.later(t0, () -> {
+                for (int i = 0; i < 4; i++) p.setItemSlot(slots[i], new ItemStack(com.jo112ss.rpgmod.item.ModItems.get(metal[i], mat)));
+            });
+            SkillTasks.later(t0 + 2, () -> {
+                m[0] = com.jo112ss.rpgmod.mob.Defense.armor(p);
+                m[1] = com.jo112ss.rpgmod.mob.Defense.toughness(p);
+                for (int i = 0; i < 4; i++) p.setItemSlot(slots[i], new ItemStack(com.jo112ss.rpgmod.item.ModItems.get(robe[i], mat)));
+            });
+            boolean last = j == mats.length - 1;
+            SkillTasks.later(t0 + 4, () -> {
+                double r = com.jo112ss.rpgmod.mob.Defense.armor(p), rt = com.jo112ss.rpgmod.mob.Defense.toughness(p);
+                sb.append(mat.id).append(" metal ").append(Math.round(m[0])).append('/').append(String.format("%.1f", m[1]))
+                        .append(" robe ").append(Math.round(r)).append('/').append(String.format("%.1f", rt)).append(" (")
+                        .append(Math.round(r / Math.max(1, m[0]) * 100)).append("%); ");
+                if (last) log("robes: armour/toughness of a full set (with the job's own): {}", sb);
+            });
         }
-        log("robes: armour/toughness of a full set: {}", sb);
         StringBuilder pieces = new StringBuilder();
-        for (int i = 0; i < 4; i++) pieces.append(robe[i].id).append(' ').append(com.jo112ss.rpgmod.item.RobeArmor.defense(com.jo112ss.rpgmod.item.WeaponMaterial.COPPER, i)).append(", ");
-        log("robes: copper pieces {}", pieces);
+        for (var mat : mats) {
+            pieces.append(mat.id).append(' ');
+            for (int i = 0; i < 4; i++) pieces.append(com.jo112ss.rpgmod.item.RobeArmor.defense(mat, i)).append(i < 3 ? "/" : "; ");
+        }
+        log("robes: robe pieces (hood/robe/trousers/shoes): {}", pieces);
         // the option pools
         java.util.Random rr = new java.util.Random(7);
         for (var pool : com.jo112ss.rpgmod.smithing.core.OptionType.Pool.values()) {
@@ -1382,7 +1397,14 @@ final class NewJobTests {
         }
         // a forged iron set on: robes with magic power +5% x4, then metal with attack +5% x4
         var job = JobManager.data(p);
-        double mag0 = JobManager.magicAttack(p), atk0 = JobManager.physicalAttack(p);
+        double[] base = new double[3];
+        SkillTasks.later(22, () -> {
+            for (int i = 0; i < 4; i++) p.setItemSlot(slots[i], ItemStack.EMPTY);
+        });
+        SkillTasks.later(24, () -> {
+        base[0] = JobManager.magicAttack(p);
+        base[1] = JobManager.physicalAttack(p);
+        base[2] = p.getMaxHealth();
         for (int i = 0; i < 4; i++) {
             ItemStack st = new ItemStack(com.jo112ss.rpgmod.item.ModItems.get(robe[i], com.jo112ss.rpgmod.item.WeaponMaterial.IRON));
             st.set(com.jo112ss.rpgmod.registry.ModRegistries.FORGED_DATA.get(), com.jo112ss.rpgmod.smithing.ForgedData.of(com.jo112ss.rpgmod.smithing.core.Quality.FINE,
@@ -1390,6 +1412,8 @@ final class NewJobTests {
                             new com.jo112ss.rpgmod.smithing.core.RolledOption(com.jo112ss.rpgmod.smithing.core.OptionType.MAX_HEALTH, 3)), "test"));
             p.setItemSlot(slots[i], st);
         }
+        });
+        SkillTasks.later(26, () -> {
         double mag1 = JobManager.magicAttack(p);
         float hp1 = p.getMaxHealth();
         for (int i = 0; i < 4; i++) {
@@ -1399,14 +1423,18 @@ final class NewJobTests {
                             new com.jo112ss.rpgmod.smithing.core.RolledOption(com.jo112ss.rpgmod.smithing.core.OptionType.CRIT_CHANCE, 2)), "test"));
             p.setItemSlot(slots[i], st);
         }
+        });
+        SkillTasks.later(28, () -> {
         double atk1 = JobManager.physicalAttack(p);
-        log("robes: job {} magic attack {} -> robes (+5% x4) {} ({}%), max health with robes (+3% x4) {}; attack {} -> armour (+5% x4) {} ({}%), crit from armour {}%",
-                job.displayJobId(), String.format("%.1f", mag0), String.format("%.1f", mag1), Math.round((mag1 / mag0 - 1) * 100), String.format("%.1f", hp1),
-                String.format("%.1f", atk0), String.format("%.1f", atk1), Math.round((atk1 / atk0 - 1) * 100),
+        log("robes: job {} magic attack {} -> robes (+5% x4) {} ({}%), max health {} -> robes (+3% x4) {}; attack {} -> armour (+5% x4) {} ({}%), crit from armour {}%",
+                job.displayJobId(), String.format("%.1f", base[0]), String.format("%.1f", mag1), Math.round((mag1 / base[0] - 1) * 100), String.format("%.1f", base[2]), String.format("%.1f", hp1),
+                String.format("%.1f", base[1]), String.format("%.1f", atk1), Math.round((atk1 / base[1] - 1) * 100),
                 com.jo112ss.rpgmod.gem.Gear.total(p, com.jo112ss.rpgmod.smithing.core.OptionType.CRIT_CHANCE, null));
+        });
+        java.util.List<LivingEntity> stands = new java.util.ArrayList<>();
+        SkillTasks.later(30, () -> {
         // the iron robe set on for the picture, each material's set in a row of armour stands
         for (int i = 0; i < 4; i++) p.setItemSlot(slots[i], new ItemStack(com.jo112ss.rpgmod.item.ModItems.get(robe[i], com.jo112ss.rpgmod.item.WeaponMaterial.IRON)));
-        java.util.List<LivingEntity> stands = new java.util.ArrayList<>();
         Vec3 look = Vec3.directionFromRotation(0, p.getYRot());
         Vec3 side = new Vec3(-look.z, 0, look.x);
         int k = 0;
@@ -1420,7 +1448,8 @@ final class NewJobTests {
             stands.add(st);
             k++;
         }
-        SkillTasks.later(150, () -> {
+        });
+        SkillTasks.later(170, () -> {
             for (var st : stands) st.discard();
             for (int i = 0; i < 4; i++) p.setItemSlot(slots[i], saved[i]);
         });

@@ -174,7 +174,7 @@ public final class AutoTestClient {
             case "nj:eggs" -> new int[] {30, 70, 110, 190};
             case "nj:kishot" -> new int[] {52, 62, 100, 140};
             case "nj:boosts" -> new int[] {20};
-            case "nj:robes" -> new int[] {30, 90};
+            case "nj:robes" -> new int[] {50, 120};
             case "nj:dps" -> new int[] {60};
             case "nj:bosswater" -> new int[] {95, 160, 218, 265, 395, 460, 518, 565, 695, 760, 818, 865, 995, 1060, 1118, 1165};
             case "sealing_chord", "holy_lance" -> new int[] {3, 8};
@@ -321,7 +321,7 @@ public final class AutoTestClient {
             case "nj:eggs" -> 280;
             case "nj:kishot" -> 280;
             case "nj:boosts" -> 40;
-            case "nj:robes" -> 140;
+            case "nj:robes" -> 180;
             case "nj:dps" -> 3000;
             case "nj:bosswater" -> 1480;
             case "nj:linger" -> 140;
