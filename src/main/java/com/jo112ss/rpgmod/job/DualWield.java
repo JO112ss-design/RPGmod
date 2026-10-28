@@ -115,7 +115,7 @@ public final class DualWield {
             level.playSound(null, p.blockPosition(), SoundEvents.PLAYER_ATTACK_SWEEP, SoundSource.PLAYERS, 0.7F, 1.5F);
             p.setLastHurtMob(target);
         }
-        if (com.jo112ss.rpgmod.devtest.AutoTestServer.ENABLED) {
+        if (com.jo112ss.rpgmod.devtest.AutoTestServer.ENABLED && !com.jo112ss.rpgmod.devtest.DpsBench.running()) {
             RpgMod.LOGGER.info("[AUTOTEST] off-hand strike: damage {} hit={} next in {} ticks", String.format("%.2f", dmg), hit, interval(p));
         }
         return hit;

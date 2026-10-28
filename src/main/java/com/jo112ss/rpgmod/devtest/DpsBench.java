@@ -456,7 +456,7 @@ public final class DpsBench {
         int busy;
         boolean bow;
         final Map<String, Integer> casts = new LinkedHashMap<>();
-        int swings;
+        int swings, offhand;
         Map<Integer, List<Ev>> replay = Map.of();
 
         Runner(ServerLevel level, ServerPlayer p, Vec3 field, List<Spec> queue, Map<String, Result> results, Runnable done) {
@@ -549,8 +549,8 @@ public final class DpsBench {
                 case PLAIN -> {
                     r.plain = dps;
                     r.skills = rotation.size();
-                    log("  {} plain run: total {} = plain attacks {} ({} hits of {} swings) + skills {}; casts {}; mana left {}", cur.job(), Math.round(dealt),
-                            Math.round(basicDealt), basicHits, swings, Math.round(dealt - basicDealt), casts, Math.round(JobManager.data(p).mana()));
+                    log("  {} plain run: total {} = plain attacks {} ({} hits of {} swings, {} off-hand strikes) + skills {}; casts {}; mana left {}", cur.job(), Math.round(dealt),
+                            Math.round(basicDealt), basicHits, swings, offhand, Math.round(dealt - basicDealt), casts, Math.round(JobManager.data(p).mana()));
                     log("  {} skill damage {}; health left {} of {}", cur.job(), bySkill, Math.round(p.getHealth()), Math.round(p.getMaxHealth()));
                 }
                 case ULT -> {
@@ -626,6 +626,8 @@ public final class DpsBench {
             }
             p.getInventory().setItem(6, w);
             p.getInventory().setItem(7, bow ? new ItemStack(Items.ARROW, 64) : ItemStack.EMPTY);
+            // the nightblade fights with a second dagger in the off hand (right click strikes with it)
+            p.setItemSlot(EquipmentSlot.OFFHAND, id.equals("nightblade") ? new ItemStack(ModItems.get(WeaponType.DAGGER, WeaponMaterial.DIAMOND)) : ItemStack.EMPTY);
             p.getInventory().setSelectedSlot(6);
             JobStats.apply(p, d);
             List<SkillDef> rot = new ArrayList<>(), ult = new ArrayList<>();
@@ -689,6 +691,7 @@ public final class DpsBench {
             basicDealt = 0;
             basicHits = 0;
             swings = 0;
+            offhand = 0;
             p.setHealth(p.getMaxHealth());
             casts.clear();
             onlyOwn = cur.kind() == Kind.ALLY_BASE || cur.kind() == Kind.ALLY_REPLAY || cur.kind() == Kind.PROBE;
@@ -748,6 +751,8 @@ public final class DpsBench {
 
         void act() {
             if (dummy == null || !dummy.isAlive()) return;
+            // the off-hand blade: right click, on its own timer, alongside everything else
+            if (cur != null && cur.kind() != Kind.WEAPON && com.jo112ss.rpgmod.job.DualWield.canDualWield(p) && com.jo112ss.rpgmod.job.DualWield.strike(p, dummy.getId())) offhand++;
             if (busy > 0) {
                 busy--;
                 return;
