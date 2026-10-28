@@ -67,9 +67,9 @@ public final class HitWindows {
         String key = key(attacker.getUUID(), src);
         Hit last = hits.get(key);
         if (debug) RpgMod.LOGGER.info("[AUTOTEST] hit window {} amount {} last {} vanilla cooldown {} canceled {}", key.substring(key.indexOf('/') + 1), amount, last,
-                ((com.jo112ss.rpgmod.mixin.EntityInvulnerableAccessor) victim).rpgmod$getInvulnerableTime(), event.isCanceled());
+                victim.damageCooldownTime, event.isCanceled());
         // vanilla's shared cooldown never blocks it: the player's own decides below
-        ((com.jo112ss.rpgmod.mixin.EntityInvulnerableAccessor) victim).rpgmod$setInvulnerableTime(0);
+        victim.damageCooldownTime = 0;
         if (last == null) {
             hits.put(key, new Hit(now, amount));
             return;
