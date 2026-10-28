@@ -47,6 +47,25 @@ public final class DpsBench {
     private static boolean counting;
     private static double dealt;
 
+    /** The benchmark under way (driven by the server tick: skill tasks give up after a minute). */
+    private static Runner active;
+
+    @SubscribeEvent
+    public static void onTick(net.neoforged.neoforge.event.tick.ServerTickEvent.Post event) {
+        if (active == null) return;
+        Runner r = active;
+        boolean done;
+        try {
+            done = r.step();
+        } catch (Exception e) {
+            RpgMod.LOGGER.error("[AUTOTEST] dps: failed on {}", r.ji < 0 || r.ji >= r.jobs.size() ? "?" : r.jobs.get(r.ji), e);
+            r.run = 3; // on to the next job
+            r.t = 0;
+            done = false;
+        }
+        if (done && active == r) active = null;
+    }
+
     @SubscribeEvent
     public static void onDamage(LivingDamageEvent.Post event) {
         if (counting && event.getEntity().entityTags().contains(DUMMY)) dealt += event.getInflictedDamage();
@@ -123,16 +142,7 @@ public final class DpsBench {
         }
 
         void go() {
-            SkillTasks.run(age -> {
-                try {
-                    return step();
-                } catch (Exception e) {
-                    RpgMod.LOGGER.error("[AUTOTEST] dps: failed on {}", ji < 0 || ji >= jobs.size() ? "?" : jobs.get(ji), e);
-                    run = 3; // skip to the next job
-                    t = 0;
-                    return false;
-                }
-            });
+            active = this;
         }
 
         /** One tick; true when every job is done. */

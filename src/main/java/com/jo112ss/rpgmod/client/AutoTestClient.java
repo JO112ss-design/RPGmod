@@ -320,7 +320,7 @@ public final class AutoTestClient {
             case "nj:eggs" -> 280;
             case "nj:kishot" -> 280;
             case "nj:boosts" -> 40;
-            case "nj:dps" -> 7200;
+            case "nj:dps" -> 3000;
             case "nj:bosswater" -> 1480;
             case "nj:linger" -> 140;
             case "nj:ward" -> 210;
