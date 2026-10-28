@@ -220,19 +220,19 @@ public final class JobDefs {
                         skill("broadside", SkillKind.ULTIMATE, SkillEffect.WHIRL, 60, 40, 1.2, 14, 4, List.of(), 0, "斉"),
                         skill("jolly_roger", SkillKind.ULTIMATE, SkillEffect.BUFF, 60, 40, 0, 20, 15, List.of(), 0, "旗")),
                 List.of());
-        // ---- Lancer: long reach and charges; hits from the far end of the spear count for more
+        // ---- Lancer (the spear jobs' skills are a quarter stronger than they first were: lancer, dragoon, sentinel): long reach and charges; hits from the far end of the spear count for more
         job("lancer", 0xC0703A, "槍", List.of(JobStat.ATTACK_DAMAGE, JobStat.MAX_HEALTH, JobStat.ARMOR, JobStat.MOVEMENT_SPEED),
                 stats(JobStat.MAX_HEALTH, 4, JobStat.ATTACK_DAMAGE, 6), stats(JobStat.ATTACK_DAMAGE, 0.6, JobStat.MAX_HEALTH, hpGrow(1.0, 4)),
                 List.of(
-                        skill("lance_charge", SkillKind.ACTIVE, SkillEffect.DASH, 4, 8, 1.3, 8, 0, List.of(), 0, "突"),
-                        skill("spear_throw", SkillKind.ACTIVE, SkillEffect.BOLT, 4.5, 15, 2.6, 24, 0, List.of(), 0, "投"),
-                        skill("spear_sweep", SkillKind.ACTIVE, SkillEffect.SWEEP, 4, 15, 1.8, 5.5, 0, List.of(), 0, "薙"),
-                        skill("leap_thrust", SkillKind.ACTIVE, SkillEffect.WHIRL, 6, 22, 2.6, 2.5, 0, List.of(), 0, "跳"),
-                        skill("counter_stance", SkillKind.ACTIVE, SkillEffect.BUFF, 7, 8, 3.0, 5, 2, List.of(), 0, "構"),
-                        skill("rapid_thrust", SkillKind.ACTIVE, SkillEffect.SWEEP, 5, 15, 0.7, 6, 0, List.of(), 0, "連")),
+                        skill("lance_charge", SkillKind.ACTIVE, SkillEffect.DASH, 4, 8, 1.6, 8, 0, List.of(), 0, "突"),
+                        skill("spear_throw", SkillKind.ACTIVE, SkillEffect.BOLT, 4.5, 15, 3.25, 24, 0, List.of(), 0, "投"),
+                        skill("spear_sweep", SkillKind.ACTIVE, SkillEffect.SWEEP, 4, 15, 2.25, 5.5, 0, List.of(), 0, "薙"),
+                        skill("leap_thrust", SkillKind.ACTIVE, SkillEffect.WHIRL, 6, 22, 3.25, 2.5, 0, List.of(), 0, "跳"),
+                        skill("counter_stance", SkillKind.ACTIVE, SkillEffect.BUFF, 7, 8, 3.75, 5, 2, List.of(), 0, "構"),
+                        skill("rapid_thrust", SkillKind.ACTIVE, SkillEffect.SWEEP, 5, 15, 0.9, 6, 0, List.of(), 0, "連")),
                 List.of(
-                        skill("dragon_fang", SkillKind.ULTIMATE, SkillEffect.WHIRL, 60, 40, 6.0, 6, 3, List.of(), 0, "竜"),
-                        skill("spear_rain", SkillKind.ULTIMATE, SkillEffect.WHIRL, 60, 40, 0.9, 12, 4.5, List.of(), 0, "雨")),
+                        skill("dragon_fang", SkillKind.ULTIMATE, SkillEffect.WHIRL, 60, 40, 7.5, 6, 3, List.of(), 0, "竜"),
+                        skill("spear_rain", SkillKind.ULTIMATE, SkillEffect.WHIRL, 60, 40, 1.15, 12, 4.5, List.of(), 0, "雨")),
                 List.of());
         // ---- Monk: fast fists; hits build ki, the big moves spend it
         job("monk", 0xE67E22, "拳", List.of(JobStat.ATTACK_DAMAGE, JobStat.ATTACK_SPEED, JobStat.CRIT_CHANCE, JobStat.MOVEMENT_SPEED),
@@ -419,13 +419,13 @@ public final class JobDefs {
         advanced("lancer", "dragoon", 0x8A3A2A, "竜", List.of(JobStat.ATTACK_DAMAGE, JobStat.MAX_HEALTH, JobStat.MOVEMENT_SPEED, JobStat.CRIT_CHANCE),
                 stats(),
                 List.of(
-                        skill("high_jump", A, SkillEffect.WHIRL, 5, 15, 4.0, 3.5, 0, List.of(), 0, "跳"),
-                        skill("dragon_spear", A, SkillEffect.BOLT, 4.5, 15, 2.8, 24, 0, List.of(), 0, "爆"),
+                        skill("high_jump", A, SkillEffect.WHIRL, 5, 15, 5.0, 3.5, 0, List.of(), 0, "跳"),
+                        skill("dragon_spear", A, SkillEffect.BOLT, 4.5, 15, 3.5, 24, 0, List.of(), 0, "爆"),
                         skill("dragon_scale", A, SkillEffect.BUFF, 20, 20, 0, 0, 20, List.of("minecraft:resistance"), 1, "鱗"),
-                        skill("spiral_lance", A, SkillEffect.SWEEP, 4.5, 15, 1.0, 6, 0, List.of(), 0, "螺"),
+                        skill("spiral_lance", A, SkillEffect.SWEEP, 4.5, 15, 1.25, 6, 0, List.of(), 0, "螺"),
                         skill("sky_step", A, SkillEffect.DASH, 2.5, 8, 0, 0, 0, List.of(), 0, "天")),
                 List.of(
-                        skill("dragon_king", U, SkillEffect.WHIRL, 60, 40, 8.0, 16, 0, List.of(), 0, "王")),
+                        skill("dragon_king", U, SkillEffect.WHIRL, 60, 40, 10.0, 16, 0, List.of(), 0, "王")),
                 List.of());
         // ---- Maestro: songs on top of songs
         advanced("bard", "maestro", 0x2FA38C, "指", List.of(JobStat.MAGIC_ATTACK, JobStat.MANA_REGEN, JobStat.COOLDOWN_REDUCTION, JobStat.MAX_HEALTH),
@@ -489,15 +489,15 @@ public final class JobDefs {
                 stats(JobStat.MAX_HEALTH, 6, JobStat.ARMOR, 4, JobStat.ATTACK_DAMAGE, 4),
                 stats(JobStat.ATTACK_DAMAGE, 0.6, JobStat.MAX_HEALTH, hpGrow(1.2, 6)),
                 List.of(
-                        skill("guard_thrust", A, SkillEffect.SWEEP, 3, 8, 1.6, 5, 0, List.of(), 0, "突"),
-                        skill("shield_charge", A, SkillEffect.DASH, 4, 8, 1.8, 7, 2, List.of("minecraft:slowness"), 4, "盾"),
+                        skill("guard_thrust", A, SkillEffect.SWEEP, 3, 8, 2.0, 5, 0, List.of(), 0, "突"),
+                        skill("shield_charge", A, SkillEffect.DASH, 4, 8, 2.25, 7, 2, List.of("minecraft:slowness"), 4, "盾"),
                         skill("immovable", A, SkillEffect.BUFF, 16, 20, 0, 0, 12, List.of(), 0, "動"),
-                        skill("spear_wall", A, SkillEffect.WHIRL, 9, 20, 0.6, 3.5, 8, List.of(), 0, "衾"),
-                        skill("counter_lance", A, SkillEffect.BUFF, 6, 8, 2.6, 0, 3, List.of(), 0, "返"),
+                        skill("spear_wall", A, SkillEffect.WHIRL, 9, 20, 0.75, 3.5, 8, List.of(), 0, "衾"),
+                        skill("counter_lance", A, SkillEffect.BUFF, 6, 8, 3.25, 0, 3, List.of(), 0, "返"),
                         skill("provoke", A, SkillEffect.DEBUFF, 7.5, 15, 0, 10, 6, List.of(), 0, "挑")),
                 List.of(
-                        skill("fortress", U, SkillEffect.BUFF, 75, 40, 2.0, 16, 10, List.of(), 0, "砦"),
-                        skill("holy_lance", U, SkillEffect.SWEEP, 60, 40, 6.0, 12, 0, List.of(), 0, "聖")));
+                        skill("fortress", U, SkillEffect.BUFF, 75, 40, 2.5, 16, 10, List.of(), 0, "砦"),
+                        skill("holy_lance", U, SkillEffect.SWEEP, 60, 40, 7.5, 12, 0, List.of(), 0, "聖")));
         // ---- Spellsinger: songs that put magic on the party's weapons
         hybrid("spellsinger", "enchanter", "bard", 0x9A6AD8, "律", List.of(JobStat.MAGIC_ATTACK, JobStat.MANA_REGEN, JobStat.COOLDOWN_REDUCTION, JobStat.MAX_HEALTH),
                 stats(JobStat.MAGIC_ATTACK, 4, JobStat.MANA_REGEN, 0.5),

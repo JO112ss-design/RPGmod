@@ -175,6 +175,21 @@ public final class Shields {
         }
     }
 
+    /**
+     * A spear in the main hand and a shield in the off hand: right click raises the shield (the
+     * spear's own right-click charge gives way to it). Both sides: the client then uses the off hand.
+     */
+    @SubscribeEvent
+    public static void onUseSpear(net.neoforged.neoforge.event.entity.player.PlayerInteractEvent.RightClickItem event) {
+        if (event.getHand() != net.minecraft.world.InteractionHand.MAIN_HAND) return;
+        Player p = event.getEntity();
+        if (ModItems.typeOf(event.getItemStack().getItem()) != WeaponType.SPEAR) return;
+        ItemStack off = p.getOffhandItem();
+        if (!off.has(DataComponents.BLOCKS_ATTACKS) || p.getCooldowns().isOnCooldown(off)) return;
+        event.setCanceled(true);
+        event.setCancellationResult(net.minecraft.world.InteractionResult.PASS);
+    }
+
     /** True while the player holds a shield up (or is raising it): skills wait until it is lowered. */
     public static boolean guarding(Player player) {
         return player.isUsingItem() && player.getUseItem().has(DataComponents.BLOCKS_ATTACKS);
