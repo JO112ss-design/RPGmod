@@ -142,13 +142,13 @@ public final class JobDefs {
                         skill("time_warp", SkillKind.ULTIMATE, SkillEffect.DEBUFF, 90, 84, 0, 20, 3, List.of("minecraft:slowness", "minecraft:weakness"), 3, "止")),
                 List.of(
                         skill("magic_bolt", SkillKind.SPELL, SkillEffect.BOLT, 0.3, 5, 1.1, 28, 0, List.of(), 0, "弾"),
-                        skill("flame_burst", SkillKind.SPELL, SkillEffect.WHIRL, 6, 28, 2.1, 7, 4, List.of(), 0, "炎"),
+                        skill("flame_burst", SkillKind.SPELL, SkillEffect.WHIRL, 9, 28, 3.78, 7, 4, List.of(), 0, "炎"),
                         skill("frost_nova", SkillKind.SPELL, SkillEffect.DEBUFF, 8, 28, 1.5, 6, 6, List.of("minecraft:slowness"), 2, "氷"),
-                        skill("thunder", SkillKind.SPELL, SkillEffect.LIGHTNING, 10, 42, 4.5, 28, 0, List.of(), 0, "雷"),
+                        skill("thunder", SkillKind.SPELL, SkillEffect.LIGHTNING, 15, 42, 8.1, 28, 0, List.of(), 0, "雷"),
                         skill("arcane_shield", SkillKind.SPELL, SkillEffect.BUFF, 20, 35, 0, 0, 15, List.of("minecraft:absorption", "minecraft:resistance"), 1, "護"),
                         skill("arcane_missiles", SkillKind.SPELL, SkillEffect.BOLT, 5, 26, 0.75, 24, 0, List.of(), 0, "矢"),
                         skill("blizzard", SkillKind.SPELL, SkillEffect.DEBUFF, 14, 49, 0.525, 4, 2, List.of("minecraft:slowness"), 1, "嵐"),
-                        skill("gravity", SkillKind.SPELL, SkillEffect.WHIRL, 12, 42, 3.6, 5, 0, List.of(), 0, "重")));
+                        skill("gravity", SkillKind.SPELL, SkillEffect.WHIRL, 18, 42, 6.48, 5, 0, List.of(), 0, "重")));
         // ---- Healer: heals (spells charged on the staff) and buffs
         job("healer", 0x5BC0DE, "癒", List.of(JobStat.MAX_MANA, JobStat.MAGIC_ATTACK, JobStat.MANA_REGEN, JobStat.MAX_HEALTH),
                 stats(JobStat.MAX_MANA, 40, JobStat.MAGIC_ATTACK, 3), stats(JobStat.MAGIC_ATTACK, 0.6, JobStat.ATTACK_DAMAGE, 0.6, JobStat.MAX_MANA, 0.75, JobStat.MAX_HEALTH, hpGrow(0.6, 0)),

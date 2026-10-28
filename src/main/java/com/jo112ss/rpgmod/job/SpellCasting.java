@@ -48,12 +48,12 @@ public final class SpellCasting {
      */
     private static double worth(String spell) {
         return switch (spell) {
-            case "flame_burst" -> 2.1;
+            case "flame_burst" -> 3.78; // x1.8 with its power (cooldown x1.5)
             case "inferno" -> 4.0;
             case "frost_nova" -> 1.5;
             case "blizzard" -> 4.2;
             case "absolute_zero" -> 3.5;
-            case "thunder" -> 3.8;
+            case "thunder" -> 6.84;
             case "thunderstorm" -> 5.0;
             default -> 0;
         };
