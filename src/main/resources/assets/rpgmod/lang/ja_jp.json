@@ -137,7 +137,7 @@
   "rpgmod.skill.charge": "突進",
   "rpgmod.skill.charge.desc": "前方へ突っ込み、ぶつかった敵を弾き飛ばす。",
   "rpgmod.skill.war_cry": "雄叫び",
-  "rpgmod.skill.war_cry.desc": "周囲の味方に攻撃力アップ（+20%）を与え、近くの敵を怯ませる。",
+  "rpgmod.skill.war_cry.desc": "周囲の味方に攻撃力アップ（+20%）を与え、近くの敵を怯ませる（バーサーカーは自分だけ）。",
   "rpgmod.skill.whirlwind": "旋風斬",
   "rpgmod.skill.whirlwind.desc": "2回転して周囲360度を薙ぎ払う。",
   "rpgmod.skill.berserk": "闘神",

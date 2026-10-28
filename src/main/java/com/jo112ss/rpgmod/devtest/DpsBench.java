@@ -759,6 +759,15 @@ public final class DpsBench {
                 if (singer && !perform && (!playing || JobManager.data(p).mana() - JobManager.manaCost(p, s) < Bard.performCost(p))) continue;
                 if (castNow(s)) return;
             }
+            if (singer) { // the lute's sound wave (right click), keeping the MP the next song needs
+                ItemStack lute = p.getMainHandItem();
+                JobData d = JobManager.data(p);
+                if (!p.getCooldowns().isOnCooldown(lute) && d.mana() - com.jo112ss.rpgmod.job.BardAttack.COST >= (playing ? 0 : Bard.performCost(p))) {
+                    com.jo112ss.rpgmod.job.BardAttack.wave(p);
+                    swings++;
+                }
+                return;
+            }
             if (bow) {
                 if (t % 20 == 0) { // a fully drawn arrow a second
                     ItemStack b = p.getMainHandItem();

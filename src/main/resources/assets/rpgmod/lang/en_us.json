@@ -137,7 +137,7 @@
   "rpgmod.skill.charge": "Charge",
   "rpgmod.skill.charge.desc": "Dash forward, knocking aside enemies in your way.",
   "rpgmod.skill.war_cry": "War Cry",
-  "rpgmod.skill.war_cry.desc": "Give nearby allies Attack Up (+20%) and weaken nearby enemies.",
+  "rpgmod.skill.war_cry.desc": "Give nearby allies Attack Up (+20%) and weaken nearby enemies (a berserker fires up only itself).",
   "rpgmod.skill.whirlwind": "Whirlwind",
   "rpgmod.skill.whirlwind.desc": "Spin twice, striking everything around you.",
   "rpgmod.skill.berserk": "War God",

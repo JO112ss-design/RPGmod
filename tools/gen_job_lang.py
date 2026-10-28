@@ -180,7 +180,7 @@ SKILLS = {  # id: (ja, ja desc, en, en desc)
  'finale': ('終幕', '演奏を締めくくり、盛り上がり（コンボ）に応じた大きな衝撃波を放つ。', 'Finale', 'End the performance with a shockwave as big as the combo you built.'),
  'power_slash': ('強撃', '前方の広い扇形（半径4.5）を斬り払う。', 'Power Slash', 'Cleave a wide arc in front of you (4.5 blocks).'),
  'charge': ('突進', '前方へ突っ込み、ぶつかった敵を弾き飛ばす。', 'Charge', 'Dash forward, knocking aside enemies in your way.'),
- 'war_cry': ('雄叫び', '周囲の味方に攻撃力アップ（+20%）を与え、近くの敵を怯ませる。', 'War Cry', 'Give nearby allies Attack Up (+20%) and weaken nearby enemies.'),
+ 'war_cry': ('雄叫び', '周囲の味方に攻撃力アップ（+20%）を与え、近くの敵を怯ませる（バーサーカーは自分だけ）。', 'War Cry', 'Give nearby allies Attack Up (+20%) and weaken nearby enemies (a berserker fires up only itself).'),
  'whirlwind': ('旋風斬', '2回転して周囲360度を薙ぎ払う。', 'Whirlwind', 'Spin twice, striking everything around you.'),
  'berserk': ('闘神', '15秒以内の通常攻撃5回が、前方への巨大な衝撃斬になる。', 'War God', 'For 15s, your next five normal hits each send a great shockwave slash ahead.'),
  'earthshatter': ('大地割り', '地面を叩き割り、広がる衝撃波で周囲の敵を打ち上げ鈍らせる。', 'Earthshatter', 'Smash the ground: a spreading shockwave hits, lifts and slows enemies.'),

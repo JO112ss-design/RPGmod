@@ -403,8 +403,10 @@ public final class SkillExecutor {
         return true;
     }
 
+    /** War cry: the party's attack up - the berserker's roar fires up only itself. */
     static boolean warCry(Ctx c) {
-        List<ServerPlayer> allies = allies(c.p, c.def.radius());
+        boolean berserker = JobManager.data(c.p).isAdvancedAs("berserker");
+        List<ServerPlayer> allies = berserker ? List.of(c.p) : allies(c.p, c.def.radius());
         for (ServerPlayer a : allies) apply(a, c.def, c.p);
         List<LivingEntity> foes = enemies(c.p, c.p.position(), c.def.radius() * 0.75);
         for (LivingEntity e : foes) e.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, ticks(5), 0), c.p);
