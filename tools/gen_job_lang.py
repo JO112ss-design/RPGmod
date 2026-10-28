@@ -8,7 +8,7 @@ JOBS = {  # id: (ja name, ja role, ja desc, en name, en role, en desc)
  'monk': ('モンク', '近接・連撃', '拳で戦う格闘家。攻撃を当てると気が溜まり、大技で一気に放つ。受け流しで反撃も得意。', 'Monk', 'Melee: combos', 'A fist fighter: hits build ki, the big moves spend it. Parries and counters.'),
  'bard': ('バード', '支援・演奏', '演奏で周りの味方を支える吟遊詩人。音符に合わせてクリックすると歌の効果が強くなる（演奏中は攻撃できない）。', 'Bard', 'Support: songs', 'Plays songs for the party around them. Clicking in time with the notes makes the song stronger (no attacking while playing).'),
  # ---- advanced jobs (from level 100)
- 'berserker': ('バーサーカー', '上級・近接火力', 'ファイターの上級職。守りを捨てて攻撃に全てを注ぐ狂戦士。', 'Berserker', 'Advanced: melee damage', 'Advanced fighter: throws defence away for raw power.'),
+ 'berserker': ('バーサーカー', '上級・近接火力', 'ファイターの上級職。守りを捨てて攻撃に全てを注ぐ狂戦士。MPが足りないときはHPを払ってスキルを使える（血の代償：MP1につき最大HPの0.5%）。', 'Berserker', 'Advanced: melee damage', 'Advanced fighter: throws defence away for raw power. Short of MP, pays for skills with health instead (blood price: 0.5% of max health per MP).'),
  'guardian': ('ガーディアン', '上級・盾役', 'パラディンの上級職。仲間の盾となり、どんな攻撃も受け止める守護者。', 'Guardian', 'Advanced: tank', 'Advanced paladin: the party\'s shield, taking every blow.'),
  'sharpshooter': ('シャープシューター', '上級・遠距離火力', 'レンジャーの上級職。一撃必中の狙撃と速射を極めた射手。', 'Sharpshooter', 'Advanced: ranged damage', 'Advanced ranger: master of sniping and rapid fire.'),
  'spellmaster': ('スペルマスター', '上級・魔法火力', 'ウィザードの上級職。杖に左手用の呪文枠が4つ増え、右クリックと左手の呪文キー（初期は左クリック）で二つの呪文を同時に操り、属性の違う二つを融合させる大魔導師。', 'Spellmaster', 'Advanced: magic damage', 'Advanced wizard: four extra left-hand slots on the staff, a spell in each hand at once (right click and the left-hand spell key, left click by default), and fusion of two elements.'),
@@ -256,7 +256,7 @@ SKILLS = {  # id: (ja, ja desc, en, en desc)
  'triple_whirl': ('怒涛の三連旋風', '3回転して周囲を斬る。回転の合間に敵を引き寄せ、最後に吹き飛ばす。', 'Triple Whirl', 'Spin three times, pulling enemies in between; the last spin throws them out.'),
  'reckless_charge': ('捨て身の突進', '長く突進し、ぶつかった敵を打ち上げる。4秒間、自分の被ダメージが30%増える。', 'Reckless Charge', 'A long dash that throws enemies up. For 4s you take 30% more damage.'),
  'terror_roar': ('威圧の咆哮', '周囲8ブロックの敵の攻撃力と速度を大きく下げ、自分の会心率が25%上がる。', 'Terror Roar', 'Enemies within 8 blocks lose much of their attack and speed; your crit rate rises by 25%.'),
- 'asura': ('修羅', '15秒間、HPが減っているほど与ダメージが上がり（最大+150%）、与えたダメージの15%を回復する。', 'Asura', 'For 15s the lower your health, the harder you hit (up to +150%), and 15% of the damage you deal heals you.'),
+ 'asura': ('修羅', '15秒間、与ダメージ+40%。HPが減っているほど更に上がり（最大+150%）、与えたダメージの15%を回復する。', 'Asura', 'For 15s you hit 40% harder, more the lower your health (up to +150%), and 15% of the damage you deal heals you.'),
  'iron_wall': ('鉄壁', '16秒間、受けるダメージが半分になり、ノックバックしなくなる。', 'Iron Wall', 'For 16s you take half damage and cannot be knocked back.'),
  'provoke_shield': ('挑発の盾', '周囲12ブロックの敵を全部自分に向けさせ、防御力+16・防具強度+8。', 'Provoking Shield', 'Every monster within 12 blocks turns on you; armour +16 and toughness +8.'),
  'cover': ('かばう', '20秒間、周囲10ブロックの味方が受けるダメージの70%を代わりに受ける。', 'Cover', 'For 20s you take 70% of the damage meant for allies within 10 blocks.'),

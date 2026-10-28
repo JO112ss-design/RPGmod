@@ -81,7 +81,9 @@ public final class JobHud {
                     String secs = remain >= 200 ? String.valueOf(remain / 20) : String.format("%.1f", remain / 20.0);
                     g.centeredText(font, Component.literal(secs), x + SLOT / 2, y + 6, 0xFFFFFFFF);
                 } else if (d.mana() < com.jo112ss.rpgmod.job.JobManager.manaCost(mc.player, def)) {
-                    g.fill(x + 1, y + 1, x + SLOT - 1, y + SLOT - 1, 0x803050C0);
+                    // short of MP: blue, or red for a berserker who will pay with health (blood price)
+                    boolean blood = com.jo112ss.rpgmod.job.JobManager.canPayBlood(mc.player, d, com.jo112ss.rpgmod.job.JobManager.manaCost(mc.player, def));
+                    g.fill(x + 1, y + 1, x + SLOT - 1, y + SLOT - 1, blood ? 0x60C01020 : 0x803050C0);
                 }
             }
             Component key = JobKeys.SKILLS[s].getTranslatedKeyMessage();

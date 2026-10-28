@@ -168,6 +168,7 @@ public final class DpsBench {
         boolean bow;
         final java.util.Map<String, Integer> casts = new java.util.LinkedHashMap<>();
         int swings;
+        double hpPaid;
 
         Runner(ServerLevel level, ServerPlayer p, Vec3 field, List<String> jobs, List<Result> results, Runnable done) {
             this.level = level;
@@ -213,7 +214,7 @@ public final class DpsBench {
                 if (run == 0) {
                     log("  {} plain run: total {} = plain attacks {} ({} hits of {} swings) + skills {}; casts {}; mana left {}", jobs.get(ji), Math.round(dealt),
                             Math.round(basicDealt), basicHits, swings, Math.round(dealt - basicDealt), casts, Math.round(JobManager.data(p).mana()));
-                    log("  {} skill damage {}", jobs.get(ji), bySkill);
+                    log("  {} skill damage {}; health paid {} of {}", jobs.get(ji), bySkill, Math.round(hpPaid), Math.round(p.getMaxHealth()));
                 }
                 run++;
                 t = -GAP;
@@ -254,6 +255,7 @@ public final class DpsBench {
             p.getInventory().setSelectedSlot(6);
             JobStats.apply(p, d);
             if (id.equals("fighter") || id.equals("ranger")) { // the attack-up buff: +20% / +40%
+                p.removeAllEffects();
                 double a0 = JobManager.physicalAttack(p);
                 p.addEffect(new net.minecraft.world.effect.MobEffectInstance(com.jo112ss.rpgmod.registry.ModEffects.ATTACK_UP, 100, 0));
                 double a1 = JobManager.physicalAttack(p);
@@ -317,12 +319,14 @@ public final class DpsBench {
             basicDealt = 0;
             basicHits = 0;
             swings = 0;
+            hpPaid = 0;
             casts.clear();
             counting = true;
             JobManager.sync(p);
         }
 
         void keepUp() {
+            if (counting && p.getHealth() < p.getMaxHealth()) hpPaid += p.getMaxHealth() - p.getHealth(); // blood frenzy, blood price
             p.setHealth(p.getMaxHealth());
             if (dummy != null && dummy.isAlive()) dummy.setHealth(dummy.getMaxHealth());
             if (dummy == null) return;
@@ -344,9 +348,13 @@ public final class DpsBench {
             JobData d = JobManager.data(p);
             long now = level.getGameTime();
             if (d.cooldownEnd(def.id()) > now || d.mana() < JobManager.manaCost(p, def)) return false;
-            if (!JobManager.cast(p, d, def)) return false;
+            String before = lastCast;
+            lastCast = def.id(); // set first: most skills hit inside the cast
+            if (!JobManager.cast(p, d, def)) {
+                lastCast = before;
+                return false;
+            }
             casts.merge(def.id(), 1, Integer::sum);
-            lastCast = def.id();
             busy = Math.max(GCD, JobManager.castTicks(p, def));
             return true;
         }

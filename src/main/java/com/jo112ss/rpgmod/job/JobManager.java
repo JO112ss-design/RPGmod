@@ -575,7 +575,7 @@ public final class JobManager {
             if (sp != null) tell(sp, "rpgmod.job.cooldown", String.format("%.1f", ready / 20.0));
             return false;
         }
-        if (d.mana() < manaCost(player, def)) {
+        if (d.mana() < manaCost(player, def) && !canPayBlood(player, d, manaCost(player, def))) {
             if (sp != null) tell(sp, "rpgmod.job.no_mana");
             return false;
         }
@@ -796,7 +796,7 @@ public final class JobManager {
             return false;
         }
         double cost = manaCost(player, def);
-        if (d.mana() < cost) {
+        if (d.mana() < cost && !canPayBlood(player, d, cost)) {
             tell(player, "rpgmod.job.no_mana");
             return false;
         }
@@ -805,11 +805,36 @@ public final class JobManager {
         if (!SkillExecutor.execute(player, def, power)) return false;
         if (def.kind() == SkillKind.SPELL) echo(player, def, power);
         double cdr = st.get(JobStat.COOLDOWN_REDUCTION) / 100.0;
-        d.setMana(d.mana() - cost);
+        if (d.mana() < cost) payBlood(player, d, cost);
+        else d.setMana(d.mana() - cost);
         d.pruneCooldowns(now);
         d.setCooldown(def.id(), now + Math.round(def.cooldown() * 20 * (1 - cdr) * (1 - d.skillBoost(def.id(), com.jo112ss.rpgmod.job.core.SkillBoost.COOLDOWN))));
         sync(player);
         return true;
+    }
+
+    /** Berserker's blood price: the MP a skill is short of is paid with health, this share of max health per MP. */
+    public static final double BLOOD_PRICE = 0.005;
+
+    /** Health the berserker pays for the MP missing for this cost (0 for anyone else, or with MP enough). */
+    public static double bloodPrice(Player player, JobData d, double cost) {
+        if (!d.isAdvancedAs("berserker") || d.mana() >= cost) return 0;
+        return (cost - d.mana()) * BLOOD_PRICE * player.getMaxHealth();
+    }
+
+    /** The price can be paid without dying (at least 1 health is left). */
+    public static boolean canPayBlood(Player player, JobData d, double cost) {
+        double price = bloodPrice(player, d, cost);
+        return price > 0 && player.getHealth() - price >= 1;
+    }
+
+    private static void payBlood(ServerPlayer player, JobData d, double cost) {
+        double price = bloodPrice(player, d, cost);
+        d.setMana(0);
+        player.setHealth((float) Math.max(1, player.getHealth() - price));
+        com.jo112ss.rpgmod.job.fx.ServerFx.of("x_burst", player.position().add(0, player.getBbHeight() * 0.5, 0)).a(0.9).b(2).color(0xB0101A).send((ServerLevel) player.level());
+        player.level().playSound(null, player.blockPosition(), SoundEvents.PLAYER_HURT_SWEET_BERRY_BUSH, SoundSource.PLAYERS, 0.8F, 0.7F);
+        if (com.jo112ss.rpgmod.devtest.AutoTestServer.ENABLED) com.jo112ss.rpgmod.RpgMod.LOGGER.info("[AUTOTEST] blood price {} health for {} MP short", String.format("%.1f", price), String.format("%.1f", cost));
     }
 
     /** Mana a skill costs right now (the spellmaster's overload makes spells 50% dearer). */

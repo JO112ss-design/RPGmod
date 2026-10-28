@@ -50,8 +50,8 @@ public final class AdvancedHooks {
     public static final double EMPOWERED_MULT = 2.5;
     /** Exposed: +30% damage taken per level. */
     public static final double EXPOSED_PER_LEVEL = 0.3;
-    /** Asura: up to +150% damage at (almost) no health; 15% of the damage dealt heals. */
-    public static final double ASURA_MAX = 1.5, ASURA_LIFESTEAL = 0.15;
+    /** Asura: +40% damage at full health, rising to +150% at (almost) none; 15% of the damage dealt heals. */
+    public static final double ASURA_MIN = 0.4, ASURA_MAX = 1.5, ASURA_LIFESTEAL = 0.15;
     /** Cover: share of an ally's damage the guardian takes instead. */
     public static final double COVER_SHARE = 0.7, COVER_RANGE = 10;
 
@@ -71,7 +71,7 @@ public final class AdvancedHooks {
         if (!venom && src.getEntity() instanceof ServerPlayer sp && sp != victim) {
             if (sp.hasEffect(ModEffects.ASURA)) {
                 float missing = 1 - sp.getHealth() / Math.max(1, sp.getMaxHealth());
-                amount *= (float) (1 + ASURA_MAX * Math.max(0, missing));
+                amount *= (float) (1 + ASURA_MIN + (ASURA_MAX - ASURA_MIN) * Math.max(0, missing));
             }
             if (sp.hasEffect(ModEffects.VANISH) && !(victim instanceof Player)) {
                 // striking from nowhere: doubled, and you are seen again
