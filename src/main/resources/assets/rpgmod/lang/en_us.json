@@ -352,7 +352,7 @@
   "rpgmod.skill.gravity": "Gravity Well",
   "rpgmod.skill.gravity.desc": "Pulls enemies into a gravity well, then crushes them together.",
   "rpgmod.skill.nourish": "Nourish",
-  "rpgmod.skill.nourish.desc": "Restores hunger and saturation to nearby allies.",
+  "rpgmod.skill.nourish.desc": "Restores 4 hunger (two drumsticks) and 4 saturation to nearby allies.",
   "rpgmod.skill.purify": "Purify",
   "rpgmod.skill.purify.desc": "Removes all harmful effects, fire and freezing from nearby allies, heals a little and smites the enemies around . A spell cast from the staff.",
   "rpgmod.skill.poison_coat": "Weapon Coating",

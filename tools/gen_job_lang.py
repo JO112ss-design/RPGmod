@@ -241,7 +241,7 @@ SKILLS = {  # id: (ja, ja desc, en, en desc)
  'arcane_missiles': ('アーケインミサイル', '追尾する魔法弾を5発、前方の敵に分散して撃つ。', 'Arcane Missiles', 'Five homing missiles spread over the enemies in front.'),
  'blizzard': ('ブリザード', '狙った場所に4秒間吹雪を起こし、中の敵を凍えさせ続ける。', 'Blizzard', 'A 4-second snowstorm on the aimed spot that keeps hurting and slowing.'),
  'gravity': ('グラビティ', '狙った場所に重力の渦を作って敵を引き寄せ、まとめて押しつぶす。', 'Gravity Well', 'Pulls enemies into a gravity well, then crushes them together.'),
- 'nourish': ('恵みの糧', '近くの味方の満腹度と隠し満腹度を回復する。', 'Nourish', 'Restores hunger and saturation to nearby allies.'),
+ 'nourish': ('恵みの糧', '近くの味方の満腹度を4（肉2つ分）と隠し満腹度を4回復する。', 'Nourish', 'Restores 4 hunger (two drumsticks) and 4 saturation to nearby allies.'),
  'purify': ('浄化', '近くの味方の悪い効果・炎・凍えをすべて消して少し回復し、周りの敵を聖なる光で撃つ。杖で詠唱する呪文。', 'Purify', 'Removes all harmful effects, fire and freezing from nearby allies, heals a little and smites the enemies around . A spell cast from the staff.'),
  'poison_coat': ('毒塗り', '60秒間、武器に毒を塗る。攻撃した敵に効果。しゃがみ＋キーで種類を切替（塗っている最中でもすぐ切り替わる）：攻撃低下／防御低下／猛毒（5秒間、毎秒最大HPの5%・アンデッドにも効く・ボスには効かない）。', 'Weapon Coating', 'Coats your weapon for 60s; hits apply it. Sneak + key switches it at once: attack down / armour break / venom (5s, 5% of max health a second, undead too, not on bosses).'),
  'throwing_knives': ('投げナイフ', '扇状に5本のナイフを投げる。毒塗り中は毒も乗る。', 'Throwing Knives', 'Throws five knives in a fan; they carry your coating.'),

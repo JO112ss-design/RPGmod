@@ -352,7 +352,7 @@
   "rpgmod.skill.gravity": "グラビティ",
   "rpgmod.skill.gravity.desc": "狙った場所に重力の渦を作って敵を引き寄せ、まとめて押しつぶす。",
   "rpgmod.skill.nourish": "恵みの糧",
-  "rpgmod.skill.nourish.desc": "近くの味方の満腹度と隠し満腹度を回復する。",
+  "rpgmod.skill.nourish.desc": "近くの味方の満腹度を4（肉2つ分）と隠し満腹度を4回復する。",
   "rpgmod.skill.purify": "浄化",
   "rpgmod.skill.purify.desc": "近くの味方の悪い効果・炎・凍えをすべて消して少し回復し、周りの敵を聖なる光で撃つ。杖で詠唱する呪文。",
   "rpgmod.skill.poison_coat": "毒塗り",

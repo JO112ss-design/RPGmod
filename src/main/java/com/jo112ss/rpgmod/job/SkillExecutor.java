@@ -1475,11 +1475,14 @@ public final class SkillExecutor {
         return true;
     }
 
+    /** Saturation modifier of nourish: 4 food give 4 saturation (was 6 food with 0.8 = 9.6). */
+    public static final float NOURISH_SATURATION = 0.5F;
+
     /** Healer: fills the party's hunger and saturation. */
     static boolean nourish(Ctx c) {
         List<ServerPlayer> allies = allies(c.p, c.def.radius());
         int food = (int) Math.round(c.def.power());
-        for (ServerPlayer a : allies) a.getFoodData().eat(food, 0.8F);
+        for (ServerPlayer a : allies) a.getFoodData().eat(food, NOURISH_SATURATION);
         ServerFx.of("nourish", c.p.position()).follow(c.p).a(c.def.radius()).points(others(c.p, allies)).send(c.level);
         sound(c, SoundEvents.PLAYER_BURP, 1.2F);
         sound(c, c.p.position(), SoundEvents.AMETHYST_BLOCK_CHIME, 0.8F, 1.3F);
