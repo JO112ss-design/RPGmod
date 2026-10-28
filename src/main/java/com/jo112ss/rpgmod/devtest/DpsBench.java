@@ -549,13 +549,19 @@ public final class DpsBench {
                 }
                 case ALLY_BASE -> {
                     r.allyBase = dps;
-                    log("  ally {} on its own: {} DPS", cur.job(), Math.round(dps));
+                    log("  ally {} on its own: {} DPS = plain {} ({} hits of {} swings) + skills {}; casts {}", cur.job(), Math.round(dps),
+                            Math.round(basicDealt), basicHits, swings, Math.round(dealt - basicDealt), casts);
                 }
                 case ALLY_REPLAY -> {
                     Result of = results.get(cur.replayOf());
                     if (of != null) of.replayed.put(cur.job(), dps);
                 }
-                case PROBE -> PROBED.computeIfAbsent(cur.probe().name(), k -> new LinkedHashMap<>()).put(cur.job(), dps);
+                case PROBE -> {
+                    PROBED.computeIfAbsent(cur.probe().name(), k -> new LinkedHashMap<>()).put(cur.job(), dps);
+                    if (cur.probe().name().startsWith("haste") || cur.probe().name().startsWith("speed"))
+                        log("  probe {} on {}: {} DPS = plain {} ({} hits of {} swings) + skills {}; casts {}", cur.probe().name(), cur.job(), Math.round(dps),
+                                Math.round(basicDealt), basicHits, swings, Math.round(dealt - basicDealt), casts);
+                }
             }
             cur = null;
         }
