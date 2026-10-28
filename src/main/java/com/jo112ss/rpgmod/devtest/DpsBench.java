@@ -634,6 +634,9 @@ public final class DpsBench {
                 m.addTag(DUMMY);
                 level.addFreshEntity(m);
                 for (EquipmentSlot s : EquipmentSlot.values()) m.setItemSlot(s, ItemStack.EMPTY);
+                // like a boss, it does not get knocked back (a dummy jumping about made bolts in flight miss)
+                var kb = m.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.KNOCKBACK_RESISTANCE);
+                if (kb != null) kb.setBaseValue(1.0);
                 dummy = m;
             } finally {
                 com.jo112ss.rpgmod.mob.MobLevels.forceLevel = null;
