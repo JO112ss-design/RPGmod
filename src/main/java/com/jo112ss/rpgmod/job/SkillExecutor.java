@@ -1576,12 +1576,13 @@ public final class SkillExecutor {
     }
 
     /**
-     * Fire weapon: allies' normal hits deal this much more (a share) and set enemies on fire. A
-     * share, not a flat amount: a flat bonus on every hit made it worth twice as much on a fast weapon.
+     * Fire weapon: every hit an ally deals by hand - swings, skills and spells, not arrows - deals
+     * this much more (a share) and sets enemies on fire. A share, not a flat amount: a flat bonus on
+     * every hit made it worth twice as much on a fast weapon.
      */
-    public static final double FIRE_WEAPON_BONUS = 0.25;
+    public static final double FIRE_WEAPON_BONUS = 0.15;
 
-    /** Enchanter: allies' weapons burn - normal hits set enemies on fire and deal {@link #FIRE_WEAPON_BONUS} more. */
+    /** Enchanter: allies' weapons burn - their hits set enemies on fire and deal {@link #FIRE_WEAPON_BONUS} more. */
     static boolean fireWeapon(Ctx c) {
         List<ServerPlayer> allies = allies(c.p, c.def.radius());
         // the effect's level carries the bonus in percent

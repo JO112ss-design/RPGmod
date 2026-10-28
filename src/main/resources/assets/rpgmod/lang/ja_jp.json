@@ -362,7 +362,7 @@
   "rpgmod.skill.shadow_bind": "影縛り",
   "rpgmod.skill.shadow_bind.desc": "狙った敵を影で3秒間その場に縛りつけ、攻撃力も下げる。",
   "rpgmod.skill.fire_weapon": "炎の付与",
-  "rpgmod.skill.fire_weapon.desc": "近くの味方の武器に炎を宿す。通常攻撃のダメージ+25%、当たった敵を燃やす。",
+  "rpgmod.skill.fire_weapon.desc": "近くの味方の武器に炎を宿す。弓矢以外の攻撃（通常攻撃・スキル・魔法）のダメージ+15%、当たった敵を燃やす。",
   "rpgmod.skill.binding_field": "束縛の陣",
   "rpgmod.skill.binding_field.desc": "狙った場所に5秒間陣を張る。中の敵は大きく鈍り、攻撃力も下がる。",
   "rpgmod.skill.russian_roulette": "ロシアンルーレット",

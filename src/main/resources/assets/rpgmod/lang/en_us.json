@@ -362,7 +362,7 @@
   "rpgmod.skill.shadow_bind": "Shadow Bind",
   "rpgmod.skill.shadow_bind.desc": "Shadows pin the targeted enemy in place for 3s and lower its attack.",
   "rpgmod.skill.fire_weapon": "Fire Weapon",
-  "rpgmod.skill.fire_weapon.desc": "Nearby allies' weapons burn: normal hits deal 25% more and set enemies on fire.",
+  "rpgmod.skill.fire_weapon.desc": "Nearby allies' weapons burn: everything but arrows (swings, skills, spells) deals 15% more and sets enemies on fire.",
   "rpgmod.skill.binding_field": "Binding Circle",
   "rpgmod.skill.binding_field.desc": "A circle on the aimed spot for 5s: enemies inside are heavily slowed and weakened.",
   "rpgmod.skill.russian_roulette": "Russian Roulette",
