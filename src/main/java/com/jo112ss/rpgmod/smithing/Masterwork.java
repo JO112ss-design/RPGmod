@@ -61,8 +61,7 @@ public record Masterwork(String skill, String kind, double amount) {
             skills.addAll(job.spells());
             skills.addAll(job.ultimates());
         }
-        // not the songs: "perform" plays them for a fixed time at the lute's price, so their boosts would do nothing
-        skills.removeIf(s -> s.equals("perform") || s.equals("spell_perform") || com.jo112ss.rpgmod.job.Bard.isSong(s) || JobDefs.skill(s) == null);
+        skills.removeIf(s -> s.equals("perform") || s.equals("spell_perform") || JobDefs.skill(s) == null);
         return new ArrayList<>(skills);
     }
 

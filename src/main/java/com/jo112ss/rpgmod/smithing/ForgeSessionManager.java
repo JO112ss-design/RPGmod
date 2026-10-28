@@ -260,6 +260,7 @@ public final class ForgeSessionManager {
         ForgedData data = ForgedData.of(quality, options, player.getGameProfile().name(), masterwork);
         stack.set(ModRegistries.FORGED_DATA.get(), data);
         applyDurability(stack, data);
+        ForgeNames.apply(stack, rnd); // a name of two random words, just for fun
 
         s.quality = quality;
         s.result = stack.copy();

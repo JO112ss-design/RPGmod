@@ -146,7 +146,26 @@ public final class Bard {
     public static double performCost(Player p) {
         var s = selectedSongs(p);
         if (s[0] == null) return 0;
-        return Math.ceil(s[0].mana() + (s[1] != null ? s[1].mana() * SECOND_SONG_COST : 0));
+        return Math.ceil(songMana(p, s[0]) + (s[1] != null ? songMana(p, s[1]) * SECOND_SONG_COST : 0) - 1e-9);
+    }
+
+    /** A song's own mana, less its mana boosts (boost cells, a masterwork lute). */
+    private static double songMana(Player p, com.jo112ss.rpgmod.job.core.SkillDef song) {
+        return song.mana() * (1 - JobManager.skillBoost(p, song.id(), com.jo112ss.rpgmod.job.core.SkillBoost.MANA));
+    }
+
+    /** The spellsinger's songs (their afterglow comes when the song ends). */
+    public static boolean singerSong(String id) {
+        return SINGER_SONGS.contains(id);
+    }
+
+    /**
+     * How long a song plays: its duration boosts make the bard's songs longer, and the spellsinger's
+     * shorter (its afterglow, the real effect, comes sooner).
+     */
+    public static double songSeconds(Player p, String song) {
+        double boost = JobManager.skillBoost(p, song, com.jo112ss.rpgmod.job.core.SkillBoost.DURATION);
+        return SONG_SECONDS * (singerSong(song) ? Math.max(0.3, 1 - boost) : 1 + boost);
     }
 
     /** The "perform" skill: plays the song(s) set on the lute. */
@@ -161,22 +180,22 @@ public final class Bard {
         ServerLevel level = c.level();
         Ctx first = new Ctx(p, level, songs[0], JobManager.powerMultiplier(p, songs[0]), 1.0);
         Ctx second = songs[1] == null ? null : new Ctx(p, level, songs[1], JobManager.powerMultiplier(p, songs[1]), 1.0);
-        return start(first, second, SONG_SECONDS);
+        return start(first, second, songSeconds(p, songs[0].id()));
     }
 
     /** Starts (or restarts) a song for {@code seconds}. */
-    static boolean start(Ctx c, int seconds) {
+    static boolean start(Ctx c, double seconds) {
         return start(c, null, seconds);
     }
 
     /** Starts (or restarts) a song for {@code seconds}, with a second one playing along (maestro). */
-    static boolean start(Ctx c, Ctx secondCtx, int seconds) {
+    static boolean start(Ctx c, Ctx secondCtx, double seconds) {
         ServerPlayer p = c.p();
         JobData d = JobManager.data(p);
         long now = p.level().getGameTime();
         Perf old = PERF.get(p.getUUID());
         if (old != null && performing(p)) linger(old, p, d.songPoints()); // a song cut short by the next one
-        d.setSong(c.def().id(), now, now + LEAD + seconds * 20L);
+        d.setSong(c.def().id(), now, now + LEAD + Math.round(seconds * 20));
         Perf perf = new Perf(c);
         if (secondCtx != null) {
             perf.second = secondCtx.def().id();

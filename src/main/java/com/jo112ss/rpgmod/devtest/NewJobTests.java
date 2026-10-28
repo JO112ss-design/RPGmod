@@ -83,6 +83,23 @@ final class NewJobTests {
                 log("masterwork: power slash x{} with the masterwork sword (1.15 expected), cooldown {}s -> {}s; tooltip line '{}'",
                         String.format("%.3f", boosted / plain), String.format("%.2f", cdPlain), String.format("%.2f", JobManager.cooldownSeconds(p, def)),
                         com.jo112ss.rpgmod.smithing.Masterwork.describe(new com.jo112ss.rpgmod.smithing.Masterwork("power_slash", "POWER", 0.15)).getString());
+                java.util.List<String> names = new java.util.ArrayList<>();
+                for (int k = 0; k < 4; k++) {
+                    var st = new net.minecraft.world.item.ItemStack(com.jo112ss.rpgmod.item.ModItems.get(com.jo112ss.rpgmod.item.WeaponType.SPEAR, com.jo112ss.rpgmod.item.WeaponMaterial.DIAMOND));
+                    com.jo112ss.rpgmod.smithing.ForgeNames.apply(st, rnd);
+                    names.add(st.getHoverName().getString());
+                }
+                log("forge names: {}", names);
+                // songs: boost cells lengthen the bard's songs and shorten the spellsinger's, and cut their mana
+                for (String[] js : new String[][] {{"bard", "war_song"}, {"spellsinger", "flame_melody"}}) {
+                    become(p, js[0]);
+                    var dd = JobManager.data(p);
+                    double s0 = com.jo112ss.rpgmod.job.Bard.songSeconds(p, js[1]);
+                    dd.devUnlockAll();
+                    log("songs {}: {} plays {}s -> {}s with its boost cells, mana {} -> {} ({})", js[0], js[1], String.format("%.1f", s0),
+                            String.format("%.1f", com.jo112ss.rpgmod.job.Bard.songSeconds(p, js[1])), Math.round(JobDefs.skill(js[1]).mana()),
+                            Math.round(JobManager.manaCost(p, JobDefs.skill(js[1]))), JobManager.skillBoost(p, js[1], com.jo112ss.rpgmod.job.core.SkillBoost.DURATION));
+                }
             }
             case "regen" -> { // a potion's regeneration (2% a heal), then the blessing (as much in all as before, over 14s)
                 become(p, "healer");

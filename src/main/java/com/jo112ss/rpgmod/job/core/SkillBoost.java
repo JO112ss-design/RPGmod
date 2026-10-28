@@ -13,6 +13,7 @@ import java.util.Set;
  * <li>heals: healing +10% and cooldown -10%</li>
  * <li>buffs and debuffs: duration +15% and cooldown -10% (no duration: cooldown -10% and mana -15%)</li>
  * <li>ultimates: one cell - power +10% (+5% for the many-hit ones), or duration +15%</li>
+ * <li>songs: playing time +15% (the spellsinger's: -15%, its afterglow comes sooner) and mana -15%</li>
  * </ul>
  */
 public enum SkillBoost {
@@ -38,6 +39,8 @@ public enum SkillBoost {
 
     /** The boost cells a skill gets. */
     public static List<Cell> cellsFor(SkillDef def) {
+        // songs: how long they play (the bard's longer, the spellsinger's shorter) and their mana
+        if (com.jo112ss.rpgmod.job.Bard.isSong(def.id())) return List.of(new Cell(DURATION, DURATION_STEP), new Cell(MANA, MANA_STEP));
         String kind = JobDefs.powerKind(def);
         boolean rapid = rapid(def);
         if (def.kind() == SkillKind.ULTIMATE) {
@@ -56,6 +59,8 @@ public enum SkillBoost {
     /** Lang key of the line shown for this boost on a skill ({@code rpgmod.boost.<kind>}, heals say "healing"). */
     public String langKey(SkillDef def) {
         if (this == POWER && "heal".equals(JobDefs.powerKind(def))) return "rpgmod.boost.heal";
+        if (this == DURATION && com.jo112ss.rpgmod.job.Bard.isSong(def.id()))
+            return com.jo112ss.rpgmod.job.Bard.singerSong(def.id()) ? "rpgmod.boost.play_shorter" : "rpgmod.boost.play_longer";
         return "rpgmod.boost." + name().toLowerCase(java.util.Locale.ROOT);
     }
 }
