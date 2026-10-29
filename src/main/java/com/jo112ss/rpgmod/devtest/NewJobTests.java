@@ -59,6 +59,23 @@ final class NewJobTests {
             case "unseen" -> unseenTest(level, p);
             case "uniques" -> uniquesTest(level, p);
             case "wither" -> witherTest(level, p);
+            case "heals" -> { // the greater heal and the holy circle against the heal and the group heal
+                become(p, "healer", true);
+                JobManager.data(p).devUnlockAll();
+                StringBuilder sb = new StringBuilder();
+                for (String id : new String[] {"heal", "greater_heal", "group_heal", "grand_heal"}) {
+                    var def = JobDefs.skill(id);
+                    JobManager.data(p).setMana(JobManager.maxMana(p));
+                    p.setHealth(1);
+                    p.addEffect(new net.minecraft.world.effect.MobEffectInstance(net.minecraft.world.effect.MobEffects.POISON, 200, 0));
+                    SkillExecutor.execute(p, def, JobManager.powerMultiplier(p, def));
+                    sb.append(id).append(": healed ").append(String.format("%.0f", p.getHealth() - 1)).append(", cast ").append(def.castTime()).append("s, mana ")
+                            .append(Math.round(JobManager.manaCost(p, def))).append(", poisoned ").append(p.hasEffect(net.minecraft.world.effect.MobEffects.POISON)).append("; ");
+                    p.removeEffect(net.minecraft.world.effect.MobEffects.POISON);
+                }
+                p.setHealth(p.getMaxHealth());
+                log("heals: {}", sb);
+            }
             case "dirge" -> { // the dirge among eight enemies: no more than 40 health a second
                 become(p, "bard");
                 JobManager.data(p).devUnlockAll();

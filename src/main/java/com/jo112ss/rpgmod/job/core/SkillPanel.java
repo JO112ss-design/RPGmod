@@ -134,7 +134,7 @@ public final class SkillPanel {
     /** Layout version of the advanced panel of a base job ({@link #ADV_VERSION}, or higher where it changed alone). */
     public static int advVersion(String baseJob) {
         if ("bard".equals(baseJob)) return ADV_VERSION + 2; // maestro: crescendo instead of the duet; 2: no MP cells (MP fixed at 100)
-        return "healer".equals(baseJob) ? ADV_VERSION + 1 : ADV_VERSION; // bishop: health cells became mana regeneration
+        return "healer".equals(baseJob) ? ADV_VERSION + 2 : ADV_VERSION; // bishop: health cells became mana regeneration; 2: the grand heal
     }
 
     public static int version(String job) {
@@ -142,7 +142,7 @@ public final class SkillPanel {
         if ("bard".equals(job)) return VERSION + 3; // 3: the harvest song moved the cells
         if ("spellsinger".equals(job)) return VERSION + 2;
         if ("qi_master".equals(job)) return VERSION + 1; // god hand: the qi bullet skill went (every ki job shoots ki on the right button)
-        return "healer".equals(job) ? VERSION + 1 : VERSION; // healer: heals moved to the staff, three new skills
+        return "healer".equals(job) ? VERSION + 2 : VERSION; // healer: heals moved to the staff, three new skills; 2: the greater heal
     }
     public static final int RADIUS = 7;
 

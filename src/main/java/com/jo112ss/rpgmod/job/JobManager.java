@@ -761,7 +761,7 @@ public final class JobManager {
             case "thunderstorm" -> 0xFFF07A;
             case "stone_spikes" -> 0xC09060;
             case "radiant_lance", "holy_bolt", "holy_nova", "light_pillar", "purify" -> 0xFFE89A;
-            case "heal", "group_heal" -> 0x7CFF9A;
+            case "heal", "group_heal", "greater_heal", "grand_heal" -> 0x7CFF9A;
             case "dark_orb" -> 0x8A4CFF;
             case "tornado" -> 0xA8F0D0;
             case "starfall" -> 0xC8B8FF;

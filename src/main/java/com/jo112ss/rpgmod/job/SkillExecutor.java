@@ -126,6 +126,8 @@ public final class SkillExecutor {
             case "holy_barrier" -> holyBarrier(c);
             case "guardian_angel" -> guardianAngel(c);
             case "group_heal" -> heal(c, "group_heal", false);
+            case "greater_heal" -> heal(c, "heal", false);
+            case "grand_heal" -> heal(c, "group_heal", true);
             case "blessing" -> partyBuff(c, "blessing", SoundEvents.AMETHYST_BLOCK_CHIME, 1.0F);
             case "mana_gift" -> mana(c, "mana_gift");
             case "nourish" -> nourish(c);

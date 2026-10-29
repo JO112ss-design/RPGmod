@@ -1376,5 +1376,9 @@
   "rpgmod.boss.abyss_wither.defeated": "The Abyssal Wither was defeated! (%s)",
   "rpgmod.boss.abyss_key": "The Ender Dragon left an Abyss Key... offer it at a dungeon altar and something will wake",
   "item.rpgmod.abyss_key": "Abyss Key",
-  "rpgmod.dungeon.kind.abyss_wither": "the Abyss"
+  "rpgmod.dungeon.kind.abyss_wither": "the Abyss",
+  "rpgmod.skill.greater_heal": "Greater Heal",
+  "rpgmod.skill.greater_heal.desc": "Spell (cast from the staff): the heal's strong form - 2.5x the healing for you and nearby allies (1.8s charge, 50 MP).",
+  "rpgmod.skill.grand_heal": "Holy Circle",
+  "rpgmod.skill.grand_heal.desc": "Spell (cast from the staff): the group heal's strong form - 2.5x the healing for allies in a wide area (12 blocks), clearing poison and wither (2.2s charge, 85 MP)."
 }
