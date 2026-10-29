@@ -256,7 +256,7 @@ public final class JobDefs {
         // ---- Bard: songs around the party, stronger the better they are played (the note lane)
         // MP stays at 100 like the physical jobs (no MP growth, no MP cells)
         job("bard", 0x48C9B0, "詩", List.of(JobStat.MAGIC_ATTACK, JobStat.MANA_REGEN, JobStat.COOLDOWN_REDUCTION, JobStat.MAX_HEALTH),
-                stats(JobStat.MAGIC_ATTACK, 3, JobStat.MANA_REGEN, 0.5),
+                stats(JobStat.MAGIC_ATTACK, 3), // natural mana 1/s (the skill panel's cells add to it)
                 stats(JobStat.MAGIC_ATTACK, 0.6, JobStat.ATTACK_DAMAGE, 0.3, JobStat.MAX_HEALTH, hpGrow(0.6, 0)),
                 List.of(
                         // the songs are set on the lute (like spells on a staff); "perform" plays the selected one
@@ -507,7 +507,7 @@ public final class JobDefs {
                         skill("holy_lance", U, SkillEffect.SWEEP, 60, 40, 7.5, 12, 0, List.of(), 0, "聖")));
         // ---- Spellsinger: songs that put magic on the party's weapons
         hybrid("spellsinger", "enchanter", "bard", 0x9A6AD8, "律", List.of(JobStat.MAGIC_ATTACK, JobStat.MANA_REGEN, JobStat.COOLDOWN_REDUCTION, JobStat.MAX_HEALTH),
-                stats(JobStat.MAGIC_ATTACK, 4, JobStat.MANA_REGEN, 0.5),
+                stats(JobStat.MAGIC_ATTACK, 4), // natural mana 1/s (the skill panel's cells add to it)
                 stats(JobStat.MAGIC_ATTACK, 0.6, JobStat.ATTACK_DAMAGE, 0.3, JobStat.MAX_HEALTH, hpGrow(0.6, 0)),
                 List.of(
                         skill("spell_perform", A, SkillEffect.BUFF, 3, 0, 0, 0, 12, List.of(), 0, "奏"),
