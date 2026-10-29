@@ -175,7 +175,8 @@ final class NewJobTests {
                 log("song time bard/spellsinger: {}", sb.toString().trim());
                 StringBuilder rg = new StringBuilder();
                 for (String j : new String[] {"bard", "maestro", "spellsinger", "wizard", "fighter"}) {
-                    become(p, j);
+                    if (j.equals("maestro")) become(p, "bard", true);
+                    else become(p, j);
                     rg.append(j).append('=').append(String.format("%.2f", JobManager.manaRegen(p))).append(' ');
                 }
                 log("mana regen per second: {}", rg.toString().trim());
