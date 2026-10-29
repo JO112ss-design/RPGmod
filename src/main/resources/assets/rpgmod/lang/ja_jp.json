@@ -1069,7 +1069,7 @@
   "rpgmod.skill.fanfare": "凱歌",
   "rpgmod.skill.fanfare.desc": "周りの味方のスキルのクールダウンが早く回る。",
   "rpgmod.skill.dirge": "葬送曲",
-  "rpgmod.skill.dirge.desc": "周りの敵から毎秒HPを吸い、その3割で周りの味方を回復する。",
+  "rpgmod.skill.dirge.desc": "周りの敵から毎秒HPを吸い、その3割で周りの味方を回復する（1人あたり毎秒最大40）。",
   "rpgmod.skill.ward_melody": "守護の旋律",
   "rpgmod.skill.ward_melody.desc": "周りの味方に衝撃吸収（最大HPの15〜30%）を付ける。削られた分は戻らず、割れると4秒間は付かない。演奏が終わったとき近くにいた味方は、残っている衝撃吸収がそのまま200秒続く。",
   "rpgmod.skill.drain_tune": "吸魔の調べ",

@@ -1069,7 +1069,7 @@
   "rpgmod.skill.fanfare": "Fanfare",
   "rpgmod.skill.fanfare.desc": "The party around gets its skills back sooner.",
   "rpgmod.skill.dirge": "Dirge",
-  "rpgmod.skill.dirge.desc": "Drains the enemies around every second; 30% of it heals the party.",
+  "rpgmod.skill.dirge.desc": "Drains the enemies around every second; 30% of it heals the party (up to 40 each a second).",
   "rpgmod.skill.ward_melody": "Ward Melody",
   "rpgmod.skill.ward_melody.desc": "Allies around get absorption (15-30% of max health). What a blow takes stays gone; once broken it does not come back for 4s. When the song ends, the absorption the party still has stays on for 200s.",
   "rpgmod.skill.drain_tune": "Drain Tune",

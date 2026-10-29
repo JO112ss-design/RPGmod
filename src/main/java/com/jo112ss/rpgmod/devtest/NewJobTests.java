@@ -59,6 +59,32 @@ final class NewJobTests {
             case "unseen" -> unseenTest(level, p);
             case "uniques" -> uniquesTest(level, p);
             case "wither" -> witherTest(level, p);
+            case "dirge" -> { // the dirge among eight enemies: no more than 40 health a second
+                become(p, "bard");
+                JobManager.data(p).devUnlockAll();
+                java.util.List<net.minecraft.world.entity.Mob> foes = new java.util.ArrayList<>();
+                for (int k = 0; k < 8; k++) {
+                    var m = net.minecraft.world.entity.EntityTypes.HUSK.create(level, net.minecraft.world.entity.EntitySpawnReason.COMMAND);
+                    double a = k * Math.PI / 4;
+                    m.snapTo(p.getX() + Math.cos(a) * 3, p.getY(), p.getZ() + Math.sin(a) * 3, 0, 0);
+                    m.setNoAi(true);
+                    level.addFreshEntity(m);
+                    m.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.MAX_HEALTH).setBaseValue(100000);
+                    m.setHealth(100000);
+                    foes.add(m);
+                }
+                p.setHealth(10);
+                SkillExecutor.execute(p, JobDefs.skill("dirge"), JobManager.powerMultiplier(p, JobDefs.skill("dirge")));
+                JobManager.data(p).setSongPoints(JobData.MAX_SONG_POINTS);
+                float[] h = {0};
+                SkillTasks.later(41, () -> h[0] = p.getHealth());
+                SkillTasks.later(81, () -> {
+                    log("dirge: eight enemies, health {} -> {} in 2s (cap {} a second)", String.format("%.1f", h[0]), String.format("%.1f", p.getHealth()),
+                            com.jo112ss.rpgmod.job.Bard.DIRGE_HEAL_CAP);
+                    foes.forEach(net.minecraft.world.entity.Entity::discard);
+                    com.jo112ss.rpgmod.job.Bard.stop(p);
+                });
+            }
             case "truce" -> { // monsters leave each other alone; the fallen adventurers sense from 64 blocks
                 Vec3 at = p.position().add(0, 0, 30);
                 java.util.List<net.minecraft.world.entity.Mob> ms = new java.util.ArrayList<>();

@@ -116,7 +116,7 @@ SKILLS = {  # id: (ja, ja desc, en, en desc)
  'rhapsody': ('狂詩曲', '周りの味方の会心率が上がる（点数で+9〜18%）。', 'Rhapsody', 'Raises the crit chance of the party around (+9 to 18% by the points).'),
  'fanfare': ('凱歌', '周りの味方のスキルのクールダウンが早く回る。', 'Fanfare', 'The party around gets its skills back sooner.'),
  'harvest_song': ('豊穣の歌', '周りの味方の満腹度と隠し満腹度を毎秒少しずつ回復する（上手に演奏すると1曲で各5〜6）。', 'Harvest Song', 'Allies around you regain hunger and saturation every second (5 to 6 of each over a well-played song).'),
- 'dirge': ('葬送曲', '周りの敵から毎秒HPを吸い、その3割で周りの味方を回復する。', 'Dirge', 'Drains the enemies around every second; 30% of it heals the party.'),
+ 'dirge': ('葬送曲', '周りの敵から毎秒HPを吸い、その3割で周りの味方を回復する（1人あたり毎秒最大40）。', 'Dirge', 'Drains the enemies around every second; 30% of it heals the party (up to 40 each a second).'),
  'ward_melody': ('守護の旋律', '周りの味方に衝撃吸収（最大HPの15〜30%）を付ける。削られた分は戻らず、割れると4秒間は付かない。演奏が終わったとき近くにいた味方は、残っている衝撃吸収がそのまま200秒続く。', 'Ward Melody', 'Allies around get absorption (15-30% of max health). What a blow takes stays gone; once broken it does not come back for 4s. When the song ends, the absorption the party still has stays on for 200s.'),
  'drain_tune': ('吸魔の調べ', '周りの味方の攻撃が当たるたびに、MPが少し回復する。', 'Drain Tune', 'Every hit the party around lands gives back a little mana.'),
  'duet': ('二重奏', '12秒間、次の歌を今の歌と同時に演奏できる。', 'Duet', 'For 12s the next song plays alongside the current one.'),

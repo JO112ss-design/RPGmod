@@ -414,7 +414,8 @@ public final class Bard {
                 if (!foes.isEmpty()) {
                     ServerFx.of("hit", p.position()).color(color).a(0.6).points(foes).send(level);
                     var party = SkillExecutor.allies(p, r);
-                    float heal = each * foes.size() * DIRGE_DRAIN / Math.max(1, party.size());
+                    // capped: in a crowd the drain would otherwise heal far too much
+                    float heal = Math.min(DIRGE_HEAL_CAP, each * foes.size() * DIRGE_DRAIN / Math.max(1, party.size()));
                     for (ServerPlayer a : party) HealthScale.heal(a, heal);
                 }
             }
@@ -452,6 +453,8 @@ public final class Bard {
     public static final double FANFARE_SPEED = 0.35;
     /** Dirge: share of the damage dealt that heals the party (split among them). */
     public static final float DIRGE_DRAIN = 0.3F;
+    /** Most health the dirge gives each ally per second, however many enemies it drains. */
+    public static final float DIRGE_HEAL_CAP = 40F;
     /** Ward melody: absorption on each ally worth this share of their max health (times the strength: 15% to 30%). */
     public static final double WARD_SHARE = 0.25;
     /** The spellsinger's songs: mana per second (share of the max, times the strength) and the thunder's damage share. */
