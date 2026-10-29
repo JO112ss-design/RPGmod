@@ -172,6 +172,8 @@ public final class JobData {
                 buf.writeVarLong(d.songStart);
                 buf.writeVarLong(d.songEnd);
                 buf.writeVarInt(d.songPoints);
+                buf.writeVarInt(d.kitGiven.size());
+                for (String k : d.kitGiven) buf.writeUtf(k);
             },
             buf -> {
                 JobData d = new JobData();
@@ -201,6 +203,8 @@ public final class JobData {
                 d.songStart = buf.readVarLong();
                 d.songEnd = buf.readVarLong();
                 d.songPoints = buf.readVarInt();
+                int kits = Math.min(buf.readVarInt(), 64);
+                for (int k = 0; k < kits; k++) d.kitGiven.add(buf.readUtf());
                 return d;
             });
 
@@ -331,6 +335,17 @@ public final class JobData {
     /** True the first time a job reaches full mastery (marks it so it pays out once). */
     public boolean claimMasteryReward(String jobId) {
         return mastered(jobId) && masteryRewarded.add(jobId);
+    }
+
+    /**
+     * Has this player opened the job: a base or hybrid job they have been (or are), an advanced job
+     * whose base job is mastered. Masterwork lines of unopened jobs show as "???".
+     */
+    public boolean opened(String jobId) {
+        if (jobId == null || jobId.isEmpty()) return true;
+        String base = JobDefs.BASE_OF.get(jobId);
+        if (base != null) return mastered(base) || (advanced && job.equals(base));
+        return job.equals(jobId) || kitGiven.contains(jobId);
     }
 
     /** True the first time this job's weapons are handed out (marks it). */

@@ -523,6 +523,7 @@ UI = {  # key: (ja, en)
  'rpgmod.node.need_skill': ('先に「%s」を覚えてください', 'Learn %s first'),
  'rpgmod.tooltip.masterwork': ('★ 会心の出来', '★ Masterwork'),
  'rpgmod.masterwork.line': ('%s（%s）%s', '%s (%s) %s'),
+ 'rpgmod.masterwork.hidden': ('？？？（まだ開放していない職業のスキル）', '??? (a skill of a job you have not opened)'),
  'rpgmod.message.masterwork': ('会心の出来！ %s', 'Masterwork! %s'),
  'rpgmod.boost.power': ('威力+%s%%', 'Power +%s%%'),
  'rpgmod.boost.heal': ('回復量+%s%%', 'Healing +%s%%'),

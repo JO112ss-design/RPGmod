@@ -168,16 +168,27 @@ final class NewJobTests {
                     int got = 0;
                     java.util.List<String> some = new java.util.ArrayList<>();
                     for (int k = 0; k < 1000; k++) {
-                        var m = com.jo112ss.rpgmod.smithing.Masterwork.maybe(type, rnd);
+                        var m = com.jo112ss.rpgmod.smithing.Masterwork.maybe(type, 150, rnd);
                         if (m == null) continue;
                         got++;
                         if (some.size() < 4) some.add(m.skill() + " " + m.kind() + " " + m.amount());
                     }
+                    // below level 100: never an advanced job's skill
+                    int adv = 0;
+                    for (int k = 0; k < 1000; k++) {
+                        var m = com.jo112ss.rpgmod.smithing.Masterwork.maybe(type, 99, rnd);
+                        if (m != null && com.jo112ss.rpgmod.job.core.JobDefs.isAdvanced(com.jo112ss.rpgmod.job.core.JobDefs.skill(m.skill()).job())) adv++;
+                    }
+                    log("masterwork {} at Lv99: {} advanced-job skills of 1000, low jobs {}", type, adv, com.jo112ss.rpgmod.smithing.Masterwork.jobsFor(type, false));
                     log("masterwork {}: {} of 1000, jobs {}, {} skills, e.g. {}", type, got, com.jo112ss.rpgmod.smithing.Masterwork.jobsFor(type),
                             com.jo112ss.rpgmod.smithing.Masterwork.skillsFor(type).size(), some);
                 }
                 become(p, "fighter");
                 JobManager.data(p).devUnlockAll();
+                var od = JobManager.data(p);
+                String advF = JobDefs.ADVANCED.get("fighter");
+                log("masterwork opened: fighter {}, its advanced {} {} (mastered {}), wizard {}", od.opened("fighter"), advF, od.opened(advF),
+                        od.mastered("fighter"), od.opened("wizard"));
                 var def = JobDefs.skill("power_slash");
                 var sword = new net.minecraft.world.item.ItemStack(com.jo112ss.rpgmod.item.ModItems.get(com.jo112ss.rpgmod.item.WeaponType.SWORD, com.jo112ss.rpgmod.item.WeaponMaterial.DIAMOND));
                 p.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, sword);

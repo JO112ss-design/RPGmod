@@ -95,7 +95,11 @@ public final class ForgeTooltips {
         }
         if (d.masterwork().isPresent()) {
             tip.add(at++, Component.translatable("rpgmod.tooltip.masterwork").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD));
-            tip.add(at++, Component.literal(" ").append(com.jo112ss.rpgmod.smithing.Masterwork.describe(d.masterwork().get())).withStyle(ChatFormatting.YELLOW));
+            var m = d.masterwork().get();
+            // a job the player has never opened: hidden until they get there
+            Component line = com.jo112ss.rpgmod.smithing.Masterwork.openedBy(m, com.jo112ss.rpgmod.client.job.JobClient.data())
+                    ? com.jo112ss.rpgmod.smithing.Masterwork.describe(m) : Component.translatable("rpgmod.masterwork.hidden");
+            tip.add(at++, Component.literal(" ").append(line).withStyle(ChatFormatting.YELLOW));
         }
         if (!d.crafter().isEmpty()) {
             tip.add(at, Component.translatable("rpgmod.tooltip.crafter", d.crafter()).withStyle(ChatFormatting.DARK_GRAY, ChatFormatting.ITALIC));

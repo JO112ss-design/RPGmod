@@ -19,7 +19,9 @@ import net.minecraft.world.item.ItemStack;
 /**
  * "Masterwork" (会心の出来): one forged weapon in five, whatever its quality, also boosts one skill of
  * a job that fights with that kind of weapon - like one of the skill's boost cells, 1 to 1.5 times
- * as much. It works while the weapon is in the main hand.
+ * as much. It works while the weapon is in the main hand. Advanced jobs' skills only come up when
+ * the maker is level 100 or more (a boss's unique weapon: the boss's level), and a skill of a job the
+ * holder has never opened shows as "???" (see {@link com.jo112ss.rpgmod.job.JobData#opened}).
  */
 public record Masterwork(String skill, String kind, double amount) {
     /** Chance a forged weapon (not armour, robes or shields) comes out a masterwork. */
@@ -41,11 +43,16 @@ public record Masterwork(String skill, String kind, double amount) {
 
     /** The jobs that fight with this weapon: base and hybrid jobs, and the base jobs' advanced jobs. */
     public static List<String> jobsFor(WeaponType type) {
+        return jobsFor(type, true);
+    }
+
+    /** As above; without the advanced jobs when {@code advanced} is false. */
+    public static List<String> jobsFor(WeaponType type, boolean advanced) {
         Set<String> jobs = new LinkedHashSet<>();
         for (JobType t : JobType.values()) {
             if (!t.weapons.contains(type)) continue;
             jobs.add(t.id);
-            String adv = JobDefs.ADVANCED.get(t.id);
+            String adv = advanced ? JobDefs.ADVANCED.get(t.id) : null;
             if (adv != null) jobs.add(adv);
         }
         return new ArrayList<>(jobs);
@@ -53,8 +60,12 @@ public record Masterwork(String skill, String kind, double amount) {
 
     /** Every skill a masterwork of this weapon could boost. */
     public static List<String> skillsFor(WeaponType type) {
+        return skillsFor(type, true);
+    }
+
+    public static List<String> skillsFor(WeaponType type, boolean advanced) {
         Set<String> skills = new LinkedHashSet<>();
-        for (String id : jobsFor(type)) {
+        for (String id : jobsFor(type, advanced)) {
             JobDefs.Job job = JobDefs.job(id);
             if (job == null) continue;
             skills.addAll(job.actives());
@@ -65,14 +76,22 @@ public record Masterwork(String skill, String kind, double amount) {
         return new ArrayList<>(skills);
     }
 
-    /** A masterwork for this weapon, or null when it has none (20%: see {@link #CHANCE}). */
-    public static Masterwork maybe(WeaponType type, Random rnd) {
+    /**
+     * A masterwork for this weapon made at this level (the maker's, or the boss's for a unique weapon),
+     * or null when it has none (20%: see {@link #CHANCE}). Below level 100 only base and hybrid jobs' skills.
+     */
+    public static Masterwork maybe(WeaponType type, int level, Random rnd) {
         if (type.optionPool() != com.jo112ss.rpgmod.smithing.core.OptionType.Pool.WEAPON || rnd.nextDouble() >= CHANCE) return null;
-        return roll(type, rnd);
+        return roll(type, advancedAt(level), rnd);
     }
 
-    public static Masterwork roll(WeaponType type, Random rnd) {
-        List<String> skills = skillsFor(type);
+    /** Level from which a masterwork can be for an advanced job's skill. */
+    public static boolean advancedAt(int level) {
+        return level >= com.jo112ss.rpgmod.job.core.LevelCurve.ADVANCED_AT;
+    }
+
+    public static Masterwork roll(WeaponType type, boolean advanced, Random rnd) {
+        List<String> skills = skillsFor(type, advanced);
         if (skills.isEmpty()) return null;
         SkillDef def = JobDefs.skill(skills.get(rnd.nextInt(skills.size())));
         List<SkillBoost.Cell> cells = SkillBoost.cellsFor(def);
@@ -90,6 +109,12 @@ public record Masterwork(String skill, String kind, double amount) {
         return net.minecraft.network.chat.Component.translatable("rpgmod.masterwork.line", net.minecraft.network.chat.Component.translatable("rpgmod.skill." + m.skill),
                 net.minecraft.network.chat.Component.translatable("rpgmod.job." + job),
                 net.minecraft.network.chat.Component.translatable(key, Math.round(m.amount * 100)));
+    }
+
+    /** The skill's job, for the "???" check: has this player ever opened it? */
+    public static boolean openedBy(Masterwork m, com.jo112ss.rpgmod.job.JobData d) {
+        SkillDef def = JobDefs.skill(m.skill);
+        return def == null || d.opened(def.job());
     }
 
     /** What the weapon in this player's main hand adds to one boost of one skill. */

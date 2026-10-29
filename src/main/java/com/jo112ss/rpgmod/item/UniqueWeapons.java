@@ -154,7 +154,7 @@ public final class UniqueWeapons {
         Item base = ModItems.get(def.type, WeaponMaterial.DIAMOND);
         ItemStack stack = new ItemStack(base);
         List<RolledOption> options = OptionRoller.roll(quality.optionCount, def.type.optionPool(), def.type.magical(), !UnbreakableGear.covers(def.type), rnd);
-        ForgedData data = ForgedData.of(quality, options, "", Masterwork.maybe(def.type, rnd));
+        ForgedData data = ForgedData.of(quality, options, "", Masterwork.maybe(def.type, level, rnd));
         stack.set(ModRegistries.FORGED_DATA.get(), data);
         ForgeSessionManager.applyDurability(stack, data);
         stack.set(ModRegistries.UNIQUE_WEAPON.get(), new UniqueWeapon(def.id, level, 1 + rnd.nextInt(3))); // 1 to 3 gem sockets

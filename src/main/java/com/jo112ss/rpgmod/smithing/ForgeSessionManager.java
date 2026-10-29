@@ -256,7 +256,7 @@ public final class ForgeSessionManager {
         List<RolledOption> options = OptionRoller.roll(quality.optionCount, s.weapon.type().optionPool(), s.weapon.type().magical(),
                 !com.jo112ss.rpgmod.item.UnbreakableGear.covers(s.weapon.type()), rnd);
         ItemStack stack = new ItemStack(s.weapon.result().get());
-        Masterwork masterwork = Masterwork.maybe(s.weapon.type(), rnd); // one in five, whatever the quality
+        Masterwork masterwork = Masterwork.maybe(s.weapon.type(), com.jo112ss.rpgmod.job.JobManager.data(player).level(), rnd); // one in five, whatever the quality
         ForgedData data = ForgedData.of(quality, options, player.getGameProfile().name(), masterwork);
         stack.set(ModRegistries.FORGED_DATA.get(), data);
         applyDurability(stack, data);
