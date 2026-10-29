@@ -557,8 +557,15 @@ public final class DungeonManager {
         if (rnd.nextFloat() < 0.2F) out.add(new ItemStack(ModRegistries.JOB_BOOK.get()));
         if (rnd.nextFloat() < 0.35F) out.add(new ItemStack(ModRegistries.DUNGEON_KEY.get()));
         if (rnd.nextFloat() < 0.2F) out.add(sealedKey(lv));
+        if (rnd.nextFloat() < OFFERING_CHANCE) { // one of the boss offerings (they are not crafted)
+            var offerings = List.of(ModRegistries.SLIME_CROWN, ModRegistries.GOLEM_CORE, ModRegistries.SOUL_PHYLACTERY, ModRegistries.QUEEN_COCOON);
+            out.add(new ItemStack(offerings.get(rnd.nextInt(offerings.size())).get()));
+        }
         return out;
     }
+
+    /** Chance the final chest holds one of the four boss offerings. */
+    public static final float OFFERING_CHANCE = 0.1F;
 
     /** The end of a run: everyone inside goes back, the slot is emptied, the altar goes quiet. */
     private static void finish(MinecraftServer server, ServerLevel dl, DungeonData d, Run r) {
