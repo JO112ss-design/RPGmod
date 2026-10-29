@@ -240,22 +240,21 @@ final class NewJobTests {
                     String base = adv ? JobDefs.BASE_OF.get(id) : id;
                     JobData jd = JobManager.data(p);
                     for (boolean full : new boolean[] {false, true}) {
-                        JobData d = jd;
-                        d.switchTo(base, adv);
-                        d.setLevel(130);
-                        d.ensureAdvanced();
-                        d.resetPanel();
-                        if (adv) d.resetAdvPanel();
-                        if (full) d.devUnlockAll();
-                        com.jo112ss.rpgmod.job.JobStats.apply(p, d);
-                        var m = com.jo112ss.rpgmod.job.JobStats.compute(d);
+                        jd.switchTo(base, adv);
+                        jd.setLevel(130);
+                        jd.ensureAdvanced();
+                        jd.resetPanel();
+                        if (adv) jd.resetAdvPanel();
+                        if (full) jd.devUnlockAll();
+                        com.jo112ss.rpgmod.job.JobStats.apply(p, jd);
+                        var m = com.jo112ss.rpgmod.job.JobStats.compute(jd);
                         StringBuilder b = new StringBuilder("jobstats|" + id + "|" + (adv ? "adv" : JobDefs.isHybrid(id) ? "hybrid" : "base") + "|" + (full ? "full" : "none")
                                 + "|" + String.format("%.0f", p.getMaxHealth()));
                         for (var st : com.jo112ss.rpgmod.job.core.JobStat.values()) b.append('|').append(String.format("%.2f", m.getOrDefault(st, 0.0)));
                         int cost = 0;
-                        for (var n : d.panel().nodes()) cost += n.cost();
-                        if (adv && d.panel(true) != null) for (var n : d.panel(true).nodes()) cost += n.cost();
-                        b.append('|').append(d.totalPoints() + (adv ? d.totalPoints(true) : 0)).append('|').append(cost);
+                        for (var n : jd.panel().nodes()) cost += n.cost();
+                        if (adv && jd.panel(true) != null) for (var n : jd.panel(true).nodes()) cost += n.cost();
+                        b.append('|').append(jd.totalPoints() + (adv ? jd.totalPoints(true) : 0)).append('|').append(cost);
                         log(b.toString());
                     }
                 }
