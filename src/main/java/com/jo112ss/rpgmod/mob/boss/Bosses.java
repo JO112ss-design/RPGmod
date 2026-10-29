@@ -32,7 +32,8 @@ public final class Bosses {
     /** A boss's entrance: its arrival effect, a crash and a roar. */
     public static void arrivalFx(ServerLevel level, Mob boss) {
         boolean golem = boss instanceof Golem;
-        String spawnFx = boss instanceof Golem ? "golem_spawn" : boss instanceof Lich ? "lich_spawn" : boss instanceof SpiderQueen ? "queen_spawn" : "king_spawn";
+        String spawnFx = boss instanceof Golem ? "golem_spawn" : boss instanceof Lich || boss instanceof AbyssWither ? "lich_spawn" : boss instanceof SpiderQueen ? "queen_spawn" : "king_spawn";
+        if (boss instanceof AbyssWither) level.playSound(null, boss.blockPosition(), SoundEvents.WITHER_SPAWN, SoundSource.HOSTILE, 3.0F, 0.7F);
         com.jo112ss.rpgmod.job.fx.ServerFx.of(spawnFx, boss.position()).a(boss.getBbWidth()).send(level, 128);
         level.playSound(null, boss.blockPosition(), golem ? SoundEvents.STONE_BREAK : SoundEvents.SLIME_SQUISH, SoundSource.HOSTILE, 4.0F, 0.3F);
         level.playSound(null, boss.blockPosition(), SoundEvents.RAVAGER_ROAR, SoundSource.HOSTILE, 3.0F, golem ? 0.4F : 0.6F);

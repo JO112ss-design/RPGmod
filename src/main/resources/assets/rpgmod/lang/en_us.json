@@ -1370,5 +1370,11 @@
   "rpgmod.unique.venom_gunblade.desc": "Bayonet and shots poison",
   "rpgmod.tooltip.unique": "★ Unique Lv%s (%s)",
   "rpgmod.tooltip.unique_effect": "Unique: ",
-  "rpgmod.unique.drop": "You got a unique weapon: %s!"
+  "rpgmod.unique.drop": "You got a unique weapon: %s!",
+  "entity.rpgmod.abyss_wither": "Abyssal Wither",
+  "rpgmod.boss.abyss_wither.enraged": "The Abyssal Wither awakens in armour of light!",
+  "rpgmod.boss.abyss_wither.defeated": "The Abyssal Wither was defeated! (%s)",
+  "rpgmod.boss.abyss_key": "The Ender Dragon left an Abyss Key... offer it at a dungeon altar and something will wake",
+  "item.rpgmod.abyss_key": "Abyss Key",
+  "rpgmod.dungeon.kind.abyss_wither": "the Abyss"
 }

@@ -58,6 +58,7 @@ final class NewJobTests {
             case "bardults" -> bardUlts(level, p);
             case "unseen" -> unseenTest(level, p);
             case "uniques" -> uniquesTest(level, p);
+            case "wither" -> witherTest(level, p);
             case "masterwork" -> { // one weapon in five, any quality; the boost works from the main hand
                 java.util.Random rnd = new java.util.Random(7);
                 for (var type : java.util.List.of(com.jo112ss.rpgmod.item.WeaponType.SWORD, com.jo112ss.rpgmod.item.WeaponType.STAFF,
@@ -1551,6 +1552,88 @@ final class NewJobTests {
      * second player (a fake one) in the same tick, again by the same skill (blocked), by a bigger skill
      * hit (only the excess) and after the window (in full).
      */
+    /** The abyssal wither: every move in turn, the awakening at half health, the opening, the reward, no block broken. */
+    private static void witherTest(ServerLevel level, ServerPlayer p) {
+        Vec3 home = p.position();
+        Vec3 field = home.add(0, 0, 200);
+        p.teleportTo(field.x, field.y, field.z);
+        p.setYRot(0);
+        p.setXRot(0);
+        p.setGameMode(net.minecraft.world.level.GameType.SURVIVAL);
+        p.getAbilities().invulnerable = false;
+        p.onUpdateAbilities();
+        boolean[] done = {false};
+        float[] lost = {0};
+        SkillTasks.run(age -> { // keep the tester standing, and count what it takes off
+            lost[0] += Math.max(0, p.getMaxHealth() - p.getHealth());
+            p.setHealth(p.getMaxHealth());
+            p.removeEffect(net.minecraft.world.effect.MobEffects.WITHER);
+            p.addEffect(new net.minecraft.world.effect.MobEffectInstance(net.minecraft.world.effect.MobEffects.RESISTANCE, 20, 3, false, false));
+            return done[0] || age > 900;
+        });
+        int blocksBefore = countBlocks(level, net.minecraft.core.BlockPos.containing(field), 14);
+        com.jo112ss.rpgmod.mob.boss.AbyssWither[] w = {null};
+        SkillTasks.later(20, () -> {
+            for (var m : level.getEntitiesOfClass(net.minecraft.world.entity.Mob.class, p.getBoundingBox().inflate(40))) m.discard();
+            var b = com.jo112ss.rpgmod.registry.ModRegistries.ABYSS_WITHER.get().create(level, net.minecraft.world.entity.EntitySpawnReason.EVENT);
+            b.snapTo(field.x, field.y + 1, field.z + 12, 180, 0);
+            b.setPersistenceRequired();
+            b.setData(com.jo112ss.rpgmod.registry.ModRegistries.MOB_LEVEL, 130);
+            level.addFreshEntity(b);
+            b.recomputeHealth(true);
+            b.setTarget(p);
+            w[0] = b;
+            log("wither: Lv{} health {} x toughness {} = {} (dragon formula, 1 player), size {}x{}", com.jo112ss.rpgmod.mob.MobLevels.level(b), String.format("%.0f", b.getMaxHealth()),
+                    String.format("%.2f", b.toughness()), String.format("%.0f", b.getMaxHealth() * b.toughness()), String.format("%.1f", b.getBbWidth()), String.format("%.1f", b.getBbHeight()));
+        });
+        java.util.function.Consumer<String> mv = m -> {
+            if (w[0] == null) return;
+            w[0].testMove(m);
+            log("wither: {} -> state {} (at {} y {})", m, w[0].state(), w[0].blockPosition(), String.format("%.1f", w[0].getY() - field.y));
+        };
+        SkillTasks.later(60, () -> log("wither: chasing, height above the player {} dist {}", String.format("%.1f", w[0].getY() - p.getY()), String.format("%.1f", w[0].distanceTo(p))));
+        SkillTasks.later(70, () -> mv.accept("volley"));
+        SkillTasks.later(130, () -> mv.accept("rain"));
+        SkillTasks.later(200, () -> mv.accept("dive"));
+        SkillTasks.later(260, () -> mv.accept("nova"));
+        SkillTasks.later(300, () -> mv.accept("summon"));
+        SkillTasks.later(345, () -> {
+            var b = w[0];
+            float before = b.getHealth() / b.getMaxHealth();
+            b.hurtServer(level, p.damageSources().playerAttack(p), 1e7F);
+            log("wither: gate - a huge hit at {}% leaves {}% (phase {}, state {})", Math.round(before * 100), String.format("%.1f", b.getHealth() / b.getMaxHealth() * 100), b.phase(), b.state());
+        });
+        SkillTasks.later(400, () -> mv.accept("beams"));
+        SkillTasks.later(445, () -> mv.accept("storm"));
+        SkillTasks.later(535, () -> {
+            mv.accept("spent");
+            log("wither: spent opening x{}", w[0].openingMultiplier());
+        });
+        SkillTasks.later(585, () -> {
+            var b = w[0];
+            int minions = level.getEntitiesOfClass(net.minecraft.world.entity.monster.skeleton.WitherSkeleton.class, b.getBoundingBox().inflate(40)).size();
+            log("wither: counters - skulls {} (hits {}) rain {} dive hits {} nova hits {} beam hits {} summoned {} (alive {}); player lost {}; blocks {} -> {}",
+                    b.skullsFired, b.skullHits, b.marksBurst, b.diveHits, b.novaHits, b.beamHits, b.summoned, minions, String.format("%.0f", lost[0]),
+                    blocksBefore, countBlocks(level, net.minecraft.core.BlockPos.containing(field), 14));
+            b.hurtServer(level, p.damageSources().playerAttack(p), 1e7F);
+            if (b.isAlive()) b.setHealth(0);
+        });
+        SkillTasks.later(640, () -> {
+            log("wither: dead {}, skeletons left {}, key in inventory {}", w[0].isDeadOrDying(),
+                    level.getEntitiesOfClass(net.minecraft.world.entity.monster.skeleton.WitherSkeleton.class, p.getBoundingBox().inflate(60)).size(),
+                    p.getInventory().contains(new ItemStack(com.jo112ss.rpgmod.registry.ModRegistries.ABYSS_KEY.get())));
+            done[0] = true;
+            for (var m : level.getEntitiesOfClass(net.minecraft.world.entity.Mob.class, p.getBoundingBox().inflate(60))) m.discard();
+            p.teleportTo(home.x, home.y, home.z);
+        });
+    }
+
+    private static int countBlocks(ServerLevel level, net.minecraft.core.BlockPos c, int r) {
+        int n = 0;
+        for (net.minecraft.core.BlockPos b : net.minecraft.core.BlockPos.betweenClosed(c.offset(-r, -3, -r), c.offset(r, 10, r))) if (!level.getBlockState(b).isAir()) n++;
+        return n;
+    }
+
     /** The bosses' unique weapons: strength by level, who gets which, two of the effects, and each one in hand. */
     private static void uniquesTest(ServerLevel level, ServerPlayer p) {
         java.util.Random rnd = new java.util.Random(11);

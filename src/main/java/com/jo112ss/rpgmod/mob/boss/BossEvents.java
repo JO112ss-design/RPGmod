@@ -38,6 +38,7 @@ public final class BossEvents {
         event.put(ModRegistries.GOLEM_PILLAR.get(), GolemPillar.createAttributes().build());
         event.put(ModRegistries.LICH.get(), Lich.createAttributes().build());
         event.put(ModRegistries.SPIDER_QUEEN.get(), SpiderQueen.createAttributes().build());
+        event.put(ModRegistries.ABYSS_WITHER.get(), AbyssWither.createAttributes().build());
         event.put(ModRegistries.REVENANT.get(), com.jo112ss.rpgmod.mob.revenant.Revenant.createAttributes().build());
     }
 
@@ -116,6 +117,18 @@ public final class BossEvents {
         }
         broadcast(sl.getServer(), Component.translatable("rpgmod.boss." + key + ".defeated", String.join(", ", names)).withStyle(net.minecraft.ChatFormatting.GOLD));
         RpgMod.LOGGER.info("[boss] {} defeated, {} participants rewarded", key, names.size());
+    }
+
+    /** The Ender Dragon falls: everyone in the End nearby gets the key to the Abyssal Wither. */
+    @SubscribeEvent
+    public static void onDragonDeath(net.neoforged.neoforge.event.entity.living.LivingDeathEvent event) {
+        if (!(event.getEntity() instanceof net.minecraft.world.entity.boss.enderdragon.EnderDragon dragon) || !(dragon.level() instanceof ServerLevel sl)) return;
+        for (net.minecraft.server.level.ServerPlayer p : sl.getEntitiesOfClass(net.minecraft.server.level.ServerPlayer.class, dragon.getBoundingBox().inflate(256))) {
+            if (p.isSpectator()) continue;
+            net.minecraft.world.item.ItemStack key = new net.minecraft.world.item.ItemStack(ModRegistries.ABYSS_KEY.get());
+            if (!p.getInventory().add(key)) p.drop(key, false, net.minecraft.util.Prediction.SERVER_ONLY);
+            p.sendSystemMessage(Component.translatable("rpgmod.boss.abyss_key").withStyle(net.minecraft.ChatFormatting.DARK_PURPLE, net.minecraft.ChatFormatting.BOLD));
+        }
     }
 
     public static void broadcast(MinecraftServer server, Component msg) {

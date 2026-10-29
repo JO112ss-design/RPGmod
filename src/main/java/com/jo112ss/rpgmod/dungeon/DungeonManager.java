@@ -94,6 +94,7 @@ public final class DungeonManager {
         if (stack.is(ModRegistries.GOLEM_CORE.get())) return Kind.GOLEM;
         if (stack.is(ModRegistries.SOUL_PHYLACTERY.get())) return Kind.LICH;
         if (stack.is(ModRegistries.QUEEN_COCOON.get())) return Kind.SPIDER_QUEEN;
+        if (stack.is(ModRegistries.ABYSS_KEY.get())) return Kind.ABYSS_WITHER;
         return null;
     }
 
@@ -166,6 +167,7 @@ public final class DungeonManager {
             case GOLEM -> 0xFF9050;
             case LICH -> 0x7FE8FF;
             case SPIDER_QUEEN -> 0xB070FF;
+            case ABYSS_WITHER -> 0x6A30A0;
         };
     }
 
@@ -392,6 +394,7 @@ public final class DungeonManager {
             case GOLEM -> ModRegistries.GOLEM.get();
             case LICH -> ModRegistries.LICH.get();
             case SPIDER_QUEEN -> ModRegistries.SPIDER_QUEEN.get();
+            case ABYSS_WITHER -> ModRegistries.ABYSS_WITHER.get();
             default -> ModRegistries.KING_SLIME.get();
         };
     }
@@ -400,6 +403,7 @@ public final class DungeonManager {
         if (m instanceof com.jo112ss.rpgmod.mob.boss.Golem) return "golem_spawn";
         if (m instanceof com.jo112ss.rpgmod.mob.boss.Lich) return "lich_spawn";
         if (m instanceof com.jo112ss.rpgmod.mob.boss.SpiderQueen) return "queen_spawn";
+        if (m instanceof com.jo112ss.rpgmod.mob.boss.AbyssWither) return "lich_spawn";
         return "king_spawn";
     }
 

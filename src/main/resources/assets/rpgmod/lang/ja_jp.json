@@ -1370,5 +1370,11 @@
   "rpgmod.unique.venom_gunblade.desc": "銃剣と銃弾が毒を与える",
   "rpgmod.tooltip.unique": "★ ユニーク Lv%s（%s）",
   "rpgmod.tooltip.unique_effect": "固有効果：",
-  "rpgmod.unique.drop": "ユニーク武器「%s」を手に入れた！"
+  "rpgmod.unique.drop": "ユニーク武器「%s」を手に入れた！",
+  "entity.rpgmod.abyss_wither": "深淵のウィザー",
+  "rpgmod.boss.abyss_wither.enraged": "深淵のウィザーが光の鎧をまとった！",
+  "rpgmod.boss.abyss_wither.defeated": "深淵のウィザーを倒した！（%s）",
+  "rpgmod.boss.abyss_key": "エンダードラゴンが「深淵の鍵」を残した…ダンジョンの祭壇に捧げると、何かが目を覚ます",
+  "item.rpgmod.abyss_key": "深淵の鍵",
+  "rpgmod.dungeon.kind.abyss_wither": "深淵"
 }

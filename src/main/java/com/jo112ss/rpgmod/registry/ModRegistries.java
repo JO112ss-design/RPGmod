@@ -64,6 +64,11 @@ public final class ModRegistries {
             ENTITIES.registerEntityType("lich", com.jo112ss.rpgmod.mob.boss.Lich::new, net.minecraft.world.entity.MobCategory.MONSTER,
                     b -> b.sized(0.6F, 1.99F).eyeHeight(1.74F).clientTrackingRange(16).fireImmune());
 
+    /** The Abyssal Wither: the hidden boss behind the Ender Dragon's key (a wither, sized by its scale attribute). */
+    public static final DeferredHolder<net.minecraft.world.entity.EntityType<?>, net.minecraft.world.entity.EntityType<com.jo112ss.rpgmod.mob.boss.AbyssWither>> ABYSS_WITHER =
+            ENTITIES.registerEntityType("abyss_wither", com.jo112ss.rpgmod.mob.boss.AbyssWither::new, net.minecraft.world.entity.MobCategory.MONSTER,
+                    b -> b.sized(0.9F, 3.5F).clientTrackingRange(16).fireImmune());
+
     /** The Spider Queen: a giant spider (sized by her scale attribute). */
     public static final DeferredHolder<net.minecraft.world.entity.EntityType<?>, net.minecraft.world.entity.EntityType<com.jo112ss.rpgmod.mob.boss.SpiderQueen>> SPIDER_QUEEN =
             ENTITIES.registerEntityType("spider_queen", com.jo112ss.rpgmod.mob.boss.SpiderQueen::new, net.minecraft.world.entity.MobCategory.MONSTER,
@@ -130,6 +135,9 @@ public final class ModRegistries {
             p -> p.stacksTo(16).rarity(net.minecraft.world.item.Rarity.RARE));
     public static final DeferredItem<net.minecraft.world.item.Item> QUEEN_COCOON = ITEMS.registerSimpleItem("queen_cocoon",
             p -> p.stacksTo(16).rarity(net.minecraft.world.item.Rarity.RARE));
+    /** The Ender Dragon's key: offered at a dungeon altar, it opens the Abyssal Wither's arena. */
+    public static final DeferredItem<net.minecraft.world.item.Item> ABYSS_KEY = ITEMS.registerSimpleItem("abyss_key",
+            p -> p.stacksTo(16).rarity(net.minecraft.world.item.Rarity.EPIC));
 
     /** Spawn eggs for the mod's monsters: the four bosses, a fallen adventurer of each job, a party. */
     public static final java.util.Map<com.jo112ss.rpgmod.item.RpgSpawnEggItem.Kind, DeferredItem<com.jo112ss.rpgmod.item.RpgSpawnEggItem>> SPAWN_EGGS = registerEggs();
@@ -197,6 +205,7 @@ public final class ModRegistries {
                 output.accept(GOLEM_CORE.get());
                 output.accept(SOUL_PHYLACTERY.get());
                 output.accept(QUEEN_COCOON.get());
+                output.accept(ABYSS_KEY.get());
                 for (var egg : SPAWN_EGGS.values()) output.accept(egg.get());
                 // one gem of every special effect, and one of every stat (rare, at its top value)
                 for (com.jo112ss.rpgmod.gem.GemSpecial s : com.jo112ss.rpgmod.gem.GemSpecial.values()) {

@@ -18,6 +18,7 @@ public final class BossClient {
         event.registerEntityRenderer(ModRegistries.GOLEM_PILLAR.get(), GolemPillarRenderer::new);
         event.registerEntityRenderer(ModRegistries.LICH.get(), LichRenderer::new);
         event.registerEntityRenderer(ModRegistries.SPIDER_QUEEN.get(), SpiderQueenRenderer::new);
+        event.registerEntityRenderer(ModRegistries.ABYSS_WITHER.get(), net.minecraft.client.renderer.entity.WitherBossRenderer::new);
         event.registerEntityRenderer(ModRegistries.REVENANT.get(), com.jo112ss.rpgmod.client.mob.RevenantRenderer::new);
         event.registerEntityRenderer(ModRegistries.SKILL_PROP.get(), com.jo112ss.rpgmod.client.job.SkillPropRenderer::new);
     }

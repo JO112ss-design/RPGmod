@@ -42,6 +42,8 @@ public final class BossCore {
     private final Mob mob;
     private final String key;
     private final DoubleSupplier baseHealth;
+    /** Extra health per extra player (the dungeon bosses' setting; the abyssal wither has the dragon's). */
+    private final DoubleSupplier perPlayer;
     private final BossEvent.BossBarColor color;
     /** Players who hurt it (rewarded with everyone near when it dies). */
     public final Set<UUID> participants = new HashSet<>();
@@ -63,9 +65,14 @@ public final class BossCore {
      * @param shotColor   colour of its homing shots
      */
     public BossCore(Mob mob, String key, DoubleSupplier baseHealth, BossEvent.BossBarColor color, int shotColor) {
+        this(mob, key, baseHealth, MobConfig::bossPerPlayer, color, shotColor);
+    }
+
+    public BossCore(Mob mob, String key, DoubleSupplier baseHealth, DoubleSupplier perPlayer, BossEvent.BossBarColor color, int shotColor) {
         this.mob = mob;
         this.key = key;
         this.baseHealth = baseHealth;
+        this.perPlayer = perPlayer;
         this.color = color;
         this.homing = new BossWater.Homing(shotColor);
     }
@@ -94,7 +101,7 @@ public final class BossCore {
         if (!(mob.level() instanceof ServerLevel sl)) return;
         int online = com.jo112ss.rpgmod.dungeon.Dungeons.bossPlayers(mob, sl);
         onlineSeen = online;
-        double hp = baseHealth.getAsDouble() * MobLevelMath.healthMultiplier(MobConfig.rules(), level()) * (1 + MobConfig.bossPerPlayer() * (online - 1));
+        double hp = baseHealth.getAsDouble() * MobLevelMath.healthMultiplier(MobConfig.rules(), level()) * (1 + perPlayer.getAsDouble() * (online - 1));
         float ratio = mob.getMaxHealth() > 0 ? mob.getHealth() / mob.getMaxHealth() : 1;
         double applied = Math.min(hp, 1000);
         toughness = (float) (hp / applied);
