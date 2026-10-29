@@ -1564,14 +1564,14 @@ final class NewJobTests {
             var st = com.jo112ss.rpgmod.item.UniqueWeapons.create(def, 180, com.jo112ss.rpgmod.item.UniqueWeapons.randomQuality(rnd), rnd);
             all.add(st);
             var mods = st.get(net.minecraft.core.component.DataComponents.ATTRIBUTE_MODIFIERS);
-            var net = new net.minecraft.world.item.ItemStack(com.jo112ss.rpgmod.item.ModItems.get(def.type, com.jo112ss.rpgmod.item.WeaponMaterial.NETHERITE))
+            net.minecraft.world.item.component.ItemAttributeModifiers nether = new net.minecraft.world.item.ItemStack(com.jo112ss.rpgmod.item.ModItems.get(def.type, com.jo112ss.rpgmod.item.WeaponMaterial.NETHERITE))
                     .get(net.minecraft.core.component.DataComponents.ATTRIBUTE_MODIFIERS);
             log("uniques: {} ({}, {}) Lv180 name '{}' quality {} options {} masterwork {}; attack mods {} | netherite {}", def.id, def.boss, def.type,
                     st.getHoverName().getString(), st.get(com.jo112ss.rpgmod.registry.ModRegistries.FORGED_DATA.get()).qualityEnum(),
                     st.get(com.jo112ss.rpgmod.registry.ModRegistries.FORGED_DATA.get()).options().size(),
                     st.get(com.jo112ss.rpgmod.registry.ModRegistries.FORGED_DATA.get()).masterwork().isPresent(),
                     mods == null ? "-" : mods.modifiers().stream().map(m -> String.format("%.2f", m.modifier().amount())).toList(),
-                    net == null ? "-" : net.modifiers().stream().map(m -> String.format("%.2f", m.modifier().amount())).toList());
+                    nether == null ? "-" : nether.modifiers().stream().map(m -> String.format("%.2f", m.modifier().amount())).toList());
         }
         for (String[] jb : new String[][] {{"wizard", "lich"}, {"fighter", "king_slime"}, {"monk", "golem"}, {"bard", "spider_queen"}, {"shadow_hunter", "spider_queen"}}) {
             become(p, jb[0]);

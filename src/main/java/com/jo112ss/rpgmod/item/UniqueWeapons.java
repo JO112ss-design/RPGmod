@@ -248,7 +248,7 @@ public final class UniqueWeapons {
         ItemStack weapon = plainWeapon(event.getSource(), sp);
         UniqueWeapon u = of(weapon);
         if (u == null || u.def() == null) return;
-        float amount = event.getNewDamage();
+        float amount = event.getInflictedDamage();
         Vec3 at = victim.position().add(0, victim.getBbHeight() * 0.5, 0);
         switch (u.def()) {
             case SLIME_GREATSWORD -> { // a splash of slime round the one hit
@@ -265,7 +265,7 @@ public final class UniqueWeapons {
                 if (!ready(sp, u.def(), HAMMER_GAP)) return;
                 double resist = 1 - victim.getAttributeValue(Attributes.KNOCKBACK_RESISTANCE);
                 victim.setDeltaMovement(victim.getDeltaMovement().add(0, 0.9 * Math.max(0.3, resist), 0));
-                victim.hurtMarked = true;
+                victim.needsSync = true;
                 level.playSound(null, victim.blockPosition(), SoundEvents.SLIME_JUMP, SoundSource.PLAYERS, 1.0F, 0.7F);
                 float land = amount * (float) HAMMER_LANDING;
                 SkillTasks.later(16, () -> {
