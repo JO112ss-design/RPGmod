@@ -238,8 +238,9 @@ final class NewJobTests {
                     String id = job.id();
                     boolean adv = JobDefs.isAdvanced(id);
                     String base = adv ? JobDefs.BASE_OF.get(id) : id;
-                    JobData d = JobManager.data(p);
+                    JobData jd = JobManager.data(p);
                     for (boolean full : new boolean[] {false, true}) {
+                        JobData d = jd;
                         d.switchTo(base, adv);
                         d.setLevel(130);
                         d.ensureAdvanced();
