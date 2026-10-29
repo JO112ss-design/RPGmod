@@ -59,6 +59,25 @@ final class NewJobTests {
             case "unseen" -> unseenTest(level, p);
             case "uniques" -> uniquesTest(level, p);
             case "wither" -> witherTest(level, p);
+            case "encore" -> { // a bard's song well played gets its encore; a spellsinger's never does
+                for (String[] js : new String[][] {{"bard", "war_song"}, {"spellsinger", "flame_melody"}}) {
+                    int start = js[0].equals("bard") ? 0 : 340;
+                    SkillTasks.later(start + 1, () -> {
+                        become(p, js[0]);
+                        JobManager.data(p).devUnlockAll();
+                        var def = JobDefs.skill(js[1]);
+                        SkillExecutor.execute(p, def, JobManager.powerMultiplier(p, def));
+                    });
+                    long[] end = {0};
+                    SkillTasks.later(start + 3, () -> end[0] = JobManager.data(p).songEnd() - level.getGameTime());
+                    SkillTasks.later(start + 3 + 200, () -> JobManager.data(p).setSongPoints(JobData.MAX_SONG_POINTS));
+                    SkillTasks.later(start + 3 + 300, () -> {
+                        log("encore: {} {} - song had {}t left at the start, 300t later performing {} (encore expected {})", js[0], js[1], end[0],
+                                com.jo112ss.rpgmod.job.Bard.performing(p), js[0].equals("bard"));
+                        com.jo112ss.rpgmod.job.Bard.stop(p);
+                    });
+                }
+            }
             case "heals" -> { // the greater heal and the holy circle against the heal and the group heal
                 become(p, "healer", true);
                 JobManager.data(p).devUnlockAll();

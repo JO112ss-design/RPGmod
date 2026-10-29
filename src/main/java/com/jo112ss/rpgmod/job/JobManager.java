@@ -419,8 +419,14 @@ public final class JobManager {
      * Effect time of a skill grows with the job level (up to +50% at the top by default). Ultimates
      * keep their time, and enchanter buffs follow magic attack instead.
      */
+    /** The songs and the performances: they play for a set time, whatever the level. */
+    public static boolean playsASong(SkillDef def) {
+        return Bard.isSong(def.id()) || "perform".equals(def.id()) || "spell_perform".equals(def.id());
+    }
+
     public static double levelDurationScale(Player player, SkillDef def) {
         if (player == null || def == null || def.duration() <= 0 || def.kind() == SkillKind.ULTIMATE) return 1;
+        if (playsASong(def)) return 1; // a song plays a fixed time (its own boosts change it, not levels)
         if ("enchanter".equals(def.job()) && def.effect() == com.jo112ss.rpgmod.job.core.SkillEffect.BUFF) return 1;
         JobData d = data(player);
         if (!d.hasJob()) return 1;

@@ -894,6 +894,10 @@ public class JobScreen extends Screen {
     /** Enchanter buffs: listed time and what the current magic attack makes of it. */
     private Component durationLine(SkillDef def) {
         if (minecraft.player == null) return null;
+        if (com.jo112ss.rpgmod.job.JobManager.playsASong(def)) { // a song: its playing time, which levels do not stretch
+            double secs = com.jo112ss.rpgmod.job.Bard.isSong(def.id()) ? com.jo112ss.rpgmod.job.Bard.songSeconds(minecraft.player, def.id()) : com.jo112ss.rpgmod.job.Bard.SONG_SECONDS;
+            return Component.translatable("rpgmod.jobscreen.song_time", fmt(secs));
+        }
         double byLevel = com.jo112ss.rpgmod.job.JobManager.levelDurationScale(minecraft.player, def);
         if (def.duration() > 0 && def.kind() != com.jo112ss.rpgmod.job.core.SkillKind.ULTIMATE && byLevel >= 1
                 && !("enchanter".equals(def.job()) && def.effect() == com.jo112ss.rpgmod.job.core.SkillEffect.BUFF)) {

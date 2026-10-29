@@ -1380,5 +1380,6 @@
   "rpgmod.skill.greater_heal": "Greater Heal",
   "rpgmod.skill.greater_heal.desc": "Spell (cast from the staff): the heal's strong form - 5x the healing for you and nearby allies (1.8s charge, 50 MP).",
   "rpgmod.skill.grand_heal": "Holy Circle",
-  "rpgmod.skill.grand_heal.desc": "Spell (cast from the staff): the group heal's strong form - 5x the healing for allies in a wide area (12 blocks), clearing poison and wither (2.2s charge, 85 MP)."
+  "rpgmod.skill.grand_heal.desc": "Spell (cast from the staff): the group heal's strong form - 5x the healing for allies in a wide area (12 blocks), clearing poison and wither (2.2s charge, 85 MP).",
+  "rpgmod.jobscreen.song_time": "Plays %ss (the same at every level)"
 }

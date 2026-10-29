@@ -276,7 +276,7 @@ public final class Bard {
             return;
         }
         if (now >= d.songEnd()) {
-            if (!perf.encore && d.songPoints() >= ENCORE_POINTS) {
+            if (!perf.encore && d.songPoints() >= ENCORE_POINTS && !singerSong(d.song())) { // (the spellsinger has no encore: its afterglow is its reward)
                 perf.encore = true;
                 d.setSong(d.song(), d.songStart(), d.songEnd() + ENCORE_TICKS);
                 JobManager.sync(p);
