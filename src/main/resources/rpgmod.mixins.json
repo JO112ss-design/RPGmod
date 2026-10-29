@@ -9,7 +9,8 @@
     "DungeonDimensionMixin",
     "RegenerationMixin",
     "InstantHealthMixin",
-    "SmithingUniqueMixin"
+    "SmithingUniqueMixin",
+    "DragonHurtMixin"
   ],
   "client": [],
   "injectors": {

@@ -535,6 +535,19 @@ final class MobScenes {
                         d.hurt(level, d.head, src, 2000F);
                         RpgMod.LOGGER.info("[AUTOTEST] dragonhp perched hit: {} -> {} phase={}", before, d.getHealth(), pm.getCurrentPhase().getPhase());
                     }
+                    case 81 -> { // a wing, not the head: full damage now (vanilla: a quarter)
+                        float before = d.getHealth();
+                        var parts = d.getSubEntities();
+                        var wing = parts[parts.length - 1];
+                        d.hurt(level, wing, src, 1000F);
+                        RpgMod.LOGGER.info("[AUTOTEST] dragonhp wing hit 1000: {} -> {} ({} lost)", before, d.getHealth(), before - d.getHealth());
+                    }
+                    case 83 -> { // an arrow while it perches: lands now (vanilla: none)
+                        float before = d.getHealth();
+                        var arrow = net.minecraft.world.entity.EntityTypes.ARROW.create(level, net.minecraft.world.entity.EntitySpawnReason.COMMAND);
+                        d.hurt(level, d.head, level.damageSources().arrow(arrow, player), 1000F);
+                        RpgMod.LOGGER.info("[AUTOTEST] dragonhp perched arrow 1000: {} -> {} ({} lost) phase={}", before, d.getHealth(), before - d.getHealth(), pm.getCurrentPhase().getPhase());
+                    }
                     case 85 -> RpgMod.LOGGER.info("[AUTOTEST] dragonhp after perched hit: phase={} health={}", pm.getCurrentPhase().getPhase(), d.getHealth());
                     default -> { }
                 }
