@@ -162,8 +162,8 @@ public final class DragonDirector {
         var old = inst.getModifier(PLAYERS_HP);
         double without = dragon.getMaxHealth() / (1 + (old == null ? 0 : old.amount()));
         double wanted = without * (1 + MobConfig.dragonPerPlayer() * (n - 1));
-        double applied = Math.min(wanted, 1000);
-        s.toughness = (float) (wanted / applied);
+        double applied = wanted; // (max health is no longer capped at vanilla's 1024: no toughness needed)
+        s.toughness = 1;
         float ratio = dragon.getHealth() / dragon.getMaxHealth();
         inst.removeModifier(PLAYERS_HP);
         if (applied / without - 1 > 1e-4) {

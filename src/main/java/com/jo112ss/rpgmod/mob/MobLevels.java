@@ -127,7 +127,11 @@ public final class MobLevels {
         MobLevelMath.Rules r = MobConfig.rules();
         boolean full = mob.getHealth() >= mob.getMaxHealth() - 0.01F;
         double hp = MobLevelMath.healthMultiplier(r, lv) - 1;
-        if (mob instanceof EnderDragon) hp = MobConfig.dragonHealth() - 1; // 600 health by default: tuned for the three-stage fight
+        if (mob instanceof EnderDragon && mob.level() instanceof net.minecraft.server.level.ServerLevel sl) {
+            // like the dungeon bosses: a base health grown by the highest job level on the server (vanilla: 200)
+            int top = Math.max(1, topPlayerLevel(sl.getServer()));
+            hp = MobConfig.dragonHealth() * MobLevelMath.healthMultiplier(r, top) / 200.0 - 1;
+        }
         modifier(mob, Attributes.MAX_HEALTH, HP, hp, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);
         if (!(mob instanceof EnderDragon)) {
             // every hostile monster moves faster (x1.5 by default), on foot and in the air

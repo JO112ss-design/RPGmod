@@ -61,10 +61,10 @@ public final class MobConfig {
     public static final ModConfigSpec.DoubleValue REVENANT_CHANCE = B.comment("Share of monsters spawning in overworld caves (below y 40, no sky) that come as fallen adventurers instead (0 = none)")
             .defineInRange("revenantChance", 0.25, 0, 1);
     public static final ModConfigSpec.BooleanValue DRAGON = B.comment("Three-stage Ender Dragon").define("dragon", true);
-    public static final ModConfigSpec.DoubleValue DRAGON_HEALTH = B.comment("Ender Dragon health multiplier (vanilla 200)").defineInRange("dragonHealthScale", 18.0, 0.1, 300);
+    public static final ModConfigSpec.DoubleValue DRAGON_HEALTH = B.comment("Ender Dragon health at level 1 for one player; it grows with the highest job level on the server like the dungeon bosses (2600: as theirs)").defineInRange("dragonBaseHealth", 2600.0, 1, 100000);
     public static final ModConfigSpec.DoubleValue DRAGON_DAMAGE = B.comment("Ender Dragon damage multiplier (all its attacks, breath included)").defineInRange("dragonDamageMultiplier", 8.0, 0, 100);
     public static final ModConfigSpec.DoubleValue DRAGON_PER_PLAYER = B.comment("Extra Ender Dragon health per additional player online, spectators not counted (0.6 = +60%; 6 players: x4)").defineInRange("dragonHealthPerPlayer", 0.6, 0, 10);
-    public static final ModConfigSpec.DoubleValue DRAGON_WINDOW = B.comment("Most of its health the dragon can lose per perch, or per flight between perches (0.2 = 20%; 0 = no limit)").defineInRange("dragonMaxShare", 0.2, 0, 1);
+    public static final ModConfigSpec.DoubleValue DRAGON_WINDOW = B.comment("Most of its health the dragon can lose per perch, or per flight between perches (0.1 = 10%: at least ten rounds; 0 = no limit)").defineInRange("dragonMaxShare", 0.1, 0, 1);
     static {
         B.pop().push("bosses");
     }
@@ -210,7 +210,7 @@ public final class MobConfig {
     }
 
     public static double dragonHealth() {
-        return SPEC.isLoaded() ? DRAGON_HEALTH.get() : 18.0;
+        return SPEC.isLoaded() ? DRAGON_HEALTH.get() : 2600;
     }
 
     public static double dragonPerPlayer() {
@@ -218,7 +218,7 @@ public final class MobConfig {
     }
 
     public static double dragonWindow() {
-        return SPEC.isLoaded() ? DRAGON_WINDOW.get() : 0.2;
+        return SPEC.isLoaded() ? DRAGON_WINDOW.get() : 0.1;
     }
 
     public static double dragonDamage() {
