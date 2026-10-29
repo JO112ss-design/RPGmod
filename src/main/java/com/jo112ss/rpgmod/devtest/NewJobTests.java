@@ -229,6 +229,36 @@ final class NewJobTests {
             case "hybrids" -> hybrids(level, p, dummies);
             case "coins" -> coins(level, p);
             case "statsdump" -> statsDump();
+            case "jobstats" -> { // every job at Lv130: its stats with no panel cells, and with the whole panel
+                StringBuilder head = new StringBuilder("jobstats|job|kind|panel|maxhp");
+                for (var st : com.jo112ss.rpgmod.job.core.JobStat.values()) head.append('|').append(st.id);
+                head.append("|points|panel cost");
+                log(head.toString());
+                for (var job : JobDefs.JOBS.values()) {
+                    String id = job.id();
+                    boolean adv = JobDefs.isAdvanced(id);
+                    String base = adv ? JobDefs.BASE_OF.get(id) : id;
+                    JobData d = JobManager.data(p);
+                    for (boolean full : new boolean[] {false, true}) {
+                        d.switchTo(base, adv);
+                        d.setLevel(130);
+                        d.ensureAdvanced();
+                        d.resetPanel();
+                        if (adv) d.resetAdvPanel();
+                        if (full) d.devUnlockAll();
+                        com.jo112ss.rpgmod.job.JobStats.apply(p, d);
+                        var m = com.jo112ss.rpgmod.job.JobStats.compute(d);
+                        StringBuilder b = new StringBuilder("jobstats|" + id + "|" + (adv ? "adv" : JobDefs.isHybrid(id) ? "hybrid" : "base") + "|" + (full ? "full" : "none")
+                                + "|" + String.format("%.0f", p.getMaxHealth()));
+                        for (var st : com.jo112ss.rpgmod.job.core.JobStat.values()) b.append('|').append(String.format("%.2f", m.getOrDefault(st, 0.0)));
+                        int cost = 0;
+                        for (var n : d.panel().nodes()) cost += n.cost();
+                        if (adv && d.panel(true) != null) for (var n : d.panel(true).nodes()) cost += n.cost();
+                        b.append('|').append(d.totalPoints() + (adv ? d.totalPoints(true) : 0)).append('|').append(cost);
+                        log(b.toString());
+                    }
+                }
+            }
             case "linger" -> linger(level, p);
             case "ward" -> ward(level, p, dummies);
             case "wardlinger" -> {
