@@ -115,7 +115,7 @@ public final class JobManager {
     /**
      * Starting gear when a job is chosen: every weapon kind of the job in copper (the main one first:
      * wizards and healers a staff, rangers a bow, everyone else their first melee weapon), 64 arrows
-     * for bow users, a forging anvil and a socket table.
+     * for bow users, a forging anvil, a socket table and a dungeon altar.
      */
     private static void giveStarterKit(ServerPlayer player, JobType type, boolean full) {
         WeaponType weapon = switch (type) {
@@ -131,6 +131,7 @@ public final class JobManager {
         if (full) { // the tables only with the very first job
             kit.add(new ItemStack(com.jo112ss.rpgmod.registry.ModRegistries.FORGING_ANVIL_ITEM.get()));
             kit.add(new ItemStack(com.jo112ss.rpgmod.registry.ModRegistries.SOCKET_TABLE_ITEM.get()));
+            kit.add(new ItemStack(com.jo112ss.rpgmod.registry.ModRegistries.DUNGEON_ALTAR_ITEM.get())); // the way into the dungeons
         }
         List<String> names = kit.stream().map(s -> s.getCount() + " " + s.getItem()).toList();
         for (ItemStack stack : kit) {
