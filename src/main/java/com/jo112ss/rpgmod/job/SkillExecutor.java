@@ -469,10 +469,21 @@ public final class SkillExecutor {
         return true;
     }
 
+    /**
+     * A skill's invisibility: invisible, and monsters cannot target you while it lasts (the ones
+     * after you drop you at once). Attacking out of it ends it where the skill says so.
+     */
+    public static void unseen(ServerPlayer p, int ticks) {
+        p.addEffect(new MobEffectInstance(MobEffects.INVISIBILITY, ticks, 0, false, false, true), p);
+        p.addEffect(new MobEffectInstance(com.jo112ss.rpgmod.registry.ModEffects.UNSEEN, ticks, 0, false, false, false), p);
+        for (net.minecraft.world.entity.Mob m : p.level().getEntitiesOfClass(net.minecraft.world.entity.Mob.class, p.getBoundingBox().inflate(48), m -> m.getTarget() == p))
+            m.setTarget(null);
+    }
+
     /** Self buff whose look is all in the effect (berserk, eagle eye, barriers, shadow dance). */
     static boolean selfBuff(Ctx c, String fx, SoundEvent s, float pitch) {
         apply(c.p, c.def, c.p);
-        if (fx.equals("shadow_dance")) c.p.addEffect(new MobEffectInstance(MobEffects.INVISIBILITY, ticks(c.def.duration()), 0), c.p);
+        if (fx.equals("shadow_dance")) unseen(c.p, ticks(c.def.duration()));
         ServerFx.of(fx, c.p.position()).follow(c.p).a(c.def.duration()).send(c.level);
         sound(c, s, pitch);
         if (fx.equals("berserk")) sound(c, c.p.position(), SoundEvents.FIRECHARGE_USE, 0.8F, 0.6F);
@@ -1002,7 +1013,7 @@ public final class SkillExecutor {
 
     static boolean smokeBomb(Ctx c) {
         double r = 5;
-        c.p.addEffect(new MobEffectInstance(MobEffects.INVISIBILITY, ticks(c.def.duration()), 0), c.p);
+        unseen(c.p, ticks(c.def.duration()));
         apply(c.p, c.def, c.p);
         for (LivingEntity e : enemies(c.p, c.p.position(), r)) {
             e.addEffect(new MobEffectInstance(MobEffects.SLOWNESS, ticks(3), 0), c.p);

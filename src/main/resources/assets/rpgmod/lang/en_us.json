@@ -979,7 +979,7 @@
   "rpgmod.skill.hunter_trap": "Hunter's Trap",
   "rpgmod.skill.hunter_trap.desc": "Set a trap for 20s: the first enemy to step on it sets it off.",
   "rpgmod.skill.shadow_leap": "Shadow Leap",
-  "rpgmod.skill.shadow_leap.desc": "Leap back out of a smoke puff; nearby enemies are blinded, the next hit is an ambush.",
+  "rpgmod.skill.shadow_leap.desc": "Leap back out of a smoke puff and vanish for 3s (monsters cannot target you); nearby enemies are blinded, the next hit is an ambush.",
   "rpgmod.skill.fan_knives": "Fan of Knives",
   "rpgmod.skill.fan_knives.desc": "Five knives in a fan.",
   "rpgmod.skill.night_hunt": "Night Hunt",
@@ -1346,5 +1346,6 @@
   "rpgmod.forgename.b.22": "Drifting",
   "rpgmod.forgename.b.23": "Bursting",
   "rpgmod.boost.play_longer": "Playing time +%s%%",
-  "rpgmod.boost.play_shorter": "Playing time -%s%%"
+  "rpgmod.boost.play_shorter": "Playing time -%s%%",
+  "effect.rpgmod.unseen": "Unseen"
 }

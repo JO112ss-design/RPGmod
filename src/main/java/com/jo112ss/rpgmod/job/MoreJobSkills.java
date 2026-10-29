@@ -1416,9 +1416,8 @@ public final class MoreJobSkills {
     private static boolean stealth(Ctx c) {
         ServerPlayer p = c.p();
         int t = ticks(c.def().duration());
-        p.addEffect(new MobEffectInstance(MobEffects.INVISIBILITY, t, 0, false, false, true), p);
+        SkillExecutor.unseen(p, t);
         p.addEffect(new MobEffectInstance(ModEffects.AMBUSH, t + 40, 0), p);
-        for (Mob m : c.level().getEntitiesOfClass(Mob.class, p.getBoundingBox().inflate(20), m -> m.getTarget() == p)) m.setTarget(null);
         ServerFx.of("x_burst", p.position().add(0, 1, 0)).a(1.6).b(3).color(SHADOW).send(c.level());
         sound(c, SoundEvents.ILLUSIONER_MIRROR_MOVE, 0.8F);
         return true;
@@ -1476,6 +1475,7 @@ public final class MoreJobSkills {
             if (e instanceof Mob m && m.getTarget() == p) m.setTarget(null);
         }
         p.addEffect(new MobEffectInstance(ModEffects.AMBUSH, ticks(c.def().duration()), 0), p);
+        SkillExecutor.unseen(p, ticks(c.def().duration())); // gone in the smoke until the ambush (or 3s)
         ServerFx.of("x_burst", from.add(0, 0.8, 0)).a(2).b(3).color(0x303848).send(c.level());
         ServerFx.of("backstep", from).vec(c.flat().scale(-1)).follow(p).send(c.level());
         sound(c, SoundEvents.BREEZE_JUMP, 1.4F);
@@ -1503,7 +1503,7 @@ public final class MoreJobSkills {
         ServerPlayer p = c.p();
         int t = ticks(c.def().duration());
         p.addEffect(new MobEffectInstance(ModEffects.NIGHT_HUNT, t, 0), p);
-        p.addEffect(new MobEffectInstance(MobEffects.INVISIBILITY, t, 0, false, false, true), p);
+        SkillExecutor.unseen(p, t);
         int shown = 0;
         for (LivingEntity e : enemies(p, p.position(), c.def().radius())) {
             e.addEffect(new MobEffectInstance(ModEffects.HUNTED, t, 0), p);

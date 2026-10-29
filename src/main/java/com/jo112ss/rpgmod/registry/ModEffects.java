@@ -105,6 +105,8 @@ public final class ModEffects {
     public static final DeferredHolder<MobEffect, MobEffect> FEATHER = marker("feather", MobEffectCategory.BENEFICIAL, 0xE8F4FF);
     /** Joker: monsters cannot see you (the next hit is doubled and ends it). */
     public static final DeferredHolder<MobEffect, MobEffect> VANISH = marker("vanish", MobEffectCategory.BENEFICIAL, 0x6A4A9A);
+    /** A skill's invisibility: while it lasts (and the invisibility does), monsters cannot target you. */
+    public static final DeferredHolder<MobEffect, MobEffect> UNSEEN = marker("unseen", MobEffectCategory.BENEFICIAL, 0x3A3F55);
     /** Joker: the next gamble lands on the best result. */
     public static final DeferredHolder<MobEffect, MobEffect> LOADED_DICE = marker("loaded_dice", MobEffectCategory.BENEFICIAL, 0xFFD54A);
     /** Nightblade: melee hits poison and wither. */

@@ -979,7 +979,7 @@
   "rpgmod.skill.hunter_trap": "罠設置",
   "rpgmod.skill.hunter_trap.desc": "狙った場所に罠を置く（20秒）。踏んだ敵の周りが爆発し、足止めする。",
   "rpgmod.skill.shadow_leap": "影跳び",
-  "rpgmod.skill.shadow_leap.desc": "煙を残して後ろへ跳ぶ。近くの敵は目がくらみ、次の一撃は奇襲になる。",
+  "rpgmod.skill.shadow_leap.desc": "煙を残して後ろへ跳び、3秒間姿を消す（モンスターに狙われない）。近くの敵は目がくらみ、次の一撃は奇襲になる。",
   "rpgmod.skill.fan_knives": "扇投げ",
   "rpgmod.skill.fan_knives.desc": "ナイフを5本扇状に投げる。",
   "rpgmod.skill.night_hunt": "闇夜の狩り",
@@ -1346,5 +1346,6 @@
   "rpgmod.forgename.b.22": "漂う",
   "rpgmod.forgename.b.23": "弾ける",
   "rpgmod.boost.play_longer": "演奏時間+%s%%",
-  "rpgmod.boost.play_shorter": "演奏時間−%s%%"
+  "rpgmod.boost.play_shorter": "演奏時間−%s%%",
+  "effect.rpgmod.unseen": "隠れ身"
 }

@@ -18,5 +18,7 @@ public abstract class PlayerTargetMixin {
         Player self = (Player) (Object) this;
         // downed (Resurrection mod), or vanished (joker): not an enemy to anyone
         if (Downed.is(self) || self.hasEffect(com.jo112ss.rpgmod.registry.ModEffects.VANISH)) cir.setReturnValue(false);
+        // invisible from a skill (stealth, smoke, shadow dance...): the same, until the invisibility goes (a potion's is not enough)
+        else if (self.hasEffect(com.jo112ss.rpgmod.registry.ModEffects.UNSEEN) && self.hasEffect(net.minecraft.world.effect.MobEffects.INVISIBILITY)) cir.setReturnValue(false);
     }
 }

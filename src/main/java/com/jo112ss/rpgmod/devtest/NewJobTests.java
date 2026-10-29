@@ -56,6 +56,7 @@ final class NewJobTests {
             case "robes" -> robes(level, p);
             case "hitwin" -> hitWindows(level, p);
             case "bardults" -> bardUlts(level, p);
+            case "unseen" -> unseenTest(level, p);
             case "masterwork" -> { // one weapon in five, any quality; the boost works from the main hand
                 java.util.Random rnd = new java.util.Random(7);
                 for (var type : java.util.List.of(com.jo112ss.rpgmod.item.WeaponType.SWORD, com.jo112ss.rpgmod.item.WeaponType.STAFF,
@@ -1549,6 +1550,45 @@ final class NewJobTests {
      * second player (a fake one) in the same tick, again by the same skill (blocked), by a bigger skill
      * hit (only the excess) and after the window (in full).
      */
+    /** A skill's invisibility makes monsters drop you; a potion's does not. */
+    private static void unseenTest(ServerLevel level, ServerPlayer p) {
+        var m = net.minecraft.world.entity.EntityTypes.ZOMBIE.create(level, net.minecraft.world.entity.EntitySpawnReason.COMMAND);
+        if (m == null) return;
+        Vec3 at = p.position().add(p.getLookAngle().multiply(1, 0, 1).normalize().scale(6));
+        m.snapTo(at.x, p.getY(), at.z, 0, 0);
+        level.addFreshEntity(m);
+        m.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.MAX_HEALTH).setBaseValue(100000);
+        m.setHealth(100000);
+        m.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE).setBaseValue(0);
+        var mode = p.gameMode();
+        boolean inv = p.getAbilities().invulnerable;
+        p.setGameMode(net.minecraft.world.level.GameType.SURVIVAL);
+        p.getAbilities().invulnerable = true;
+        become(p, "shadow_hunter");
+        JobManager.data(p).devUnlockAll();
+        // a potion's invisibility: still a target
+        p.addEffect(new net.minecraft.world.effect.MobEffectInstance(net.minecraft.world.effect.MobEffects.INVISIBILITY, 200, 0));
+        m.setTarget(p);
+        SkillTasks.later(20, () -> {
+            log("unseen: potion invisibility, zombie target {}", m.getTarget() == p ? "still you" : String.valueOf(m.getTarget()));
+            p.removeEffect(net.minecraft.world.effect.MobEffects.INVISIBILITY);
+            m.setTarget(p);
+            SkillExecutor.execute(p, JobDefs.skill("stealth"), 1);
+        });
+        SkillTasks.later(40, () -> log("unseen: stealth 1s in, zombie target {}, unseen {}", m.getTarget() == p ? "still you" : String.valueOf(m.getTarget()),
+                p.hasEffect(com.jo112ss.rpgmod.registry.ModEffects.UNSEEN)));
+        SkillTasks.later(60, () -> {
+            m.setTarget(p); // trying again while unseen
+            SkillTasks.later(2, () -> log("unseen: set on you again while unseen -> target {}", m.getTarget() == p ? "still you" : String.valueOf(m.getTarget())));
+        });
+        SkillTasks.later(140, () -> {
+            m.discard();
+            p.setGameMode(mode);
+            p.getAbilities().invulnerable = inv;
+            p.onUpdateAbilities();
+        });
+    }
+
     /** The bard line's ultimates against a sturdy husk, next to the bard's sonic boom: damage each, and what the formula says. */
     private static void bardUlts(ServerLevel level, ServerPlayer p) {
         var m = net.minecraft.world.entity.EntityTypes.HUSK.create(level, net.minecraft.world.entity.EntitySpawnReason.COMMAND);
