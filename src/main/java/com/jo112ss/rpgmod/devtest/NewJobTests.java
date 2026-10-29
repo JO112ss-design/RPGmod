@@ -161,6 +161,19 @@ final class NewJobTests {
                         a.getAttributeValue(net.minecraft.world.entity.ai.attributes.Attributes.FOLLOW_RANGE));
                 ms.forEach(net.minecraft.world.entity.Entity::discard);
             }
+            case "songtime" -> { // a bard's song grows from 5s (level 1) to 12s (top level); a spellsinger's stays 12s
+                become(p, "bard");
+                var sd = JobManager.data(p);
+                int was = sd.level();
+                StringBuilder sb = new StringBuilder();
+                for (int lvl : new int[] {1, 50, 100, 150, com.jo112ss.rpgmod.job.JobConfig.maxLevel()}) {
+                    sd.setLevel(lvl);
+                    sb.append("Lv").append(lvl).append(' ').append(String.format("%.2f", com.jo112ss.rpgmod.job.Bard.songSeconds(p, "war_song")))
+                            .append("s/").append(String.format("%.2f", com.jo112ss.rpgmod.job.Bard.songSeconds(p, "flame_melody"))).append("s ");
+                }
+                sd.setLevel(was);
+                log("song time bard/spellsinger: {}", sb.toString().trim());
+            }
             case "dungeonloot" -> { // chests by level: plain metals on the way, diamonds and netherite only at the end
                 var lr = net.minecraft.util.RandomSource.create(11);
                 for (int lvl : new int[] {1, 49, 50, 99, 100, 149, 150, 200}) {

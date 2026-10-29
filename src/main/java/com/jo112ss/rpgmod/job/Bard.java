@@ -106,6 +106,8 @@ public final class Bard {
 
     /** Every song plays this long (not longer at higher levels), plus the encore. */
     public static final int SONG_SECONDS = 12;
+    /** The bard's and maestro's songs grow with the level: this long at level 1, {@link #SONG_SECONDS} at the top level. */
+    public static final int BARD_SONG_START = 5;
     /**
      * The spellsinger's afterglow: seconds its song's effects stay on per point at the end of the song
      * (up to 100s); the ward melody's absorption stays this long on whoever still has it.
@@ -165,7 +167,14 @@ public final class Bard {
      */
     public static double songSeconds(Player p, String song) {
         double boost = JobManager.skillBoost(p, song, com.jo112ss.rpgmod.job.core.SkillBoost.DURATION);
-        return SONG_SECONDS * (singerSong(song) ? Math.max(0.3, 1 - boost) : 1 + boost);
+        return singerSong(song) ? SONG_SECONDS * Math.max(0.3, 1 - boost) : bardSeconds(p) * (1 + boost);
+    }
+
+    /** A bard's (or maestro's) song before its boosts: 5s at level 1 up to 12s at the top level. */
+    public static double bardSeconds(Player p) {
+        int max = Math.max(2, JobConfig.maxLevel());
+        double t = Math.max(0, Math.min(1, (JobManager.data(p).level() - 1) / (double) (max - 1)));
+        return BARD_SONG_START + (SONG_SECONDS - BARD_SONG_START) * t;
     }
 
     /** The "perform" skill: plays the song(s) set on the lute. */

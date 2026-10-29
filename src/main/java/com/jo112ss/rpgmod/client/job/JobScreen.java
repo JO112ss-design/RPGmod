@@ -894,8 +894,9 @@ public class JobScreen extends Screen {
     /** Enchanter buffs: listed time and what the current magic attack makes of it. */
     private Component durationLine(SkillDef def) {
         if (minecraft.player == null) return null;
-        if (com.jo112ss.rpgmod.job.JobManager.playsASong(def)) { // a song: its playing time, which levels do not stretch
-            double secs = com.jo112ss.rpgmod.job.Bard.isSong(def.id()) ? com.jo112ss.rpgmod.job.Bard.songSeconds(minecraft.player, def.id()) : com.jo112ss.rpgmod.job.Bard.SONG_SECONDS;
+        if (com.jo112ss.rpgmod.job.JobManager.playsASong(def)) { // a song: its playing time (a bard's grows with the level, a spellsinger's does not)
+            double secs = com.jo112ss.rpgmod.job.Bard.isSong(def.id()) ? com.jo112ss.rpgmod.job.Bard.songSeconds(minecraft.player, def.id())
+                    : "spell_perform".equals(def.id()) ? com.jo112ss.rpgmod.job.Bard.SONG_SECONDS : com.jo112ss.rpgmod.job.Bard.bardSeconds(minecraft.player);
             return Component.translatable("rpgmod.jobscreen.song_time", fmt(secs));
         }
         double byLevel = com.jo112ss.rpgmod.job.JobManager.levelDurationScale(minecraft.player, def);
