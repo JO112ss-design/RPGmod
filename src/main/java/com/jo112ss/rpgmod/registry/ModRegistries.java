@@ -205,6 +205,13 @@ public final class ModRegistries {
                 for (com.jo112ss.rpgmod.smithing.core.OptionType t : com.jo112ss.rpgmod.gem.GemRoller.statPool()) {
                     output.accept(com.jo112ss.rpgmod.gem.GemItems.stack(new com.jo112ss.rpgmod.gem.Gem(t.id, com.jo112ss.rpgmod.gem.Gem.COMMON, com.jo112ss.rpgmod.gem.GemRoller.max(t))));
                 }
+                // the bosses' unique weapons: each at Lv100 and Lv180, legendary (fixed options per weapon)
+                for (int lv : new int[] {100, 180}) {
+                    for (var u : com.jo112ss.rpgmod.item.UniqueWeapons.Def.values()) {
+                        output.accept(com.jo112ss.rpgmod.item.UniqueWeapons.create(u, lv, com.jo112ss.rpgmod.smithing.core.Quality.LEGENDARY,
+                                new java.util.Random(u.ordinal() * 31L + lv)));
+                    }
+                }
                 output.accept(SKILL_BOOK.get());
                 output.accept(JOB_BOOK.get());
                 output.accept(HP_POTION.get());
