@@ -229,7 +229,7 @@ final class NewJobTests {
             case "hybrids" -> hybrids(level, p, dummies);
             case "coins" -> coins(level, p);
             case "statsdump" -> statsDump();
-            case "jobstats" -> { // every job at Lv130: its stats with no panel cells, and with the whole panel
+            case "jobstats" -> { // every job at the top level (199): its stats with no panel cells, and with the whole panel
                 StringBuilder head = new StringBuilder("jobstats|job|kind|panel|maxhp");
                 for (var st : com.jo112ss.rpgmod.job.core.JobStat.values()) head.append('|').append(st.id);
                 head.append("|points|panel cost");
@@ -241,7 +241,7 @@ final class NewJobTests {
                     JobData jd = JobManager.data(p);
                     for (boolean full : new boolean[] {false, true}) {
                         jd.switchTo(base, adv);
-                        jd.setLevel(130);
+                        jd.setLevel(com.jo112ss.rpgmod.job.core.LevelCurve.MAX_TOTAL_LEVEL);
                         jd.ensureAdvanced();
                         jd.resetPanel();
                         if (adv) jd.resetAdvPanel();

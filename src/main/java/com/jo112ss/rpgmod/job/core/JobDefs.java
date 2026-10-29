@@ -166,8 +166,8 @@ public final class JobDefs {
                         skill("heal", SkillKind.SPELL, SkillEffect.HEAL, 6, 21, 0.9, 4, 0, List.of(), 0, "癒"),
                         skill("group_heal", SkillKind.SPELL, SkillEffect.HEAL, 12, 42, 0.6, 10, 0, List.of(), 0, "群"),
                         skill("purify", SkillKind.SPELL, SkillEffect.HEAL, 18, 28, 0.4, 8, 0, List.of(), 0, "浄"),
-                        // the heal's strong form: 2.5x the healing, a longer charge and much more mana
-                        skill("greater_heal", SkillKind.SPELL, SkillEffect.HEAL, 6, 50, 2.25, 4, 0, List.of(), 0, "快")));
+                        // the heal's strong form: 5x the healing, a longer charge and much more mana
+                        skill("greater_heal", SkillKind.SPELL, SkillEffect.HEAL, 6, 50, 4.5, 4, 0, List.of(), 0, "快")));
         // ---- Assassin: daggers, burst and stealth
         job("assassin", 0x8E44AD, "影", List.of(JobStat.CRIT_CHANCE, JobStat.ATTACK_DAMAGE, JobStat.ATTACK_SPEED, JobStat.MOVEMENT_SPEED),
                 stats(JobStat.CRIT_CHANCE, 5, JobStat.MOVEMENT_SPEED, 5, JobStat.ATTACK_DAMAGE, 3), stats(JobStat.CRIT_CHANCE, 0.075, JobStat.ATTACK_DAMAGE, 0.6, JobStat.MAX_HEALTH, hpGrow(1.0, 0)),
@@ -396,8 +396,8 @@ public final class JobDefs {
                         skill("holy_bolt", S, SkillEffect.BOLT, 0.8, 8, 1.6, 28, 0, List.of(), 0, "聖"),
                         skill("holy_nova", S, SkillEffect.WHIRL, 10, 40, 3.0, 7, 0, List.of(), 0, "輝"),
                         skill("light_pillar", S, SkillEffect.WHIRL, 14, 50, 1.0, 3, 0, List.of(), 0, "柱"),
-                        // the group heal's strong form: 2.5x the healing, further, and it clears poison and wither
-                        skill("grand_heal", S, SkillEffect.HEAL, 14, 85, 1.5, 12, 0, List.of(), 0, "讃")));
+                        // the group heal's strong form: 5x the healing, further, and it clears poison and wither
+                        skill("grand_heal", S, SkillEffect.HEAL, 14, 85, 3.0, 12, 0, List.of(), 0, "讃")));
         // ---- Captain: two cannons, a crew to command, heavy shots
         advanced("pirate", "captain", 0x1F5F99, "船", List.of(JobStat.ATTACK_DAMAGE, JobStat.CRIT_CHANCE, JobStat.ATTACK_SPEED, JobStat.MAX_HEALTH),
                 stats(JobStat.CRIT_CHANCE, 0.05),
