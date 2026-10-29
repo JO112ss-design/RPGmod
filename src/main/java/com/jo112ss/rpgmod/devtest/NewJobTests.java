@@ -59,6 +59,30 @@ final class NewJobTests {
             case "unseen" -> unseenTest(level, p);
             case "uniques" -> uniquesTest(level, p);
             case "wither" -> witherTest(level, p);
+            case "truce" -> { // monsters leave each other alone; the fallen adventurers sense from 64 blocks
+                Vec3 at = p.position().add(0, 0, 30);
+                java.util.List<net.minecraft.world.entity.Mob> ms = new java.util.ArrayList<>();
+                for (var type : java.util.List.<net.minecraft.world.entity.EntityType<? extends net.minecraft.world.entity.Mob>>of(net.minecraft.world.entity.EntityTypes.ZOMBIE,
+                        net.minecraft.world.entity.EntityTypes.ZOMBIE, net.minecraft.world.entity.EntityTypes.SKELETON, com.jo112ss.rpgmod.registry.ModRegistries.REVENANT.get())) {
+                    var m = type.create(level, net.minecraft.world.entity.EntitySpawnReason.COMMAND);
+                    m.snapTo(at.x + ms.size() * 2, p.getY(), at.z, 0, 0);
+                    level.addFreshEntity(m);
+                    ms.add(m);
+                }
+                var a = ms.get(0); var b = ms.get(1); var sk = ms.get(2); var rv = ms.get(3);
+                float hb = b.getHealth();
+                b.hurtServer(level, level.damageSources().mobAttack(a), 6);
+                float hs = b.getHealth();
+                b.hurtServer(level, level.damageSources().mobAttack(sk), 6);
+                a.setTarget(b);
+                float hp = b.getHealth();
+                b.hurtServer(level, p.damageSources().playerAttack(p), 1);
+                log("truce: zombie hit by a zombie {} -> {}, by a skeleton {} -> {}; zombie told to target a zombie -> {}; by the player {} -> {}; revenant follow range {}, zombie {}",
+                        hb, hs, hs, b.getHealth(), a.getTarget() == null ? "no target" : a.getTarget().getType().getDescriptionId(), hp, b.getHealth(),
+                        rv.getAttributeValue(net.minecraft.world.entity.ai.attributes.Attributes.FOLLOW_RANGE),
+                        a.getAttributeValue(net.minecraft.world.entity.ai.attributes.Attributes.FOLLOW_RANGE));
+                ms.forEach(net.minecraft.world.entity.Entity::discard);
+            }
             case "masterwork" -> { // one weapon in five, any quality; the boost works from the main hand
                 java.util.Random rnd = new java.util.Random(7);
                 for (var type : java.util.List.of(com.jo112ss.rpgmod.item.WeaponType.SWORD, com.jo112ss.rpgmod.item.WeaponType.STAFF,

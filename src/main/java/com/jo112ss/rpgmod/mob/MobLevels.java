@@ -141,8 +141,8 @@ public final class MobLevels {
             modifier(mob, Attributes.FLYING_SPEED, FLY, speed, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);
             modifier(mob, Attributes.KNOCKBACK_RESISTANCE, KB, MobLevelMath.knockbackResistance(r, lv), AttributeModifier.Operation.ADD_VALUE);
             AttributeInstance follow = mob.getAttribute(Attributes.FOLLOW_RANGE);
-            if (com.jo112ss.rpgmod.mob.ai.MobAi.sensesFar(mob) && follow != null) {
-                // zombies, creepers, spiders and skeletons hunt from far away (64 blocks by default)
+            if ((com.jo112ss.rpgmod.mob.ai.MobAi.sensesFar(mob) || mob instanceof com.jo112ss.rpgmod.mob.revenant.Revenant) && follow != null) {
+                // zombies, creepers, spiders and skeletons (and the fallen adventurers) hunt from far away (64 blocks by default)
                 modifier(mob, Attributes.FOLLOW_RANGE, FOLLOW, Math.max(0, MobConfig.zombieRange() - follow.getBaseValue()), AttributeModifier.Operation.ADD_VALUE);
             } else {
                 // stronger monsters notice you from further away (+1 block per 4 levels, up to +16)
