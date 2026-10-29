@@ -58,6 +58,8 @@ import net.minecraft.world.phys.Vec3;
  */
 public class AbyssWither extends WitherBoss implements ModBoss {
     public static final float SCALE = 1.6F;
+    /** Always this level, wherever it is fought: the last fight of all. */
+    public static final int LEVEL = 200;
 
     public enum State { CHASE, VOLLEY_UP, VOLLEY, RAIN_UP, DIVE_AIM, DIVE, NOVA_UP, SUMMON, BEAM_AIM, STORM, SPENT, AWAKEN, CAST_END }
 

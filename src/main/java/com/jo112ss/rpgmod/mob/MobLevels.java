@@ -63,7 +63,8 @@ public final class MobLevels {
         if (mob instanceof com.jo112ss.rpgmod.mob.boss.ModBoss king) {
             // bosses: level = highest player level (+ bonus), health set by the boss itself
             boolean fresh = level(mob) <= 0;
-            if (fresh) mob.setData(ModRegistries.MOB_LEVEL, Math.max(1, topPlayerLevel(((ServerLevel) event.getLevel()).getServer()) + MobConfig.bossLevelBonus()));
+            if (fresh) mob.setData(ModRegistries.MOB_LEVEL, mob instanceof com.jo112ss.rpgmod.mob.boss.AbyssWither ? com.jo112ss.rpgmod.mob.boss.AbyssWither.LEVEL
+                    : Math.max(1, topPlayerLevel(((ServerLevel) event.getLevel()).getServer()) + MobConfig.bossLevelBonus()));
             king.recomputeHealth(fresh);
             return;
         }

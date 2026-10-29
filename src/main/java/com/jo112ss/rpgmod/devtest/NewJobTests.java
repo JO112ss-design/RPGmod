@@ -1578,8 +1578,7 @@ final class NewJobTests {
             var b = com.jo112ss.rpgmod.registry.ModRegistries.ABYSS_WITHER.get().create(level, net.minecraft.world.entity.EntitySpawnReason.EVENT);
             b.snapTo(field.x, field.y + 1, field.z + 12, 180, 0);
             b.setPersistenceRequired();
-            b.setData(com.jo112ss.rpgmod.registry.ModRegistries.MOB_LEVEL, 130);
-            level.addFreshEntity(b);
+            level.addFreshEntity(b); // its level: always 200
             b.recomputeHealth(true);
             b.setTarget(p);
             w[0] = b;

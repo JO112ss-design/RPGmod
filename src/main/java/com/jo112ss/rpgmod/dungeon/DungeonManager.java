@@ -286,6 +286,7 @@ public final class DungeonManager {
     /** Level of the dungeon's monsters: fixed by a sealed key, else that of the strongest player inside. */
     static int levelFor(Run r, List<ServerPlayer> inside) {
         if (r.fixedLevel > 0) return r.fixedLevel;
+        if (r.kind == Kind.ABYSS_WITHER) return com.jo112ss.rpgmod.mob.boss.AbyssWither.LEVEL; // the hidden boss is always Lv200
         int top = 1;
         for (ServerPlayer p : inside) {
             var jd = JobManager.data(p);
