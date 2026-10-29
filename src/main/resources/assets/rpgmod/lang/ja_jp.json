@@ -983,7 +983,7 @@
   "rpgmod.skill.fan_knives": "扇投げ",
   "rpgmod.skill.fan_knives.desc": "ナイフを5本扇状に投げる。",
   "rpgmod.skill.night_hunt": "闇夜の狩り",
-  "rpgmod.skill.night_hunt.desc": "10秒間、周りの敵すべてを獲物にする。姿も消えるが攻撃すると戻る（自分からのダメージ+50%）。",
+  "rpgmod.skill.night_hunt.desc": "10秒間、周りの敵すべてを獲物にする（自分からのダメージ+50%）。その間は姿も消えるが、攻撃すると戻る。",
   "rpgmod.skill.shadow_rain": "影の雨",
   "rpgmod.skill.shadow_rain.desc": "狙った1体に3秒間、影の矢を集中して降らせ縫い止める。命中のたびに近くの敵へ跳ね（半分のダメージ）、そちらも縫い止める。",
   "rpgmod.skill.gamble_cannon": "ギャンブル砲",
