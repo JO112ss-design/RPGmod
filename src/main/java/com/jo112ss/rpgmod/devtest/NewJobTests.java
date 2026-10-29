@@ -57,6 +57,7 @@ final class NewJobTests {
             case "hitwin" -> hitWindows(level, p);
             case "bardults" -> bardUlts(level, p);
             case "unseen" -> unseenTest(level, p);
+            case "uniques" -> uniquesTest(level, p);
             case "masterwork" -> { // one weapon in five, any quality; the boost works from the main hand
                 java.util.Random rnd = new java.util.Random(7);
                 for (var type : java.util.List.of(com.jo112ss.rpgmod.item.WeaponType.SWORD, com.jo112ss.rpgmod.item.WeaponType.STAFF,
@@ -1550,6 +1551,71 @@ final class NewJobTests {
      * second player (a fake one) in the same tick, again by the same skill (blocked), by a bigger skill
      * hit (only the excess) and after the window (in full).
      */
+    /** The bosses' unique weapons: strength by level, who gets which, two of the effects, and each one in hand. */
+    private static void uniquesTest(ServerLevel level, ServerPlayer p) {
+        java.util.Random rnd = new java.util.Random(11);
+        var U = com.jo112ss.rpgmod.item.UniqueWeapons.class;
+        StringBuilder sb = new StringBuilder();
+        for (int lv : new int[] {1, 40, 100, 140, 180, 250}) sb.append("Lv").append(lv).append(" +").append(String.format("%.1f", com.jo112ss.rpgmod.item.UniqueWeapons.flat(lv)))
+                .append(" x").append(String.format("%.3f", com.jo112ss.rpgmod.item.UniqueWeapons.mult(lv))).append("; ");
+        log("uniques: by level {}(diamond +15 x1.33, netherite +18 x1.45)", sb);
+        java.util.List<net.minecraft.world.item.ItemStack> all = new java.util.ArrayList<>();
+        for (var def : com.jo112ss.rpgmod.item.UniqueWeapons.Def.values()) {
+            var st = com.jo112ss.rpgmod.item.UniqueWeapons.create(def, 180, com.jo112ss.rpgmod.item.UniqueWeapons.randomQuality(rnd), rnd);
+            all.add(st);
+            var mods = st.get(net.minecraft.core.component.DataComponents.ATTRIBUTE_MODIFIERS);
+            var net = new net.minecraft.world.item.ItemStack(com.jo112ss.rpgmod.item.ModItems.get(def.type, com.jo112ss.rpgmod.item.WeaponMaterial.NETHERITE))
+                    .get(net.minecraft.core.component.DataComponents.ATTRIBUTE_MODIFIERS);
+            log("uniques: {} ({}, {}) Lv180 name '{}' quality {} options {} masterwork {}; attack mods {} | netherite {}", def.id, def.boss, def.type,
+                    st.getHoverName().getString(), st.get(com.jo112ss.rpgmod.registry.ModRegistries.FORGED_DATA.get()).qualityEnum(),
+                    st.get(com.jo112ss.rpgmod.registry.ModRegistries.FORGED_DATA.get()).options().size(),
+                    st.get(com.jo112ss.rpgmod.registry.ModRegistries.FORGED_DATA.get()).masterwork().isPresent(),
+                    mods == null ? "-" : mods.modifiers().stream().map(m -> String.format("%.2f", m.modifier().amount())).toList(),
+                    net == null ? "-" : net.modifiers().stream().map(m -> String.format("%.2f", m.modifier().amount())).toList());
+        }
+        for (String[] jb : new String[][] {{"wizard", "lich"}, {"fighter", "king_slime"}, {"monk", "golem"}, {"bard", "spider_queen"}, {"shadow_hunter", "spider_queen"}}) {
+            become(p, jb[0]);
+            log("uniques: a {} at the {} gets one of {}", jb[0], jb[1], com.jo112ss.rpgmod.item.UniqueWeapons.choicesFor(jb[1], p).stream().map(d -> d.id).toList());
+        }
+        // the slime greatsword's splash, and the lich's staff on a kill
+        become(p, "fighter");
+        Vec3 at = p.position().add(p.getLookAngle().multiply(1, 0, 1).normalize().scale(3));
+        java.util.List<net.minecraft.world.entity.monster.zombie.Husk> husks = new java.util.ArrayList<>();
+        for (int k = 0; k < 2; k++) {
+            var m = net.minecraft.world.entity.EntityTypes.HUSK.create(level, net.minecraft.world.entity.EntitySpawnReason.COMMAND);
+            if (m == null) return;
+            m.snapTo(at.x + k * 1.2, p.getY(), at.z, 0, 0);
+            m.setNoAi(true);
+            level.addFreshEntity(m);
+            m.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.MAX_HEALTH).setBaseValue(10000);
+            m.setHealth(10000);
+            husks.add(m);
+        }
+        SkillTasks.later(5, () -> {
+            p.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, all.get(0).copy());
+            float h0 = husks.get(0).getHealth(), h1 = husks.get(1).getHealth();
+            husks.get(0).hurtServer(level, p.damageSources().playerAttack(p), 200);
+            log("uniques: slime greatsword hit 200 -> the one hit lost {}, the one beside it {} (30% of what landed), slowed {}", Math.round(h0 - husks.get(0).getHealth()),
+                    Math.round(h1 - husks.get(1).getHealth()), husks.get(1).hasEffect(net.minecraft.world.effect.MobEffects.SLOWNESS));
+            become(p, "wizard");
+            p.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, all.get(5).copy());
+            var d = JobManager.data(p);
+            d.setMana(0);
+            husks.get(1).setHealth(1);
+            husks.get(1).hurtServer(level, p.damageSources().playerAttack(p), 50);
+            log("uniques: lich staff kill -> MP {} of {} (4% expected), magic attack {}", String.format("%.1f", d.mana()), String.format("%.0f", JobManager.maxMana(p)),
+                    String.format("%.1f", JobManager.magicAttack(p)));
+            husks.forEach(net.minecraft.world.entity.Entity::discard);
+        });
+        for (int k = 0; k < all.size(); k++) { // each in hand for the camera
+            int i = k;
+            SkillTasks.later(20 + k * 20, () -> p.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, all.get(i).copy()));
+        }
+        SkillTasks.later(20 + all.size() * 20, () -> {
+            for (int k = 0; k < all.size() && k < 9; k++) p.getInventory().setItem(k, all.get(k).copy());
+        });
+    }
+
     /** A skill's invisibility makes monsters drop you; a potion's does not. */
     private static void unseenTest(ServerLevel level, ServerPlayer p) {
         var m = net.minecraft.world.entity.EntityTypes.ZOMBIE.create(level, net.minecraft.world.entity.EntitySpawnReason.COMMAND);

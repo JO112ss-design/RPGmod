@@ -143,8 +143,8 @@ public final class ForgeOptionEffects {
             if (bow.getItem() instanceof RpgBowItem rpgBow) {
                 // material bonus, scaled by draw strength (arrow speed 3 = full draw)
                 double drawn = Math.min(1.0, arrow.getDeltaMovement().length() / 3.0);
-                event.setAmount((float) (event.getAmount() + rpgBow.damageBonus() * drawn));
-                mult = rpgBow.material().multiplier;
+                event.setAmount((float) (event.getAmount() + com.jo112ss.rpgmod.item.UniqueWeapons.bowBonus(bow, rpgBow) * drawn));
+                mult = com.jo112ss.rpgmod.item.UniqueWeapons.bowMult(bow, rpgBow);
             }
             weapon = bow;
             applyRangedOptions(event, bow, player);

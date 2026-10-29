@@ -643,6 +643,8 @@ public final class JobManager {
         var item = player.getMainHandItem().getItem();
         var type = ModItems.typeOf(item);
         if (type == null || !type.magical()) return 0; // staffs and lutes
+        double unique = com.jo112ss.rpgmod.item.UniqueWeapons.staffMagic(player.getMainHandItem()); // a boss's staff: from its level
+        if (unique >= 0) return unique;
         var mat = ModItems.materialOf(item);
         return mat == null ? 0 : mat.staffMagic();
     }
@@ -652,6 +654,8 @@ public final class JobManager {
         var item = player.getMainHandItem().getItem();
         var type = ModItems.typeOf(item);
         if (type == null || !type.magical()) return 1;
+        var u = com.jo112ss.rpgmod.item.UniqueWeapons.of(player.getMainHandItem());
+        if (u != null) return com.jo112ss.rpgmod.item.UniqueWeapons.mult(u.level());
         var mat = ModItems.materialOf(item);
         return mat == null ? 1 : mat.multiplier;
     }
@@ -666,9 +670,9 @@ public final class JobManager {
         ItemStack held = player.getMainHandItem();
         if (ModItems.typeOf(held.getItem()) == WeaponType.BOW) {
             var rb = held.getItem() instanceof com.jo112ss.rpgmod.item.RpgBowItem r ? r : null;
-            double bow = 15 + (rb != null ? rb.damageBonus() : 0); // a full-draw arrow on the x3 scale
+            double bow = 15 + (rb != null ? com.jo112ss.rpgmod.item.UniqueWeapons.bowBonus(held, rb) : 0); // a full-draw arrow on the x3 scale
             atk += bow * (1 + com.jo112ss.rpgmod.gem.Gear.option(held, com.jo112ss.rpgmod.smithing.core.OptionType.ATTACK_DAMAGE) / 100.0) * attackUp(player);
-            if (rb != null) atk *= rb.material().multiplier; // the bow's material multiplies the whole attack
+            if (rb != null) atk *= com.jo112ss.rpgmod.item.UniqueWeapons.bowMult(held, rb); // the bow's material multiplies the whole attack
         } else if (held.is(net.minecraft.world.item.Items.BOW) || held.is(net.minecraft.world.item.Items.CROSSBOW)) {
             atk += 15 * attackUp(player);
         }

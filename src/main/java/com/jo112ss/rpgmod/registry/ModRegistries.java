@@ -90,6 +90,10 @@ public final class ModRegistries {
     public static final DeferredHolder<DataComponentType<?>, DataComponentType<ForgedData>> FORGED_DATA =
             DATA_COMPONENTS.registerComponentType("forged", b -> b.persistent(ForgedData.CODEC).networkSynchronized(ForgedData.STREAM_CODEC));
 
+    /** A boss's unique weapon: which, and the level it dropped at. */
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<com.jo112ss.rpgmod.item.UniqueWeapon>> UNIQUE_WEAPON =
+            DATA_COMPONENTS.registerComponentType("unique", b -> b.persistent(com.jo112ss.rpgmod.item.UniqueWeapon.CODEC).networkSynchronized(com.jo112ss.rpgmod.item.UniqueWeapon.STREAM_CODEC));
+
     /** The gem of a gem item. */
     public static final DeferredHolder<DataComponentType<?>, DataComponentType<com.jo112ss.rpgmod.gem.Gem>> GEM =
             DATA_COMPONENTS.registerComponentType("gem", b -> b.persistent(com.jo112ss.rpgmod.gem.Gem.CODEC).networkSynchronized(com.jo112ss.rpgmod.gem.Gem.STREAM_CODEC));

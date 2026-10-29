@@ -106,6 +106,7 @@ public final class BossEvents {
             net.minecraft.server.level.ServerPlayer p = sl.getServer().getPlayerList().getPlayer(id);
             if (p == null) continue;
             names.add(p.getGameProfile().name());
+            com.jo112ss.rpgmod.item.UniqueWeapons.reward(p, boss, key); // 25%: one of the boss's own weapons
             if (books > 0) {
                 net.minecraft.world.item.ItemStack stack = new net.minecraft.world.item.ItemStack(ModRegistries.SKILL_BOOK.get(), books);
                 if (!p.getInventory().add(stack)) p.drop(stack, false, net.minecraft.util.Prediction.SERVER_ONLY);

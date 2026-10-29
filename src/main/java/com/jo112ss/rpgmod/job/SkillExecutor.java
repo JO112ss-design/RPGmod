@@ -198,7 +198,7 @@ public final class SkillExecutor {
         return !e.isInvulnerable();
     }
 
-    static List<LivingEntity> enemies(ServerPlayer p, Vec3 c, double r) {
+    public static List<LivingEntity> enemies(ServerPlayer p, Vec3 c, double r) {
         return p.level().getEntitiesOfClass(LivingEntity.class, new AABB(c, c).inflate(r + 1),
                 e -> isEnemy(p, e) && horizontal(e.position(), c) <= r + e.getBbWidth() / 2 && Math.abs(e.getY() - c.y) < Math.max(3, r));
     }
@@ -297,9 +297,9 @@ public final class SkillExecutor {
      * landing right after a sword swing, or several hits of one skill, all count. Magic also ignores
      * armour.
      */
-    static final net.minecraft.resources.ResourceKey<net.minecraft.world.damagesource.DamageType> SKILL_DAMAGE =
+    public static final net.minecraft.resources.ResourceKey<net.minecraft.world.damagesource.DamageType> SKILL_DAMAGE =
             net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.DAMAGE_TYPE, Identifier.fromNamespaceAndPath("rpgmod", "skill"));
-    static final net.minecraft.resources.ResourceKey<net.minecraft.world.damagesource.DamageType> SKILL_MAGIC_DAMAGE =
+    public static final net.minecraft.resources.ResourceKey<net.minecraft.world.damagesource.DamageType> SKILL_MAGIC_DAMAGE =
             net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.DAMAGE_TYPE, Identifier.fromNamespaceAndPath("rpgmod", "skill_magic"));
 
     /** The skills' magic damage type (elites with a ward resist it). */

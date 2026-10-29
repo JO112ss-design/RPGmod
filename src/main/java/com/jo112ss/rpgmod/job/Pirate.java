@@ -156,6 +156,7 @@ public final class Pirate {
         if (hit != null) {
             hit.hurtServer(level, p.damageSources().source(SkillExecutor.SKILL_DAMAGE, p, p), damage);
             SkillExecutor.push(hit, dir, 0.2, 0.05);
+            com.jo112ss.rpgmod.item.UniqueWeapons.venomShot(p, hit); // the spider queen's gunblade poisons its shots too
         }
         if (keg != null) {
             Runnable boom = KEGS.remove(keg.getId());

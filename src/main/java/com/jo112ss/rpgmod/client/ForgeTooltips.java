@@ -33,17 +33,28 @@ public final class ForgeTooltips {
     @SubscribeEvent
     public static void onTooltip(ItemTooltipEvent event) {
         List<Component> tip = event.getToolTip();
+        var unique = com.jo112ss.rpgmod.item.UniqueWeapons.of(event.getItemStack());
         if (event.getItemStack().getItem() instanceof com.jo112ss.rpgmod.item.RpgBowItem bow) {
-            tip.add(Math.min(1, tip.size()), Component.translatable("rpgmod.tooltip.bow_bonus", bow.damageBonus()).withStyle(ChatFormatting.DARK_GREEN));
-            if (bow.material().multiplier != 1) tip.add(Math.min(2, tip.size()), Component.translatable("rpgmod.tooltip.weapon_mult",
-                    String.format("%.2f", bow.material().multiplier)).withStyle(ChatFormatting.DARK_GREEN));
+            double bonus = com.jo112ss.rpgmod.item.UniqueWeapons.bowBonus(event.getItemStack(), bow), mult = com.jo112ss.rpgmod.item.UniqueWeapons.bowMult(event.getItemStack(), bow);
+            tip.add(Math.min(1, tip.size()), Component.translatable("rpgmod.tooltip.bow_bonus", String.format("%.1f", bonus).replaceAll("\\.0$", "")).withStyle(ChatFormatting.DARK_GREEN));
+            if (mult != 1) tip.add(Math.min(2, tip.size()), Component.translatable("rpgmod.tooltip.weapon_mult",
+                    String.format("%.2f", mult)).withStyle(ChatFormatting.DARK_GREEN));
         }
         net.minecraft.world.item.Item it = event.getItemStack().getItem();
         var wt = com.jo112ss.rpgmod.item.ModItems.typeOf(it);
         if (wt != null && wt.magical()) {
             var mat = com.jo112ss.rpgmod.item.ModItems.materialOf(it);
-            if (mat != null) tip.add(Math.min(1, tip.size()), Component.translatable("rpgmod.tooltip.staff_bonus",
+            if (unique != null) tip.add(Math.min(1, tip.size()), Component.translatable("rpgmod.tooltip.staff_bonus",
+                    String.format("%.0f", com.jo112ss.rpgmod.item.UniqueWeapons.staffMagic(event.getItemStack())),
+                    String.format("%.2f", com.jo112ss.rpgmod.item.UniqueWeapons.mult(unique.level()))).withStyle(ChatFormatting.LIGHT_PURPLE));
+            else if (mat != null) tip.add(Math.min(1, tip.size()), Component.translatable("rpgmod.tooltip.staff_bonus",
                     String.format("%.0f", mat.staffMagic()), String.format("%.2f", mat.multiplier)).withStyle(ChatFormatting.LIGHT_PURPLE));
+        }
+        if (unique != null && unique.def() != null) { // a boss's weapon: its level and its own effect
+            tip.add(Math.min(1, tip.size()), Component.translatable("rpgmod.tooltip.unique_effect").withStyle(ChatFormatting.LIGHT_PURPLE)
+                    .append(Component.translatable("rpgmod.unique." + unique.id() + ".desc").withStyle(ChatFormatting.WHITE)));
+            tip.add(Math.min(1, tip.size()), Component.translatable("rpgmod.tooltip.unique", unique.level(),
+                    Component.translatable("entity.rpgmod." + unique.def().boss)).withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.BOLD));
         }
         if (event.getItemStack().has(net.minecraft.core.component.DataComponents.BLOCKS_ATTACKS)) {
             int pct = (int) Math.round(com.jo112ss.rpgmod.item.Shields.block(event.getItemStack()) * 100);
