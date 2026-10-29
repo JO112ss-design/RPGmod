@@ -565,7 +565,7 @@ public final class DungeonManager {
     }
 
     /** Chance the final chest holds one of the four boss offerings. */
-    public static final float OFFERING_CHANCE = 0.1F;
+    public static final float OFFERING_CHANCE = 0.2F;
 
     /** The end of a run: everyone inside goes back, the slot is emptied, the altar goes quiet. */
     private static void finish(MinecraftServer server, ServerLevel dl, DungeonData d, Run r) {
