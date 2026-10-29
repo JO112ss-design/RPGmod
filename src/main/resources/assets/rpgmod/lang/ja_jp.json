@@ -959,7 +959,7 @@
   "rpgmod.skill.haste_tune": "加速の調べ",
   "rpgmod.skill.haste_tune.desc": "12秒間演奏する。周りの味方の攻撃と移動が速くなる。",
   "rpgmod.skill.mana_chord": "魔力の和音",
-  "rpgmod.skill.mana_chord.desc": "12秒間演奏する。周りの味方のMPが毎秒回復する。",
+  "rpgmod.skill.mana_chord.desc": "12秒間演奏する。周りの味方のMPが毎秒回復する（余韻は最大30秒）。",
   "rpgmod.skill.seal_melody": "封印の旋律",
   "rpgmod.skill.seal_melody.desc": "12秒間演奏する。周りの敵の守りを崩し、動きを鈍らせる。",
   "rpgmod.skill.thunder_tune": "雷鳴の調べ",

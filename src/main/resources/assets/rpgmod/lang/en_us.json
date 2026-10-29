@@ -959,7 +959,7 @@
   "rpgmod.skill.haste_tune": "Haste Tune",
   "rpgmod.skill.haste_tune.desc": "Play for 12s: allies attack and move faster.",
   "rpgmod.skill.mana_chord": "Mana Chord",
-  "rpgmod.skill.mana_chord.desc": "Play for 12s: allies regain mana each second.",
+  "rpgmod.skill.mana_chord.desc": "Play for 12s: allies regain mana each second (the afterglow lasts 30s at most).",
   "rpgmod.skill.seal_melody": "Seal Melody",
   "rpgmod.skill.seal_melody.desc": "Play for 12s: enemies around are exposed and slowed.",
   "rpgmod.skill.thunder_tune": "Thunder Tune",

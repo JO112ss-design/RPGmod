@@ -327,7 +327,9 @@ public final class Bard {
                     .withStyle(ChatFormatting.LIGHT_PURPLE), true);
             return;
         }
-        int ticks = (int) Math.round(points * LINGER_PER_POINT * 20);
+        int full = (int) Math.round(points * LINGER_PER_POINT * 20);
+        // mana every second for 100s was far too much
+        int ticks = song.equals("mana_chord") ? Math.min(full, MANA_LINGER_SECONDS * 20) : full;
         if (ticks < 20) return;
         pulse(perf.c, p, song, points, ticks, reach);
         if (song.equals("mana_chord") || song.equals("thunder_tune")) {
@@ -458,7 +460,9 @@ public final class Bard {
     /** Ward melody: absorption on each ally worth this share of their max health (times the strength: 15% to 30%). */
     public static final double WARD_SHARE = 0.25;
     /** The spellsinger's songs: mana per second (share of the max, times the strength) and the thunder's damage share. */
-    public static final double SINGER_MANA = 0.012, SINGER_DAMAGE = 0.6;
+    /** Mana chord: share of max MP each second (x0.6 to x1.2 by the points); its afterglow lasts at most this long. */
+    public static final double SINGER_MANA = 0.006, SINGER_DAMAGE = 0.6;
+    public static final int MANA_LINGER_SECONDS = 30;
     /** Ward melody: once someone's absorption is broken, none for them for this long. */
     public static final int WARD_BROKEN_TICKS = 80;
 

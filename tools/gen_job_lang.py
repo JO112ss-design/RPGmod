@@ -154,7 +154,7 @@ SKILLS = {  # id: (ja, ja desc, en, en desc)
  # ---- spellsinger
  'flame_melody': ('炎の旋律', '12秒間演奏する。周りの味方の攻撃が燃え、威力が上がる。', 'Flame Melody', 'Play for 12s: allies\' hits burn and hit harder.'),
  'haste_tune': ('加速の調べ', '12秒間演奏する。周りの味方の攻撃と移動が速くなる。', 'Haste Tune', 'Play for 12s: allies attack and move faster.'),
- 'mana_chord': ('魔力の和音', '12秒間演奏する。周りの味方のMPが毎秒回復する。', 'Mana Chord', 'Play for 12s: allies regain mana each second.'),
+ 'mana_chord': ('魔力の和音', '12秒間演奏する。周りの味方のMPが毎秒回復する（余韻は最大30秒）。', 'Mana Chord', 'Play for 12s: allies regain mana each second (the afterglow lasts 30s at most).'),
  'seal_melody': ('封印の旋律', '12秒間演奏する。周りの敵の守りを崩し、動きを鈍らせる。', 'Seal Melody', 'Play for 12s: enemies around are exposed and slowed.'),
  'thunder_tune': ('雷鳴の調べ', '12秒間演奏する。毎秒、周りの敵1体に雷が落ちる。', 'Thunder Tune', 'Play for 12s: lightning strikes an enemy around each second.'),
  'resonance': ('共鳴', '周りの味方の良い効果をすべて5秒延ばす。演奏中なら点数+4。', 'Resonance', 'Every good effect on allies around lasts 5s longer; +4 points if playing.'),
