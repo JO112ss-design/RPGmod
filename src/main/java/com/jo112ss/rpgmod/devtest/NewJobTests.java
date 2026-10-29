@@ -70,7 +70,12 @@ final class NewJobTests {
                     });
                     long[] end = {0};
                     SkillTasks.later(start + 3, () -> end[0] = JobManager.data(p).songEnd() - level.getGameTime());
-                    SkillTasks.later(start + 3 + 200, () -> JobManager.data(p).setSongPoints(JobData.MAX_SONG_POINTS));
+                    // full points just before the end (the client's note lane would take them back with misses meanwhile)
+                    SkillTasks.run(age -> {
+                        long left = JobManager.data(p).songEnd() - level.getGameTime();
+                        if (age > 5 && left <= 2 && left >= 0) JobManager.data(p).setSongPoints(JobData.MAX_SONG_POINTS);
+                        return age > 330;
+                    });
                     SkillTasks.later(start + 3 + 300, () -> {
                         log("encore: {} {} - song had {}t left at the start, 300t later performing {} (encore expected {})", js[0], js[1], end[0],
                                 com.jo112ss.rpgmod.job.Bard.performing(p), js[0].equals("bard"));
