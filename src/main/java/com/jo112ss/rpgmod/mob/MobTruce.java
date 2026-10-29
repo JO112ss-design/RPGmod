@@ -13,9 +13,10 @@ import net.neoforged.neoforge.event.entity.living.LivingChangeTargetEvent;
 import net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent;
 
 /**
- * Monsters do not fight each other: a spear-carrying zombie's thrust, a skeleton's stray arrow, a
- * creeper's blast or a boss's attack no longer hurt another monster (so none of them turns on the
- * other), and no monster takes another for its target.
+ * Monsters do not fight each other: a spear-carrying zombie's thrust, a skeleton's stray arrow or a
+ * boss's attack no longer hurt another monster (so none of them turns on the other), and no monster
+ * takes another for its target. A creeper's blast still hurts whatever is near (but nobody hit by it
+ * turns on anyone for it).
  */
 @EventBusSubscriber(modid = RpgMod.MODID)
 public final class MobTruce {
@@ -29,7 +30,10 @@ public final class MobTruce {
     public static void onHurt(LivingIncomingDamageEvent event) {
         LivingEntity victim = event.getEntity();
         Entity attacker = event.getSource().getEntity();
-        if (attacker != null && attacker != victim && monster(victim) && monster(attacker)) event.setCanceled(true);
+        if (attacker != null && attacker != victim && monster(victim) && monster(attacker)) {
+            if (attacker instanceof net.minecraft.world.entity.monster.Creeper && event.getSource().is(net.minecraft.tags.DamageTypeTags.IS_EXPLOSION)) return;
+            event.setCanceled(true);
+        }
     }
 
     @SubscribeEvent

@@ -75,6 +75,13 @@ final class NewJobTests {
                 float hs = b.getHealth();
                 b.hurtServer(level, level.damageSources().mobAttack(sk), 6);
                 a.setTarget(b);
+                var creeper = net.minecraft.world.entity.EntityTypes.CREEPER.create(level, net.minecraft.world.entity.EntitySpawnReason.COMMAND);
+                creeper.snapTo(at.x, p.getY(), at.z + 3, 0, 0);
+                level.addFreshEntity(creeper);
+                float hc = b.getHealth();
+                b.hurtServer(level, level.damageSources().explosion(creeper, creeper), 6);
+                log("truce: zombie caught in a creeper's blast {} -> {} (it may hurt), target after it {}", hc, b.getHealth(), b.getTarget() == null ? "none" : b.getTarget().getType().getDescriptionId());
+                creeper.discard();
                 float hp = b.getHealth();
                 b.hurtServer(level, p.damageSources().playerAttack(p), 1);
                 log("truce: zombie hit by a zombie {} -> {}, by a skeleton {} -> {}; zombie told to target a zombie -> {}; by the player {} -> {}; revenant follow range {}, zombie {}",
