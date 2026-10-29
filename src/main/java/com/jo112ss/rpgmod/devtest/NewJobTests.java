@@ -1581,6 +1581,13 @@ final class NewJobTests {
             m.setTarget(p); // trying again while unseen
             SkillTasks.later(2, () -> log("unseen: set on you again while unseen -> target {}", m.getTarget() == p ? "still you" : String.valueOf(m.getTarget())));
         });
+        SkillTasks.later(80, () -> {
+            SkillExecutor.execute(p, JobDefs.skill("night_hunt"), 1);
+            boolean before = p.hasEffect(com.jo112ss.rpgmod.registry.ModEffects.UNSEEN);
+            m.hurtServer(level, p.damageSources().playerAttack(p), 1);
+            log("unseen: night hunt unseen {}, after a hit {} (invisible {})", before, p.hasEffect(com.jo112ss.rpgmod.registry.ModEffects.UNSEEN),
+                    p.hasEffect(net.minecraft.world.effect.MobEffects.INVISIBILITY));
+        });
         SkillTasks.later(140, () -> {
             m.discard();
             p.setGameMode(mode);

@@ -167,7 +167,7 @@ SKILLS = {  # id: (ja, ja desc, en, en desc)
  'hunter_trap': ('罠設置', '狙った場所に罠を置く（20秒）。踏んだ敵の周りが爆発し、足止めする。', 'Hunter\'s Trap', 'Set a trap for 20s: the first enemy to step on it sets it off.'),
  'shadow_leap': ('影跳び', '煙を残して後ろへ跳び、3秒間姿を消す（モンスターに狙われない）。近くの敵は目がくらみ、次の一撃は奇襲になる。', 'Shadow Leap', 'Leap back out of a smoke puff and vanish for 3s (monsters cannot target you); nearby enemies are blinded, the next hit is an ambush.'),
  'fan_knives': ('扇投げ', 'ナイフを5本扇状に投げる。', 'Fan of Knives', 'Five knives in a fan.'),
- 'night_hunt': ('闇夜の狩り', '10秒間、姿を消し、周りの敵すべてを獲物にする（自分からのダメージ+50%）。', 'Night Hunt', 'For 10s you are unseen and every enemy around is prey (+50% damage from you).'),
+ 'night_hunt': ('闇夜の狩り', '10秒間、周りの敵すべてを獲物にする。姿も消えるが攻撃すると戻る（自分からのダメージ+50%）。', 'Night Hunt', 'For 10s you are unseen and every enemy around is prey (+50% damage from you).'),
  'shadow_rain': ('影の雨', '狙った1体に3秒間、影の矢を集中して降らせ縫い止める。命中のたびに近くの敵へ跳ね（半分のダメージ）、そちらも縫い止める。', 'Shadow Rain', 'Shadow arrows fall on one enemy for 3s, pinning it; each one glances off to the nearest other enemy (half damage), pinning it too.'),
  # ---- treasure hunter
  'gamble_cannon': ('ギャンブル砲', '砲弾がランダム（爆発・氷・毒・金貨・不発・大当たり）。幸運で不発を振り直す。', 'Gamble Cannon', 'A random shell: explosive, ice, poison, gold, a dud or the jackpot. Luck rerolls a dud.'),

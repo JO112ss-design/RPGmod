@@ -151,6 +151,15 @@ public final class MoreJobHooks {
         event.setAmount(amount);
     }
 
+    /** A skill's invisibility ends with the first attack out of it (not poison ticks): monsters see you again. */
+    @SubscribeEvent(priority = EventPriority.LOWEST)
+    public static void unseenStrike(LivingIncomingDamageEvent event) {
+        if (event.isCanceled() || !(event.getSource().getEntity() instanceof ServerPlayer sp) || sp == event.getEntity() || event.getEntity() instanceof Player) return;
+        if (!sp.hasEffect(ModEffects.UNSEEN) || event.getSource().is(Venom.DAMAGE)) return;
+        sp.removeEffect(ModEffects.UNSEEN);
+        sp.removeEffect(net.minecraft.world.effect.MobEffects.INVISIBILITY);
+    }
+
     /** The ambush is used up by the hit that carried it (after the crit roll, which it makes sure of). */
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public static void afterHit(LivingIncomingDamageEvent event) {
