@@ -166,6 +166,9 @@ public final class MobLevels {
         return e instanceof LivingEntity le ? le : null;
     }
 
+    /** Players have 1.3x the health (JobStats.HEALTH_SCALE); monsters hit half that much harder (x1.15). */
+    public static final double MONSTER_DAMAGE_SCALE = 1 + (com.jo112ss.rpgmod.job.JobStats.HEALTH_SCALE - 1) / 2;
+
     /** Levelled monsters hit harder - every kind of damage they cause, against anything that is not a monster. */
     @SubscribeEvent(priority = EventPriority.HIGH)
     public static void onDamage(LivingIncomingDamageEvent event) {
@@ -179,6 +182,7 @@ public final class MobLevels {
         // creeper blasts grow with level like any attack; other explosions (TNT...) only by a share
         else if (attacker instanceof net.minecraft.world.entity.monster.Creeper) mult = MobLevelMath.damageMultiplier(r, lv);
         else mult = event.getSource().is(DamageTypeTags.IS_EXPLOSION) ? MobLevelMath.explosionMultiplier(r, lv) : MobLevelMath.damageMultiplier(r, lv);
+        mult *= MONSTER_DAMAGE_SCALE;
         event.setAmount((float) (event.getAmount() * mult));
     }
 

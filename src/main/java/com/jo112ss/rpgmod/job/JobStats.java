@@ -83,6 +83,9 @@ public final class JobStats {
     /** Max health per mastered job (multiplier on the total). */
     public static final double MASTERY_HEALTH = 0.02;
     private static final Identifier MASTERY_ID = Identifier.fromNamespaceAndPath(RpgMod.MODID, "job/mastery_health");
+    /** Every player's max health x this (everything on it: job, panel, gear, gems); monsters hit half as much harder (MobLevels). */
+    public static final double HEALTH_SCALE = 1.3;
+    private static final Identifier HEALTH_SCALE_ID = Identifier.fromNamespaceAndPath(RpgMod.MODID, "job/health_scale");
 
     private record Mapping(JobStat stat, Holder<Attribute> attribute, AttributeModifier.Operation op, double scale) {}
 
@@ -109,6 +112,7 @@ public final class JobStats {
         // every mastered job: +2% max health
         AttributeInstance hp = player.getAttribute(Attributes.MAX_HEALTH);
         if (hp != null) {
+            hp.addOrUpdateTransientModifier(new AttributeModifier(HEALTH_SCALE_ID, HEALTH_SCALE - 1, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL));
             double bonus = MASTERY_HEALTH * data.masteredCount();
             if (bonus <= 0) hp.removeModifier(MASTERY_ID);
             else hp.addOrUpdateTransientModifier(new AttributeModifier(MASTERY_ID, bonus, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL));
