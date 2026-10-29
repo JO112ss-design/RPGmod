@@ -62,6 +62,9 @@ final class NewJobTests {
             case "heals" -> { // the greater heal and the holy circle against the heal and the group heal
                 become(p, "healer", true);
                 JobManager.data(p).devUnlockAll();
+                var maxHp = p.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.MAX_HEALTH);
+                var big = net.minecraft.resources.Identifier.fromNamespaceAndPath(com.jo112ss.rpgmod.RpgMod.MODID, "test_big_health");
+                maxHp.addTransientModifier(new net.minecraft.world.entity.ai.attributes.AttributeModifier(big, 20000, net.minecraft.world.entity.ai.attributes.AttributeModifier.Operation.ADD_VALUE));
                 StringBuilder sb = new StringBuilder();
                 for (String id : new String[] {"heal", "greater_heal", "group_heal", "grand_heal"}) {
                     var def = JobDefs.skill(id);
@@ -73,6 +76,7 @@ final class NewJobTests {
                             .append(Math.round(JobManager.manaCost(p, def))).append(", poisoned ").append(p.hasEffect(net.minecraft.world.effect.MobEffects.POISON)).append("; ");
                     p.removeEffect(net.minecraft.world.effect.MobEffects.POISON);
                 }
+                maxHp.removeModifier(big);
                 p.setHealth(p.getMaxHealth());
                 log("heals: {}", sb);
             }
