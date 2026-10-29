@@ -8,7 +8,8 @@
     "HealthCapMixin",
     "DungeonDimensionMixin",
     "RegenerationMixin",
-    "InstantHealthMixin"
+    "InstantHealthMixin",
+    "SmithingUniqueMixin"
   ],
   "client": [],
   "injectors": {

@@ -157,7 +157,7 @@ public final class UniqueWeapons {
         ForgedData data = ForgedData.of(quality, options, "", Masterwork.maybe(def.type, rnd));
         stack.set(ModRegistries.FORGED_DATA.get(), data);
         ForgeSessionManager.applyDurability(stack, data);
-        stack.set(ModRegistries.UNIQUE_WEAPON.get(), new UniqueWeapon(def.id, level));
+        stack.set(ModRegistries.UNIQUE_WEAPON.get(), new UniqueWeapon(def.id, level, 1 + rnd.nextInt(3))); // 1 to 3 gem sockets
         stack.set(DataComponents.ITEM_NAME, Component.translatable("item.rpgmod.unique." + def.id));
         stack.set(DataComponents.ITEM_MODEL, Identifier.fromNamespaceAndPath(RpgMod.MODID, "unique/" + def.id));
         if (def.type != WeaponType.BOW) {

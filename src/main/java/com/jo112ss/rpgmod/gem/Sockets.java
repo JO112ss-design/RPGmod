@@ -66,6 +66,8 @@ public record Sockets(List<Gem> gems) {
     /** Socket count of an item: copper/iron/gold 1, diamond 2, netherite 3; 0 if it takes no gems. */
     public static int capacity(ItemStack stack) {
         if (stack.isEmpty()) return 0;
+        var unique = com.jo112ss.rpgmod.item.UniqueWeapons.of(stack);
+        if (unique != null) return unique.sockets(); // a boss's weapon: rolled when it dropped
         Kind k = kind(stack.getItem());
         if (k == null) return 0;
         return switch (k.material) {

@@ -1573,6 +1573,10 @@ final class NewJobTests {
                     mods == null ? "-" : mods.modifiers().stream().map(m -> String.format("%.2f", m.modifier().amount())).toList(),
                     nether == null ? "-" : nether.modifiers().stream().map(m -> String.format("%.2f", m.modifier().amount())).toList());
         }
+        int[] sockets = new int[4];
+        for (int k = 0; k < 300; k++) sockets[com.jo112ss.rpgmod.gem.Sockets.capacity(com.jo112ss.rpgmod.item.UniqueWeapons.create(
+                com.jo112ss.rpgmod.item.UniqueWeapons.Def.LICH_STAFF, 150, com.jo112ss.rpgmod.smithing.core.Quality.COMMON, rnd))]++;
+        log("uniques: sockets over 300 drops: 1={} 2={} 3={} (0={})", sockets[1], sockets[2], sockets[3], sockets[0]);
         for (String[] jb : new String[][] {{"wizard", "lich"}, {"fighter", "king_slime"}, {"monk", "golem"}, {"bard", "spider_queen"}, {"shadow_hunter", "spider_queen"}}) {
             become(p, jb[0]);
             log("uniques: a {} at the {} gets one of {}", jb[0], jb[1], com.jo112ss.rpgmod.item.UniqueWeapons.choicesFor(jb[1], p).stream().map(d -> d.id).toList());
