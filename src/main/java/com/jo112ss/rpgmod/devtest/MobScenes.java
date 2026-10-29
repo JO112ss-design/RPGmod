@@ -535,7 +535,7 @@ final class MobScenes {
                         d.hurt(level, d.head, src, 2000F);
                         RpgMod.LOGGER.info("[AUTOTEST] dragonhp perched hit: {} -> {} phase={}", before, d.getHealth(), pm.getCurrentPhase().getPhase());
                     }
-                    case 81 -> { // a wing, not the head: full damage now (vanilla: a quarter)
+                    case 100 -> { // a wing, not the head: full damage now (vanilla: a quarter) - well after the last swing's hit window
                         float before = d.getHealth();
                         var parts = d.getSubEntities();
                         var wing = parts[parts.length - 1];
