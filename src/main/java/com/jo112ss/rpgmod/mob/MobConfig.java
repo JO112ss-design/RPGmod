@@ -75,7 +75,7 @@ public final class MobConfig {
     public static final ModConfigSpec.DoubleValue BOSS_PER_PLAYER = B.comment("Extra boss health per additional player fighting (0.8 = +80%)").defineInRange("healthPerPlayer", 0.8, 0, 10);
     public static final ModConfigSpec.IntValue BOSS_LEVEL_BONUS = B.comment("Boss level = highest player job level + this").defineInRange("levelBonus", 0, -100, 100);
     public static final ModConfigSpec.DoubleValue BOSS_MAX_HIT = B.comment("Largest share of a player's max health one boss hit can take (before armour)").defineInRange("maxHitShare", 0.2, 0.01, 10);
-    public static final ModConfigSpec.IntValue BOSS_BOOKS = B.comment("Skill books every participant gets for defeating the boss").defineInRange("rewardBooks", 5, 0, 64);
+    public static final ModConfigSpec.IntValue BOSS_BOOKS = B.comment("Skill books every participant gets for defeating the boss").defineInRange("rewardBooks", 3, 0, 64);
     static {
         B.pop();
     }
@@ -119,7 +119,7 @@ public final class MobConfig {
     }
 
     public static int bossBooks() {
-        return SPEC.isLoaded() ? BOSS_BOOKS.get() : 5;
+        return SPEC.isLoaded() ? BOSS_BOOKS.get() : 3;
     }
 
     private static MobLevelMath.Rules cached;

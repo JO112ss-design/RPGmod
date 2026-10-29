@@ -161,6 +161,22 @@ final class NewJobTests {
                         a.getAttributeValue(net.minecraft.world.entity.ai.attributes.Attributes.FOLLOW_RANGE));
                 ms.forEach(net.minecraft.world.entity.Entity::discard);
             }
+            case "dungeonloot" -> { // chests by level: plain metals on the way, diamonds and netherite only at the end
+                var lr = net.minecraft.util.RandomSource.create(11);
+                for (int lvl : new int[] {1, 49, 50, 99, 100, 149, 150, 200}) {
+                    for (boolean last : new boolean[] {false, true}) {
+                        java.util.Map<String, Integer> tally = new java.util.TreeMap<>();
+                        for (int k = 0; k < 200; k++) {
+                            var loot = last ? com.jo112ss.rpgmod.dungeon.DungeonManager.finalLoot(lr, lvl, false) : com.jo112ss.rpgmod.dungeon.DungeonManager.roomLoot(lr, lvl);
+                            for (var st : loot) tally.merge(net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(st.getItem()).getPath(), st.getCount(), Integer::sum);
+                        }
+                        StringBuilder sb = new StringBuilder();
+                        tally.forEach((k, v) -> sb.append(k).append('=').append(String.format("%.2f", v / 200.0)).append(' '));
+                        log("dungeon loot Lv{} {} per chest: {}", lvl, last ? "final" : "room", sb.toString().trim());
+                    }
+                }
+                log("dungeon loot: boss chance {}, boss books {}", com.jo112ss.rpgmod.dungeon.DungeonManager.BOSS_CHANCE, com.jo112ss.rpgmod.mob.MobConfig.bossBooks());
+            }
             case "masterwork" -> { // one weapon in five, any quality; the boost works from the main hand
                 java.util.Random rnd = new java.util.Random(7);
                 for (var type : java.util.List.of(com.jo112ss.rpgmod.item.WeaponType.SWORD, com.jo112ss.rpgmod.item.WeaponType.STAFF,

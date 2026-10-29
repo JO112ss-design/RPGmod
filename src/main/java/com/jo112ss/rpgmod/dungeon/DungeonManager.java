@@ -72,7 +72,7 @@ public final class DungeonManager {
     /** Monster health per extra player in the dungeon (+40% each). */
     public static final double PARTY_HEALTH = 0.4;
     /** Chance the last room of a key's run holds a boss instead of two or three strong monsters. */
-    public static final double BOSS_CHANCE = 0.4;
+    public static final double BOSS_CHANCE = 0.1;
     public static final int CLOSE_TICKS = 600, EXIT_TICKS = 30;
     private static final Identifier PARTY = Identifier.fromNamespaceAndPath(RpgMod.MODID, "dungeon_party");
 
@@ -474,7 +474,7 @@ public final class DungeonManager {
         var inside = Dungeons.players(dl, r.slot);
         int lv = levelFor(r, inside);
         BlockPos chestAt = DungeonBuilder.chestSpot(dl, r.slot, room);
-        placeChest(dl, chestAt, room.last() ? finalLoot(dl.getRandom(), lv, r.kind.boss()) : roomLoot(dl.getRandom()));
+        placeChest(dl, chestAt, room.last() ? finalLoot(dl.getRandom(), lv, r.kind.boss()) : roomLoot(dl.getRandom(), lv));
         ServerFx.of("dg_clear", Vec3.atBottomCenterOf(chestAt)).color(color(r.kind)).send(dl, 64);
         if (room.last()) {
             r.closing = CLOSE_TICKS;
@@ -505,26 +505,53 @@ public final class DungeonManager {
         log("chest: {}", loot.stream().map(s -> s.getCount() + "x" + s.getHoverName().getString()).toList());
     }
 
-    /** A little after each room. */
-    static List<ItemStack> roomLoot(RandomSource rnd) {
+    /**
+     * A little after each room: potions, a few emeralds and experience bottles, now and then a skill
+     * book, and the plain metals of the dungeon's level (see {@link #metals}). No keys, nothing past gold.
+     */
+    public static List<ItemStack> roomLoot(RandomSource rnd, int lv) {
         List<ItemStack> out = new ArrayList<>();
         if (rnd.nextFloat() < 0.7F) out.add(new ItemStack(ModRegistries.HP_POTION.get(), 1 + rnd.nextInt(2)));
         if (rnd.nextFloat() < 0.5F) out.add(new ItemStack(ModRegistries.MP_POTION.get(), 1 + rnd.nextInt(2)));
-        out.add(rnd.nextBoolean() ? new ItemStack(Items.GOLD_INGOT, 2 + rnd.nextInt(4)) : new ItemStack(Items.EMERALD, 1 + rnd.nextInt(3)));
-        out.add(new ItemStack(Items.EXPERIENCE_BOTTLE, 2 + rnd.nextInt(3)));
-        if (rnd.nextFloat() < 0.12F) out.add(com.jo112ss.rpgmod.gem.GemItems.stack(com.jo112ss.rpgmod.gem.GemRoller.roll(rnd, false)));
-        if (rnd.nextFloat() < 0.03F) out.add(new ItemStack(ModRegistries.DUNGEON_KEY.get()));
+        if (rnd.nextFloat() < 0.6F) out.add(new ItemStack(Items.EMERALD, 1 + rnd.nextInt(3)));
+        out.add(new ItemStack(Items.EXPERIENCE_BOTTLE, 1 + rnd.nextInt(2)));
+        if (rnd.nextFloat() < ROOM_BOOK_CHANCE) out.add(new ItemStack(ModRegistries.SKILL_BOOK.get()));
+        metals(out, rnd, lv, false);
         return out;
     }
 
-    /** The best chest, at the end. */
-    static List<ItemStack> finalLoot(RandomSource rnd, int lv, boolean boss) {
+    /** Chance of a skill book in a room's chest. */
+    public static final float ROOM_BOOK_CHANCE = 0.05F;
+    /** Dungeon levels from which gold, diamonds, and netherite with the upgrade template come up. */
+    public static final int GOLD_AT = 50, DIAMOND_AT = 100, NETHERITE_AT = 150;
+
+    /**
+     * The metals of a chest by the dungeon's level: copper and iron from the start (iron a little more
+     * likely as the level goes up), gold from 50; the final chest alone has diamonds from 100 and
+     * netherite and the netherite upgrade template from 150.
+     */
+    static void metals(List<ItemStack> out, RandomSource rnd, int lv, boolean last) {
+        double rise = Math.min(1.0, Math.max(0, lv) / 100.0); // 0 at level 0, 1 from level 100
+        out.add(new ItemStack(Items.COPPER_INGOT, last ? 4 + rnd.nextInt(7) : 2 + rnd.nextInt(4)));
+        if (rnd.nextDouble() < (last ? 0.5 : 0.25) + 0.3 * rise) out.add(new ItemStack(Items.IRON_INGOT, last ? 2 + rnd.nextInt(5) : 1 + rnd.nextInt(3)));
+        if (lv >= GOLD_AT && rnd.nextDouble() < (last ? 0.7 : 0.3)) out.add(new ItemStack(Items.GOLD_INGOT, last ? 2 + rnd.nextInt(4) : 1 + rnd.nextInt(2)));
+        if (!last) return;
+        if (lv >= DIAMOND_AT) out.add(new ItemStack(Items.DIAMOND, 1 + rnd.nextInt(lv >= NETHERITE_AT ? 3 : 2)));
+        if (lv >= NETHERITE_AT) {
+            if (rnd.nextFloat() < 0.5F) out.add(new ItemStack(Items.NETHERITE_SCRAP, 1 + rnd.nextInt(2)));
+            if (rnd.nextFloat() < 0.15F) out.add(new ItemStack(Items.NETHERITE_INGOT));
+            if (rnd.nextFloat() < 0.35F) out.add(new ItemStack(Items.NETHERITE_UPGRADE_SMITHING_TEMPLATE));
+        }
+    }
+
+    /** The best chest, at the end: the metals of its level (diamonds and netherite only here), gems, books and keys. */
+    public static List<ItemStack> finalLoot(RandomSource rnd, int lv, boolean boss) {
         List<ItemStack> out = new ArrayList<>();
         out.add(new ItemStack(ModRegistries.HP_POTION.get(), 2 + rnd.nextInt(2)));
         out.add(new ItemStack(ModRegistries.MP_POTION.get(), 2 + rnd.nextInt(2)));
-        out.add(new ItemStack(Items.DIAMOND, 1 + rnd.nextInt(3)));
         out.add(new ItemStack(Items.EMERALD, 3 + rnd.nextInt(6)));
         out.add(new ItemStack(Items.EXPERIENCE_BOTTLE, 6 + rnd.nextInt(7)));
+        metals(out, rnd, lv, true);
         out.add(com.jo112ss.rpgmod.gem.GemItems.stack(com.jo112ss.rpgmod.gem.GemRoller.roll(rnd, boss)));
         if (rnd.nextFloat() < 0.35F) out.add(com.jo112ss.rpgmod.gem.GemItems.stack(com.jo112ss.rpgmod.gem.GemRoller.roll(rnd, false)));
         if (rnd.nextFloat() < 0.2F) out.add(new ItemStack(ModRegistries.JOB_BOOK.get()));

@@ -331,6 +331,7 @@ public final class AutoTestClient {
             case "nj:harvest" -> 420;
             case "nj:regen" -> 900;
             case "nj:masterwork" -> 40;
+            case "nj:dungeonloot" -> 20;
             case "nj:bardults" -> 1600;
             case "nj:unseen" -> 160;
             case "nj:uniques" -> 260;
@@ -453,7 +454,7 @@ public final class AutoTestClient {
             if (false) showSkills.clear(); // robes: armour, option pools, a set worn (seen from the front) and every material on stands
             if (false) showSkills.addAll(java.util.List.of("nj:restore", "front:nj:robes", "nj:restore"));
             showSkills.clear(); // every job's damage on equal terms (the server sprints): solo, in forged gear, and its gift to a party of six
-            showSkills.addAll(java.util.List.of("nj:restore", "nj:masterwork", "nj:restore"));
+            showSkills.addAll(java.util.List.of("nj:restore", "nj:dungeonloot", "nj:restore"));
             if (false) showSkills.clear(); // spellsinger afterglow
             if (false) showSkills.addAll(java.util.List.of("nj:restore", "nj:wardlinger", "nj:ward", "nj:linger", "nj:restore"));
             if (false) showSkills.clear(); // songs: each with its own rhythm (bars from the song's style) and tune
