@@ -77,7 +77,7 @@ public final class JobDefs {
     /** Mana every job starts with before job / level / panel bonuses. */
     public static final double BASE_MANA = 100;
     public static final double BASE_MANA_REGEN = 1.0;
-    /** Extra MP a second for the casters (every job with MP of its own; the physical jobs win theirs back by hitting). */
+    /** Extra MP a second for the casters (every job with MP of its own but the song jobs; the physical jobs win theirs back by hitting). */
     public static final double CASTER_MANA_REGEN = 0.5;
     // Attack and magic attack from levels: 0.6 a level counted in whole points (+1 at almost every
     // level, see JobStats); casters' melee and the enchanter's dagger 0.3. Weapon materials multiply it.

@@ -451,7 +451,7 @@ public final class JobManager {
     public static double manaRegen(Player player) {
         JobData d = data(player);
         double base = JobStats.compute(d).get(JobStat.MANA_REGEN);
-        if (d.hasJob() && !HitMana.physical(d)) base += JobDefs.CASTER_MANA_REGEN;
+        if (d.hasJob() && !HitMana.physical(d) && !d.songJob()) base += JobDefs.CASTER_MANA_REGEN; // the song jobs stay at 1/s
         return base * (1 + gearOption(player, com.jo112ss.rpgmod.smithing.core.OptionType.MANA_REGEN) / 100.0);
     }
 

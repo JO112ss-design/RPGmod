@@ -173,6 +173,12 @@ final class NewJobTests {
                 }
                 sd.setLevel(was);
                 log("song time bard/spellsinger: {}", sb.toString().trim());
+                StringBuilder rg = new StringBuilder();
+                for (String j : new String[] {"bard", "maestro", "spellsinger", "wizard", "fighter"}) {
+                    become(p, j);
+                    rg.append(j).append('=').append(String.format("%.2f", JobManager.manaRegen(p))).append(' ');
+                }
+                log("mana regen per second: {}", rg.toString().trim());
             }
             case "dungeonloot" -> { // chests by level: plain metals on the way, diamonds and netherite only at the end
                 var lr = net.minecraft.util.RandomSource.create(11);
