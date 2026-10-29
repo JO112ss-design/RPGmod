@@ -809,6 +809,7 @@ public final class JobManager {
         }
         Map<JobStat, Double> st = JobStats.compute(d);
         double power = powerMultiplier(player, def);
+        if ("damage".equals(JobDefs.powerKind(def))) SkillExecutor.reveal(player); // attacking out of a skill's invisibility
         if (!SkillExecutor.execute(player, def, power)) return false;
         if (def.kind() == SkillKind.SPELL) echo(player, def, power);
         double cdr = st.get(JobStat.COOLDOWN_REDUCTION) / 100.0;

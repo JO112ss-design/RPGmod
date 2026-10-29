@@ -163,6 +163,7 @@ public final class SpellCasting {
         double ratio = FUSION_MULT * (worth(a.id()) + worth(b.id()));
         SkillDef use = fusion.withEffect(fusion.effect(), ratio, fusion.radius(), fusion.duration(), fusion.effects());
         double power = JobManager.powerMultiplier(p, fusion);
+        SkillExecutor.reveal(p); // a fusion is an attack
         if (!SkillExecutor.execute(p, use, power)) return false;
         double cdr = JobStats.compute(d).get(JobStat.COOLDOWN_REDUCTION) / 100.0;
         d.setMana(d.mana() - cost);

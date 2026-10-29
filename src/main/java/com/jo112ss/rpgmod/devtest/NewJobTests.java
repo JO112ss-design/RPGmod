@@ -1584,6 +1584,7 @@ final class NewJobTests {
         SkillTasks.later(80, () -> {
             SkillExecutor.execute(p, JobDefs.skill("night_hunt"), 1);
             boolean before = p.hasEffect(com.jo112ss.rpgmod.registry.ModEffects.UNSEEN);
+            com.jo112ss.rpgmod.job.HealthScale.SKILL.remove(); // a swing of the player's own, not a skill task
             m.hurtServer(level, p.damageSources().playerAttack(p), 1);
             log("unseen: night hunt unseen {}, after a hit {} (invisible {})", before, p.hasEffect(com.jo112ss.rpgmod.registry.ModEffects.UNSEEN),
                     p.hasEffect(net.minecraft.world.effect.MobEffects.INVISIBILITY));

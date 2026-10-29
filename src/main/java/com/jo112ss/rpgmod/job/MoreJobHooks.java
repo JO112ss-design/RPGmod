@@ -151,13 +151,16 @@ public final class MoreJobHooks {
         event.setAmount(amount);
     }
 
-    /** A skill's invisibility ends with the first attack out of it (not poison ticks): monsters see you again. */
+    /**
+     * A skill's invisibility ends with the first attack out of it: a swing, an arrow, a shot... (and
+     * casting a damage skill, see JobManager.cast). What keeps hurting on its own - poison, a zone,
+     * a trap, a skill's flying projectile (they run as skill tasks) - does not give you away.
+     */
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public static void unseenStrike(LivingIncomingDamageEvent event) {
         if (event.isCanceled() || !(event.getSource().getEntity() instanceof ServerPlayer sp) || sp == event.getEntity() || event.getEntity() instanceof Player) return;
-        if (!sp.hasEffect(ModEffects.UNSEEN) || event.getSource().is(Venom.DAMAGE)) return;
-        sp.removeEffect(ModEffects.UNSEEN);
-        sp.removeEffect(net.minecraft.world.effect.MobEffects.INVISIBILITY);
+        if (!sp.hasEffect(ModEffects.UNSEEN) || event.getSource().is(Venom.DAMAGE) || "task".equals(HealthScale.SKILL.get())) return;
+        SkillExecutor.reveal(sp);
     }
 
     /** The ambush is used up by the hit that carried it (after the crit roll, which it makes sure of). */

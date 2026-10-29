@@ -480,6 +480,13 @@ public final class SkillExecutor {
             m.setTarget(null);
     }
 
+    /** Ends a skill's invisibility (an attack out of it): monsters can see you again. */
+    public static void reveal(ServerPlayer p) {
+        if (!p.hasEffect(com.jo112ss.rpgmod.registry.ModEffects.UNSEEN)) return;
+        p.removeEffect(com.jo112ss.rpgmod.registry.ModEffects.UNSEEN);
+        p.removeEffect(MobEffects.INVISIBILITY);
+    }
+
     /** Self buff whose look is all in the effect (berserk, eagle eye, barriers, shadow dance). */
     static boolean selfBuff(Ctx c, String fx, SoundEvent s, float pitch) {
         apply(c.p, c.def, c.p);
