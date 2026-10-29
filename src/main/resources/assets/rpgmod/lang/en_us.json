@@ -1359,7 +1359,7 @@
   "item.rpgmod.unique.stone_fists": "Stone Fists",
   "rpgmod.unique.stone_fists.desc": "Every 10th hit stuns the enemy for 1.5s (once every 6s)",
   "item.rpgmod.unique.lich_staff": "Lich King's Staff",
-  "rpgmod.unique.lich_staff.desc": "Kills restore 4% of your max MP",
+  "rpgmod.unique.lich_staff.desc": "Kills restore 4% of your max MP (once every 4s)",
   "item.rpgmod.unique.dead_lute": "Lute of the Dead",
   "rpgmod.unique.dead_lute.desc": "A slain enemy's soul flies at the nearest enemy for 1.5x your magic attack (once every 2s)",
   "item.rpgmod.unique.queen_fang": "Queen's Fang",

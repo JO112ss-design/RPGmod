@@ -211,7 +211,7 @@ public final class UniqueWeapons {
     private static final Map<String, Integer> COUNT = new HashMap<>();
     private static final Map<String, long[]> FANG = new HashMap<>();
 
-    public static final int SLIME_GAP = 30, HAMMER_GAP = 80, SPEAR_GAP = 400, FISTS_GAP = 120, STAFF_GAP = 20, LUTE_GAP = 40,
+    public static final int SLIME_GAP = 30, HAMMER_GAP = 80, SPEAR_GAP = 400, FISTS_GAP = 120, STAFF_GAP = 80, LUTE_GAP = 40,
             FANG_GAP = 120, BOW_GAP = 100, VENOM_GAP = 20;
     public static final double SLIME_SPLASH = 0.3, HAMMER_LANDING = 0.4, MACE_CRACK = 0.6, SPEAR_SKIN = 0.12, STAFF_MANA = 0.04, LUTE_SOUL = 1.5;
     public static final int MACE_EVERY = 4, FISTS_EVERY = 10, FANG_STACKS = 3;
@@ -363,6 +363,7 @@ public final class UniqueWeapons {
         ItemStack held = sp.getMainHandItem();
         if (is(held, Def.LICH_STAFF) && ready(sp, Def.LICH_STAFF, STAFF_GAP)) {
             JobManager.restoreMana(sp, JobManager.maxMana(sp) * STAFF_MANA);
+            if (com.jo112ss.rpgmod.devtest.AutoTestServer.ENABLED) RpgMod.LOGGER.info("[AUTOTEST] lich staff kill: +{} MP", String.format("%.1f", JobManager.maxMana(sp) * STAFF_MANA));
             particles(level, ParticleTypes.SOUL, dead.position().add(0, 0.8, 0), 10, 0.4);
             level.playSound(null, sp.blockPosition(), SoundEvents.SOUL_ESCAPE.value(), SoundSource.PLAYERS, 1.0F, 1.2F);
         } else if (is(held, Def.DEAD_LUTE) && ready(sp, Def.DEAD_LUTE, LUTE_GAP)) {

@@ -1359,7 +1359,7 @@
   "item.rpgmod.unique.stone_fists": "岩拳",
   "rpgmod.unique.stone_fists.desc": "10回目の攻撃ごとに敵を1.5秒気絶させる（6秒に1回）",
   "item.rpgmod.unique.lich_staff": "亡王の杖",
-  "rpgmod.unique.lich_staff.desc": "敵を倒すと最大MPの4%を回復",
+  "rpgmod.unique.lich_staff.desc": "敵を倒すと最大MPの4%を回復（4秒に1回）",
   "item.rpgmod.unique.dead_lute": "亡者のリュート",
   "rpgmod.unique.dead_lute.desc": "倒した敵の魂が近くの敵に飛び、魔法攻撃力の1.5倍のダメージ（2秒に1回）",
   "item.rpgmod.unique.queen_fang": "女王の毒牙",

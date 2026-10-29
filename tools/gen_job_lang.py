@@ -537,7 +537,7 @@ UI = {  # key: (ja, en)
  'item.rpgmod.unique.stone_fists': ('岩拳', 'Stone Fists'),
  'rpgmod.unique.stone_fists.desc': ('10回目の攻撃ごとに敵を1.5秒気絶させる（6秒に1回）', 'Every 10th hit stuns the enemy for 1.5s (once every 6s)'),
  'item.rpgmod.unique.lich_staff': ('亡王の杖', 'Lich King\'s Staff'),
- 'rpgmod.unique.lich_staff.desc': ('敵を倒すと最大MPの4%を回復', 'Kills restore 4% of your max MP'),
+ 'rpgmod.unique.lich_staff.desc': ('敵を倒すと最大MPの4%を回復（4秒に1回）', 'Kills restore 4% of your max MP (once every 4s)'),
  'item.rpgmod.unique.dead_lute': ('亡者のリュート', 'Lute of the Dead'),
  'rpgmod.unique.dead_lute.desc': ('倒した敵の魂が近くの敵に飛び、魔法攻撃力の1.5倍のダメージ（2秒に1回）', 'A slain enemy\'s soul flies at the nearest enemy for 1.5x your magic attack (once every 2s)'),
  'item.rpgmod.unique.queen_fang': ('女王の毒牙', 'Queen\'s Fang'),
