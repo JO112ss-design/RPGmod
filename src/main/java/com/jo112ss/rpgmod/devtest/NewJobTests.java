@@ -174,7 +174,7 @@ final class NewJobTests {
                         com.jo112ss.rpgmod.mob.ai.MobAi.FIRE_ARROW_FROM, com.jo112ss.rpgmod.mob.ai.MobAi.TIPPED_FROM, com.jo112ss.rpgmod.mob.ai.MobAi.PEARL_FROM);
                 // a real zombie at level 1 and 50: its speed and follow range attributes
                 for (int lvl : new int[] {1, 50}) {
-                    var z = net.minecraft.world.entity.EntityType.ZOMBIE.create(level, net.minecraft.world.entity.EntitySpawnReason.COMMAND);
+                    var z = net.minecraft.world.entity.EntityTypes.ZOMBIE.create(level, net.minecraft.world.entity.EntitySpawnReason.COMMAND);
                     if (z == null) continue;
                     z.setPos(p.getX() + 6, p.getY(), p.getZ());
                     level.addFreshEntity(z);
