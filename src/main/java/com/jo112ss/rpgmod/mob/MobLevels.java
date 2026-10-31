@@ -136,14 +136,14 @@ public final class MobLevels {
         modifier(mob, Attributes.MAX_HEALTH, HP, hp, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);
         if (!(mob instanceof EnderDragon)) {
             // every hostile monster moves faster (x1.5 by default), on foot and in the air
-            double speed = (1 + MobLevelMath.speedBonus(r, lv)) * MobConfig.speed() - 1;
+            double speed = (1 + MobLevelMath.speedBonus(r, lv)) * speedFor(lv) - 1;
             modifier(mob, Attributes.MOVEMENT_SPEED, SPEED, speed, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);
             modifier(mob, Attributes.FLYING_SPEED, FLY, speed, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);
             modifier(mob, Attributes.KNOCKBACK_RESISTANCE, KB, MobLevelMath.knockbackResistance(r, lv), AttributeModifier.Operation.ADD_VALUE);
             AttributeInstance follow = mob.getAttribute(Attributes.FOLLOW_RANGE);
             if ((com.jo112ss.rpgmod.mob.ai.MobAi.sensesFar(mob) || mob instanceof com.jo112ss.rpgmod.mob.revenant.Revenant) && follow != null) {
                 // zombies, creepers, spiders and skeletons (and the fallen adventurers) hunt from far away (64 blocks by default)
-                modifier(mob, Attributes.FOLLOW_RANGE, FOLLOW, Math.max(0, MobConfig.zombieRange() - follow.getBaseValue()), AttributeModifier.Operation.ADD_VALUE);
+                modifier(mob, Attributes.FOLLOW_RANGE, FOLLOW, Math.max(0, senseRange(lv) - follow.getBaseValue()), AttributeModifier.Operation.ADD_VALUE);
             } else {
                 // stronger monsters notice you from further away (+1 block per 4 levels, up to +16)
                 modifier(mob, Attributes.FOLLOW_RANGE, FOLLOW, Math.min(16, lv / 4.0), AttributeModifier.Operation.ADD_VALUE);
@@ -151,6 +151,30 @@ public final class MobLevels {
         }
         if (full) mob.setHealth(mob.getMaxHealth());
         mob.setData(ModRegistries.MOB_LEVEL, lv);
+    }
+
+    /** Early monsters are gentler: their speed grows from x1.1 at level 1 to the full multiplier (x1.5) at level 50. */
+    public static final int FULL_SPEED_AT = 50;
+    public static final double START_SPEED = 1.1;
+    /** ...and the far-sensing ones notice you from 32 blocks at level 1, the full range (64) at level 25. */
+    public static final int FULL_SENSE_AT = 25;
+    public static final double START_SENSE = 32;
+
+    public static double speedFor(int lv) {
+        double full = MobConfig.speed();
+        double start = Math.min(START_SPEED, full);
+        return start + (full - start) * ramp(lv, FULL_SPEED_AT);
+    }
+
+    public static double senseRange(int lv) {
+        double full = MobConfig.zombieRange();
+        double start = Math.min(START_SENSE, full);
+        return start + (full - start) * ramp(lv, FULL_SENSE_AT);
+    }
+
+    /** 0 at level 1, 1 from {@code full} on. */
+    public static double ramp(int lv, int full) {
+        return Math.max(0, Math.min(1, (lv - 1) / (double) Math.max(1, full - 1)));
     }
 
     private static void modifier(LivingEntity e, Holder<Attribute> attr, Identifier id, double amount, AttributeModifier.Operation op) {

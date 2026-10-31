@@ -33,6 +33,9 @@ public final class RevenantSpawns {
     /** Chances of a pair (attacker + priest) and of a party of four; the rest come alone. */
     public static final double DUO = 0.18, PARTY = 0.08;
 
+    /** Fallen adventurers come up in the caves from this monster level. */
+    public static final int FROM_LEVEL = 15;
+
     /** Dev test: replaces the configured chance. */
     public static Double forceChance;
 
@@ -45,6 +48,7 @@ public final class RevenantSpawns {
         if (level.dimension() != Level.OVERWORLD) return;
         BlockPos pos = BlockPos.containing(event.getX(), event.getY(), event.getZ());
         if (pos.getY() >= MAX_Y || level.canSeeSky(pos)) return;
+        if (forceChance == null && com.jo112ss.rpgmod.mob.MobLevels.rollLevel(level, pos, 0) < FROM_LEVEL) return; // none in the early game
         if (level.getRandom().nextDouble() >= (forceChance != null ? forceChance : MobConfig.revenantChance())) return;
         event.setSpawnCancelled(true);
         Vec3 at = new Vec3(event.getX(), event.getY(), event.getZ());

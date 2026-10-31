@@ -79,13 +79,21 @@ public final class MobAi {
         }
         if (mob instanceof Creeper c) {
             c.maxSwell = Math.max(16, 30 - Math.min(14, lv / 5));
-            double charged = 0.05;
+            double charged = lv >= CHARGED_FROM ? 0.05 : 0; // no charged creepers in the early game
             if (r.nextDouble() < charged) c.getEntityData().set(Creeper.DATA_IS_POWERED, true);
             // a fifth leap over walls and onto roofs
             if (r.nextDouble() < 0.2) c.getPersistentData().putBoolean(CreeperLeapGoal.KEY, true);
         }
         // a tenth of the spiders and skeletons carry two ender pearls (unseen, like the zombies' share)
-        if ((mob instanceof Spider || isOverworldSkeleton(mob)) && r.nextDouble() < 0.1) mob.getPersistentData().putInt(MobPearlGoal.KEY, 2);
+        if ((mob instanceof Spider || isOverworldSkeleton(mob)) && lv >= PEARL_FROM && r.nextDouble() < 0.1) mob.getPersistentData().putInt(MobPearlGoal.KEY, 2);
+    }
+
+    /** Early-game relief: the nastier tricks start at these levels. */
+    public static final int CHARGED_FROM = 30, PEARL_FROM = 20, FIRE_ARROW_FROM = 15, TIPPED_FROM = 20, VOLLEY_FROM = 10, VOLLEY_FULL = 40;
+
+    /** Chance a skeleton's shot turns into a three-arrow volley: none below level 10, 20% from 40. */
+    public static double volleyChance(int lv) {
+        return 0.2 * Math.max(0, Math.min(1, (lv - VOLLEY_FROM) / (double) (VOLLEY_FULL - VOLLEY_FROM)));
     }
 
     public static boolean isOverworldSkeleton(Entity e) {
@@ -186,9 +194,9 @@ public final class MobAi {
         double drop = 0.5 * 0.05 * flight * flight; // arrow gravity
         float spread = (float) Math.max(0.3, 6.0 - lv * 0.12);
         arrow.shoot(d.x, d.y + drop, d.z, (float) speed, spread);
-        if (sl.getRandom().nextDouble() < 0.25) arrow.setRemainingFireTicks(100);
-        if (shooter instanceof AbstractSkeleton) tipArrow(arrow, lv, sl.getRandom());
-        if (!inVolley && shooter instanceof AbstractSkeleton sk && sl.getRandom().nextDouble() < 0.2) {
+        if (lv >= FIRE_ARROW_FROM && sl.getRandom().nextDouble() < 0.25) arrow.setRemainingFireTicks(100);
+        if (shooter instanceof AbstractSkeleton && lv >= TIPPED_FROM) tipArrow(arrow, lv, sl.getRandom());
+        if (!inVolley && shooter instanceof AbstractSkeleton sk && sl.getRandom().nextDouble() < volleyChance(lv)) {
             SkillTasks.later(1, () -> {
                 if (!sk.isAlive() || sk.getTarget() == null) return;
                 inVolley = true;
@@ -217,7 +225,7 @@ public final class MobAi {
         sk.bowGoal.setMinAttackInterval(Math.max(6, base - lv / 3));
     }
 
-    /** Tipped arrows (any level, 30%): slowness, weakness, poison or a short blindness. */
+    /** Tipped arrows (from level 20, 30%): slowness, weakness, poison or a short blindness. */
     private static void tipArrow(AbstractArrow arrow, int lv, RandomSource r) {
         if (!(arrow instanceof net.minecraft.world.entity.projectile.arrow.Arrow a) || r.nextDouble() > 0.3) return;
         switch (r.nextInt(4)) {

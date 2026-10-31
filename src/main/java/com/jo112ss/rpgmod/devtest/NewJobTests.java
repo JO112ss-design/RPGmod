@@ -161,6 +161,31 @@ final class NewJobTests {
                         a.getAttributeValue(net.minecraft.world.entity.ai.attributes.Attributes.FOLLOW_RANGE));
                 ms.forEach(net.minecraft.world.entity.Entity::discard);
             }
+            case "earlygame" -> { // early monsters: slower, shorter sense, no elites below 10, no revenants below 15, skeleton tricks by level
+                StringBuilder eg = new StringBuilder();
+                for (int lvl : new int[] {1, 10, 15, 20, 25, 40, 50, 100}) {
+                    eg.append("Lv").append(lvl).append(" speed x").append(String.format("%.2f", com.jo112ss.rpgmod.mob.MobLevels.speedFor(lvl)))
+                            .append(" sense ").append(String.format("%.0f", com.jo112ss.rpgmod.mob.MobLevels.senseRange(lvl)))
+                            .append(" volley ").append(String.format("%.0f%%", com.jo112ss.rpgmod.mob.ai.MobAi.volleyChance(lvl) * 100)).append("; ");
+                }
+                log("early game: {}", eg);
+                log("early game: elites from Lv{}, revenants from Lv{}, charged creepers from Lv{}, fire arrows Lv{}, tipped Lv{}, pearls Lv{}",
+                        com.jo112ss.rpgmod.mob.Elite.FROM_LEVEL, com.jo112ss.rpgmod.mob.revenant.RevenantSpawns.FROM_LEVEL, com.jo112ss.rpgmod.mob.ai.MobAi.CHARGED_FROM,
+                        com.jo112ss.rpgmod.mob.ai.MobAi.FIRE_ARROW_FROM, com.jo112ss.rpgmod.mob.ai.MobAi.TIPPED_FROM, com.jo112ss.rpgmod.mob.ai.MobAi.PEARL_FROM);
+                // a real zombie at level 1 and 50: its speed and follow range attributes
+                for (int lvl : new int[] {1, 50}) {
+                    var z = net.minecraft.world.entity.EntityType.ZOMBIE.create(level, net.minecraft.world.entity.EntitySpawnReason.COMMAND);
+                    if (z == null) continue;
+                    z.setPos(p.getX() + 6, p.getY(), p.getZ());
+                    level.addFreshEntity(z);
+                    com.jo112ss.rpgmod.mob.MobLevels.apply(z, lvl);
+                    log("early game: zombie Lv{} speed {} (base {}), follow range {}", lvl,
+                            String.format("%.3f", z.getAttributeValue(net.minecraft.world.entity.ai.attributes.Attributes.MOVEMENT_SPEED)),
+                            String.format("%.3f", z.getAttributeBaseValue(net.minecraft.world.entity.ai.attributes.Attributes.MOVEMENT_SPEED)),
+                            String.format("%.0f", z.getAttributeValue(net.minecraft.world.entity.ai.attributes.Attributes.FOLLOW_RANGE)));
+                    z.discard();
+                }
+            }
             case "songtime" -> { // a bard's song grows from 5s (level 1) to 12s (top level); a spellsinger's stays 12s
                 become(p, "bard");
                 var sd = JobManager.data(p);
