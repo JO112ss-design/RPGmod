@@ -261,6 +261,7 @@ public final class DungeonManager {
             return;
         }
         if (t % 20 == 0) retarget(dl, r);
+        if (t % 10 == 5) recall(dl, r, room);
         if (t % 10 != 0) return;
         BlockPos c = new BlockPos(Dungeons.originX(r.slot), Dungeons.FLOOR, room.zMid());
         if (!dl.areEntitiesLoaded(ChunkPos.pack(c))) return; // nobody near: the monsters are asleep, not gone
@@ -374,6 +375,30 @@ public final class DungeonManager {
     }
 
     /** Monsters keep after the players: spiders in a lit room would otherwise leave them alone, and any that lost track pick the nearest again. */
+    /**
+     * A wave's monster that got out of its room (an ender pearl, a jump, a push over the wall) and is
+     * off the floor or falling into the void is put back into the room: it would otherwise never die
+     * (a boss caps what the void takes, a monster in a far chunk stops ticking) and the wave would never end.
+     */
+    private static void recall(ServerLevel dl, Run r, Room room) {
+        net.minecraft.world.phys.AABB inner = Dungeons.interior(r.slot, room).inflate(1, 0, 1);
+        for (UUID u : r.mobs) {
+            if (!(dl.getEntity(u) instanceof Mob m) || !m.isAlive()) continue;
+            Vec3 pos = m.position();
+            boolean outside = pos.x < inner.minX || pos.x > inner.maxX || pos.z < inner.minZ || pos.z > inner.maxZ;
+            if (!outside && pos.y >= Dungeons.FLOOR - 2) continue;
+            BlockPos at = m instanceof com.jo112ss.rpgmod.mob.boss.ModBoss
+                    ? new BlockPos(Dungeons.originX(r.slot), Dungeons.FLOOR, room.zMid())
+                    : DungeonBuilder.spawnSpot(dl, r.slot, room, dl.getRandom(), Dungeons.players(dl, r.slot));
+            m.teleportTo(at.getX() + 0.5, at.getY(), at.getZ() + 0.5);
+            m.setDeltaMovement(Vec3.ZERO);
+            m.resetFallDistance();
+            dl.sendParticles(net.minecraft.core.particles.ParticleTypes.PORTAL, at.getX() + 0.5, at.getY() + 1, at.getZ() + 0.5, 30, 0.4, 0.8, 0.4, 0.3);
+            dl.playSound(null, at, SoundEvents.ENDERMAN_TELEPORT, SoundSource.HOSTILE, 0.6F, 1.2F);
+            log("monster {} left room {} (at {}), brought back to {}", m.getType().getDescriptionId(), r.room, BlockPos.containing(pos), at);
+        }
+    }
+
     private static void retarget(ServerLevel dl, Run r) {
         var inside = Dungeons.players(dl, r.slot);
         inside.removeIf(p -> p.isCreative() || com.jo112ss.rpgmod.compat.Downed.is(p));

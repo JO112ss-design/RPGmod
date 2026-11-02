@@ -1041,15 +1041,34 @@ final class NewJobTests {
             return true;
         };
         // fight a room through: strike whatever is alive every few ticks until the room is won
+        java.util.UUID[] thrown = {null};
+        boolean[] thrownBack = {false};
         java.util.function.IntFunction<java.util.function.IntPredicate> fight = i -> a -> {
             var r = run.get();
             if (r == null || r.room > i || r.closing >= 0) {
                 log("dungeon: room {} won after {} ticks", i, a);
                 return true;
             }
+            if (i == 1 && thrown[0] == null && a >= 10) { // one monster thrown over the wall into the void: it must come back
+                for (var u : List.copyOf(r.mobs)) {
+                    if (!(dl.getEntity(u) instanceof LivingEntity e) || !e.isAlive()) continue;
+                    var rm = com.jo112ss.rpgmod.dungeon.Dungeons.layout(r.kind).get(i);
+                    e.teleportTo(com.jo112ss.rpgmod.dungeon.Dungeons.originX(slot[0]) + 40.5, com.jo112ss.rpgmod.dungeon.Dungeons.FLOOR - 20, rm.zMid() + 0.5);
+                    thrown[0] = u;
+                    log("dungeon: threw {} out of the room to {}", e.getType().getDescriptionId(), e.blockPosition());
+                    break;
+                }
+            }
             if (a % 5 == 0) {
                 for (var u : List.copyOf(r.mobs)) {
                     if (!(dl.getEntity(u) instanceof LivingEntity e) || !e.isAlive()) continue;
+                    if (u.equals(thrown[0]) && !thrownBack[0]) {
+                        var rm = com.jo112ss.rpgmod.dungeon.Dungeons.layout(r.kind).get(i);
+                        if (com.jo112ss.rpgmod.dungeon.Dungeons.interior(slot[0], rm).inflate(1, 0, 1).contains(e.position())) {
+                            thrownBack[0] = true;
+                            log("dungeon: the thrown monster is back in the room at {} ({} ticks into the fight)", e.blockPosition(), a);
+                        } else continue; // leave it until it is back
+                    }
                     if (a % 40 == 0) log("dungeon: wave {} monster {} Lv{} health {} / {} elite {} target {}", r.wave + 1, e.getType().getDescriptionId(),
                             com.jo112ss.rpgmod.mob.MobLevels.level(e), String.format("%.0f", e.getHealth()), String.format("%.0f", e.getMaxHealth()),
                             com.jo112ss.rpgmod.mob.Elite.traits(e), e instanceof net.minecraft.world.entity.Mob m && m.getTarget() != null ? "player" : "-");
