@@ -186,6 +186,18 @@ final class NewJobTests {
                     z.discard();
                 }
             }
+            case "mastery" -> { // mastery follows the levels: a first job at level 25 shows 25%, at 50 shows 50%
+                StringBuilder ms = new StringBuilder();
+                for (int lvl : new int[] {1, 2, 10, 25, 50, 75, 99, 100}) {
+                    long sum = 0;
+                    for (int l = 1; l < lvl && l < com.jo112ss.rpgmod.job.core.LevelCurve.ADVANCED_AT; l++) sum += com.jo112ss.rpgmod.job.core.LevelCurve.expToNext(l);
+                    var md = new com.jo112ss.rpgmod.job.JobData();
+                    md.setMastery("fighter", sum);
+                    ms.append("Lv").append(lvl).append('=').append(md.masteryPercent("fighter")).append("% (by exp ")
+                            .append(Math.round(100.0 * sum / com.jo112ss.rpgmod.job.core.LevelCurve.masteryExp())).append("%) ");
+                }
+                log("mastery by level: {}", ms.toString().trim());
+            }
             case "songtime" -> { // a bard's song grows from 5s (level 1) to 12s (top level); a spellsinger's stays 12s
                 become(p, "bard");
                 var sd = JobManager.data(p);

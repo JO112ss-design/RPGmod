@@ -1382,5 +1382,6 @@
   "rpgmod.skill.grand_heal": "Holy Circle",
   "rpgmod.skill.grand_heal.desc": "Spell (cast from the staff): the group heal's strong form - 5x the healing for allies in a wide area (12 blocks), clearing poison and wither (2.2s charge, 85 MP).",
   "rpgmod.jobscreen.song_time": "Plays %ss",
-  "rpgmod.masterwork.hidden": "??? (a skill of a job you have not opened)"
+  "rpgmod.masterwork.hidden": "??? (a skill of a job you have not opened)",
+  "rpgmod.jobscreen.mastery_none": "None (a hybrid job's whole panel is open)"
 }

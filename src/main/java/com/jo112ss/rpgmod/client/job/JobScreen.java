@@ -257,7 +257,7 @@ public class JobScreen extends Screen {
 
     /** Base panel skills, spells and ultimates need some mastery of the job (advanced panels none). */
     private boolean masteryOk(JobData d, SkillPanel.Node n) {
-        return advView || d.masteryPercent(d.jobId()) >= SkillPanel.masteryNeeded(n);
+        return advView || d.isHybrid() || d.masteryPercent(d.jobId()) >= SkillPanel.masteryNeeded(n); // hybrid jobs have no mastery
     }
 
     /** A boost cell needs its skill learnt first. */
@@ -364,7 +364,11 @@ public class JobScreen extends Screen {
         // mastery of the base job: opens its outer skills, its ultimates and its advanced job
         int pct = d.masteryPercent(job.id);
         g.text(font, Component.translatable("rpgmod.jobscreen.mastery"), cx + 6, cy + 174, Ui.DIM, false);
-        Ui.bar(g, font, cx + 6, cy + 184, cw - 12, 10, (float) d.masteryFraction(job.id), pct >= 100 ? Ui.GOLD : 0xFFB09CFF, pct + "%");
+        if (com.jo112ss.rpgmod.job.core.JobDefs.isHybrid(job.id)) { // hybrid jobs have no mastery: their whole panel is open
+            g.text(font, Component.translatable("rpgmod.jobscreen.mastery_none"), cx + 6, cy + 185, Ui.DIM, false);
+        } else {
+            Ui.bar(g, font, cx + 6, cy + 184, cw - 12, 10, (float) d.masteryFraction(job.id), pct >= 100 ? Ui.GOLD : 0xFFB09CFF, pct + "%");
+        }
         if (d.masteredCount() > 0) {
             Component bonus = Component.translatable("rpgmod.jobscreen.mastered_bonus", d.masteredCount(),
                     Math.round(d.masteredCount() * com.jo112ss.rpgmod.job.JobStats.MASTERY_HEALTH * 100));

@@ -1382,5 +1382,6 @@
   "rpgmod.skill.grand_heal": "ホーリーサークル",
   "rpgmod.skill.grand_heal.desc": "呪文（杖で詠唱）：グループヒールの強い版。広い範囲（12ブロック）の味方をグループヒールの5倍回復し、毒と衰弱を消す（詠唱2.2秒・MP85）。",
   "rpgmod.jobscreen.song_time": "演奏時間 %s秒",
-  "rpgmod.masterwork.hidden": "？？？（まだ開放していない職業のスキル）"
+  "rpgmod.masterwork.hidden": "？？？（まだ開放していない職業のスキル）",
+  "rpgmod.jobscreen.mastery_none": "なし（複合職はスキル盤がすべて開いている）"
 }

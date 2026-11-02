@@ -64,6 +64,27 @@ public final class LevelCurve {
 
     private static volatile long masteryCache;
 
+    /**
+     * Mastery as a share (0..1) that follows the levels: the experience is walked along the level
+     * curve from level 1, so a first job shows 25% at level 25 and 50% at level 50 (by experience
+     * alone the early levels, being cheap, counted for little and most of it came at the end).
+     */
+    public static double masteryShare(long exp) {
+        if (exp <= 0) return 0;
+        if (exp >= masteryExp()) return 1;
+        double levels = 0;
+        for (int l = 1; l < ADVANCED_AT; l++) {
+            long step = expToNext(l);
+            if (exp < step) {
+                levels += exp / (double) step;
+                break;
+            }
+            exp -= step;
+            levels++;
+        }
+        return Math.min(1, (1 + levels) / ADVANCED_AT);
+    }
+
     /** Mastery grows twice as fast once the character is level 100 or more. */
     public static int masteryRate(int level) {
         return level >= ADVANCED_AT ? 2 : 1;

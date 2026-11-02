@@ -465,6 +465,7 @@ UI = {  # key: (ja, en)
  'rpgmod.job.need_mastery': ('熟練度%1$s%%で覚えられます', 'Needs %1$s%% mastery'),
  'rpgmod.node.need_mastery': ('熟練度%1$s%%で解放（今 %2$s%%）', 'Opens at %1$s%% mastery (now %2$s%%)'),
  'rpgmod.jobscreen.mastery': ('熟練度', 'Mastery'),
+ 'rpgmod.jobscreen.mastery_none': ('なし（複合職はスキル盤がすべて開いている）', 'None (a hybrid job\'s whole panel is open)'),
  'rpgmod.jobscreen.mastered_bonus': ('極めた職 %1$s（HP+%2$s%%）', '%1$s mastered (HP +%2$s%%)'),
  'rpgmod.jobscreen.adv_waiting': ('上位職のポイント %1$s（上位職になると使える）', '%1$s advanced points (for an advanced job)'),
  'rpgmod.jobselect.choose': ('この職業にする', 'Choose this job'),

@@ -313,7 +313,7 @@ public final class JobData {
 
     /** 0..1 */
     public double masteryFraction(String jobId) {
-        return mastery(jobId) / (double) LevelCurve.masteryExp();
+        return LevelCurve.masteryShare(mastery(jobId)); // follows the levels: 25% at level 25
     }
 
     /** Mastery in whole percent (rounded down, so 100 only when full). */
