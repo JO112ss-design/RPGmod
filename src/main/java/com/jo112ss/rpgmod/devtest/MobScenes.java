@@ -574,6 +574,11 @@ final class MobScenes {
                     case 190 -> d.setHealth(d.getMaxHealth() * 0.2F);
                     case 230 -> com.jo112ss.rpgmod.mob.dragon.DragonDirector.testAttack(d, "rain");
                     case 290 -> com.jo112ss.rpgmod.mob.dragon.DragonDirector.testAttack(d, "charge");
+                    case 305 -> { // thrown far off: it must come back over its portal
+                        d.snapTo(d.getX() + 300, d.getY(), d.getZ(), d.getYRot(), 0);
+                        RpgMod.LOGGER.info("[AUTOTEST] dragon strayed to {} blocks from the portal", Math.round(com.jo112ss.rpgmod.mob.dragon.DragonDirector.distanceFromPortal(d)));
+                    }
+                    case 325 -> RpgMod.LOGGER.info("[AUTOTEST] dragon 20 ticks later: {} blocks from the portal", Math.round(com.jo112ss.rpgmod.mob.dragon.DragonDirector.distanceFromPortal(d)));
                     default -> { }
                 }
                 if (t % 30 == 0) {

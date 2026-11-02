@@ -453,7 +453,7 @@ public final class MoreJobSkills {
                 return false;
             }
             LivingEntity t = flung[0];
-            if (!t.isAlive() || speed[0] < 0.15 || age - flyFrom[0] > FLING_TICKS) return true;
+            if (!t.isAlive() || Venom.isBoss(t) || speed[0] < 0.15 || age - flyFrom[0] > FLING_TICKS) return true; // bosses (the dragon too) are not thrown
             // it flies (driven here, so even a mob that stands still for knockback goes)
             Vec3 step = dir.scale(speed[0]);
             if (!c.level().noCollision(t, t.getBoundingBox().move(step).deflate(0.05).move(0, 0.1, 0))) { // into a wall
@@ -468,7 +468,7 @@ public final class MoreJobSkills {
             speed[0] *= 0.82;
             // and bowls over whoever it meets, who stumble back
             for (LivingEntity o : enemies(p, t.position(), t.getBbWidth() / 2 + 1.0)) {
-                if (!bowled.add(o.getId())) continue;
+                if (!bowled.add(o.getId()) || Venom.isBoss(o)) continue;
                 hurt(c, o, c.dmg(0.6), melee(c));
                 Vec3 away = o.position().subtract(t.position()).multiply(1, 0, 1).normalize().add(dir).normalize();
                 o.setPos(o.getX() + away.x * 0.8, o.getY(), o.getZ() + away.z * 0.8);

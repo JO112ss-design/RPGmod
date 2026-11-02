@@ -656,6 +656,7 @@ public final class NewJobSkills {
      * it here so it works on any mob (knockback resistance makes it go less high).
      */
     static void airborne(Ctx c, LivingEntity e, double vy) {
+        if (Venom.isBoss(e)) return; // bosses (the dragon too) are not thrown up
         double resist = 1 - e.getAttributeValue(net.minecraft.world.entity.ai.attributes.Attributes.KNOCKBACK_RESISTANCE);
         if (resist <= 0.05) return;
         final double[] v = {vy * resist};

@@ -1313,7 +1313,7 @@ public final class SkillExecutor {
                 Vec3 out = mid.subtract(centre).multiply(1, 0, 1);
                 if (out.lengthSqr() < 1e-4) out = new Vec3(1, 0, 0);
                 out = out.normalize();
-                if (d < edge - 0.8) { // got inside somehow: put it outside
+                if (d < edge - 0.8 && !Venom.isBoss(e)) { // got inside somehow: put it outside (never a boss)
                     Vec3 to = o.add(out.scale(edge + 0.2));
                     e.teleportTo(to.x, e.getY(), to.z);
                 }

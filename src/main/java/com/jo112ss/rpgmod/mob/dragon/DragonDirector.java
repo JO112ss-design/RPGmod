@@ -93,6 +93,7 @@ public final class DragonDirector {
             if (p.isAlive() && !p.isCreative() && !p.isSpectator() && !com.jo112ss.rpgmod.compat.Downed.is(p) && p.distanceTo(dragon) < 160) players.add(p);
         }
         State s = STATES.computeIfAbsent(dragon, k -> new State());
+        if (dragon.tickCount % 10 == 0) leash(sl, dragon);
         if (s.playersSeen < 0 || dragon.tickCount % 20 == 0) scaleHealth(sl, dragon, s);
         tickWindow(sl, dragon, s);
         if (!s.announced) {
@@ -142,6 +143,43 @@ public final class DragonDirector {
         if (s.stage >= 3 && dragon.tickCount % 100 == 0) {
             ServerFx.of("dragon_enrage", dragon.position()).follow(dragon).a(100).send(sl, 200);
         }
+    }
+
+    // ------------------------------------------------------------------ staying over the island
+
+    /** How far from the portal (its fight origin, 0 0 in the End) the dragon may wander before it is turned back, and brought back. */
+    public static final double LEASH = 150, RECALL = 220;
+
+    /**
+     * Keeps the fight over the main island: a dragon that strayed far (pushed or thrown by a skill, a
+     * charge that overshot, a lost path) turns back to circling the portal, and one very far away, or
+     * out of the sky, is brought back above it - otherwise it can end up in chunks nobody has loaded,
+     * frozen there with its health bar still up.
+     */
+    private static void leash(ServerLevel sl, EnderDragon dragon) {
+        var o = dragon.getFightOrigin();
+        double far = Math.hypot(dragon.getX() - o.getX() - 0.5, dragon.getZ() - o.getZ() - 0.5);
+        boolean outOfSky = dragon.getY() < sl.getMinY() + 10 || dragon.getY() > sl.getMaxY() + 20;
+        if (far <= LEASH && !outOfSky) return;
+        var phase = dragon.getPhaseManager().getCurrentPhase().getPhase();
+        if (far > RECALL || outOfSky) {
+            int top = sl.getHeight(Heightmap.Types.MOTION_BLOCKING, o.getX(), o.getZ());
+            dragon.snapTo(o.getX() + 0.5, Math.max(top, o.getY()) + 30, o.getZ() + 0.5, dragon.getYRot(), 0);
+            dragon.setDeltaMovement(Vec3.ZERO);
+            dragon.getPhaseManager().setPhase(EnderDragonPhase.HOLDING_PATTERN);
+            ServerFx.of("dragon_summon", dragon.position()).a(4).color(PURPLE).send(sl, 200);
+            sl.playSound(null, dragon.getX(), dragon.getY(), dragon.getZ(), SoundEvents.ENDER_DRAGON_GROWL, SoundSource.HOSTILE, 6.0F, 0.9F);
+            RpgMod.LOGGER.info("Ender Dragon strayed {} blocks away (y {}): brought back over the portal", Math.round(far), Math.round(dragon.getY()));
+        } else if (phase != EnderDragonPhase.HOLDING_PATTERN && phase != EnderDragonPhase.LANDING_APPROACH && phase != EnderDragonPhase.LANDING) {
+            dragon.getPhaseManager().setPhase(EnderDragonPhase.HOLDING_PATTERN);
+            RpgMod.LOGGER.info("Ender Dragon {} blocks from the portal in phase {}: back to circling", Math.round(far), phase);
+        }
+    }
+
+    /** Dev test: how far the dragon is from the portal. */
+    public static double distanceFromPortal(EnderDragon dragon) {
+        var o = dragon.getFightOrigin();
+        return Math.hypot(dragon.getX() - o.getX() - 0.5, dragon.getZ() - o.getZ() - 0.5);
     }
 
     // ------------------------------------------------------------------ health by player count
