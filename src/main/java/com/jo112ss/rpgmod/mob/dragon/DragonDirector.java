@@ -93,7 +93,6 @@ public final class DragonDirector {
             if (p.isAlive() && !p.isCreative() && !p.isSpectator() && !com.jo112ss.rpgmod.compat.Downed.is(p) && p.distanceTo(dragon) < 160) players.add(p);
         }
         State s = STATES.computeIfAbsent(dragon, k -> new State());
-        if (dragon.tickCount % 10 == 0) leash(sl, dragon);
         if (s.playersSeen < 0 || dragon.tickCount % 20 == 0) scaleHealth(sl, dragon, s);
         tickWindow(sl, dragon, s);
         if (!s.announced) {
@@ -156,6 +155,20 @@ public final class DragonDirector {
      * out of the sky, is brought back above it - otherwise it can end up in chunks nobody has loaded,
      * frozen there with its health bar still up.
      */
+    /**
+     * Checked from the server tick, not the dragon's: a dragon that drifted into chunks nobody has
+     * loaded does not tick any more, and that is just the one to bring back.
+     */
+    @SubscribeEvent
+    public static void onServerTick(net.neoforged.neoforge.event.tick.ServerTickEvent.Post event) {
+        if (event.getServer().getTickCount() % 10 != 0 || !MobConfig.dragon() || STATES.isEmpty()) return;
+        for (EnderDragon dragon : List.copyOf(STATES.keySet())) {
+            if (dragon.isRemoved() || !(dragon.level() instanceof ServerLevel sl) || dragon.isDeadOrDying() || dragon.isNoAi()) continue;
+            if (dragon.getPhaseManager().getCurrentPhase().getPhase() == EnderDragonPhase.DYING) continue;
+            leash(sl, dragon);
+        }
+    }
+
     private static void leash(ServerLevel sl, EnderDragon dragon) {
         var o = dragon.getFightOrigin();
         double far = Math.hypot(dragon.getX() - o.getX() - 0.5, dragon.getZ() - o.getZ() - 0.5);
